@@ -160,6 +160,7 @@ object Rebar : JavaPlugin(), RebarAddon {
         if (RebarConfig.BlockTextureConfig.ENABLED) {
             pm.registerEvents(BlockTextureEngine, this)
             BlockTextureEngine.updateOccludingCacheJob.start()
+            BlockTextureEngine.syncCullingJob.start()
         }
 
         Bukkit.getScheduler().runTaskTimer(

@@ -3,6 +3,7 @@ package io.github.pylonmc.rebar.util
 import org.bukkit.util.BoundingBox
 import org.bukkit.util.Vector
 import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.CopyOnWriteArraySet
 
 open class Octree<N>(
     private val maxDepth: Int = DEFAULT_MAX_DEPTH,
@@ -12,7 +13,7 @@ open class Octree<N>(
     private val depth: Int,
     private val entryStrategy: (N) -> BoundingBox,
 ) : Iterable<N> {
-    private var entries: MutableList<N> = CopyOnWriteArrayList()
+    private var entries: MutableSet<N> = CopyOnWriteArraySet()
     private var children: Array<Octree<N>>? = null
 
     constructor(bounds: BoundingBox, depth: Int, entryStrategy: (N) -> BoundingBox) : this(
@@ -104,8 +105,8 @@ open class Octree<N>(
         entries.clear()
     }
 
-    fun query(range: BoundingBox): List<N> {
-        val result = mutableListOf<N>()
+    fun query(range: BoundingBox): MutableSet<N> {
+        val result = mutableSetOf<N>()
         if (!bounds.overlaps(range)) return result
 
         for (entry in entries) {
