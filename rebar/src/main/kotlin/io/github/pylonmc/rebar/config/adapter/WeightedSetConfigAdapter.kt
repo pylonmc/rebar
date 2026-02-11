@@ -11,7 +11,7 @@ class WeightedSetConfigAdapter<E>(private val elementAdapter: ConfigAdapter<E>) 
     override fun convert(value: Any): WeightedSet<E> {
         return if (value is List<*>) {
             value.mapTo(WeightedSet()) {
-                val section = ConfigAdapter.CONFIG_SECTION.convert(value)
+                val section = ConfigAdapter.CONFIG_SECTION.convert(it!!)
                 val element = section.getOrThrow("value", elementAdapter)
                 val weight = section.get("weight", ConfigAdapter.FLOAT, 1f)
                 WeightedSet.Element(element, weight)
