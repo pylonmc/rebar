@@ -181,9 +181,6 @@ guide:
           <guidearrow> <guideinsn>Right click</guideinsn> to see usages
           <guidearrow> <guideinsn>Shift left click</guideinsn> to research
           <guidearrow> <guideinsn>Shift right click</guideinsn> to see other research unlocks
-        admin: |-
-          <guidearrow> <guideinsn>Press Q</guideinsn> to cheat in one item <#ff0000>(admin only)</#ff0000>
-          <guidearrow> <guideinsn>Middle click</guideinsn> to cheat in a stack <#ff0000>(admin only)</#ff0000>
       error: "<red>Item failed to load"
       amount: "%name%: <gray>%amount%%breakdown%"
       amount-breakdown: " (%stacks%x%stack-size% + %remainder%)"
