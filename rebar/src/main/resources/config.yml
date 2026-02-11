@@ -173,6 +173,7 @@ custom-block-textures:
     presets:
       # No culling, all entities are sent to the client, do NOT remove this preset
       disabled:
+        index: 0
         id: "disabled"
         material: "minecraft:gray_concrete"
         update-interval: 10

@@ -11,9 +11,9 @@ class WeightedSetConfigAdapter<E>(private val elementAdapter: ConfigAdapter<E>) 
     override fun convert(value: Any): WeightedSet<E> {
         return if (value is List<*>) {
             value.mapTo(WeightedSet()) {
-                val map = MapConfigAdapter.STRING_TO_ANY.convert(it!!)
-                val element = elementAdapter.convert(map["value"] ?: throw IllegalArgumentException("Missing 'value' key in weighted set element"))
-                val weight = ConfigAdapter.FLOAT.convert(map["weight"] ?: 1f)
+                val section = ConfigAdapter.CONFIG_SECTION.convert(value)
+                val element = section.getOrThrow("value", elementAdapter)
+                val weight = section.get("weight", ConfigAdapter.FLOAT, 1f)
                 WeightedSet.Element(element, weight)
             }
         } else {

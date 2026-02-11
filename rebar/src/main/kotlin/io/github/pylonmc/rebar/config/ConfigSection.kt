@@ -73,6 +73,10 @@ open class ConfigSection(val internalSection: ConfigurationSection) {
             val value = internalSection.get(key) ?: throw modifyException(KeyNotFoundException(getKeyPath(key)))
             try {
                 adapter.convert(value)
+            } catch (e: KeyNotFoundException) {
+                val exception = modifyException(KeyNotFoundException("$key.${e.key.removePrefix("$key.")}"))
+                exception.stackTrace = e.stackTrace
+                throw exception
             } catch (e: Exception) {
                 throw modifyException(
                     IllegalArgumentException(
