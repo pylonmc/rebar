@@ -96,6 +96,7 @@ interface ConfigAdapter<T> {
         @JvmField val WEIGHTED_SET = WeightedSetConfigAdapter
         @JvmField val CULLING_PRESET = CullingPresetConfigAdapter
         @JvmField val WAILA_DISPLAY = WailaDisplayConfigAdapter
+        @JvmField val CONFIG_SECTION = ConfigSectionConfigAdapter
         // @formatter:on
     }
 }

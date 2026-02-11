@@ -66,7 +66,7 @@ interface RebarAddon : Keyed {
     @ApiStatus.NonExtendable
     fun registerWithRebar() {
         if (!Bukkit.getPluginManager().isPluginEnabled("Rebar")) {
-            throw IllegalStateException("Rebar is not installed or not enabled")
+            throw IllegalStateException("Rebar is not installed or not enabled (if Rebar is installed, has it errored?)")
         }
 
         RebarRegistry.ADDONS.register(this)

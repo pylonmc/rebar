@@ -49,7 +49,7 @@ open class ConfigSection(val internalSection: ConfigurationSection) {
     }
 
     fun getSectionOrThrow(key: String): ConfigSection =
-        getSection(key) ?: throw KeyNotFoundException(internalSection.currentPath, key)
+        getSection(key) ?: throw modifyException(KeyNotFoundException(getKeyPath(key)))
 
     /**
      * Returns null if the key does not exist or if the value cannot be converted to the desired type.
@@ -70,13 +70,19 @@ open class ConfigSection(val internalSection: ConfigurationSection) {
      */
     fun <T> getOrThrow(key: String, adapter: ConfigAdapter<T>): T {
         val value = cache.getOrPut(key) {
-            val value = internalSection.get(key) ?: throw KeyNotFoundException(internalSection.currentPath, key)
+            val value = internalSection.get(key) ?: throw modifyException(KeyNotFoundException(getKeyPath(key)))
             try {
                 adapter.convert(value)
+            } catch (e: KeyNotFoundException) {
+                val exception = modifyException(KeyNotFoundException("$key.${e.key.removePrefix("$key.")}"))
+                exception.stackTrace = e.stackTrace
+                throw exception
             } catch (e: Exception) {
-                throw IllegalArgumentException(
-                    "Failed to convert value '$value' to type ${adapter.type} for key '$key' in section '${internalSection.currentPath}'",
-                    e
+                throw modifyException(
+                    IllegalArgumentException(
+                        "Failed to convert value '$value' to type ${adapter.type} for key '${getKeyPath(key)}'",
+                        e
+                    )
                 )
             }
         }
@@ -84,7 +90,7 @@ open class ConfigSection(val internalSection: ConfigurationSection) {
         fun getClass(type: Type): Class<*> = when (type) {
             is Class<*> -> type
             is ParameterizedType -> getClass(type.rawType)
-            else -> throw IllegalArgumentException("Unsupported type: $type")
+            else -> throw modifyException(IllegalArgumentException("Unsupported type: $type"))
         }
 
         @Suppress("UNCHECKED_CAST")
@@ -97,8 +103,8 @@ open class ConfigSection(val internalSection: ConfigurationSection) {
         cache.remove(key)
     }
 
-    fun createSection(key: String): ConfigSection
-        = ConfigSection(internalSection.createSection(key)).also { sectionCache[key] = it }
+    fun createSection(key: String): ConfigSection =
+        ConfigSection(internalSection.createSection(key)).also { sectionCache[key] = it }
 
     /**
      * 'Merges' [other] with this ConfigSection by copying all of its keys into this ConfigSection.
@@ -120,9 +126,17 @@ open class ConfigSection(val internalSection: ConfigurationSection) {
         }
     }
 
+    private fun getKeyPath(key: String): String =
+        if (internalSection.currentPath.isNullOrEmpty()) key else "${internalSection.currentPath}.$key"
+
+    /**
+     * This exists so that [Config] can add more context to exceptions thrown by this class without having to override every method.
+     * The default implementation is just `throw exception`.
+     */
+    protected open fun modifyException(exception: Exception): Exception = exception
+
     /**
      * Thrown when a key is not found.
      */
-    class KeyNotFoundException(path: String?, key: String) :
-        Exception(if (!path.isNullOrEmpty()) "Config key not found: $path.$key" else "Config key not found: $key")
+    class KeyNotFoundException(val key: String, message: String = "Config key not found: $key") : RuntimeException(message)
 }
