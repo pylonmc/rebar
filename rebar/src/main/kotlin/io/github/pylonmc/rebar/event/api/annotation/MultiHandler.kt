@@ -31,14 +31,15 @@ annotation class MultiHandler(
             val eventClass = event::class.java
             val info = EventInfo(handlerMethod, eventClass)
             val function = handlerMap.getOrPut(info) {
-                val method = handler::class.java.declaredMethods.firstOrNull {
-                    it.parameters.size == 2
-                            && it.parameters[0].type == info.eventClass
-                            && it.parameters[1].type == EventPriority::class.java
-                            && it.name == info.handlerMethod
-                            && !Modifier.isAbstract(it.modifiers)
-                } ?: throw IllegalStateException("No suitable method '${info.handlerMethod}' found in class ${directClass.name} for event ${info.eventClass.name}")
-                if (!method.trySetAccessible()) {
+                val method = handler::class.java.declaredMethods.firstOrNull { it.name == info.handlerMethod }
+                if (method == null) {
+                    return@getOrPut { _, _, _, -> {} }
+                }
+                if (method.parameters.size != 2 || info.eventClass != method.parameters[0].type || method.parameters[1].type != EventPriority::class.java) {
+                    throw IllegalStateException("Method ${method.name} in class ${directClass.name} must have exactly two parameters, the first being ${eventClass}, and the second being EventPriority")
+                } else if (Modifier.isAbstract(method.modifiers)) {
+                    throw IllegalStateException("Method ${method.name} in class ${directClass.name} must not be abstract")
+                } else if (!method.trySetAccessible()) {
                     throw IllegalStateException("Could not access method ${method.name} in class ${directClass.name}")
                 }
 
