@@ -139,7 +139,7 @@ guide:
         enough: "<arrow> <attr>Unlock cost:</attr> <#61ea38>%player_points%/%unlock_cost%"
         researched: "<arrow> <attr>Unlock cost:</attr> <#61ea38>%unlock_cost% (researched)"
       hints:
-        research: |-
+        researched: |-
           
           <u>Hints</u>
           <guidearrow> <guideinsn>Right click</guideinsn> to see unlocked items

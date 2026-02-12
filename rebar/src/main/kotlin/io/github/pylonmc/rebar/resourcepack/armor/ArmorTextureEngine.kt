@@ -5,6 +5,7 @@ package io.github.pylonmc.rebar.resourcepack.armor
 import com.github.retrooper.packetevents.event.PacketListener
 import com.github.retrooper.packetevents.event.PacketReceiveEvent
 import com.github.retrooper.packetevents.event.PacketSendEvent
+import com.github.retrooper.packetevents.protocol.ConnectionState
 import com.github.retrooper.packetevents.protocol.item.ItemStack
 import com.github.retrooper.packetevents.protocol.packettype.PacketType
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientCreativeInventoryAction
@@ -32,10 +33,10 @@ object ArmorTextureEngine : PacketListener {
         set(value) = this.persistentDataContainer.set(customArmorTexturesKey, PersistentDataType.BOOLEAN, RebarConfig.ArmorTextureConfig.FORCED || value)
 
     override fun onPacketSend(event: PacketSendEvent?) {
-        if (event == null) return
+        if (event == null || event.connectionState != ConnectionState.PLAY) return
 
         val player = event.getPlayer<Player>()
-        if (player == null || !player.hasCustomArmorTextures) return
+        if (!player.hasCustomArmorTextures) return
 
         when (event.packetType) {
             PacketType.Play.Server.SET_SLOT -> handleSetSlot(WrapperPlayServerSetSlot(event))
@@ -47,11 +48,7 @@ object ArmorTextureEngine : PacketListener {
     }
 
     override fun onPacketReceive(event: PacketReceiveEvent?) {
-        if (event == null) return
-
-        val player = event.getPlayer<Player>()
-        if (player == null) return
-
+        if (event == null || event.connectionState != ConnectionState.PLAY) return
         when (event.packetType) {
             PacketType.Play.Client.CREATIVE_INVENTORY_ACTION -> handleCreativeAction(WrapperPlayClientCreativeInventoryAction(event))
             else -> {}

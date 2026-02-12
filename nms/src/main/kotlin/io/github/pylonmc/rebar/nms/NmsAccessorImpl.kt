@@ -86,7 +86,7 @@ object NmsAccessorImpl : NmsAccessor {
         val state = (block as CraftBlock).nms
         val map = mutableMapOf<String, String>()
         val possibleValues = mutableMapOf<String, Int>()
-        for (property in state.properties) {
+        for (property in state.block.stateDefinition.properties) {
             @Suppress("UNCHECKED_CAST")
             property as Property<Comparable<Any>>
             map[property.name] = state.getOptionalValue(property).map(property::getName).orElse("none")
@@ -96,7 +96,7 @@ object NmsAccessorImpl : NmsAccessor {
             map[name] = pair.first
             possibleValues[name] = pair.second
         }
-        return map.toSortedMap().toSortedMap(compareBy<String> { possibleValues[it] ?: 0 }.reversed())
+        return map.toSortedMap(compareByDescending<String> { possibleValues[it] ?: 0 }.thenBy { it })
     }
 
     override fun handleRecipeBookClick(event: PlayerRecipeBookClickEvent) {

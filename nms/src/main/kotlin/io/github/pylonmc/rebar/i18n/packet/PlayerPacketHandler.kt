@@ -53,12 +53,14 @@ class PlayerPacketHandler(private val player: ServerPlayer, private val handler:
     private inner class PacketHandler : ChannelDuplexHandler() {
         override fun write(ctx: ChannelHandlerContext, packet: Any, promise: ChannelPromise) {
             @Suppress("UNCHECKED_CAST")
-            super.write(ctx, handleOutgoingPacket(packet as Packet<in ClientGamePacketListener>), promise)
+            val packet = packet as? Packet<in ClientGamePacketListener> ?: return super.write(ctx, packet, promise)
+            super.write(ctx, handleOutgoingPacket(packet), promise)
         }
 
         override fun channelRead(ctx: ChannelHandlerContext, packet: Any) {
             @Suppress("UNCHECKED_CAST")
-            super.channelRead(ctx, handleIncomingPacket(packet as Packet<in ServerGamePacketListener>))
+            val packet = packet as? Packet<in ServerGamePacketListener> ?: return super.channelRead(ctx, packet)
+            super.channelRead(ctx, handleIncomingPacket(packet))
         }
     }
 

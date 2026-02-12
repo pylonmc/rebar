@@ -164,7 +164,7 @@ open class RebarBlock internal constructor(val block: Block) {
         meta.item = SpigotConversionUtil.fromBukkitItemStack(item)
         meta.displayType = ItemDisplayMeta.DisplayType.FIXED
         meta.brightnessOverride = 15 shl 4 or 15 shl 20;
-        meta.scale = Vector3f(1.0000175f, 1.0000175f, 1.0000175f)
+        meta.scale = Vector3f(BlockTextureEntity.BLOCK_OVERLAP_SCALE, BlockTextureEntity.BLOCK_OVERLAP_SCALE, BlockTextureEntity.BLOCK_OVERLAP_SCALE)
         meta.width = 0f
         meta.height = 0f
     }

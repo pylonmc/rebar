@@ -1,5 +1,7 @@
 package io.github.pylonmc.rebar.entity.packet
 
+import com.github.retrooper.packetevents.PacketEvents
+import com.github.retrooper.packetevents.PacketEventsAPI
 import com.github.retrooper.packetevents.protocol.entity.data.EntityData
 import com.github.retrooper.packetevents.protocol.entity.data.EntityDataTypes
 import com.github.retrooper.packetevents.protocol.entity.type.EntityTypes
@@ -42,7 +44,7 @@ open class BlockTextureEntity(
     open fun sendPacketToViewer(viewer: UUID, wrapper: PacketWrapper<*>, distanceSquared: Double) {
         var packet = wrapper
         if (packet is WrapperPlayServerEntityMetadata) {
-            val scaleIncrease = (min(distanceSquared, 1600.0) * 0.0005 / 20.0).toFloat()
+            val scaleIncrease = (min(distanceSquared, 1600.0) * SCALE_DISTANCE_INCREASE / 20.0).toFloat()
             val metadata = ArrayList(packet.entityMetadata)
             var scale = metadata.find { it.index == SCALE_INDEX && it.type == EntityDataTypes.VECTOR3F } ?: return
             val index = metadata.indexOf(scale)
@@ -51,12 +53,14 @@ open class BlockTextureEntity(
             packet = WrapperPlayServerEntityMetadata(packet.entityId, metadata)
         }
 
-        val protocolManager = EntityLib.getOptionalApi().orElse(null)?.packetEvents?.protocolManager ?: return
+        val protocolManager = PacketEvents.getAPI().protocolManager ?: return
         val channel = protocolManager.getChannel(viewer) ?: return
         protocolManager.sendPacket(channel, packet)
     }
 
-    protected companion object {
+    companion object {
         const val SCALE_INDEX = 12
+        const val SCALE_DISTANCE_INCREASE = 0.0005f
+        const val BLOCK_OVERLAP_SCALE = 1.0004f
     }
 }
