@@ -27,4 +27,16 @@ class Config(
     fun save() {
         internalConfig.save(file)
     }
+
+    override fun modifyException(exception: Exception): Exception = when (exception) {
+        is KeyNotFoundException -> KeyNotFoundException(
+            exception.key,
+            "Key '${exception.key}' not found in config file ${file.absolutePath}"
+        )
+
+        else -> RuntimeException(
+            "An error occurred while reading config file ${file.absolutePath} (CHECK THE SUB-EXCEPTION BEFORE REPORTING)",
+            exception
+        )
+    }
 }
