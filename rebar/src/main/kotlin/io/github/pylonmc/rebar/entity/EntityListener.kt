@@ -8,6 +8,8 @@ import io.github.pylonmc.rebar.config.RebarConfig
 import io.github.pylonmc.rebar.entity.base.*
 import io.github.pylonmc.rebar.event.RebarEntityDeathEvent
 import io.github.pylonmc.rebar.event.RebarEntityUnloadEvent
+import io.github.pylonmc.rebar.event.api.MultiListener
+import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.item.RebarItemListener.logEventHandleErr
 import io.github.pylonmc.rebar.item.base.RebarArrow
@@ -26,7 +28,7 @@ import org.bukkit.event.inventory.InventoryPickupItemEvent
 import org.bukkit.event.player.PlayerInteractEntityEvent
 import java.util.UUID
 
-internal object EntityListener : Listener {
+internal object EntityListener : MultiListener {
     private val entityErrMap: MutableMap<UUID, Int> = mutableMapOf()
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -63,8 +65,8 @@ internal object EntityListener : Listener {
         }
     }
 
-    @EventHandler
-    private fun handle(event: ProjectileHitEvent) {
+    @UniversalHandler
+    private fun handle(event: ProjectileHitEvent, priority: EventPriority) {
         if (event.entity is AbstractArrow) {
             val arrowItem = RebarItem.fromStack((event.entity as AbstractArrow).itemStack)
             if (arrowItem is RebarArrow) {
@@ -95,8 +97,8 @@ internal object EntityListener : Listener {
         }
     }
 
-    @EventHandler
-    private fun handle(event: EntityDamageByEntityEvent) {
+    @UniversalHandler
+    private fun handle(event: EntityDamageByEntityEvent, priority: EventPriority) {
         if (event.damager is AbstractArrow) {
             val arrowItem = RebarItem.fromStack((event.damager as AbstractArrow).itemStack)
             if (arrowItem is RebarArrow) {
@@ -109,8 +111,8 @@ internal object EntityListener : Listener {
         }
     }
 
-    @EventHandler
-    private fun handle(event: PotionSplashEvent) {
+    @UniversalHandler
+    private fun handle(event: PotionSplashEvent, priority: EventPriority) {
         val rebarPotion = RebarItem.fromStack(event.potion.item)
         if (rebarPotion is RebarSplashPotion) {
             try {
@@ -122,7 +124,7 @@ internal object EntityListener : Listener {
     }
 
     @EventHandler
-    private fun handle(event: LingeringPotionSplashEvent) {
+    private fun handle(event: LingeringPotionSplashEvent, priority: EventPriority) {
         val rebarPotion = RebarItem.fromStack(event.entity.item)
         if (rebarPotion is RebarLingeringPotion) {
             try {
@@ -134,7 +136,7 @@ internal object EntityListener : Listener {
     }
 
     @EventHandler
-    private fun handle(event: CreeperIgniteEvent) {
+    private fun handle(event: CreeperIgniteEvent, priority: EventPriority) {
         val rebarEntity = EntityStorage.get(event.entity)
         if (rebarEntity is RebarCreeper) {
             try {
@@ -146,7 +148,7 @@ internal object EntityListener : Listener {
     }
 
     @EventHandler
-    private fun handle(event: CreeperPowerEvent) {
+    private fun handle(event: CreeperPowerEvent, priority: EventPriority) {
         val rebarEntity = EntityStorage.get(event.entity)
         if (rebarEntity is RebarCreeper) {
             try {
@@ -158,7 +160,7 @@ internal object EntityListener : Listener {
     }
 
     @EventHandler
-    private fun handle(event: EnderDragonChangePhaseEvent) {
+    private fun handle(event: EnderDragonChangePhaseEvent, priority: EventPriority) {
         val rebarEntity = EntityStorage.get(event.entity)
         if (rebarEntity is RebarEnderDragon) {
             try {
@@ -170,7 +172,7 @@ internal object EntityListener : Listener {
     }
 
     @EventHandler
-    private fun handle(event: EnderDragonFlameEvent) {
+    private fun handle(event: EnderDragonFlameEvent, priority: EventPriority) {
         val rebarEntity = EntityStorage.get(event.entity)
         if (rebarEntity is RebarEnderDragon) {
             try {
@@ -182,7 +184,7 @@ internal object EntityListener : Listener {
     }
 
     @EventHandler
-    private fun handle(event: EnderDragonFireballHitEvent) {
+    private fun handle(event: EnderDragonFireballHitEvent, priority: EventPriority) {
         val rebarEntity = EntityStorage.get(event.entity)
         if (rebarEntity is RebarDragonFireball) {
             try {
@@ -194,7 +196,7 @@ internal object EntityListener : Listener {
     }
 
     @EventHandler
-    private fun handle(event: EnderDragonShootFireballEvent) {
+    private fun handle(event: EnderDragonShootFireballEvent, priority: EventPriority) {
         val rebarEntity = EntityStorage.get(event.entity)
         if (rebarEntity is RebarEnderDragon) {
             try {
@@ -206,7 +208,7 @@ internal object EntityListener : Listener {
     }
 
     @EventHandler
-    private fun handle(event: BatToggleSleepEvent) {
+    private fun handle(event: BatToggleSleepEvent, priority: EventPriority) {
         val rebarEntity = EntityStorage.get(event.entity)
         if (rebarEntity is RebarBat) {
             try {
@@ -218,7 +220,7 @@ internal object EntityListener : Listener {
     }
 
     @EventHandler
-    private fun handle(event: EndermanAttackPlayerEvent) {
+    private fun handle(event: EndermanAttackPlayerEvent, priority: EventPriority) {
         val rebarEntity = EntityStorage.get(event.entity)
         if (rebarEntity is RebarEnderman) {
             try {
@@ -230,7 +232,7 @@ internal object EntityListener : Listener {
     }
 
     @EventHandler
-    private fun handle(event: EndermanEscapeEvent) {
+    private fun handle(event: EndermanEscapeEvent, priority: EventPriority) {
         val rebarEntity = EntityStorage.get(event.entity)
         if (rebarEntity is RebarEnderman) {
             try {
@@ -242,7 +244,7 @@ internal object EntityListener : Listener {
     }
 
     @EventHandler
-    private fun handle(event: EntityBreedEvent) {
+    private fun handle(event: EntityBreedEvent, priority: EventPriority) {
         val rebarEntity = EntityStorage.get(event.entity)
         if (rebarEntity is RebarBreedable) {
             try {
@@ -254,7 +256,7 @@ internal object EntityListener : Listener {
     }
 
     @EventHandler
-    private fun handle(event: EntityEnterLoveModeEvent) {
+    private fun handle(event: EntityEnterLoveModeEvent, priority: EventPriority) {
         val rebarEntity = EntityStorage.get(event.entity)
         if (rebarEntity is RebarBreedable) {
             try {
@@ -266,7 +268,7 @@ internal object EntityListener : Listener {
     }
 
     @EventHandler
-    private fun handle(event: EntityBreakDoorEvent) {
+    private fun handle(event: EntityBreakDoorEvent, priority: EventPriority) {
         val rebarEntity = EntityStorage.get(event.entity)
         if (rebarEntity is RebarCop) {
             try {
@@ -278,7 +280,7 @@ internal object EntityListener : Listener {
     }
 
     @EventHandler
-    private fun handle(event: EntityCombustEvent) {
+    private fun handle(event: EntityCombustEvent, priority: EventPriority) {
         val rebarEntity = EntityStorage.get(event.entity)
         if (rebarEntity is RebarCombustibleEntity) {
             try {
@@ -290,7 +292,7 @@ internal object EntityListener : Listener {
     }
 
     @EventHandler
-    private fun handle(event: EntityDyeEvent) {
+    private fun handle(event: EntityDyeEvent, priority: EventPriority) {
         val rebarEntity = EntityStorage.get(event.entity)
         if (rebarEntity is RebarDyeable) {
             try {
@@ -302,7 +304,7 @@ internal object EntityListener : Listener {
     }
 
     @EventHandler
-    private fun handle(event: EntityPathfindEvent) {
+    private fun handle(event: EntityPathfindEvent, priority: EventPriority) {
         val rebarEntity = EntityStorage.get(event.entity)
         if (rebarEntity is RebarPathingEntity) {
             try {
@@ -314,7 +316,7 @@ internal object EntityListener : Listener {
     }
 
     @EventHandler
-    private fun handle(event: EntityTargetEvent) {
+    private fun handle(event: EntityTargetEvent, priority: EventPriority) {
         val rebarEntity = EntityStorage.get(event.entity)
         if (rebarEntity is RebarPathingEntity) {
             try {
@@ -326,7 +328,7 @@ internal object EntityListener : Listener {
     }
 
     @EventHandler
-    private fun handle(event: EntityMoveEvent) {
+    private fun handle(event: EntityMoveEvent, priority: EventPriority) {
         val rebarEntity = EntityStorage.get(event.entity)
         if (rebarEntity is RebarMovingEntity) {
             try {
@@ -338,7 +340,7 @@ internal object EntityListener : Listener {
     }
 
     @EventHandler
-    private fun handle(event: EntityJumpEvent) {
+    private fun handle(event: EntityJumpEvent, priority: EventPriority) {
         val rebarEntity = EntityStorage.get(event.entity)
         if (rebarEntity is RebarMovingEntity) {
             try {
@@ -350,7 +352,7 @@ internal object EntityListener : Listener {
     }
 
     @EventHandler
-    private fun handle(event: EntityKnockbackEvent) {
+    private fun handle(event: EntityKnockbackEvent, priority: EventPriority) {
         val rebarEntity = EntityStorage.get(event.entity)
         if (rebarEntity is RebarMovingEntity) {
             try {
@@ -362,7 +364,7 @@ internal object EntityListener : Listener {
     }
 
     @EventHandler
-    private fun handle(event: EntityToggleSwimEvent) {
+    private fun handle(event: EntityToggleSwimEvent, priority: EventPriority) {
         val rebarEntity = EntityStorage.get(event.entity)
         if (rebarEntity is RebarMovingEntity) {
             try {
@@ -374,7 +376,7 @@ internal object EntityListener : Listener {
     }
 
     @EventHandler
-    private fun handle(event: EntityToggleGlideEvent) {
+    private fun handle(event: EntityToggleGlideEvent, priority: EventPriority) {
         val rebarEntity = EntityStorage.get(event.entity)
         if (rebarEntity is RebarMovingEntity) {
             try {
@@ -386,7 +388,7 @@ internal object EntityListener : Listener {
     }
 
     @EventHandler
-    private fun handle(event: EntityToggleSitEvent) {
+    private fun handle(event: EntityToggleSitEvent, priority: EventPriority) {
         val rebarEntity = EntityStorage.get(event.entity)
         if (rebarEntity is RebarMovingEntity) {
             try {
@@ -398,7 +400,7 @@ internal object EntityListener : Listener {
     }
 
     @EventHandler
-    private fun handle(event: EntityDamageEvent) {
+    private fun handle(event: EntityDamageEvent, priority: EventPriority) {
         val rebarEntity = EntityStorage.get(event.entity)
         if (rebarEntity is RebarDamageableEntity) {
             try {
@@ -410,7 +412,7 @@ internal object EntityListener : Listener {
     }
 
     @EventHandler
-    private fun handle(event: EntityRegainHealthEvent) {
+    private fun handle(event: EntityRegainHealthEvent, priority: EventPriority) {
         val rebarEntity = EntityStorage.get(event.entity)
         if (rebarEntity is RebarDamageableEntity) {
             try {
@@ -422,7 +424,7 @@ internal object EntityListener : Listener {
     }
 
     @EventHandler
-    private fun handle(event: EntityMountEvent) {
+    private fun handle(event: EntityMountEvent, priority: EventPriority) {
         val mount = EntityStorage.get(event.mount)
         if (mount is RebarMountableEntity) {
             try {
@@ -442,7 +444,7 @@ internal object EntityListener : Listener {
     }
 
     @EventHandler
-    private fun handle(event: EntityDismountEvent) {
+    private fun handle(event: EntityDismountEvent, priority: EventPriority) {
         val mount = EntityStorage.get(event.dismounted)
         if (mount is RebarMountableEntity) {
             try {
@@ -462,7 +464,7 @@ internal object EntityListener : Listener {
     }
 
     @EventHandler
-    private fun handle(event: EntitySpellCastEvent) {
+    private fun handle(event: EntitySpellCastEvent, priority: EventPriority) {
         val rebarEntity = EntityStorage.get(event.entity)
         if (rebarEntity is RebarSpellcaster) {
             try {
@@ -474,7 +476,7 @@ internal object EntityListener : Listener {
     }
 
     @EventHandler
-    private fun handle(event: EntityResurrectEvent) {
+    private fun handle(event: EntityResurrectEvent, priority: EventPriority) {
         val rebarEntity = EntityStorage.get(event.entity)
         if (rebarEntity is RebarResurrectable) {
             try {
@@ -486,7 +488,7 @@ internal object EntityListener : Listener {
     }
 
     @EventHandler
-    private fun handle(event: EntityTameEvent) {
+    private fun handle(event: EntityTameEvent, priority: EventPriority) {
         val rebarEntity = EntityStorage.get(event.entity)
         if (rebarEntity is RebarTameable) {
             try {
@@ -498,7 +500,7 @@ internal object EntityListener : Listener {
     }
 
     @EventHandler
-    private fun handle(event: TameableDeathMessageEvent) {
+    private fun handle(event: TameableDeathMessageEvent, priority: EventPriority) {
         val rebarEntity = EntityStorage.get(event.entity)
         if (rebarEntity is RebarTameable) {
             try {
@@ -510,7 +512,7 @@ internal object EntityListener : Listener {
     }
 
     @EventHandler
-    private fun handle(event: PlayerLeashEntityEvent) {
+    private fun handle(event: PlayerLeashEntityEvent, priority: EventPriority) {
         val rebarEntity = EntityStorage.get(event.entity)
         if (rebarEntity is RebarLeashable) {
             try {
@@ -522,7 +524,7 @@ internal object EntityListener : Listener {
     }
 
     @EventHandler
-    private fun handle(event: EntityUnleashEvent) {
+    private fun handle(event: EntityUnleashEvent, priority: EventPriority) {
         val rebarEntity = EntityStorage.get(event.entity)
         if (rebarEntity is RebarLeashable) {
             try {
@@ -534,7 +536,7 @@ internal object EntityListener : Listener {
     }
 
     @EventHandler
-    private fun handle(event: ItemDespawnEvent) {
+    private fun handle(event: ItemDespawnEvent, priority: EventPriority) {
         val rebarEntity = EntityStorage.get(event.entity)
         if (rebarEntity is RebarItemEntity) {
             try {
@@ -546,7 +548,7 @@ internal object EntityListener : Listener {
     }
 
     @EventHandler
-    private fun handle(event: ItemMergeEvent) {
+    private fun handle(event: ItemMergeEvent, priority: EventPriority) {
         val rebarEntity = EntityStorage.get(event.entity)
         if (rebarEntity is RebarItemEntity) {
             try {
@@ -558,7 +560,7 @@ internal object EntityListener : Listener {
     }
 
     @EventHandler
-    private fun handle(event: PiglinBarterEvent) {
+    private fun handle(event: PiglinBarterEvent, priority: EventPriority) {
         val rebarEntity = EntityStorage.get(event.entity)
         if (rebarEntity is RebarPiglin) {
             try {
@@ -570,7 +572,7 @@ internal object EntityListener : Listener {
     }
 
     @EventHandler
-    private fun handle(event: PigZombieAngerEvent) {
+    private fun handle(event: PigZombieAngerEvent, priority: EventPriority) {
         val rebarEntity = EntityStorage.get(event.entity)
         if (rebarEntity is RebarZombiePigman) {
             try {
@@ -582,7 +584,7 @@ internal object EntityListener : Listener {
     }
 
     @EventHandler
-    private fun handle(event: TurtleStartDiggingEvent) {
+    private fun handle(event: TurtleStartDiggingEvent, priority: EventPriority) {
         val rebarEntity = EntityStorage.get(event.entity)
         if (rebarEntity is RebarTurtle) {
             try {
@@ -594,7 +596,7 @@ internal object EntityListener : Listener {
     }
 
     @EventHandler
-    private fun handle(event: TurtleGoHomeEvent) {
+    private fun handle(event: TurtleGoHomeEvent, priority: EventPriority) {
         val rebarEntity = EntityStorage.get(event.entity)
         if (rebarEntity is RebarTurtle) {
             try {
@@ -606,7 +608,7 @@ internal object EntityListener : Listener {
     }
 
     @EventHandler
-    private fun handle(event: TurtleLayEggEvent) {
+    private fun handle(event: TurtleLayEggEvent, priority: EventPriority) {
         val rebarEntity = EntityStorage.get(event.entity)
         if (rebarEntity is RebarTurtle) {
             try {
@@ -618,7 +620,7 @@ internal object EntityListener : Listener {
     }
 
     @EventHandler
-    private fun handle(event: VillagerAcquireTradeEvent) {
+    private fun handle(event: VillagerAcquireTradeEvent, priority: EventPriority) {
         val rebarEntity = EntityStorage.get(event.entity)
         if (rebarEntity is RebarVillager) {
             try {
@@ -630,7 +632,7 @@ internal object EntityListener : Listener {
     }
 
     @EventHandler
-    private fun handle(event: VillagerCareerChangeEvent) {
+    private fun handle(event: VillagerCareerChangeEvent, priority: EventPriority) {
         val rebarEntity = EntityStorage.get(event.entity)
         if (rebarEntity is RebarVillager) {
             try {
@@ -642,7 +644,7 @@ internal object EntityListener : Listener {
     }
 
     @EventHandler
-    private fun handle(event: VillagerReplenishTradeEvent) {
+    private fun handle(event: VillagerReplenishTradeEvent, priority: EventPriority) {
         val rebarEntity = EntityStorage.get(event.entity)
         if (rebarEntity is RebarVillager) {
             try {
@@ -654,7 +656,7 @@ internal object EntityListener : Listener {
     }
 
     @EventHandler
-    private fun handle(event: WitchConsumePotionEvent) {
+    private fun handle(event: WitchConsumePotionEvent, priority: EventPriority) {
         val rebarEntity = EntityStorage.get(event.entity)
         if (rebarEntity is RebarWitch) {
             try {
@@ -666,7 +668,7 @@ internal object EntityListener : Listener {
     }
 
     @EventHandler
-    private fun handle(event: WitchReadyPotionEvent) {
+    private fun handle(event: WitchReadyPotionEvent, priority: EventPriority) {
         val rebarEntity = EntityStorage.get(event.entity)
         if (rebarEntity is RebarWitch) {
             try {
@@ -678,7 +680,7 @@ internal object EntityListener : Listener {
     }
 
     @EventHandler
-    private fun handle(event: WitchThrowPotionEvent) {
+    private fun handle(event: WitchThrowPotionEvent, priority: EventPriority) {
         val rebarEntity = EntityStorage.get(event.entity)
         if (rebarEntity is RebarWitch) {
             try {
@@ -690,7 +692,7 @@ internal object EntityListener : Listener {
     }
 
     @EventHandler
-    private fun handle(event: SlimeSwimEvent) {
+    private fun handle(event: SlimeSwimEvent, priority: EventPriority) {
         val rebarEntity = EntityStorage.get(event.entity)
         if (rebarEntity is RebarSlime) {
             try {
@@ -702,7 +704,7 @@ internal object EntityListener : Listener {
     }
 
     @EventHandler
-    private fun handle(event: SlimeSplitEvent) {
+    private fun handle(event: SlimeSplitEvent, priority: EventPriority) {
         val rebarEntity = EntityStorage.get(event.entity)
         if (rebarEntity is RebarSlime) {
             try {
@@ -714,7 +716,7 @@ internal object EntityListener : Listener {
     }
 
     @EventHandler
-    private fun handle(event: SlimeWanderEvent) {
+    private fun handle(event: SlimeWanderEvent, priority: EventPriority) {
         val rebarEntity = EntityStorage.get(event.entity)
         if (rebarEntity is RebarSlime) {
             try {
@@ -726,7 +728,7 @@ internal object EntityListener : Listener {
     }
 
     @EventHandler
-    private fun handle(event: SlimePathfindEvent) {
+    private fun handle(event: SlimePathfindEvent, priority: EventPriority) {
         val rebarEntity = EntityStorage.get(event.entity)
         if (rebarEntity is RebarSlime) {
             try {
@@ -738,7 +740,7 @@ internal object EntityListener : Listener {
     }
 
     @EventHandler
-    private fun handle(event: SlimeChangeDirectionEvent) {
+    private fun handle(event: SlimeChangeDirectionEvent, priority: EventPriority) {
         val rebarEntity = EntityStorage.get(event.entity)
         if (rebarEntity is RebarSlime) {
             try {
@@ -750,7 +752,7 @@ internal object EntityListener : Listener {
     }
 
     @EventHandler
-    private fun handle(event: SlimeTargetLivingEntityEvent) {
+    private fun handle(event: SlimeTargetLivingEntityEvent, priority: EventPriority) {
         val rebarEntity = EntityStorage.get(event.entity)
         if (rebarEntity is RebarSlime) {
             try {
@@ -762,7 +764,7 @@ internal object EntityListener : Listener {
     }
 
     @EventHandler
-    private fun handle(event: FireworkExplodeEvent) {
+    private fun handle(event: FireworkExplodeEvent, priority: EventPriority) {
         val rebarEntity = EntityStorage.get(event.entity)
         if (rebarEntity is RebarFirework) {
             rebarEntity.onExplode(event)
@@ -770,7 +772,7 @@ internal object EntityListener : Listener {
     }
 
     @EventHandler
-    private fun handle(event: ExplosionPrimeEvent) {
+    private fun handle(event: ExplosionPrimeEvent, priority: EventPriority) {
         val rebarEntity = EntityStorage.get(event.entity)
         if (rebarEntity is RebarExplosiveEntity) {
             try {
@@ -782,7 +784,7 @@ internal object EntityListener : Listener {
     }
 
     @EventHandler
-    private fun handle(event: ExperienceOrbMergeEvent) {
+    private fun handle(event: ExperienceOrbMergeEvent, priority: EventPriority) {
         val source = EntityStorage.get(event.mergeSource)
         if (source is RebarExperienceOrb) {
             try {

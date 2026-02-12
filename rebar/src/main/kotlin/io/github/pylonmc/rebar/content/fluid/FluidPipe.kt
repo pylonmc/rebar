@@ -19,6 +19,7 @@ import net.kyori.adventure.text.JoinConfiguration
 import org.bukkit.block.Block
 import org.bukkit.entity.Entity
 import org.bukkit.entity.Player
+import org.bukkit.event.EventPriority
 import org.bukkit.event.block.Action
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.EquipmentSlot
@@ -58,7 +59,7 @@ open class FluidPipe(stack: ItemStack) : RebarItem(stack), RebarInteractor {
     open fun canPass(fluid: RebarFluid) = allowedTemperatures == null
             || fluid.hasTag<FluidTemperature>() && fluid.getTag<FluidTemperature>() in allowedTemperatures
 
-    override fun onUsedToRightClick(event: PlayerInteractEvent) {
+    override fun onUsedToClick(event: PlayerInteractEvent, priority: EventPriority) {
         if (event.hand != EquipmentSlot.HAND) {
             return
         }

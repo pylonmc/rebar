@@ -31,6 +31,19 @@ import io.github.pylonmc.rebar.i18n.RebarTranslator
 import io.github.pylonmc.rebar.item.RebarInventoryTicker
 import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.item.RebarItemListener
+import io.github.pylonmc.rebar.item.base.RebarArrow
+import io.github.pylonmc.rebar.item.base.RebarBlockInteractor
+import io.github.pylonmc.rebar.item.base.RebarBow
+import io.github.pylonmc.rebar.item.base.RebarBucket
+import io.github.pylonmc.rebar.item.base.RebarConsumable
+import io.github.pylonmc.rebar.item.base.RebarDispensable
+import io.github.pylonmc.rebar.item.base.RebarInteractor
+import io.github.pylonmc.rebar.item.base.RebarItemDamageable
+import io.github.pylonmc.rebar.item.base.RebarItemEntityInteractor
+import io.github.pylonmc.rebar.item.base.RebarLingeringPotion
+import io.github.pylonmc.rebar.item.base.RebarTool
+import io.github.pylonmc.rebar.item.base.RebarWeapon
+import io.github.pylonmc.rebar.item.base.VanillaCookingFuel
 import io.github.pylonmc.rebar.item.research.Research
 import io.github.pylonmc.rebar.logistics.CargoRoutes
 import io.github.pylonmc.rebar.metrics.RebarMetrics
@@ -117,13 +130,10 @@ object Rebar : JavaPlugin(), RebarAddon {
 
         // Anything that listens for addon registration must be above this line
         registerWithRebar()
-
-        pm.registerEvents(BlockStorage, this)
-
         pm.registerEvents(RebarItemListener, this)
+        pm.registerEvents(BlockStorage, this)
         pm.registerEvents(MultiblockCache, this)
         pm.registerEvents(EntityStorage, this)
-        pm.registerEvents(EntityListener, this)
         pm.registerEvents(Research, this)
         pm.registerEvents(RebarVirtualInventoryBlock, this)
         pm.registerEvents(RebarGuiBlock, this)
@@ -180,6 +190,24 @@ object Rebar : JavaPlugin(), RebarAddon {
         RebarCargoBlock.register(this, pm)
         RebarCopperBlock.register(this, pm)
         RebarEntityChangedBlock.register(this, pm)
+
+        // Rebar Items
+        RebarArrow.register(this, pm)
+        RebarBlockInteractor.register(this, pm)
+        RebarBow.register(this, pm)
+        RebarBrewingStand.register(this, pm)
+        RebarBucket.register(this, pm)
+        RebarConsumable.register(this, pm)
+        RebarDispensable.register(this, pm)
+        RebarInteractor.register(this, pm)
+        RebarItemDamageable.register(this, pm)
+        RebarItemEntityInteractor.register(this, pm)
+        RebarTool.register(this, pm)
+        RebarWeapon.register(this, pm)
+        VanillaCookingFuel.register(this, pm)
+
+        // Rebar Entities
+        EntityListener.register(this, pm)
 
         Bukkit.getScheduler().runTaskTimer(this, RebarInventoryTicker(), 0, RebarConfig.INVENTORY_TICKER_BASE_RATE)
 
