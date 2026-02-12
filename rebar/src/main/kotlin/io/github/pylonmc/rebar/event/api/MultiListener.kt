@@ -1,5 +1,7 @@
 package io.github.pylonmc.rebar.event.api
 
+import com.destroystokyo.paper.util.SneakyThrow
+import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.event.api.annotation.MultiHandler
 import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import org.bukkit.event.Event
@@ -49,7 +51,13 @@ interface MultiListener : Listener {
                         this,
                         priority,
                         { listener, event ->
-                            methodHandle.invoke(listener, event, priority)
+                            if (eventClass.isInstance(event)) {
+                                try {
+                                    methodHandle.invoke(listener, event, priority)
+                                } catch (t : Throwable) {
+                                    SneakyThrow.sneaky(t)
+                                }
+                            }
                         },
                         plugin,
                         ignoreCancelled
