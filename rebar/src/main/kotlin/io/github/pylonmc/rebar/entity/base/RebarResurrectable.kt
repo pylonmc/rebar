@@ -17,7 +17,7 @@ interface RebarResurrectable {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarResurrectable) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, RebarResurrectable::class.java, "onResurrect", event, priority)
+                    MultiHandler.handleEvent(rebarEntity, "onResurrect", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }

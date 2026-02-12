@@ -28,7 +28,7 @@ interface RebarVanillaContainerBlock {
                 val rebarBlock = BlockStorage.get(holder.block)
                 if (rebarBlock is RebarVanillaContainerBlock) {
                     try {
-                        MultiHandler.handleEvent(rebarBlock, RebarVanillaContainerBlock::class.java, "onInventoryOpen", event, priority)
+                        MultiHandler.handleEvent(rebarBlock, "onInventoryOpen", event, priority)
                     } catch (e: Exception) {
                         BlockListener.logEventHandleErr(event, e, rebarBlock)
                     }
@@ -43,7 +43,7 @@ interface RebarVanillaContainerBlock {
                 val sourceBlock = BlockStorage.get(sourceHolder.block)
                 if (sourceBlock is RebarVanillaContainerBlock) {
                     try {
-                        MultiHandler.handleEvent(sourceBlock, RebarVanillaContainerBlock::class.java, "onItemMoveFrom", event, priority)
+                        MultiHandler.handleEvent(sourceBlock, "onItemMoveFrom", event, priority)
                     } catch (e: Exception) {
                         BlockListener.logEventHandleErr(event, e, sourceBlock)
                     }
@@ -55,7 +55,7 @@ interface RebarVanillaContainerBlock {
                 val destBlock = BlockStorage.get(destHolder.block)
                 if (destBlock is RebarVanillaContainerBlock) {
                     try {
-                        MultiHandler.handleEvent(destBlock, RebarVanillaContainerBlock::class.java, "onItemMoveTo", event, priority)
+                        MultiHandler.handleEvent(destBlock, "onItemMoveTo", event, priority)
                     } catch (e: Exception) {
                         BlockListener.logEventHandleErr(event, e, destBlock)
                     }

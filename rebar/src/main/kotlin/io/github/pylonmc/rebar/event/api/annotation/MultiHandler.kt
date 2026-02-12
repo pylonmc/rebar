@@ -19,7 +19,6 @@ annotation class MultiHandler(
 
         internal fun <H, E : Event> handleEvent(
             handler: H,
-            handlerClass: Class<H>,
             handlerMethod: String,
             event: E,
             priority: EventPriority
@@ -29,7 +28,7 @@ annotation class MultiHandler(
             }
 
             val directClass = handler::class.java
-            val handlerMap = HANDLERS.computeIfAbsent(handlerClass) { _ -> mutableMapOf() }
+            val handlerMap = HANDLERS.computeIfAbsent(directClass) { _ -> mutableMapOf() }
             val eventClass = event::class.java
             val info = EventInfo(handlerMethod, eventClass)
             val function = handlerMap.getOrPut(info) {

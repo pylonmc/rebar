@@ -18,7 +18,7 @@ interface RebarEntityChangedBlock {
             val rebarBlock = BlockStorage.get(event.block)
             if (rebarBlock is RebarEntityChangedBlock) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, RebarEntityChangedBlock::class.java, "onEntityChanged", event, priority)
+                    MultiHandler.handleEvent(rebarBlock, "onEntityChanged", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }

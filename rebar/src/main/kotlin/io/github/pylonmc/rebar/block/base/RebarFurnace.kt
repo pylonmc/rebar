@@ -24,7 +24,7 @@ interface RebarFurnace {
             val rebarBlock = BlockStorage.get(event.block)
             if (rebarBlock is RebarFurnace) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, RebarFurnace::class.java, "onStartSmelting", event, priority)
+                    MultiHandler.handleEvent(rebarBlock, "onStartSmelting", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }
@@ -36,7 +36,7 @@ interface RebarFurnace {
             val rebarBlock = BlockStorage.get(event.block)
             if (rebarBlock is RebarFurnace) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, RebarFurnace::class.java, "onEndSmelting", event, priority)
+                    MultiHandler.handleEvent(rebarBlock, "onEndSmelting", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }
@@ -48,7 +48,7 @@ interface RebarFurnace {
             val rebarBlock = BlockStorage.get(event.block)
             if (rebarBlock is RebarFurnace) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, RebarFurnace::class.java, "onExtractItem", event, priority)
+                    MultiHandler.handleEvent(rebarBlock, "onExtractItem", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }
@@ -60,7 +60,7 @@ interface RebarFurnace {
             val rebarBlock = BlockStorage.get(event.block)
             if (rebarBlock is RebarFurnace) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, RebarFurnace::class.java, "onFuelBurn", event, priority)
+                    MultiHandler.handleEvent(rebarBlock, "onFuelBurn", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }

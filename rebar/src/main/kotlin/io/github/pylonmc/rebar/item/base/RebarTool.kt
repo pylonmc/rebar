@@ -32,7 +32,7 @@ interface RebarTool {
             }
 
             try {
-                MultiHandler.handleEvent(rebarItem, RebarTool::class.java, "onUsedToDamageBlock", event, priority)
+                MultiHandler.handleEvent(rebarItem, "onUsedToDamageBlock", event, priority)
             } catch (e: Exception) {
                 RebarItemListener.logEventHandleErr(event, e, rebarItem)
             }
@@ -48,7 +48,7 @@ interface RebarTool {
                 }
 
                 try {
-                    MultiHandler.handleEvent(rebarItemMainHand, RebarTool::class.java, "onUsedToBreakBlock", event, priority)
+                    MultiHandler.handleEvent(rebarItemMainHand, "onUsedToBreakBlock", event, priority)
                 } catch (e: Exception) {
                     RebarItemListener.logEventHandleErr(event, e, rebarItemMainHand)
                 }
@@ -62,7 +62,7 @@ interface RebarTool {
                 }
 
                 try {
-                    MultiHandler.handleEvent(rebarItemOffHand, RebarTool::class.java, "onUsedToBreakBlock", event, priority)
+                    MultiHandler.handleEvent(rebarItemOffHand, "onUsedToBreakBlock", event, priority)
                 } catch (e: Exception) {
                     RebarItemListener.logEventHandleErr(event, e, rebarItemOffHand)
                 }

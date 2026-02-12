@@ -19,7 +19,7 @@ interface RebarDamageableEntity {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarDamageableEntity) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, RebarDamageableEntity::class.java, "onDamage", event, priority)
+                    MultiHandler.handleEvent(rebarEntity, "onDamage", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }
@@ -31,7 +31,7 @@ interface RebarDamageableEntity {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarDamageableEntity) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, RebarDamageableEntity::class.java, "onRegainHealth", event, priority)
+                    MultiHandler.handleEvent(rebarEntity, "onRegainHealth", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }

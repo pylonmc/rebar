@@ -20,7 +20,7 @@ interface RebarJumpBlock {
             val rebarBlock = BlockStorage.get(blockUnder) ?: BlockStorage.get(blockIn)
             if (rebarBlock is RebarJumpBlock) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, RebarJumpBlock::class.java, "onJumpedOn", event, priority)
+                    MultiHandler.handleEvent(rebarBlock, "onJumpedOn", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }

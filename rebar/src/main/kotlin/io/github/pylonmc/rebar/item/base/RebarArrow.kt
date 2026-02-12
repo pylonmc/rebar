@@ -45,7 +45,7 @@ interface RebarArrow {
             }
 
             try {
-                MultiHandler.handleEvent(arrow, RebarArrow::class.java, "onArrowReady", event, priority)
+                MultiHandler.handleEvent(arrow, "onArrowReady", event, priority)
             } catch (e: Exception) {
                 RebarItemListener.logEventHandleErr(event, e, arrow)
             }
@@ -57,7 +57,7 @@ interface RebarArrow {
             if (arrow !is RebarArrow) return
 
             try {
-                MultiHandler.handleEvent(arrow, RebarArrow::class.java, "onArrowShotFromBow", event, priority)
+                MultiHandler.handleEvent(arrow, "onArrowShotFromBow", event, priority)
             } catch (e: Exception) {
                 RebarItemListener.logEventHandleErr(event, e, arrow)
             }
@@ -69,7 +69,7 @@ interface RebarArrow {
                 val arrow = RebarItem.fromStack((event.entity as AbstractArrow).itemStack)
                 if (arrow is RebarArrow) {
                     try {
-                        MultiHandler.handleEvent(arrow, RebarArrow::class.java, "onArrowHit", event, priority)
+                        MultiHandler.handleEvent(arrow, "onArrowHit", event, priority)
                     } catch (e: Exception) {
                         RebarItemListener.logEventHandleErr(event, e, arrow)
                     }
@@ -83,7 +83,7 @@ interface RebarArrow {
                 val arrow = RebarItem.fromStack((event.damager as AbstractArrow).itemStack)
                 if (arrow is RebarArrow) {
                     try {
-                        MultiHandler.handleEvent(arrow, RebarArrow::class.java, "onArrowDamage", event, priority)
+                        MultiHandler.handleEvent(arrow, "onArrowDamage", event, priority)
                     } catch (e: Exception) {
                         RebarItemListener.logEventHandleErr(event, e, arrow)
                     }

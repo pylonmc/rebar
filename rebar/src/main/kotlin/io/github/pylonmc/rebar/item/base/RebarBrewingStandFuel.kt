@@ -21,7 +21,7 @@ interface RebarBrewingStandFuel {
             if (rebarItem !is RebarBrewingStandFuel) return
 
             try {
-                MultiHandler.handleEvent(rebarItem, RebarBrewingStandFuel::class.java, "onUsedAsBrewingStandFuel", event, priority)
+                MultiHandler.handleEvent(rebarItem, "onUsedAsBrewingStandFuel", event, priority)
             } catch (e: Exception) {
                 RebarItemListener.logEventHandleErr(event, e, rebarItem)
             }

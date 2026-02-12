@@ -18,7 +18,7 @@ interface RebarRedstoneBlock {
             val rebarBlock = BlockStorage.get(event.block)
             if (rebarBlock is RebarRedstoneBlock) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, RebarRedstoneBlock::class.java, "onCurrentChange", event, priority)
+                    MultiHandler.handleEvent(rebarBlock, "onCurrentChange", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }

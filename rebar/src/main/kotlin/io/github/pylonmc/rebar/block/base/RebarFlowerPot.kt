@@ -18,7 +18,7 @@ interface RebarFlowerPot {
             val rebarBlock = BlockStorage.get(event.flowerpot)
             if (rebarBlock is RebarFlowerPot) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, RebarFlowerPot::class.java, "onFlowerPotManipulated", event, priority)
+                    MultiHandler.handleEvent(rebarBlock, "onFlowerPotManipulated", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }

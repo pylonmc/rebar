@@ -32,7 +32,7 @@ interface RebarBow {
             }
 
             try {
-                MultiHandler.handleEvent(bow, RebarBow::class.java, "onBowReady", event, priority)
+                MultiHandler.handleEvent(bow, "onBowReady", event, priority)
             } catch (e: Exception) {
                 RebarItemListener.logEventHandleErr(event, e, bow)
             }
@@ -43,7 +43,7 @@ interface RebarBow {
             val bow = event.bow?.let { RebarItem.fromStack(it) }
             if (bow !is RebarBow) return
             try {
-                MultiHandler.handleEvent(bow, RebarBow::class.java, "onBowFired", event, priority)
+                MultiHandler.handleEvent(bow, "onBowFired", event, priority)
             } catch (e: Exception) {
                 RebarItemListener.logEventHandleErr(event, e, bow)
             }

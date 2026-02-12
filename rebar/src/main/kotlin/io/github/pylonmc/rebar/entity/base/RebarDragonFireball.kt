@@ -17,7 +17,7 @@ interface RebarDragonFireball {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarDragonFireball) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, RebarDragonFireball::class.java, "onHit", event, priority)
+                    MultiHandler.handleEvent(rebarEntity, "onHit", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }

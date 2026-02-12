@@ -21,7 +21,7 @@ interface RebarEnderDragon {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarEnderDragon) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, RebarEnderDragon::class.java, "onChangePhase", event, priority)
+                    MultiHandler.handleEvent(rebarEntity, "onChangePhase", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }
@@ -33,7 +33,7 @@ interface RebarEnderDragon {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarEnderDragon) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, RebarEnderDragon::class.java, "onFlame", event, priority)
+                    MultiHandler.handleEvent(rebarEntity, "onFlame", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }
@@ -45,7 +45,7 @@ interface RebarEnderDragon {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarEnderDragon) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, RebarEnderDragon::class.java, "onShootFireball", event, priority)
+                    MultiHandler.handleEvent(rebarEntity, "onShootFireball", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }

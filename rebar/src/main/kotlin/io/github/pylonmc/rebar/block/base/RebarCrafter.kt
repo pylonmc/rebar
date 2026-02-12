@@ -18,7 +18,7 @@ interface RebarCrafter {
             val rebarBlock = BlockStorage.get(event.block)
             if (rebarBlock is RebarCrafter) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, RebarCrafter::class.java, "onCraft", event, priority)
+                    MultiHandler.handleEvent(rebarBlock, "onCraft", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }

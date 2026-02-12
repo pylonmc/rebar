@@ -17,7 +17,7 @@ interface RebarProjectile {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarProjectile) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, RebarProjectile::class.java, "onHit", event, priority)
+                    MultiHandler.handleEvent(rebarEntity, "onHit", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }

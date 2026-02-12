@@ -17,7 +17,7 @@ interface RebarFirework {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarFirework) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, RebarFirework::class.java, "onExplode", event, priority)
+                    MultiHandler.handleEvent(rebarEntity, "onExplode", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }

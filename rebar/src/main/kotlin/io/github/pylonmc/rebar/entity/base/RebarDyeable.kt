@@ -17,7 +17,7 @@ interface RebarDyeable {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarDyeable) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, RebarDyeable::class.java, "onDye", event, priority)
+                    MultiHandler.handleEvent(rebarEntity, "onDye", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }

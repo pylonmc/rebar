@@ -18,7 +18,7 @@ interface RebarExperienceOrb {
             val source = EntityStorage.get(event.mergeSource)
             if (source is RebarExperienceOrb) {
                 try {
-                    MultiHandler.handleEvent(source, RebarExperienceOrb::class.java, "onMergeOrb", event, priority)
+                    MultiHandler.handleEvent(source, "onMergeOrb", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, source)
                 }
@@ -30,7 +30,7 @@ interface RebarExperienceOrb {
             val target = EntityStorage.get(event.mergeTarget)
             if (target is RebarExperienceOrb) {
                 try {
-                    MultiHandler.handleEvent(target, RebarExperienceOrb::class.java, "onAbsorbedByOrb", event, priority)
+                    MultiHandler.handleEvent(target, "onAbsorbedByOrb", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, target)
                 }

@@ -25,7 +25,7 @@ interface RebarBeacon {
             val rebarBlock = BlockStorage.get(event.block)
             if (rebarBlock is RebarBeacon) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, RebarBeacon::class.java, "onActivated", event, priority)
+                    MultiHandler.handleEvent(rebarBlock, "onActivated", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }
@@ -37,7 +37,7 @@ interface RebarBeacon {
             val rebarBlock = BlockStorage.get(event.block)
             if (rebarBlock is RebarBeacon) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, RebarBeacon::class.java, "onDeactivated", event, priority)
+                    MultiHandler.handleEvent(rebarBlock, "onDeactivated", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }
@@ -49,7 +49,7 @@ interface RebarBeacon {
             val rebarBlock = BlockStorage.get(event.beacon)
             if (rebarBlock is RebarBeacon) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, RebarBeacon::class.java, "onEffectChange", event, priority)
+                    MultiHandler.handleEvent(rebarBlock, "onEffectChange", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }
@@ -61,7 +61,7 @@ interface RebarBeacon {
             val rebarBlock = BlockStorage.get(event.block)
             if (rebarBlock is RebarBeacon) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, RebarBeacon::class.java, "onEffectApply", event, priority)
+                    MultiHandler.handleEvent(rebarBlock, "onEffectApply", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }

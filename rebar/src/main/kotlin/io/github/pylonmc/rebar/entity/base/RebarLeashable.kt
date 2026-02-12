@@ -19,7 +19,7 @@ interface RebarLeashable {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarLeashable) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, RebarLeashable::class.java, "onLeash", event, priority)
+                    MultiHandler.handleEvent(rebarEntity, "onLeash", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }
@@ -31,7 +31,7 @@ interface RebarLeashable {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarLeashable) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, RebarLeashable::class.java, "onUnleash", event, priority)
+                    MultiHandler.handleEvent(rebarEntity, "onUnleash", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }

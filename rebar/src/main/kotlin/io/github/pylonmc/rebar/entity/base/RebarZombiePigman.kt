@@ -17,7 +17,7 @@ interface RebarZombiePigman {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarZombiePigman) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, RebarZombiePigman::class.java, "onAnger", event, priority)
+                    MultiHandler.handleEvent(rebarEntity, "onAnger", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }

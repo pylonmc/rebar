@@ -30,7 +30,7 @@ interface RebarBlockInteractor : RebarCooldownable {
             }
 
             try {
-                MultiHandler.handleEvent(rebarItem, RebarBlockInteractor::class.java, "onUsedToClickBlock", event, priority)
+                MultiHandler.handleEvent(rebarItem, "onUsedToClickBlock", event, priority)
             } catch (e: Exception) {
                 RebarItemListener.logEventHandleErr(event, e, rebarItem)
             }

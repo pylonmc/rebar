@@ -22,7 +22,7 @@ interface RebarLectern {
             val rebarBlock = BlockStorage.get(event.block)
             if (rebarBlock is RebarLectern) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, RebarLectern::class.java, "onInsertBook", event, priority)
+                    MultiHandler.handleEvent(rebarBlock, "onInsertBook", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }
@@ -34,7 +34,7 @@ interface RebarLectern {
             val rebarBlock = BlockStorage.get(event.lectern.block)
             if (rebarBlock is RebarLectern) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, RebarLectern::class.java, "onRemoveBook", event, priority)
+                    MultiHandler.handleEvent(rebarBlock, "onRemoveBook", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }
@@ -46,7 +46,7 @@ interface RebarLectern {
             val rebarBlock = BlockStorage.get(event.lectern.block)
             if (rebarBlock is RebarLectern) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, RebarLectern::class.java, "onChangePage", event, priority)
+                    MultiHandler.handleEvent(rebarBlock, "onChangePage", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }

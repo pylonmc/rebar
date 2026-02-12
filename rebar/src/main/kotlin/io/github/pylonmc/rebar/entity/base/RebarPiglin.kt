@@ -17,7 +17,7 @@ interface RebarPiglin {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarPiglin) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, RebarPiglin::class.java, "onBarter", event, priority)
+                    MultiHandler.handleEvent(rebarEntity, "onBarter", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }

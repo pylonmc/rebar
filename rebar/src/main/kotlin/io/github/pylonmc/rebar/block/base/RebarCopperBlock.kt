@@ -9,11 +9,9 @@ import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import net.kyori.adventure.key.Key
 import org.bukkit.Material
 import org.bukkit.Registry
-import org.bukkit.Tag
 import org.bukkit.entity.Player
 import org.bukkit.event.EventPriority
 import org.bukkit.event.entity.EntityChangeBlockEvent
-import org.bukkit.event.player.PlayerInteractEvent
 
 interface RebarCopperBlock {
 
@@ -82,7 +80,7 @@ interface RebarCopperBlock {
 
             if (rebarBlock is RebarCopperBlock) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, RebarCopperBlock::class.java, method, event, priority)
+                    MultiHandler.handleEvent(rebarBlock, method, event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }

@@ -17,7 +17,7 @@ interface RebarCop {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarCop) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, RebarCop::class.java, "kickDoor", event, priority)
+                    MultiHandler.handleEvent(rebarEntity, "kickDoor", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }

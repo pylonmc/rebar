@@ -15,7 +15,7 @@ interface RebarUnloadEntity {
         private fun onUnload(event: RebarEntityUnloadEvent, priority: EventPriority) {
             if (event.rebarEntity is RebarUnloadEntity) {
                 try {
-                    MultiHandler.handleEvent(event.rebarEntity, RebarUnloadEntity::class.java, "onUnload", event, priority)
+                    MultiHandler.handleEvent(event.rebarEntity, "onUnload", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, event.rebarEntity)
                 }

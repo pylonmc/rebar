@@ -19,7 +19,7 @@ interface RebarBreedable {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarBreedable) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, RebarBreedable::class.java, "onBreed", event, priority)
+                    MultiHandler.handleEvent(rebarEntity, "onBreed", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }
@@ -31,7 +31,7 @@ interface RebarBreedable {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarBreedable) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, RebarBreedable::class.java, "onEnterLoveMode", event, priority)
+                    MultiHandler.handleEvent(rebarEntity, "onEnterLoveMode", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }

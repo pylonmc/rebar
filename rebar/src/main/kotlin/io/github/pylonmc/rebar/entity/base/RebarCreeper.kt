@@ -19,7 +19,7 @@ interface RebarCreeper {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarCreeper) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, RebarCreeper::class.java, "onIgnite", event, priority)
+                    MultiHandler.handleEvent(rebarEntity, "onIgnite", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }
@@ -31,7 +31,7 @@ interface RebarCreeper {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarCreeper) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, RebarCreeper::class.java, "onPower", event, priority)
+                    MultiHandler.handleEvent(rebarEntity, "onPower", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }

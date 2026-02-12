@@ -19,7 +19,7 @@ interface RebarTargetBlock {
             val rebarBlock = BlockStorage.get(hitBlock)
             if (rebarBlock is RebarTargetBlock) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, RebarTargetBlock::class.java, "onHit", event, priority)
+                    MultiHandler.handleEvent(rebarBlock, "onHit", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }

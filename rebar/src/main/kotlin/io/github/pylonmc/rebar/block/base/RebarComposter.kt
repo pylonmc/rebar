@@ -20,7 +20,7 @@ interface RebarComposter {
             val rebarBlock = BlockStorage.get(event.block)
             if (rebarBlock is RebarComposter) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, RebarComposter::class.java, "onCompostByHopper", event, priority)
+                    MultiHandler.handleEvent(rebarBlock, "onCompostByHopper", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }
@@ -32,7 +32,7 @@ interface RebarComposter {
             val rebarBlock = BlockStorage.get(event.block)
             if (rebarBlock is RebarComposter) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, RebarComposter::class.java, "onCompostByEntity", event, priority)
+                    MultiHandler.handleEvent(rebarBlock, "onCompostByEntity", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }

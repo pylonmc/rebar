@@ -27,7 +27,6 @@ import org.bukkit.Material
 import org.bukkit.block.BlockFace
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
-import org.bukkit.event.Listener
 import org.jetbrains.annotations.ApiStatus
 import org.joml.Vector3d
 import java.util.IdentityHashMap
@@ -313,11 +312,11 @@ interface RebarCargoBlock : RebarLogisticBlock, RebarEntityHolderBlock {
         private fun onDuctConnected(event: RebarCargoConnectEvent, priority: EventPriority) {
             val block1 = event.block1
             if (block1 is RebarCargoBlock) {
-                MultiHandler.handleEvent(block1, RebarCargoBlock::class.java, "onDuctConnected", event, priority)
+                MultiHandler.handleEvent(block1, "onDuctConnected", event, priority)
             }
             val block2 = event.block2
             if (block2 is RebarCargoBlock) {
-                MultiHandler.handleEvent(block2, RebarCargoBlock::class.java, "onDuctConnected", event, priority)
+                MultiHandler.handleEvent(block2, "onDuctConnected", event, priority)
             }
         }
 
@@ -325,11 +324,11 @@ interface RebarCargoBlock : RebarLogisticBlock, RebarEntityHolderBlock {
         private fun onDuctDisconnected(event: RebarCargoDisconnectEvent, priority: EventPriority) {
             val block1 = event.block1
             if (block1 is RebarCargoBlock) {
-                MultiHandler.handleEvent(block1, RebarCargoBlock::class.java, "onDuctDisconnected", event, priority)
+                MultiHandler.handleEvent(block1, "onDuctDisconnected", event, priority)
             }
             val block2 = event.block2
             if (block2 is RebarCargoBlock) {
-                MultiHandler.handleEvent(block2, RebarCargoBlock::class.java, "onDuctDisconnected", event, priority)
+                MultiHandler.handleEvent(block2, "onDuctDisconnected", event, priority)
             }
         }
     }

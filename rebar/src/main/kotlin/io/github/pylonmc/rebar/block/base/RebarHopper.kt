@@ -21,7 +21,7 @@ interface RebarHopper {
                 val rebarBlock = BlockStorage.get(holder.block)
                 if (rebarBlock is RebarHopper) {
                     try {
-                        MultiHandler.handleEvent(rebarBlock, RebarHopper::class.java, "onHopperPickUpItem", event, priority)
+                        MultiHandler.handleEvent(rebarBlock, "onHopperPickUpItem", event, priority)
                     } catch (e: Exception) {
                         BlockListener.logEventHandleErr(event, e, rebarBlock)
                     }

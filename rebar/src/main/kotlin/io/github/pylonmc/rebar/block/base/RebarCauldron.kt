@@ -18,7 +18,7 @@ interface RebarCauldron {
             val rebarBlock = BlockStorage.get(event.block)
             if (rebarBlock is RebarCauldron) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, RebarCauldron::class.java, "onLevelChange", event, priority)
+                    MultiHandler.handleEvent(rebarBlock, "onLevelChange", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }

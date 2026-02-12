@@ -19,7 +19,7 @@ interface RebarDeathEntity {
         private fun onDeath(event: RebarEntityDeathEvent, priority: EventPriority) {
             if (event.rebarEntity is RebarDeathEntity) {
                 try {
-                    MultiHandler.handleEvent(event.rebarEntity, RebarDeathEntity::class.java, "onDeath", event, priority)
+                    MultiHandler.handleEvent(event.rebarEntity, "onDeath", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, event.rebarEntity)
                 }

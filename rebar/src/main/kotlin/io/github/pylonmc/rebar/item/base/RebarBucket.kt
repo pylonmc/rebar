@@ -32,7 +32,7 @@ interface RebarBucket {
             }
 
             try {
-                MultiHandler.handleEvent(rebarItem, RebarBucket::class.java, "onBucketEmptied", event, priority)
+                MultiHandler.handleEvent(rebarItem, "onBucketEmptied", event, priority)
             } catch (e: Exception) {
                 RebarItemListener.logEventHandleErr(event, e, rebarItem)
             }
@@ -49,7 +49,7 @@ interface RebarBucket {
             }
 
             try {
-                MultiHandler.handleEvent(rebarItem, RebarBucket::class.java, "onBucketFilled", event, priority)
+                MultiHandler.handleEvent(rebarItem, "onBucketFilled", event, priority)
             } catch (e: Exception) {
                 RebarItemListener.logEventHandleErr(event, e, rebarItem)
             }

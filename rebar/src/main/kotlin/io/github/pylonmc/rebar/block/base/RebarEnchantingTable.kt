@@ -20,7 +20,7 @@ interface RebarEnchantingTable {
             val rebarBlock = BlockStorage.get(event.enchantBlock)
             if (rebarBlock is RebarEnchantingTable) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, RebarEnchantingTable::class.java, "onPrepareEnchant", event, priority)
+                    MultiHandler.handleEvent(rebarBlock, "onPrepareEnchant", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }
@@ -32,7 +32,7 @@ interface RebarEnchantingTable {
             val rebarBlock = BlockStorage.get(event.enchantBlock)
             if (rebarBlock is RebarEnchantingTable) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, RebarEnchantingTable::class.java, "onEnchant", event, priority)
+                    MultiHandler.handleEvent(rebarBlock, "onEnchant", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }

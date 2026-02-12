@@ -20,7 +20,7 @@ interface RebarPiston {
             val rebarBlock = BlockStorage.get(event.block)
             if (rebarBlock is RebarPiston) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, RebarPiston::class.java, "onExtend", event, priority)
+                    MultiHandler.handleEvent(rebarBlock, "onExtend", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }
@@ -32,7 +32,7 @@ interface RebarPiston {
             val rebarBlock = BlockStorage.get(event.block)
             if (rebarBlock is RebarPiston) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, RebarPiston::class.java, "onRetract", event, priority)
+                    MultiHandler.handleEvent(rebarBlock, "onRetract", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }

@@ -18,7 +18,7 @@ interface RebarLeaf {
             val rebarBlock = BlockStorage.get(event.block)
             if (rebarBlock is RebarLeaf) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, RebarLeaf::class.java, "onDecayNaturally", event, priority)
+                    MultiHandler.handleEvent(rebarBlock, "onDecayNaturally", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }

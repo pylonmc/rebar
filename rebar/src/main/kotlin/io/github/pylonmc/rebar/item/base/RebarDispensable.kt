@@ -18,7 +18,7 @@ interface RebarDispensable {
             val dispensable = rebarItem as? RebarDispensable ?: return
 
             try {
-                MultiHandler.handleEvent(dispensable, RebarDispensable::class.java, "onDispense", event, priority)
+                MultiHandler.handleEvent(dispensable, "onDispense", event, priority)
             } catch (e: Exception) {
                 RebarItemListener.logEventHandleErr(event, e, rebarItem)
             }

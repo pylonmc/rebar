@@ -27,7 +27,7 @@ interface RebarMovingEntity {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarMovingEntity) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, RebarMovingEntity::class.java, "onMove", event, priority)
+                    MultiHandler.handleEvent(rebarEntity, "onMove", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }
@@ -39,7 +39,7 @@ interface RebarMovingEntity {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarMovingEntity) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, RebarMovingEntity::class.java, "onJump", event, priority)
+                    MultiHandler.handleEvent(rebarEntity, "onJump", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }
@@ -51,7 +51,7 @@ interface RebarMovingEntity {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarMovingEntity) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, RebarMovingEntity::class.java, "onKnockback", event, priority)
+                    MultiHandler.handleEvent(rebarEntity, "onKnockback", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }
@@ -63,7 +63,7 @@ interface RebarMovingEntity {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarMovingEntity) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, RebarMovingEntity::class.java, "onToggleSwim", event, priority)
+                    MultiHandler.handleEvent(rebarEntity, "onToggleSwim", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }
@@ -75,7 +75,7 @@ interface RebarMovingEntity {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarMovingEntity) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, RebarMovingEntity::class.java, "onToggleGlide", event, priority)
+                    MultiHandler.handleEvent(rebarEntity, "onToggleGlide", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }
@@ -87,7 +87,7 @@ interface RebarMovingEntity {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarMovingEntity) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, RebarMovingEntity::class.java, "onToggleSit", event, priority)
+                    MultiHandler.handleEvent(rebarEntity, "onToggleSit", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }

@@ -17,7 +17,7 @@ interface RebarUnloadBlock {
             val rebarBlock = event.rebarBlock
             if (rebarBlock is RebarUnloadBlock) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, RebarUnloadBlock::class.java, "onUnload", event, priority)
+                    MultiHandler.handleEvent(rebarBlock, "onUnload", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, event.rebarBlock)
                 }

@@ -18,7 +18,7 @@ interface RebarSponge {
             val rebarBlock = BlockStorage.get(event.block)
             if (rebarBlock is RebarSponge) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, RebarSponge::class.java, "onAbsorb", event, priority)
+                    MultiHandler.handleEvent(rebarBlock, "onAbsorb", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }

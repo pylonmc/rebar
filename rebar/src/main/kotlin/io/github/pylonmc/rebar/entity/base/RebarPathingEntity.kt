@@ -19,7 +19,7 @@ interface RebarPathingEntity {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarPathingEntity) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, RebarPathingEntity::class.java, "onFindPath", event, priority)
+                    MultiHandler.handleEvent(rebarEntity, "onFindPath", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }
@@ -31,7 +31,7 @@ interface RebarPathingEntity {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarPathingEntity) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, RebarPathingEntity::class.java, "onTarget", event, priority)
+                    MultiHandler.handleEvent(rebarEntity, "onTarget", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }

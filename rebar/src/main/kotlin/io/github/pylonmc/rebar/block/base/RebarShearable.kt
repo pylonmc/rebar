@@ -18,7 +18,7 @@ interface RebarShearable {
             val rebarBlock = BlockStorage.get(event.block)
             if (rebarBlock is RebarShearable) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, RebarShearable::class.java, "onShear", event, priority)
+                    MultiHandler.handleEvent(rebarBlock, "onShear", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }

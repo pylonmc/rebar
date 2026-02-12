@@ -17,7 +17,7 @@ interface RebarSpellcaster {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarSpellcaster) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, RebarSpellcaster::class.java, "onCastSpell", event, priority)
+                    MultiHandler.handleEvent(rebarEntity, "onCastSpell", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }

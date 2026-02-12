@@ -20,7 +20,7 @@ interface RebarBell {
             val rebarBlock = BlockStorage.get(event.block)
             if (rebarBlock is RebarBell) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, RebarBell::class.java, "onRing", event, priority)
+                    MultiHandler.handleEvent(rebarBlock, "onRing", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }
@@ -32,7 +32,7 @@ interface RebarBell {
             val rebarBlock = BlockStorage.get(event.block)
             if (rebarBlock is RebarBell) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, RebarBell::class.java, "onResonate", event, priority)
+                    MultiHandler.handleEvent(rebarBlock, "onResonate", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }

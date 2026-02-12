@@ -20,7 +20,7 @@ interface RebarGrowable {
             val rebarBlock = BlockStorage.get(event.block)
             if (rebarBlock is RebarGrowable) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, RebarGrowable::class.java, "onGrow", event, priority)
+                    MultiHandler.handleEvent(rebarBlock, "onGrow", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }
@@ -32,7 +32,7 @@ interface RebarGrowable {
             val rebarBlock = BlockStorage.get(event.block)
             if (rebarBlock is RebarGrowable) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, RebarGrowable::class.java, "onFertilize", event, priority)
+                    MultiHandler.handleEvent(rebarBlock, "onFertilize", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }

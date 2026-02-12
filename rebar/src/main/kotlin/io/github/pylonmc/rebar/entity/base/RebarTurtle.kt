@@ -21,7 +21,7 @@ interface RebarTurtle {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarTurtle) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, RebarTurtle::class.java, "onStartDigging", event, priority)
+                    MultiHandler.handleEvent(rebarEntity, "onStartDigging", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }
@@ -33,7 +33,7 @@ interface RebarTurtle {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarTurtle) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, RebarTurtle::class.java, "onGoHome", event, priority)
+                    MultiHandler.handleEvent(rebarEntity, "onGoHome", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }
@@ -45,7 +45,7 @@ interface RebarTurtle {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarTurtle) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, RebarTurtle::class.java, "onLayEgg", event, priority)
+                    MultiHandler.handleEvent(rebarEntity, "onLayEgg", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }

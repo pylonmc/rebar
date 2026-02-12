@@ -36,7 +36,7 @@ interface RebarWeapon {
                 }
 
                 try {
-                    MultiHandler.handleEvent(rebarItemMainHand, RebarWeapon::class.java, "onUsedToDamageEntity", event, priority)
+                    MultiHandler.handleEvent(rebarItemMainHand, "onUsedToDamageEntity", event, priority)
                 } catch (e: Exception) {
                     RebarItemListener.logEventHandleErr(event, e, rebarItemMainHand)
                 }
@@ -50,7 +50,7 @@ interface RebarWeapon {
                 }
 
                 try {
-                    MultiHandler.handleEvent(rebarItemOffHand, RebarWeapon::class.java, "onUsedToDamageEntity", event, priority)
+                    MultiHandler.handleEvent(rebarItemOffHand, "onUsedToDamageEntity", event, priority)
                 } catch (e: Exception) {
                     RebarItemListener.logEventHandleErr(event, e, rebarItemOffHand)
                 }
@@ -70,7 +70,7 @@ interface RebarWeapon {
                 }
 
                 try {
-                    MultiHandler.handleEvent(rebarItemMainHand, RebarWeapon::class.java, "onUsedToKillEntity", event, priority)
+                    MultiHandler.handleEvent(rebarItemMainHand, "onUsedToKillEntity", event, priority)
                 } catch (e: Exception) {
                     RebarItemListener.logEventHandleErr(event, e, rebarItemMainHand)
                 }
@@ -84,7 +84,7 @@ interface RebarWeapon {
                 }
 
                 try {
-                    MultiHandler.handleEvent(rebarItemOffHand, RebarWeapon::class.java, "onUsedToKillEntity", event, priority)
+                    MultiHandler.handleEvent(rebarItemOffHand, "onUsedToKillEntity", event, priority)
                 } catch (e: Exception) {
                     RebarItemListener.logEventHandleErr(event, e, rebarItemOffHand)
                 }

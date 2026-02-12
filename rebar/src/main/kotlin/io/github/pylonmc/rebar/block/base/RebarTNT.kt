@@ -18,7 +18,7 @@ interface RebarTNT {
             val rebarBlock = BlockStorage.get(event.block)
             if (rebarBlock is RebarTNT) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, RebarTNT::class.java, "onIgnite", event, priority)
+                    MultiHandler.handleEvent(rebarBlock, "onIgnite", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }

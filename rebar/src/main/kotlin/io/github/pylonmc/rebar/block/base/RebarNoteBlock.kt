@@ -18,7 +18,7 @@ interface RebarNoteBlock {
             val rebarBlock = BlockStorage.get(event.block)
             if (rebarBlock is RebarNoteBlock) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, RebarNoteBlock::class.java, "onNotePlay", event, priority)
+                    MultiHandler.handleEvent(rebarBlock, "onNotePlay", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }

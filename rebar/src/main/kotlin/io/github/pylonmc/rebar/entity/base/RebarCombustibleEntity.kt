@@ -18,7 +18,7 @@ interface RebarCombustibleEntity {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarCombustibleEntity) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, RebarCombustibleEntity::class.java, "onCombust", event, priority)
+                    MultiHandler.handleEvent(rebarEntity, "onCombust", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }

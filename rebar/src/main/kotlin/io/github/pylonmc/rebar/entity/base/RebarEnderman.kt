@@ -19,7 +19,7 @@ interface RebarEnderman {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarEnderman) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, RebarEnderman::class.java, "onAttackPlayer", event, priority)
+                    MultiHandler.handleEvent(rebarEntity, "onAttackPlayer", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }
@@ -31,7 +31,7 @@ interface RebarEnderman {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarEnderman) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, RebarEnderman::class.java, "onEscape", event, priority)
+                    MultiHandler.handleEvent(rebarEntity, "onEscape", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }

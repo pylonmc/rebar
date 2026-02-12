@@ -23,7 +23,7 @@ interface RebarSlime {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarSlime) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, RebarSlime::class.java, "onSwim", event, priority)
+                    MultiHandler.handleEvent(rebarEntity, "onSwim", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }
@@ -35,7 +35,7 @@ interface RebarSlime {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarSlime) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, RebarSlime::class.java, "onSplit", event, priority)
+                    MultiHandler.handleEvent(rebarEntity, "onSplit", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }
@@ -47,7 +47,7 @@ interface RebarSlime {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarSlime) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, RebarSlime::class.java, "onWander", event, priority)
+                    MultiHandler.handleEvent(rebarEntity, "onWander", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }
@@ -59,7 +59,7 @@ interface RebarSlime {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarSlime) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, RebarSlime::class.java, "onPathfind", event, priority)
+                    MultiHandler.handleEvent(rebarEntity, "onPathfind", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }
@@ -71,7 +71,7 @@ interface RebarSlime {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarSlime) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, RebarSlime::class.java, "onChangeDirection", event, priority)
+                    MultiHandler.handleEvent(rebarEntity, "onChangeDirection", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }
@@ -83,7 +83,7 @@ interface RebarSlime {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarSlime) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, RebarSlime::class.java, "onTarget", event, priority)
+                    MultiHandler.handleEvent(rebarEntity, "onTarget", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }

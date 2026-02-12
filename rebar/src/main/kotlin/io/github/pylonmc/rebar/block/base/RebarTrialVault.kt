@@ -18,7 +18,7 @@ interface RebarTrialVault {
             val rebarBlock = BlockStorage.get(event.block)
             if (rebarBlock is RebarTrialVault) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, RebarTrialVault::class.java, "onDisplayItem", event, priority)
+                    MultiHandler.handleEvent(rebarBlock, "onDisplayItem", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }

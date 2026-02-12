@@ -19,7 +19,7 @@ interface RebarTameable {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarTameable) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, RebarTameable::class.java, "onTamed", event, priority)
+                    MultiHandler.handleEvent(rebarEntity, "onTamed", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }
@@ -31,7 +31,7 @@ interface RebarTameable {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarTameable) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, RebarTameable::class.java, "onDeath", event, priority)
+                    MultiHandler.handleEvent(rebarEntity, "onDeath", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }

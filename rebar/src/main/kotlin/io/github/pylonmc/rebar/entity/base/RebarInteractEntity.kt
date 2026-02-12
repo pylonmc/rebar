@@ -21,7 +21,7 @@ interface RebarInteractEntity {
             val rebarEntity = EntityStorage.get(event.rightClicked)
             if (rebarEntity is RebarInteractEntity) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, RebarInteractEntity::class.java, "onInteract", event, priority)
+                    MultiHandler.handleEvent(rebarEntity, "onInteract", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }

@@ -19,7 +19,7 @@ interface RebarMountableEntity {
             val mount = EntityStorage.get(event.mount)
             if (mount is RebarMountableEntity) {
                 try {
-                    MultiHandler.handleEvent(mount, RebarMountableEntity::class.java, "onMount", event, priority)
+                    MultiHandler.handleEvent(mount, "onMount", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, mount)
                 }
@@ -31,7 +31,7 @@ interface RebarMountableEntity {
             val mount = EntityStorage.get(event.dismounted)
             if (mount is RebarMountableEntity) {
                 try {
-                    MultiHandler.handleEvent(mount, RebarMountableEntity::class.java, "onDismount", event, priority)
+                    MultiHandler.handleEvent(mount, "onDismount", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, mount)
                 }

@@ -19,7 +19,7 @@ interface RebarItemEntity {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarItemEntity) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, RebarItemEntity::class.java, "onDespawn", event, priority)
+                    MultiHandler.handleEvent(rebarEntity, "onDespawn", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }
@@ -31,7 +31,7 @@ interface RebarItemEntity {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarItemEntity) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, RebarItemEntity::class.java, "onMerge", event, priority)
+                    MultiHandler.handleEvent(rebarEntity, "onMerge", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }

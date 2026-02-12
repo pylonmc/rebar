@@ -22,7 +22,7 @@ interface RebarBrewingStand {
             val rebarBlock = BlockStorage.get(event.block)
             if (rebarBlock is RebarBrewingStand) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, RebarBrewingStand::class.java, "onStartBrewing", event, priority)
+                    MultiHandler.handleEvent(rebarBlock, "onStartBrewing", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }
@@ -34,7 +34,7 @@ interface RebarBrewingStand {
             val rebarBlock = BlockStorage.get(event.block)
             if (rebarBlock is RebarBrewingStand) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, RebarBrewingStand::class.java, "onFuel", event, priority)
+                    MultiHandler.handleEvent(rebarBlock, "onFuel", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }
@@ -46,7 +46,7 @@ interface RebarBrewingStand {
             val rebarBlock = BlockStorage.get(event.block)
             if (rebarBlock is RebarBrewingStand) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, RebarBrewingStand::class.java, "onEndBrewing", event, priority)
+                    MultiHandler.handleEvent(rebarBlock, "onEndBrewing", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }

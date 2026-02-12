@@ -26,7 +26,7 @@ interface RebarConsumable {
             }
 
             try {
-                MultiHandler.handleEvent(rebarItem, RebarConsumable::class.java, "onConsumed", event, priority)
+                MultiHandler.handleEvent(rebarItem, "onConsumed", event, priority)
             } catch (e: Exception) {
                 RebarItemListener.logEventHandleErr(event, e, rebarItem)
             }

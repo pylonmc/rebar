@@ -23,7 +23,7 @@ interface RebarInteractBlock {
             val rebarBlock = BlockStorage.get(clickedBlock)
             if (rebarBlock is RebarInteractBlock) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, RebarInteractBlock::class.java, "onInteract", event, priority)
+                    MultiHandler.handleEvent(rebarBlock, "onInteract", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }

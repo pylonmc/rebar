@@ -20,7 +20,7 @@ interface RebarSign {
             val rebarBlock = BlockStorage.get(event.block)
             if (rebarBlock is RebarSign) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, RebarSign::class.java, "onSignChange", event, priority)
+                    MultiHandler.handleEvent(rebarBlock, "onSignChange", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }
@@ -32,7 +32,7 @@ interface RebarSign {
             val rebarBlock = BlockStorage.get(event.sign.block)
             if (rebarBlock is RebarSign) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, RebarSign::class.java, "onOpen", event, priority)
+                    MultiHandler.handleEvent(rebarBlock, "onOpen", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }

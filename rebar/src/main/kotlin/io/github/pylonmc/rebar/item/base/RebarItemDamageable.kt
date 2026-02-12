@@ -37,7 +37,7 @@ interface RebarItemDamageable {
             }
 
             try {
-                MultiHandler.handleEvent(rebarItem, RebarItemDamageable::class.java, "onItemDamaged", event, priority)
+                MultiHandler.handleEvent(rebarItem, "onItemDamaged", event, priority)
             } catch (e: Exception) {
                 RebarItemListener.logEventHandleErr(event, e, rebarItem)
             }
@@ -52,7 +52,7 @@ interface RebarItemDamageable {
             }
 
             try {
-                MultiHandler.handleEvent(rebarItem, RebarItemDamageable::class.java, "onItemBreaks", event, priority)
+                MultiHandler.handleEvent(rebarItem, "onItemBreaks", event, priority)
             } catch (e: Exception) {
                 RebarItemListener.logEventHandleErr(event, e, rebarItem)
             }
@@ -68,7 +68,7 @@ interface RebarItemDamageable {
             }
 
             try {
-                MultiHandler.handleEvent(rebarItem, RebarItemDamageable::class.java, "onItemMended", event, priority)
+                MultiHandler.handleEvent(rebarItem, "onItemMended", event, priority)
             } catch (e: Exception) {
                 RebarItemListener.logEventHandleErr(event, e, rebarItem)
             }

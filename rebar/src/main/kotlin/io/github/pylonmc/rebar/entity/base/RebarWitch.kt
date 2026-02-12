@@ -21,7 +21,7 @@ interface RebarWitch {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarWitch) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, RebarWitch::class.java, "onConsumePotion", event, priority)
+                    MultiHandler.handleEvent(rebarEntity, "onConsumePotion", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }
@@ -33,7 +33,7 @@ interface RebarWitch {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarWitch) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, RebarWitch::class.java, "onReadyPotion", event, priority)
+                    MultiHandler.handleEvent(rebarEntity, "onReadyPotion", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }
@@ -45,7 +45,7 @@ interface RebarWitch {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarWitch) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, RebarWitch::class.java, "onThrowPotion", event, priority)
+                    MultiHandler.handleEvent(rebarEntity, "onThrowPotion", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }

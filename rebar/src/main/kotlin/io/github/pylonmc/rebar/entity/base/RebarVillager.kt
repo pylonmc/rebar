@@ -21,7 +21,7 @@ interface RebarVillager {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarVillager) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, RebarVillager::class.java, "onAcquireTrade", event, priority)
+                    MultiHandler.handleEvent(rebarEntity, "onAcquireTrade", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }
@@ -33,7 +33,7 @@ interface RebarVillager {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarVillager) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, RebarVillager::class.java, "onCareerChange", event, priority)
+                    MultiHandler.handleEvent(rebarEntity, "onCareerChange", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }
@@ -45,7 +45,7 @@ interface RebarVillager {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarVillager) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, RebarVillager::class.java, "onReplenishTrade", event, priority)
+                    MultiHandler.handleEvent(rebarEntity, "onReplenishTrade", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }

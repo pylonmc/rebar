@@ -20,7 +20,7 @@ interface RebarCampfire {
             val rebarBlock = BlockStorage.get(event.block)
             if (rebarBlock is RebarCampfire) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, RebarCampfire::class.java, "onStartCooking", event, priority)
+                    MultiHandler.handleEvent(rebarBlock, "onStartCooking", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }
@@ -32,7 +32,7 @@ interface RebarCampfire {
             val rebarBlock = BlockStorage.get(event.block)
             if (rebarBlock is RebarCampfire) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, RebarCampfire::class.java, "onEndCooking", event, priority)
+                    MultiHandler.handleEvent(rebarBlock, "onEndCooking", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }

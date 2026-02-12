@@ -26,7 +26,7 @@ interface RebarItemEntityInteractor : RebarCooldownable {
                     event.isCancelled = true
                 } else {
                     try {
-                        MultiHandler.handleEvent(rebarItemMainHand, RebarItemEntityInteractor::class.java, "onUsedToRightClickEntity", event, priority)
+                        MultiHandler.handleEvent(rebarItemMainHand, "onUsedToRightClickEntity", event, priority)
                     } catch (e: Exception) {
                         RebarItemListener.logEventHandleErr(event, e, rebarItemMainHand)
                     }
@@ -41,7 +41,7 @@ interface RebarItemEntityInteractor : RebarCooldownable {
                     event.isCancelled = true
                 } else {
                     try {
-                        MultiHandler.handleEvent(rebarItemOffHand, RebarItemEntityInteractor::class.java, "onUsedToRightClickEntity", event, priority)
+                        MultiHandler.handleEvent(rebarItemOffHand, "onUsedToRightClickEntity", event, priority)
                     } catch (e: Exception) {
                         RebarItemListener.logEventHandleErr(event, e, rebarItemOffHand)
                     }

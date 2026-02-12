@@ -27,7 +27,7 @@ interface VanillaCookingFuel {
             val rebarItem = RebarItem.fromStack(event.fuel) ?: return
             if (rebarItem !is VanillaCookingFuel) return
             try {
-                MultiHandler.handleEvent(rebarItem, VanillaCookingFuel::class.java, "onBurntAsFuel", event, priority)
+                MultiHandler.handleEvent(rebarItem, "onBurntAsFuel", event, priority)
             } catch (e: Exception) {
                 RebarItemListener.logEventHandleErr(event, e, rebarItem)
             }

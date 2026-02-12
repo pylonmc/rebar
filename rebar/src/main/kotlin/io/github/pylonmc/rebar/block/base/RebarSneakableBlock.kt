@@ -26,13 +26,13 @@ interface RebarSneakableBlock {
                  */
                 if (!event.player.isSneaking) {
                     try {
-                        MultiHandler.handleEvent(rebarBlock, RebarSneakableBlock::class.java, "onSneakedOn", event, priority)
+                        MultiHandler.handleEvent(rebarBlock, "onSneakedOn", event, priority)
                     } catch (e: Exception) {
                         BlockListener.logEventHandleErr(event, e, rebarBlock)
                     }
                 } else {
                     try {
-                        MultiHandler.handleEvent(rebarBlock, RebarSneakableBlock::class.java, "onUnsneakedOn", event, priority)
+                        MultiHandler.handleEvent(rebarBlock, "onUnsneakedOn", event, priority)
                     } catch (e: Exception) {
                         BlockListener.logEventHandleErr(event, e, rebarBlock)
                     }

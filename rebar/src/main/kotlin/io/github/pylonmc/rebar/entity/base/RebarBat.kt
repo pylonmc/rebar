@@ -17,7 +17,7 @@ interface RebarBat {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarBat) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, RebarBat::class.java, "onToggleSleep", event, priority)
+                    MultiHandler.handleEvent(rebarEntity, "onToggleSleep", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }
