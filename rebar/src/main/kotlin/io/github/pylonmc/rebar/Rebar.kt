@@ -22,7 +22,38 @@ import io.github.pylonmc.rebar.content.guide.RebarGuide
 import io.github.pylonmc.rebar.entity.EntityListener
 import io.github.pylonmc.rebar.entity.EntityStorage
 import io.github.pylonmc.rebar.entity.RebarEntity
+import io.github.pylonmc.rebar.entity.base.RebarBat
+import io.github.pylonmc.rebar.entity.base.RebarBreedable
+import io.github.pylonmc.rebar.entity.base.RebarCombustibleEntity
+import io.github.pylonmc.rebar.entity.base.RebarCop
+import io.github.pylonmc.rebar.entity.base.RebarCreeper
+import io.github.pylonmc.rebar.entity.base.RebarDamageableEntity
+import io.github.pylonmc.rebar.entity.base.RebarDeathEntity
+import io.github.pylonmc.rebar.entity.base.RebarDragonFireball
+import io.github.pylonmc.rebar.entity.base.RebarDyeable
+import io.github.pylonmc.rebar.entity.base.RebarEnderDragon
+import io.github.pylonmc.rebar.entity.base.RebarEnderman
+import io.github.pylonmc.rebar.entity.base.RebarExperienceOrb
+import io.github.pylonmc.rebar.entity.base.RebarExplosiveEntity
+import io.github.pylonmc.rebar.entity.base.RebarFirework
+import io.github.pylonmc.rebar.entity.base.RebarInteractEntity
+import io.github.pylonmc.rebar.entity.base.RebarItemEntity
+import io.github.pylonmc.rebar.entity.base.RebarLeashable
+import io.github.pylonmc.rebar.entity.base.RebarMountableEntity
+import io.github.pylonmc.rebar.entity.base.RebarMountingEntity
+import io.github.pylonmc.rebar.entity.base.RebarMovingEntity
+import io.github.pylonmc.rebar.entity.base.RebarPathingEntity
+import io.github.pylonmc.rebar.entity.base.RebarPiglin
+import io.github.pylonmc.rebar.entity.base.RebarProjectile
+import io.github.pylonmc.rebar.entity.base.RebarResurrectable
+import io.github.pylonmc.rebar.entity.base.RebarSlime
+import io.github.pylonmc.rebar.entity.base.RebarSpellcaster
+import io.github.pylonmc.rebar.entity.base.RebarTameable
 import io.github.pylonmc.rebar.entity.base.RebarTickingEntity
+import io.github.pylonmc.rebar.entity.base.RebarTurtle
+import io.github.pylonmc.rebar.entity.base.RebarVillager
+import io.github.pylonmc.rebar.entity.base.RebarWitch
+import io.github.pylonmc.rebar.entity.base.RebarZombiePigman
 import io.github.pylonmc.rebar.event.api.MultiListener
 import io.github.pylonmc.rebar.fluid.placement.FluidPipePlacementService
 import io.github.pylonmc.rebar.guide.pages.base.PagedGuidePage
@@ -211,6 +242,37 @@ object Rebar : JavaPlugin(), RebarAddon {
 
         // Rebar Entities
         EntityListener.register(this, pm)
+        RebarBat.register(this, pm)
+        RebarBreedable.register(this, pm)
+        RebarCombustibleEntity.register(this, pm)
+        RebarCop.register(this, pm)
+        RebarCreeper.register(this, pm)
+        RebarDamageableEntity.register(this, pm)
+        RebarDeathEntity.register(this, pm)
+        RebarDragonFireball.register(this, pm)
+        RebarDyeable.register(this, pm)
+        RebarEnderDragon.register(this, pm)
+        RebarEnderman.register(this, pm)
+        RebarExperienceOrb.register(this, pm)
+        RebarExplosiveEntity.register(this, pm)
+        RebarFirework.register(this, pm)
+        RebarInteractEntity.register(this, pm)
+        RebarItemEntity.register(this, pm)
+        RebarLeashable.register(this, pm)
+        RebarMountableEntity.register(this, pm)
+        RebarMountingEntity.register(this, pm)
+        RebarMovingEntity.register(this, pm)
+        RebarPathingEntity.register(this, pm)
+        RebarPiglin.register(this, pm)
+        RebarProjectile.register(this, pm)
+        RebarResurrectable.register(this, pm)
+        RebarSlime.register(this, pm)
+        RebarSpellcaster.register(this, pm)
+        RebarTameable.register(this, pm)
+        RebarTurtle.register(this, pm)
+        RebarVillager.register(this, pm)
+        RebarWitch.register(this, pm)
+        RebarZombiePigman.register(this, pm)
 
         Bukkit.getScheduler().runTaskTimer(this, RebarInventoryTicker(), 0, RebarConfig.INVENTORY_TICKER_BASE_RATE)
 
