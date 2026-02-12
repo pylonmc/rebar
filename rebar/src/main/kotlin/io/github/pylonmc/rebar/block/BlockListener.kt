@@ -47,7 +47,7 @@ internal object BlockListener : MultiListener {
     private val blockErrMap: MutableMap<RebarBlock, Int> = WeakHashMap()
     
     @MultiHandler(priorities = [ EventPriority.LOWEST, EventPriority.MONITOR ], ignoreCancelled = true)
-    private fun preBlockPlace(event: BlockPlaceEvent, priority: EventPriority) {
+    private fun blockPlace(event: BlockPlaceEvent, priority: EventPriority) {
         val item = event.itemInHand
         val player = event.player
 
