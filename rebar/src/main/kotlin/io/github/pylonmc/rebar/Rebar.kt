@@ -119,7 +119,7 @@ object Rebar : JavaPlugin(), RebarAddon {
         registerWithRebar()
 
         pm.registerEvents(BlockStorage, this)
-        pm.registerEvents(BlockListener, this)
+
         pm.registerEvents(RebarItemListener, this)
         pm.registerEvents(MultiblockCache, this)
         pm.registerEvents(EntityStorage, this)
@@ -146,7 +146,8 @@ object Rebar : JavaPlugin(), RebarAddon {
         pm.registerEvents(TabbedGuidePage, this)
         pm.registerEvents(RebarTickingEntity, this)
 
-        // Rebar Base Blocks
+        // Rebar Blocks
+        BlockListener.register(this, pm)
         RebarBeacon.register(this, pm)
         RebarBell.register(this, pm)
         RebarTNT.register(this, pm)

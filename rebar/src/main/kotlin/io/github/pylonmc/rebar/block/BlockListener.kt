@@ -8,14 +8,16 @@ import io.github.pylonmc.rebar.block.context.BlockBreakContext
 import io.github.pylonmc.rebar.block.context.BlockCreateContext
 import io.github.pylonmc.rebar.config.RebarConfig
 import io.github.pylonmc.rebar.entity.EntityStorage
+import io.github.pylonmc.rebar.event.api.MultiListener
+import io.github.pylonmc.rebar.event.api.annotation.MultiHandler
 import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.item.research.Research.Companion.canUse
 import io.github.pylonmc.rebar.util.damageItem
 import io.github.pylonmc.rebar.util.isFakeEvent
 import io.github.pylonmc.rebar.util.position.position
+import io.papermc.paper.command.brigadier.argument.ArgumentTypes.player
 import io.papermc.paper.datacomponent.DataComponentTypes
 import org.bukkit.ExplosionResult
-import org.bukkit.GameMode
 import org.bukkit.Material
 import org.bukkit.entity.FallingBlock
 import org.bukkit.event.Event
@@ -41,11 +43,11 @@ import java.util.*
  * includes vanilla blocks)
  */
 @Suppress("UnstableApiUsage")
-internal object BlockListener : Listener {
+internal object BlockListener : MultiListener {
     private val blockErrMap: MutableMap<RebarBlock, Int> = WeakHashMap()
     
-    @EventHandler(ignoreCancelled = true)
-    private fun blockPlace(event: BlockPlaceEvent) {
+    @MultiHandler(priorities = [ EventPriority.LOWEST, EventPriority.MONITOR ], ignoreCancelled = true)
+    private fun preBlockPlace(event: BlockPlaceEvent, priority: EventPriority) {
         val item = event.itemInHand
         val player = event.player
 
@@ -69,14 +71,11 @@ internal object BlockListener : Listener {
             }
         }
 
-        val rebarBlock = rebarItem.place(BlockCreateContext.PlayerPlace(player, item, event))
-
-        if (rebarBlock == null) {
+        val context = BlockCreateContext.PlayerPlace(player, item, event)
+        if (priority == EventPriority.LOWEST && !rebarItem.prePlace(context)) {
             event.isCancelled = true
-        }
-
-        if (rebarBlock != null && player.gameMode != GameMode.CREATIVE) {
-            player.inventory.getItem(event.hand).subtract()
+        } else if (priority == EventPriority.MONITOR) {
+            rebarItem.place(context)
         }
     }
 

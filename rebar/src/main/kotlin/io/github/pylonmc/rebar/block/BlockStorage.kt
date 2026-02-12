@@ -19,6 +19,7 @@ import io.github.pylonmc.rebar.util.position.BlockPosition
 import io.github.pylonmc.rebar.util.position.ChunkPosition
 import io.github.pylonmc.rebar.util.position.position
 import io.github.pylonmc.rebar.util.rebarKey
+import io.papermc.paper.command.brigadier.argument.ArgumentTypes.blockPosition
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import org.bukkit.*
@@ -225,6 +226,40 @@ object BlockStorage : Listener {
      *
      * @return The block that was placed, or null if the block placement was cancelled
      *
+     * @throws IllegalArgumentException if the chunk of the given [block] is not
+     * loaded, the block already contains a Rebar block, or the block type given by
+     * [key] does not exist.
+     */
+    @JvmStatic
+    @JvmOverloads
+    fun placeBlock(
+        block: Block,
+        key: NamespacedKey,
+        context: BlockCreateContext = BlockCreateContext.Default(block)
+    ) = placeBlock(block.position, key, context)
+
+    /**
+     * Creates a new Rebar block. Only call on the main thread.
+     *
+     * @return The block that was placed, or null if the block placement was cancelled
+     *
+     * @throws IllegalArgumentException if the chunk of the given [location] is not
+     * loaded, the block already contains a Rebar block, or the block type given by
+     * [key] does not exist.
+     */
+    @JvmStatic
+    @JvmOverloads
+    fun placeBlock(
+        location: Location,
+        key: NamespacedKey,
+        context: BlockCreateContext = BlockCreateContext.Default(location.block)
+    ) = placeBlock(BlockPosition(location), key, context)
+
+    /**
+     * Creates a new Rebar block. Only call on the main thread.
+     *
+     * @return The block that was placed, or null if the block placement was cancelled
+     *
      * @throws IllegalArgumentException if the chunk of the given [blockPosition] is not
      * loaded, the block already contains a Rebar block, or the block type given by
      * [key] does not exist.
@@ -244,6 +279,15 @@ object BlockStorage : Listener {
 
         if (!PreRebarBlockPlaceEvent(blockPosition.block, schema, context).callEvent()) return null
 
+        return setBlock(blockPosition, schema, context)
+    }
+
+    @JvmSynthetic
+    internal fun setBlock(
+        blockPosition: BlockPosition,
+        schema: RebarBlockSchema,
+        context: BlockCreateContext
+    ) : RebarBlock {
         if (context.shouldSetType) {
             blockPosition.block.type = schema.material
         }
@@ -305,40 +349,6 @@ object BlockStorage : Listener {
 
         return pyBlock
     }
-
-    /**
-     * Creates a new Rebar block. Only call on the main thread.
-     *
-     * @return The block that was placed, or null if the block placement was cancelled
-     *
-     * @throws IllegalArgumentException if the chunk of the given [block] is not
-     * loaded, the block already contains a Rebar block, or the block type given by
-     * [key] does not exist.
-     */
-    @JvmStatic
-    @JvmOverloads
-    fun placeBlock(
-        block: Block,
-        key: NamespacedKey,
-        context: BlockCreateContext = BlockCreateContext.Default(block)
-    ) = placeBlock(block.position, key, context)
-
-    /**
-     * Creates a new Rebar block. Only call on the main thread.
-     *
-     * @return The block that was placed, or null if the block placement was cancelled
-     *
-     * @throws IllegalArgumentException if the chunk of the given [location] is not
-     * loaded, the block already contains a Rebar block, or the block type given by
-     * [key] does not exist.
-     */
-    @JvmStatic
-    @JvmOverloads
-    fun placeBlock(
-        location: Location,
-        key: NamespacedKey,
-        context: BlockCreateContext = BlockCreateContext.Default(location.block)
-    ) = placeBlock(BlockPosition(location), key, context)
 
     /**
      * Removes a Rebar block and breaks the physical block in the world.
