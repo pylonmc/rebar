@@ -123,22 +123,36 @@ class IngredientCalculator private constructor() {
 
     private fun findRecipeFor(fluid: RebarFluid): RebarRecipe? {
         // 1. if there's a recipe which produces *only* that fluid, use that
-        // 2. if there's multiple recipes which produce only that fluid, choose the highest one by priority, then the *lowest* one lexographically
+        // 2. if there's multiple recipes which produce only that fluid, choose the highest one by priority, then the one with the most inputs
         val singleOutputRecipes = RebarRegistry.RECIPE_TYPES
             .flatMap { it.recipes }
             .filter { recipe -> recipe !in blacklistedRecipes && recipe.isOutput(fluid) && recipe.results.size == 1 }
-            .sortedWith(compareByDescending<RebarRecipe> { it.priority }.thenBy { it.key })
+            .sortedWith(compareByDescending<RebarRecipe> { it.priority }.thenByDescending { recipe ->
+                recipe.inputs.distinctBy {
+                    when (it) {
+                        is RecipeInput.Fluid -> it.fluids
+                        is RecipeInput.Item -> it.items
+                    }
+                }.size
+            })
 
         if (singleOutputRecipes.isNotEmpty()) {
             return singleOutputRecipes.first()
         }
 
         // 3. if there's a recipe which produces the fluid *alongside* other things, use that
-        // 4. if there's multiple recipes which produce the fluid alongside other things, choose the highest one by priority, then the *lowest* one lexographically
+        // 4. if there's multiple recipes which produce the fluid alongside other things, choose the highest one by priority, then the one with the most inputs
         val multiOutputRecipes = RebarRegistry.RECIPE_TYPES
             .flatMap { it.recipes }
             .filter { recipe -> recipe !in blacklistedRecipes && recipe.isOutput(fluid) && recipe.results.size > 1 }
-            .sortedWith(compareByDescending<RebarRecipe> { it.priority }.thenBy { it.key })
+            .sortedWith(compareByDescending<RebarRecipe> { it.priority }.thenByDescending { recipe ->
+                recipe.inputs.distinctBy {
+                    when (it) {
+                        is RecipeInput.Fluid -> it.fluids
+                        is RecipeInput.Item -> it.items
+                    }
+                }.size
+            })
 
         if (multiOutputRecipes.isNotEmpty()) {
             return multiOutputRecipes.first()
