@@ -2,12 +2,14 @@ package io.github.pylonmc.rebar.block
 
 import com.destroystokyo.paper.event.block.BlockDestroyEvent
 import io.github.pylonmc.rebar.Rebar
+import io.github.pylonmc.rebar.block.base.RebarBreakHandler
 import io.github.pylonmc.rebar.block.base.RebarFallingBlock
 import io.github.pylonmc.rebar.block.base.RebarTickingBlock
 import io.github.pylonmc.rebar.block.context.BlockBreakContext
 import io.github.pylonmc.rebar.block.context.BlockCreateContext
 import io.github.pylonmc.rebar.config.RebarConfig
 import io.github.pylonmc.rebar.entity.EntityStorage
+import io.github.pylonmc.rebar.event.PreRebarBlockBreakEvent
 import io.github.pylonmc.rebar.event.api.MultiListener
 import io.github.pylonmc.rebar.event.api.annotation.MultiHandler
 import io.github.pylonmc.rebar.item.RebarItem
@@ -15,7 +17,7 @@ import io.github.pylonmc.rebar.item.research.Research.Companion.canUse
 import io.github.pylonmc.rebar.util.damageItem
 import io.github.pylonmc.rebar.util.isFakeEvent
 import io.github.pylonmc.rebar.util.position.position
-import io.papermc.paper.command.brigadier.argument.ArgumentTypes.player
+import io.papermc.paper.command.brigadier.argument.ArgumentTypes.blockPosition
 import io.papermc.paper.datacomponent.DataComponentTypes
 import org.bukkit.ExplosionResult
 import org.bukkit.Material
@@ -23,7 +25,6 @@ import org.bukkit.entity.FallingBlock
 import org.bukkit.event.Event
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
-import org.bukkit.event.Listener
 import org.bukkit.event.block.*
 import org.bukkit.event.entity.EntityChangeBlockEvent
 import org.bukkit.event.entity.EntityDropItemEvent
@@ -141,62 +142,88 @@ internal object BlockListener : MultiListener {
         event.itemDrop.itemStack = relativeItem
     }
 
-    @EventHandler(ignoreCancelled = true)
-    private fun blockRemove(event: BlockBreakEvent) {
-        if (BlockStorage.isRebarBlock(event.block)) {
-            if (BlockStorage.breakBlock(event.block, BlockBreakContext.PlayerBreak(event)) == null) {
+    @MultiHandler(priorities = [ EventPriority.LOWEST, EventPriority.MONITOR ], ignoreCancelled = true)
+    private fun blockRemove(event: BlockBreakEvent, priority: EventPriority) {
+        val block = BlockStorage.get(event.block) ?: return
+        val context = BlockBreakContext.PlayerBreak(event);
+        if (priority == EventPriority.LOWEST) {
+            if (!BlockStorage.preBreakBlock(block, context)) {
                 event.isCancelled = true
                 return
             }
+
             event.isDropItems = false
             event.expToDrop = 0
-
-            val toolItem = event.player.equipment.getItem(EquipmentSlot.HAND)
-            val tool = toolItem.getData(DataComponentTypes.TOOL) ?: return
-            damageItem(toolItem, tool.damagePerBlock(), event.player, EquipmentSlot.HAND)
+        } else {
+            BlockStorage.removeBlock(block, event.block.position, context)
         }
     }
 
-    @EventHandler(ignoreCancelled = true)
-    private fun blockBurn(event: BlockBurnEvent) {
-        if (BlockStorage.isRebarBlock(event.block)) {
-            if (BlockStorage.breakBlock(event.block, BlockBreakContext.Burned(event)) == null) {
+    @MultiHandler(priorities = [ EventPriority.LOWEST, EventPriority.MONITOR ], ignoreCancelled = true)
+    private fun blockBurn(event: BlockBurnEvent, priority: EventPriority) {
+        val block = BlockStorage.get(event.block) ?: return
+        val context = BlockBreakContext.Burned(event);
+        if (priority == EventPriority.LOWEST) {
+            if (!BlockStorage.preBreakBlock(block, context)) {
                 event.isCancelled = true
+                return
             }
+        } else {
+            BlockStorage.removeBlock(block, event.block.position, context)
         }
     }
 
-    @EventHandler(ignoreCancelled = true)
-    private fun blockRemove(event: BlockExplodeEvent) {
+    @MultiHandler(priorities = [ EventPriority.LOWEST, EventPriority.MONITOR ], ignoreCancelled = true)
+    private fun blockRemove(event: BlockExplodeEvent, priority: EventPriority) {
         if (event.explosionResult == ExplosionResult.TRIGGER_BLOCK || event.explosionResult == ExplosionResult.KEEP) {
             return
         }
 
-        if (BlockStorage.isRebarBlock(event.block) && BlockStorage.breakBlock(event.block, BlockBreakContext.BlockExplosionOrigin(event)) == null) {
-            event.isCancelled = true
+        val explodingBlock = BlockStorage.get(event.block)
+        if (explodingBlock != null) {
+            val context = BlockBreakContext.BlockExplosionOrigin(event)
+            if (priority == EventPriority.LOWEST) {
+                if (!BlockStorage.preBreakBlock(explodingBlock, context)) {
+                    event.isCancelled = true
+                    return
+                }
+            } else {
+                BlockStorage.removeBlock(explodingBlock, event.block.position, context)
+            }
+        }
+
+        val it = event.blockList().iterator()
+        while (it.hasNext()) {
+            val block = it.next()
+            val rebarBlock = BlockStorage.get(block) ?: continue
+            val context = BlockBreakContext.BlockExploded(block, event)
+            if (priority == EventPriority.LOWEST) {
+                if (!BlockStorage.preBreakBlock(rebarBlock, context)) {
+                    it.remove()
+                }
+            } else {
+                BlockStorage.removeBlock(rebarBlock, block.position, context)
+            }
+        }
+    }
+
+    @MultiHandler(priorities = [ EventPriority.LOWEST, EventPriority.MONITOR ], ignoreCancelled = true)
+    private fun blockRemove(event: EntityExplodeEvent, priority: EventPriority) {
+        if (event.explosionResult == ExplosionResult.TRIGGER_BLOCK || event.explosionResult == ExplosionResult.KEEP) {
             return
         }
 
         val it = event.blockList().iterator()
         while (it.hasNext()) {
             val block = it.next()
-            if (BlockStorage.isRebarBlock(block) && BlockStorage.breakBlock(block, BlockBreakContext.BlockExploded(event)) == null) {
-                it.remove()
-            }
-        }
-    }
-
-    @EventHandler(ignoreCancelled = true)
-    private fun blockRemove(event: EntityExplodeEvent) {
-        if (event.explosionResult == ExplosionResult.TRIGGER_BLOCK || event.explosionResult == ExplosionResult.KEEP) {
-            return
-        }
-
-        val it = event.blockList().iterator()
-        while (it.hasNext()) {
-            val block = it.next()
-            if (BlockStorage.isRebarBlock(block) && BlockStorage.breakBlock(block, BlockBreakContext.EntityExploded(block, event)) == null) {
-                it.remove()
+            val rebarBlock = BlockStorage.get(block) ?: continue
+            val context = BlockBreakContext.EntityExploded(block, event)
+            if (priority == EventPriority.LOWEST) {
+                if (!BlockStorage.preBreakBlock(rebarBlock, context)) {
+                    it.remove()
+                }
+            } else {
+                BlockStorage.removeBlock(rebarBlock, block.position, context)
             }
         }
     }
@@ -204,40 +231,50 @@ internal object BlockListener : MultiListener {
     // Event added by paper, not really documented when it's called so two separate handlers might
     // fire for some block breaks but this shouldn't be an issue
     // Primarily added to handle sensitive blocks
-    @EventHandler(ignoreCancelled = true)
-    private fun blockRemove(event: BlockDestroyEvent) {
-        if (BlockStorage.isRebarBlock(event.block)) {
-            if (BlockStorage.breakBlock(event.block, BlockBreakContext.Destroyed(event)) == null) {
+    @MultiHandler(priorities = [ EventPriority.LOWEST, EventPriority.MONITOR ], ignoreCancelled = true)
+    private fun blockRemove(event: BlockDestroyEvent, priority: EventPriority) {
+        val block = BlockStorage.get(event.block) ?: return
+        val context = BlockBreakContext.Destroyed(event);
+        if (priority == EventPriority.LOWEST) {
+            if (!BlockStorage.preBreakBlock(block, context)) {
                 event.isCancelled = true
+                return
             }
             event.setWillDrop(false)
+        } else {
+            BlockStorage.removeBlock(block, event.block.position, context)
         }
     }
 
-    @EventHandler(ignoreCancelled = true)
-    private fun blockRemove(event: BlockFadeEvent) {
-        if (BlockStorage.isRebarBlock(event.block)) {
-            if (BlockStorage.breakBlock(event.block, BlockBreakContext.Faded(event)) == null) {
+    @MultiHandler(priorities = [ EventPriority.LOWEST, EventPriority.MONITOR ], ignoreCancelled = true)
+    private fun blockRemove(event: BlockFadeEvent, priority: EventPriority) {
+        val block = BlockStorage.get(event.block) ?: return
+        val context = BlockBreakContext.Faded(event);
+        if (priority == EventPriority.LOWEST) {
+            if (!BlockStorage.preBreakBlock(block, context)) {
                 event.isCancelled = true
+                return
             }
+        } else {
+            BlockStorage.removeBlock(block, event.block.position, context)
         }
     }
 
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     private fun disallowForming(event: BlockFormEvent) {
         if (BlockStorage.isRebarBlock(event.block)) {
             event.isCancelled = true
         }
     }
 
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     private fun disallowFromTo(event: BlockFromToEvent) {
         if (BlockStorage.isRebarBlock(event.toBlock)) {
             event.isCancelled = true
         }
     }
 
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     private fun disallowMovementByPistons(event: BlockPistonExtendEvent) {
         for (block in event.blocks) {
             if (BlockStorage.isRebarBlock(block)) {
@@ -247,7 +284,7 @@ internal object BlockListener : MultiListener {
         }
     }
 
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     private fun disallowMovementByPistons(event: BlockPistonRetractEvent) {
         for (block in event.blocks) {
             if (BlockStorage.isRebarBlock(block)) {
@@ -257,7 +294,7 @@ internal object BlockListener : MultiListener {
         }
     }
 
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     private fun disallowStructureGrow(event: StructureGrowEvent) {
         for (state in event.blocks) {
             if (BlockStorage.isRebarBlock(state.block)) {
@@ -267,7 +304,7 @@ internal object BlockListener : MultiListener {
         }
     }
 
-    @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     private fun preventReplacingStructureVoids(event: BlockPlaceEvent) {
         val rebarBlock = BlockStorage.get(event.block)
         if (rebarBlock != null && rebarBlock.schema.material == Material.STRUCTURE_VOID) {
@@ -275,7 +312,7 @@ internal object BlockListener : MultiListener {
         }
     }
 
-    @EventHandler(ignoreCancelled = true, priority = EventPriority.LOW)
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     private fun onFluidPlace(event: PlayerBucketEmptyEvent) {
         val rebarBlock = BlockStorage.get(event.block)
         if (rebarBlock != null && rebarBlock.schema.material == Material.STRUCTURE_VOID) {

@@ -24,8 +24,10 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import org.bukkit.*
 import org.bukkit.block.Block
+import org.bukkit.entity.Item
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
+import org.bukkit.event.block.BlockDropItemEvent
 import org.bukkit.event.world.ChunkLoadEvent
 import org.bukkit.event.world.ChunkUnloadEvent
 import org.bukkit.inventory.ItemStack
@@ -365,18 +367,30 @@ object BlockStorage : Listener {
     fun breakBlock(
         blockPosition: BlockPosition,
         context: BlockBreakContext = BlockBreakContext.PluginBreak(blockPosition.block)
-    ): List<ItemStack>? {
+    ): List<Item>? {
         require(blockPosition.chunk.isLoaded) { "You can only break Rebar blocks in loaded chunks" }
-
         val block = get(blockPosition) ?: return null
+        if (!preBreakBlock(block, context)) return null
+        return removeBlock(block, blockPosition, context)
+    }
+
+    @JvmSynthetic
+    internal fun preBreakBlock(
+        block: RebarBlock,
+        context: BlockBreakContext
+    ) : Boolean {
         if (block is RebarBreakHandler && !block.preBreak(context)) {
-            return null
+            return false
         }
+        return PreRebarBlockBreakEvent(block.block, block, context).callEvent()
+    }
 
-        val event = PreRebarBlockBreakEvent(blockPosition.block, block, context)
-        event.callEvent()
-        if (event.isCancelled) return null
-
+    @JvmSynthetic
+    internal fun removeBlock(
+        block: RebarBlock,
+        blockPosition: BlockPosition,
+        context: BlockBreakContext
+    ) : List<Item> {
         val drops = mutableListOf<ItemStack>()
         if (context.normallyDrops) {
             block.getDropItem(context)?.let { drops.add(it.clone()) }
@@ -401,11 +415,13 @@ object BlockStorage : Listener {
         BlockTextureEngine.remove(block)
         RebarBlockBreakEvent(blockPosition.block, block, context, drops).callEvent()
 
+        val droppedItems = mutableListOf<Item>()
+        val dropLocation = block.block.location.add(0.5, 0.1, 0.5)
         for (drop in drops) {
-            block.block.world.dropItemNaturally(block.block.location.add(0.5, 0.1, 0.5), drop)
+            droppedItems.add(block.block.world.dropItemNaturally(dropLocation, drop))
         }
-        // This is fully backed, just actually enforces the immutability of the drops list and prevents casting to MutableList
-        return Collections.unmodifiableList(drops)
+
+        return Collections.unmodifiableList(droppedItems)
     }
 
     /**
