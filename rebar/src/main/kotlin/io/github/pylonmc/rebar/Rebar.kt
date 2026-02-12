@@ -41,6 +41,7 @@ import io.github.pylonmc.rebar.item.base.RebarInteractor
 import io.github.pylonmc.rebar.item.base.RebarItemDamageable
 import io.github.pylonmc.rebar.item.base.RebarItemEntityInteractor
 import io.github.pylonmc.rebar.item.base.RebarLingeringPotion
+import io.github.pylonmc.rebar.item.base.RebarSplashPotion
 import io.github.pylonmc.rebar.item.base.RebarTool
 import io.github.pylonmc.rebar.item.base.RebarWeapon
 import io.github.pylonmc.rebar.item.base.VanillaCookingFuel
@@ -202,6 +203,8 @@ object Rebar : JavaPlugin(), RebarAddon {
         RebarInteractor.register(this, pm)
         RebarItemDamageable.register(this, pm)
         RebarItemEntityInteractor.register(this, pm)
+        RebarLingeringPotion.register(this, pm)
+        RebarSplashPotion.register(this, pm)
         RebarTool.register(this, pm)
         RebarWeapon.register(this, pm)
         VanillaCookingFuel.register(this, pm)

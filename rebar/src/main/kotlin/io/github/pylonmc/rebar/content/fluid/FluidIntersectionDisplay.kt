@@ -14,6 +14,7 @@ import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
 import io.github.pylonmc.rebar.util.rebarKey
 import org.bukkit.block.Block
 import org.bukkit.entity.ItemDisplay
+import org.bukkit.event.EventPriority
 import org.bukkit.persistence.PersistentDataContainer
 import java.util.UUID
 
@@ -55,7 +56,7 @@ class FluidIntersectionDisplay : RebarEntity<ItemDisplay>, RebarDeathEntity, Flu
         this.connectedPipeDisplays.remove(uuid)
     }
 
-    override fun onDeath(event: RebarEntityDeathEvent) {
+    override fun onDeath(event: RebarEntityDeathEvent, priority: EventPriority) {
         FluidManager.remove(point)
     }
 

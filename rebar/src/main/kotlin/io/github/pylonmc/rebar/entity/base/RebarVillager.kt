@@ -1,11 +1,55 @@
 package io.github.pylonmc.rebar.entity.base
 
+import io.github.pylonmc.rebar.entity.EntityListener.logEventHandleErr
+import io.github.pylonmc.rebar.entity.EntityStorage
+import io.github.pylonmc.rebar.event.api.MultiListener
+import io.github.pylonmc.rebar.event.api.annotation.MultiHandler
+import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
+import org.bukkit.event.EventPriority
 import org.bukkit.event.entity.VillagerAcquireTradeEvent
 import org.bukkit.event.entity.VillagerCareerChangeEvent
 import org.bukkit.event.entity.VillagerReplenishTradeEvent
 
 interface RebarVillager {
-    fun onAcquireTrade(event: VillagerAcquireTradeEvent) {}
-    fun onCareerChange(event: VillagerCareerChangeEvent) {}
-    fun onReplenishTrade(event: VillagerReplenishTradeEvent) {}
+    fun onAcquireTrade(event: VillagerAcquireTradeEvent, priority: EventPriority) {}
+    fun onCareerChange(event: VillagerCareerChangeEvent, priority: EventPriority) {}
+    fun onReplenishTrade(event: VillagerReplenishTradeEvent, priority: EventPriority) {}
+
+    companion object : MultiListener {
+        @UniversalHandler
+        private fun onAcquireTrade(event: VillagerAcquireTradeEvent, priority: EventPriority) {
+            val rebarEntity = EntityStorage.get(event.entity)
+            if (rebarEntity is RebarVillager) {
+                try {
+                    MultiHandler.handleEvent(rebarEntity, RebarVillager::class.java, "onAcquireTrade", event, priority)
+                } catch (e: Exception) {
+                    logEventHandleErr(event, e, rebarEntity)
+                }
+            }
+        }
+
+        @UniversalHandler
+        private fun onCareerChange(event: VillagerCareerChangeEvent, priority: EventPriority) {
+            val rebarEntity = EntityStorage.get(event.entity)
+            if (rebarEntity is RebarVillager) {
+                try {
+                    MultiHandler.handleEvent(rebarEntity, RebarVillager::class.java, "onCareerChange", event, priority)
+                } catch (e: Exception) {
+                    logEventHandleErr(event, e, rebarEntity)
+                }
+            }
+        }
+
+        @UniversalHandler
+        private fun onReplenishTrade(event: VillagerReplenishTradeEvent, priority: EventPriority) {
+            val rebarEntity = EntityStorage.get(event.entity)
+            if (rebarEntity is RebarVillager) {
+                try {
+                    MultiHandler.handleEvent(rebarEntity, RebarVillager::class.java, "onReplenishTrade", event, priority)
+                } catch (e: Exception) {
+                    logEventHandleErr(event, e, rebarEntity)
+                }
+            }
+        }
+    }
 }
