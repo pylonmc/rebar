@@ -7,6 +7,12 @@ import net.kyori.adventure.sound.Sound
 import org.bukkit.Bukkit
 import org.bukkit.NamespacedKey
 import org.bukkit.Registry
+import org.joml.Vector2d
+import org.joml.Vector2f
+import org.joml.Vector2i
+import org.joml.Vector3d
+import org.joml.Vector3f
+import org.joml.Vector3i
 import java.lang.reflect.Type
 
 interface ConfigAdapter<T> {
@@ -42,6 +48,54 @@ interface ConfigAdapter<T> {
         @JvmField val MATERIAL = KEYED.fromRegistry(Registry.MATERIAL)
         @JvmField val ITEM_STACK = ItemStackConfigAdapter
         @JvmField val BLOCK_DATA = ConfigAdapter { Bukkit.createBlockData(STRING.convert(it)) }
+
+        /**
+         * Why is this here????? Consider:
+         *
+         * ```
+         * bruh:
+         *  - paper_is_stupid: true
+         *    mojang_is_stupid: false
+         *  - paper_is_stupid: false
+         *    mojang_is_stupid: true
+         * ```
+         *
+         * If you attempt to get the values in this list, you get a List<Map<String, Object>>. Yes, instead
+         * of a List<ConfigSection>. Why? I HAVE NO GOD DAMN IDEA AND NEITHER DOES ANYONE ELSE ON THE TEAM.
+         * So we have to deal with List<Map<String, Object>> in this situation
+         */
+        @JvmField val LIST_OF_SECTIONS = LIST.from(MAP.from(STRING, ANY))
+
+        @JvmField val VECTOR_2I = ConfigAdapter {
+            val list = (it as List<*>).filterIsInstance<Int>()
+            check(list.size == 2) { "List must be of size 2" }
+            Vector2i(list[0], list[1])
+        }
+        @JvmField val VECTOR_2F = ConfigAdapter {
+            val list = (it as List<*>).filterIsInstance<Float>()
+            check(list.size == 2) { "List must be of size 2" }
+            Vector2f(list[0], list[1])
+        }
+        @JvmField val VECTOR_2D = ConfigAdapter {
+            val list = (it as List<*>).filterIsInstance<Double>()
+            check(list.size == 2) { "List must be of size 2" }
+            Vector2d(list[0], list[1])
+        }
+        @JvmField val VECTOR_3I = ConfigAdapter {
+            val list = (it as List<*>).filterIsInstance<Int>()
+            check(list.size == 3) { "List must be of size 3" }
+            Vector3i(list[0], list[1], list[2])
+        }
+        @JvmField val VECTOR_3F = ConfigAdapter {
+            val list = (it as List<*>).filterIsInstance<Float>()
+            check(list.size == 3) { "List must be of size 3" }
+            Vector3f(list[0], list[1], list[2])
+        }
+        @JvmField val VECTOR_3D = ConfigAdapter {
+            val list = (it as List<*>).filterIsInstance<Double>()
+            check(list.size == 3) { "List must be of size 3" }
+            Vector3d(list[0], list[1], list[2])
+        }
 
         /**
          * A [ConfigAdapter] for in game [Sound]s,
