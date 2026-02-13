@@ -8,6 +8,7 @@ import com.github.shynixn.mccoroutine.bukkit.ticks
 import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.block.RebarBlock
 import io.github.pylonmc.rebar.config.RebarConfig
+import io.github.pylonmc.rebar.entity.packet.BlockTextureEntity
 import io.github.pylonmc.rebar.event.RebarBlockBreakEvent
 import io.github.pylonmc.rebar.util.Octree
 import io.github.pylonmc.rebar.util.position.BlockPosition
@@ -106,9 +107,12 @@ object BlockTextureEngine : Listener {
     internal fun remove(block: RebarBlock) {
         if (!RebarConfig.BlockTextureConfig.ENABLED || block.disableBlockTextureEntity) return
         getOctree(block.block.world).remove(block)
-        block.blockTextureEntity?.let {
-            for (viewer in it.viewers.toSet()) {
-                it.removeViewer(viewer)
+
+        if ((block::blockTextureEntity as Lazy<*>).isInitialized()) {
+            block.blockTextureEntity?.let {
+                for (viewer in it.viewers.toSet()) {
+                    it.removeViewer(viewer)
+                }
             }
         }
     }
