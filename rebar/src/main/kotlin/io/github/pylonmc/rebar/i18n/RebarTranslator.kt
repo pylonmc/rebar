@@ -217,12 +217,18 @@ class RebarTranslator private constructor(private val addon: RebarAddon) : Trans
                     }
                 }
 
-                val translated = GlobalTranslator.render(it.withArguments(arguments), locale)
+                val concatenatedArguments: MutableList<TranslationArgumentLike> = arguments.toMutableList()
+                if (it is TranslatableComponent) {
+                    concatenatedArguments.addAll(it.arguments())
+                }
+
+                val translated = GlobalTranslator.render(it.withArguments(concatenatedArguments), locale)
                 if (translated is TranslatableComponent && translated.fallback() != null) {
                     Component.text(translated.fallback()!!)
                 } else {
                     translated
                 }
+
             }
             editData(DataComponentTypes.LORE) { lore ->
                 val newLore = lore.lines().flatMap { line ->
