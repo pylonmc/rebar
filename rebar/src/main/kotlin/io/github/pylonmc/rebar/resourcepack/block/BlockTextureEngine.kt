@@ -108,11 +108,9 @@ object BlockTextureEngine : Listener {
         if (!RebarConfig.BlockTextureConfig.ENABLED || block.disableBlockTextureEntity) return
         getOctree(block.block.world).remove(block)
 
-        if ((block::blockTextureEntity as Lazy<*>).isInitialized()) {
-            block.blockTextureEntity?.let {
-                for (viewer in it.viewers.toSet()) {
-                    it.removeViewer(viewer)
-                }
+        block.blockTextureEntity?.let {
+            for (viewer in it.viewers.toSet()) {
+                it.removeViewer(viewer)
             }
         }
     }
