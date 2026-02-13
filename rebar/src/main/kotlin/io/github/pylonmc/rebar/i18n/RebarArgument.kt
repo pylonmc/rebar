@@ -21,6 +21,10 @@ class RebarArgument private constructor(val name: String, val value: ComponentLi
         )
     }
 
+    override fun fallbackString(): String {
+        return "rebar:${name}"
+    }
+
     companion object {
         @JvmStatic
         fun of(name: String, value: ComponentLike): RebarArgument {

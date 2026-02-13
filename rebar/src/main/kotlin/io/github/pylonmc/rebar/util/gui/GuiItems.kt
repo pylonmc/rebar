@@ -167,7 +167,7 @@ private class RebarPageItem(private val forward: Boolean) : AbstractPagedGuiBoun
             .name(
                 name.arguments(
                     RebarArgument.of("current", gui.page + 1),
-                    RebarArgument.of("total", gui.page),
+                    RebarArgument.of("total", gui.pageCount)
                 )
             )
     }
