@@ -49,23 +49,6 @@ interface ConfigAdapter<T> {
         @JvmField val ITEM_STACK = ItemStackConfigAdapter
         @JvmField val BLOCK_DATA = ConfigAdapter { Bukkit.createBlockData(STRING.convert(it)) }
 
-        /**
-         * Why is this here????? Consider:
-         *
-         * ```
-         * bruh:
-         *  - paper_is_stupid: true
-         *    mojang_is_stupid: false
-         *  - paper_is_stupid: false
-         *    mojang_is_stupid: true
-         * ```
-         *
-         * If you attempt to get the values in this list, you get a List<Map<String, Object>>. Yes, instead
-         * of a List<ConfigSection>. Why? I HAVE NO GOD DAMN IDEA AND NEITHER DOES ANYONE ELSE ON THE TEAM.
-         * So we have to deal with List<Map<String, Object>> in this situation
-         */
-        @JvmField val LIST_OF_SECTIONS = LIST.from(MAP.from(STRING, ANY))
-
         @JvmField val VECTOR_2I = ConfigAdapter {
             val list = (it as List<*>).filterIsInstance<Int>()
             check(list.size == 2) { "List must be of size 2" }
