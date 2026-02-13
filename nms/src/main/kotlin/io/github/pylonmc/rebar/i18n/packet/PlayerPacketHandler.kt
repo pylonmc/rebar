@@ -19,12 +19,13 @@ import net.minecraft.util.HashOps
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.crafting.display.*
 import org.bukkit.craftbukkit.inventory.CraftItemStack
+import java.util.Optional
 import java.util.logging.Level
 
 
 // Much inspiration has been taken from https://github.com/GuizhanCraft/SlimefunTranslation
 // with permission from the author
-class PlayerPacketHandler(private val player: ServerPlayer, private val handler: PlayerTranslationHandler) {
+class PlayerPacketHandler(private val player: ServerPlayer, val handler: PlayerTranslationHandler) {
 
     private val channel = player.connection.connection.channel
 
@@ -105,6 +106,17 @@ class PlayerPacketHandler(private val player: ServerPlayer, private val handler:
                 packet.containerId,
                 handleRecipeDisplay(packet.recipeDisplay)
             )
+
+            is ClientboundSetEntityDataPacket -> packet.apply {
+                packedItems.forEach { item ->
+                    val value = item.value
+                    if (value is ItemStack) {
+                        translate(value)
+                    } else if (value is Optional<*> && value.isPresent && value.get() is ItemStack) {
+                        translate(value.get() as ItemStack)
+                    }
+                }
+            }
 
             else -> packet
         }
