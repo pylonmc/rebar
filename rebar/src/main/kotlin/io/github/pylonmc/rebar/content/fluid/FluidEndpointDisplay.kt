@@ -16,6 +16,7 @@ import io.github.pylonmc.rebar.util.setNullable
 import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
 import org.bukkit.entity.ItemDisplay
+import org.bukkit.event.EventPriority
 import org.bukkit.persistence.PersistentDataContainer
 import java.util.UUID
 import kotlin.math.pow
@@ -72,7 +73,7 @@ class FluidEndpointDisplay : RebarEntity<ItemDisplay>, RebarDeathEntity, FluidPo
         this.connectedPipeDisplay = null
     }
 
-    override fun onDeath(event: RebarEntityDeathEvent) {
+    override fun onDeath(event: RebarEntityDeathEvent, priority: EventPriority) {
         pipeDisplay?.delete(null, null)
         FluidManager.remove(point)
     }

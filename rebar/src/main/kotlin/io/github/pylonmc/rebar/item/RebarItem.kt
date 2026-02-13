@@ -67,9 +67,14 @@ open class RebarItem(val stack: ItemStack) : Keyed {
     open fun getPlaceholders(): List<RebarArgument> = emptyList()
 
     /**
+     * Checks if the block associated with this item can be placed in the given context.
+     */
+    open fun prePlace(context: BlockCreateContext): Boolean = schema.prePlace(context)
+
+    /**
      * Places the block associated with this item, if it exists.
      */
-    open fun place(context: BlockCreateContext): RebarBlock? = schema.place(context)
+    open fun place(context: BlockCreateContext): RebarBlock = schema.place(context)
 
     companion object {
 

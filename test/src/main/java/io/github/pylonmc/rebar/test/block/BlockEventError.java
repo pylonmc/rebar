@@ -20,7 +20,7 @@ public class BlockEventError extends RebarBlock implements RebarBell {
     }
 
     @Override
-    public void onRing(@NotNull BellRingEvent event) {
+    public void onRing(@NotNull BellRingEvent event, @NotNull org.bukkit.event.EventPriority priority) {
         throw new RuntimeException("This exception is thrown as part of a test");
     }
 }

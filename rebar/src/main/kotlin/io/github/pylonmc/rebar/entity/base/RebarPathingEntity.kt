@@ -1,9 +1,41 @@
 package io.github.pylonmc.rebar.entity.base
 
 import com.destroystokyo.paper.event.entity.EntityPathfindEvent
+import io.github.pylonmc.rebar.entity.EntityListener.logEventHandleErr
+import io.github.pylonmc.rebar.entity.EntityStorage
+import io.github.pylonmc.rebar.event.api.MultiListener
+import io.github.pylonmc.rebar.event.api.annotation.MultiHandler
+import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
+import org.bukkit.event.EventPriority
 import org.bukkit.event.entity.EntityTargetEvent
 
 interface RebarPathingEntity {
-    fun onFindPath(event: EntityPathfindEvent) {}
-    fun onTarget(event: EntityTargetEvent) {}
+    fun onFindPath(event: EntityPathfindEvent, priority: EventPriority) {}
+    fun onTarget(event: EntityTargetEvent, priority: EventPriority) {}
+
+    companion object : MultiListener {
+        @UniversalHandler
+        private fun onFindPath(event: EntityPathfindEvent, priority: EventPriority) {
+            val rebarEntity = EntityStorage.get(event.entity)
+            if (rebarEntity is RebarPathingEntity) {
+                try {
+                    MultiHandler.handleEvent(rebarEntity, "onFindPath", event, priority)
+                } catch (e: Exception) {
+                    logEventHandleErr(event, e, rebarEntity)
+                }
+            }
+        }
+
+        @UniversalHandler
+        private fun onTarget(event: EntityTargetEvent, priority: EventPriority) {
+            val rebarEntity = EntityStorage.get(event.entity)
+            if (rebarEntity is RebarPathingEntity) {
+                try {
+                    MultiHandler.handleEvent(rebarEntity, "onTarget", event, priority)
+                } catch (e: Exception) {
+                    logEventHandleErr(event, e, rebarEntity)
+                }
+            }
+        }
+    }
 }

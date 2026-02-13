@@ -83,6 +83,20 @@ interface RebarFluidTank : RebarFluidBlock {
             = amount > -1.0e-6 && amount < fluidData.capacity + 1.0e-6
 
     /**
+     * Checks if adding a certain amount of fluid would result in a valid
+     * fluid amount.
+     */
+    fun canAddFluid(amount: Double)
+            = canSetFluid(fluidData.amount + amount)
+
+    /**
+     * Checks if adding a certain amount of fluid of a certain type would
+     * result in a valid fluid amount.
+     */
+    fun canAddFluid(fluid: RebarFluid?, amount: Double)
+            = (fluid == null || fluidData.fluid == null || fluid == fluidData.fluid) && (fluid == null || isAllowedFluid(fluid)) && canSetFluid(fluidData.amount + amount)
+
+    /**
      * Sets the fluid amount only if the new amount of fluid is greater
      * than zero and fits in the tank.
      *

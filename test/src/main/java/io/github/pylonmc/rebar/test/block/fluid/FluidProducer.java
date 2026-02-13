@@ -52,7 +52,7 @@ public class FluidProducer extends RebarBlock implements RebarFluidBlock, RebarU
     }
 
     @Override
-    public void onUnload(@NotNull RebarBlockUnloadEvent event) {
+    public void onUnload(@NotNull RebarBlockUnloadEvent event, @NotNull org.bukkit.event.EventPriority priority) {
         FluidManager.remove(point);
     }
 

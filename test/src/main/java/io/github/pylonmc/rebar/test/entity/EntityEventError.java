@@ -7,6 +7,7 @@ import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Skeleton;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.jetbrains.annotations.NotNull;
 
@@ -25,7 +26,7 @@ public class EntityEventError extends RebarEntity<LivingEntity> implements Rebar
     }
 
     @Override
-    public void onInteract(@NotNull PlayerInteractEntityEvent event) {
+    public void onInteract(@NotNull PlayerInteractEntityEvent event, @NotNull EventPriority priority) {
         throw new RuntimeException("This exception is thrown as part of a test");
     }
 }

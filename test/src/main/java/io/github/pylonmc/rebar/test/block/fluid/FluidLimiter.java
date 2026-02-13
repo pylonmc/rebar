@@ -58,7 +58,7 @@ public class FluidLimiter extends RebarBlock implements RebarFluidTank, RebarUnl
     }
 
     @Override
-    public void onUnload(@NotNull RebarBlockUnloadEvent event) {
+    public void onUnload(@NotNull RebarBlockUnloadEvent event, @NotNull org.bukkit.event.EventPriority priority) {
         FluidManager.remove(input);
         FluidManager.remove(output);
     }
