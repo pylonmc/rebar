@@ -86,13 +86,20 @@ class RebarTranslator private constructor(private val addon: RebarAddon) : Trans
     override fun translate(component: TranslatableComponent, locale: Locale): Component? {
         var translation = getRawTranslation(component.key(), locale, warn = true) ?: return null
         for (arg in component.arguments()) {
-            val componentArg = arg.asComponent()
+            var componentArg = arg.asComponent()
+            if (componentArg is TextComponent && componentArg.content().startsWith("rebar:")) {
+                // was a rebar argument that got serialized to vanilla
+                val argName = componentArg.content().removePrefix("rebar:")
+                val argValue = componentArg.children().firstOrNull() ?: Component.empty()
+                componentArg = RebarArgument.of(argName, argValue).asComponent()
+            }
+
             if (componentArg !is VirtualComponent) continue
-            val argument = componentArg.renderer()
-            if (argument !is RebarArgument) continue
+            val renderer = componentArg.renderer()
+            if (renderer !is RebarArgument) continue
             val replacer = TextReplacementConfig.builder()
-                .match("%${argument.name}%")
-                .replacement(GlobalTranslator.render(argument.value.asComponent(), locale))
+                .match("%${renderer.name}%")
+                .replacement(GlobalTranslator.render(renderer.value.asComponent(), locale))
                 .build()
             translation = translation.replaceText(replacer)
         }

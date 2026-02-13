@@ -546,8 +546,8 @@ object BlockStorage : Listener {
         save(event.chunk, chunkBlocks)
 
         for (block in chunkBlocks) {
-            RebarBlockUnloadEvent(block.block, block).callEvent()
             BlockTextureEngine.remove(block)
+            RebarBlockUnloadEvent(block.block, block).callEvent()
         }
 
         RebarChunkBlocksUnloadEvent(event.chunk, chunkBlocks.toList()).callEvent()
