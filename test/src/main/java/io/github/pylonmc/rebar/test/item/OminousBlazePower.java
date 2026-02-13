@@ -6,6 +6,7 @@ import io.github.pylonmc.rebar.item.builder.ItemStackBuilder;
 import io.github.pylonmc.rebar.test.RebarTest;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.inventory.BrewingStandFuelEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -26,7 +27,7 @@ public class OminousBlazePower extends RebarItem implements RebarBrewingStandFue
     }
 
     @Override
-    public void onUsedAsBrewingStandFuel(@NotNull BrewingStandFuelEvent event) {
+    public void onUsedAsBrewingStandFuel(@NotNull BrewingStandFuelEvent event, @NotNull EventPriority priority) {
         event.setCancelled(true);
         handlerCalled = true;
     }

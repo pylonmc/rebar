@@ -65,6 +65,7 @@ import io.github.pylonmc.rebar.item.RebarItemListener
 import io.github.pylonmc.rebar.item.base.RebarArrow
 import io.github.pylonmc.rebar.item.base.RebarBlockInteractor
 import io.github.pylonmc.rebar.item.base.RebarBow
+import io.github.pylonmc.rebar.item.base.RebarBrewingStandFuel
 import io.github.pylonmc.rebar.item.base.RebarBucket
 import io.github.pylonmc.rebar.item.base.RebarConsumable
 import io.github.pylonmc.rebar.item.base.RebarDispensable
@@ -227,7 +228,7 @@ object Rebar : JavaPlugin(), RebarAddon {
         RebarArrow.register(this, pm)
         RebarBlockInteractor.register(this, pm)
         RebarBow.register(this, pm)
-        RebarBrewingStand.register(this, pm)
+        RebarBrewingStandFuel.register(this, pm)
         RebarBucket.register(this, pm)
         RebarConsumable.register(this, pm)
         RebarDispensable.register(this, pm)
