@@ -365,7 +365,7 @@ open class RebarBlock internal constructor(val block: Block) {
             pdc.set(rebarBlockPositionKey, RebarSerializers.LONG, block.block.position.asLong)
 
             block.write(pdc)
-            RebarBlockSerializeEvent(block.block, block, pdc).callEvent()
+            RebarBlockSerializeEvent(block.block, block, pdc, false).callEvent()
 
             return pdc
         }

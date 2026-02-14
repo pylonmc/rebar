@@ -94,7 +94,7 @@ internal class DebugWaxedWeatheredCutCopperStairs(stack: ItemStack)
             }
         }
         rebarBlock.writeDebugInfo(pdc)
-        RebarBlockSerializeEvent(block, rebarBlock, pdc).callEvent()
+        RebarBlockSerializeEvent(block, rebarBlock, pdc, true).callEvent()
 
         val serialized = NmsAccessor.instance.serializePdc(pdc)
         player.sendDebug(

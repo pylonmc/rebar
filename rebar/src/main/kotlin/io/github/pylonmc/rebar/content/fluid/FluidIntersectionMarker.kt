@@ -6,12 +6,14 @@ import io.github.pylonmc.rebar.block.base.RebarEntityHolderBlock
 import io.github.pylonmc.rebar.block.context.BlockBreakContext
 import io.github.pylonmc.rebar.block.context.BlockBreakContext.PlayerBreak
 import io.github.pylonmc.rebar.block.context.BlockCreateContext
+import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.entity.EntityStorage
 import io.github.pylonmc.rebar.i18n.RebarArgument
 import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.util.rebarKey
 import io.github.pylonmc.rebar.waila.WailaDisplay
 import org.bukkit.block.Block
+import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataContainer
@@ -22,6 +24,7 @@ import org.bukkit.persistence.PersistentDataContainer
  * TODO: [io.github.pylonmc.rebar.block.base.RebarEntityGroupCulledBlock]
  */
 class FluidIntersectionMarker : RebarBlock, RebarEntityHolderBlock, RebarBreakHandler {
+    override var disableBlockTextureEntity = true
 
     @Suppress("unused")
     constructor(block: Block, context: BlockCreateContext) : super(block) {

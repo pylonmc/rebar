@@ -13,8 +13,9 @@ import org.bukkit.persistence.PersistentDataContainer
 class RebarBlockSerializeEvent(
     val block: Block,
     val rebarBlock: RebarBlock,
-    val pdc: PersistentDataContainer
-) : Event(){
+    val pdc: PersistentDataContainer,
+    val debug: Boolean,
+) : Event() {
 
     override fun getHandlers(): HandlerList = handlerList
 
