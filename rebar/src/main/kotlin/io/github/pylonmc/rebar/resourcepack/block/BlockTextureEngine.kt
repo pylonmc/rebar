@@ -18,6 +18,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import org.bukkit.Bukkit
 import org.bukkit.World
+import org.bukkit.block.Block
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
@@ -151,6 +152,7 @@ object BlockTextureEngine : Listener {
                 // because in some edge cases, the visible set and the actual viewers can get out of sync
 
                 val world = player.world
+                val feet = player.location.toVector()
                 val eye = player.eyeLocation.toVector()
                 val preset = player.cullingPreset
                 val octree = getOctree(world)
@@ -162,7 +164,7 @@ object BlockTextureEngine : Listener {
 
                     for (block in query) {
                         val entity = block.blockTextureEntity ?: continue
-                        val distanceSquared = block.block.location.distanceSquared(player.location)
+                        val distanceSquared = block.block.distanceSquared(feet)
                         entity.addOrRefreshViewer(uuid, distanceSquared)
                         visible.add(block)
                     }
@@ -180,7 +182,7 @@ object BlockTextureEngine : Listener {
                     // If we are within the always show radius, show, if we are outside cull radius, hide
                     // (our query is a cube not a sphere, so blocks in the corners can still be outside the cull radius)
                     val seen = entity.hasViewer(uuid)
-                    val distanceSquared = block.block.location.distanceSquared(player.location)
+                    val distanceSquared = block.block.distanceSquared(feet)
                     if (distanceSquared <= preset.alwaysShowRadius * preset.alwaysShowRadius) {
                         entity.addOrRefreshViewer(uuid, distanceSquared)
                         visible.add(block)
@@ -230,6 +232,13 @@ object BlockTextureEngine : Listener {
                 tick++
             }
         }
+    }
+
+    private fun Block.distanceSquared(point: Vector): Double {
+        val x = this.x + 0.5 - point.x
+        val y = this.y + 0.5 - point.y
+        val z = this.z + 0.5 - point.z
+        return x * x + y * y + z * z
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
