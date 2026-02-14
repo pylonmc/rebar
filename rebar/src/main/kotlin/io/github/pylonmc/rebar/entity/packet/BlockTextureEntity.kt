@@ -1,7 +1,6 @@
 package io.github.pylonmc.rebar.entity.packet
 
 import com.github.retrooper.packetevents.PacketEvents
-import com.github.retrooper.packetevents.PacketEventsAPI
 import com.github.retrooper.packetevents.protocol.entity.data.EntityData
 import com.github.retrooper.packetevents.protocol.entity.data.EntityDataTypes
 import com.github.retrooper.packetevents.protocol.entity.type.EntityTypes
@@ -9,12 +8,10 @@ import com.github.retrooper.packetevents.protocol.item.ItemStack
 import com.github.retrooper.packetevents.util.Vector3f
 import com.github.retrooper.packetevents.wrapper.PacketWrapper
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityMetadata
-import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.block.RebarBlock
 import io.github.pylonmc.rebar.nms.NmsAccessor
 import io.github.pylonmc.rebar.resourcepack.block.BlockTextureEngine
 import io.github.retrooper.packetevents.util.SpigotConversionUtil
-import me.tofaa.entitylib.EntityLib
 import me.tofaa.entitylib.wrapper.WrapperEntity
 import java.util.*
 import kotlin.math.abs
@@ -103,12 +100,6 @@ open class BlockTextureEntity(
     override fun removeViewer(uuid: UUID) {
         super.removeViewer(uuid)
         lastScaleIncreases.remove(uuid)
-    }
-
-    open fun removeAllViewers() {
-        for (viewer in viewers.toSet()) {
-            removeViewer(viewer)
-        }
     }
 
     companion object {
