@@ -235,7 +235,7 @@ object BlockTextureEngine : Listener {
                 val syncTasks = syncJobTasks.getOrPut(uuid) { ConcurrentHashMap() }
                 val syncGroupTasks = syncJobGroupTasks.getOrPut(uuid) { ConcurrentHashMap() }
 
-                val location = player.location
+                val feet = player.location.toVector()
                 val eye = player.eyeLocation.toVector()
                 val preset = player.cullingPreset
                 val blockTextureOctree = getOctree(world, blockTextureOctrees)
@@ -249,7 +249,7 @@ object BlockTextureEngine : Listener {
 
                         for (block in query) {
                             val entity = block.blockTextureEntity ?: continue
-                            val distanceSquared = block.block.location.distanceSquared(location)
+                            val distanceSquared = block.block.distanceSquared(feet)
                             entity.addOrRefreshViewer(uuid, distanceSquared)
                         }
                         visible.addAll(query)
@@ -284,8 +284,7 @@ object BlockTextureEngine : Listener {
 
                     // If we are within the always show radius, show, if we are outside cull radius, hide
                     // (our query is a cube not a sphere, so blocks in the corners can still be outside the cull radius)
-                    val distanceSquared = block.block.location.distanceSquared(location)
-
+                    val distanceSquared = block.block.distanceSquared(feet)
                     if (distanceSquared <= preset.alwaysShowRadius * preset.alwaysShowRadius) {
                         entity?.addOrRefreshViewer(uuid, distanceSquared)
                         if (block is RebarCulledBlock) {
@@ -379,6 +378,13 @@ object BlockTextureEngine : Listener {
                 tick++
             }
         }
+    }
+
+    private fun Block.distanceSquared(point: Vector): Double {
+        val x = this.x + 0.5 - point.x
+        val y = this.y + 0.5 - point.y
+        val z = this.z + 0.5 - point.z
+        return x * x + y * y + z * z
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
