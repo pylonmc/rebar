@@ -1,16 +1,12 @@
 package io.github.pylonmc.rebar.guide.pages.settings
 
 import io.github.pylonmc.rebar.config.RebarConfig
-import io.github.pylonmc.rebar.guide.button.PageButton
 import io.github.pylonmc.rebar.guide.button.setting.TogglePlayerSettingButton
 import io.github.pylonmc.rebar.resourcepack.armor.ArmorTextureEngine.hasCustomArmorTextures
+import io.github.pylonmc.rebar.resourcepack.block.BlockTextureEngine.hasCustomBlockTextures
 import io.github.pylonmc.rebar.util.rebarKey
-import org.bukkit.Material
 
 object ResourcePackSettingsPage : PlayerSettingsPage(rebarKey("resource_pack_settings")) {
-
-    @JvmStatic
-    val blockTextureSettingsButton = PageButton(Material.BOOKSHELF, BlockTextureSettingsPage)
 
     init {
         if (RebarConfig.ArmorTextureConfig.ENABLED && !RebarConfig.ArmorTextureConfig.FORCED) {
@@ -23,8 +19,14 @@ object ResourcePackSettingsPage : PlayerSettingsPage(rebarKey("resource_pack_set
             )
         }
 
-        if (RebarConfig.BlockTextureConfig.ENABLED) {
-            addSetting(blockTextureSettingsButton)
+        if (RebarConfig.CullingEngineConfig.ENABLED && RebarConfig.BlockTextureConfig.ENABLED && !RebarConfig.BlockTextureConfig.FORCED) {
+            addSetting(
+                TogglePlayerSettingButton(
+                    rebarKey("toggle-block-textures"),
+                    toggle = { player -> player.hasCustomBlockTextures = !player.hasCustomBlockTextures },
+                    isEnabled = { player -> player.hasCustomBlockTextures },
+                )
+            )
         }
     }
 }

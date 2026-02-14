@@ -19,7 +19,7 @@ import org.bukkit.persistence.PersistentDataContainer
 /**
  * A 'fluid pipe connector' is one of the small gray displays that appears
  * on pipe corners/junctions.
- * TODO: [io.github.pylonmc.rebar.block.base.RebarGroupCulledBlock]
+ * TODO: [io.github.pylonmc.rebar.block.base.RebarEntityGroupCulledBlock]
  */
 class FluidIntersectionMarker : RebarBlock, RebarEntityHolderBlock, RebarBreakHandler {
 

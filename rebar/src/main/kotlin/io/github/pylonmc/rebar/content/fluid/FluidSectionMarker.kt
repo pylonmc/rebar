@@ -17,7 +17,7 @@ import org.bukkit.persistence.PersistentDataContainer
 /**
  * An invisible block (structure block) that exists purely to represent a pipe and prevent
  * blocks from being placed on top of them.
- * TODO: [io.github.pylonmc.rebar.block.base.RebarGroupCulledBlock]
+ * TODO: [io.github.pylonmc.rebar.block.base.RebarEntityGroupCulledBlock]
  */
 class FluidSectionMarker : RebarBlock, RebarBreakHandler, RebarEntityHolderBlock {
     override var disableBlockTextureEntity = true

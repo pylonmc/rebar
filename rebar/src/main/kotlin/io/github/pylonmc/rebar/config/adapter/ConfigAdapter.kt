@@ -23,7 +23,8 @@ interface ConfigAdapter<T> {
         // @formatter:off
         @JvmField val BYTE = ConfigAdapter { if (it is String) it.toByte() else (it as Number).toByte() }
         @JvmField val SHORT = ConfigAdapter { if (it is String) it.toShort() else (it as Number).toShort() }
-        @JvmField val INT = ConfigAdapter { if (it is String) it.toInt() else (it as Number).toInt() }
+        @JvmField val INTEGER = ConfigAdapter { if (it is String) it.toInt() else (it as Number).toInt() }
+        @JvmField val INT_RANGE = IntRangeAdapter
         @JvmField val LONG = ConfigAdapter { if (it is String) it.toLong() else (it as Number).toLong() }
         @JvmField val FLOAT = ConfigAdapter { if (it is String) it.toFloat() else (it as Number).toFloat() }
         @JvmField val DOUBLE = ConfigAdapter { if (it is String) it.toDouble() else (it as Number).toDouble() }

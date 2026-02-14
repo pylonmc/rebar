@@ -1,7 +1,6 @@
 package io.github.pylonmc.rebar.entity.packet
 
 import com.github.retrooper.packetevents.PacketEvents
-import com.github.retrooper.packetevents.PacketEventsAPI
 import com.github.retrooper.packetevents.protocol.entity.data.EntityData
 import com.github.retrooper.packetevents.protocol.entity.data.EntityDataTypes
 import com.github.retrooper.packetevents.protocol.entity.type.EntityTypes
@@ -9,12 +8,10 @@ import com.github.retrooper.packetevents.protocol.item.ItemStack
 import com.github.retrooper.packetevents.util.Vector3f
 import com.github.retrooper.packetevents.wrapper.PacketWrapper
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityMetadata
-import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.block.RebarBlock
 import io.github.pylonmc.rebar.nms.NmsAccessor
-import io.github.pylonmc.rebar.resourcepack.block.BlockTextureEngine
+import io.github.pylonmc.rebar.culling.BlockCullingEngine
 import io.github.retrooper.packetevents.util.SpigotConversionUtil
-import me.tofaa.entitylib.EntityLib
 import me.tofaa.entitylib.wrapper.WrapperEntity
 import java.util.*
 import kotlin.math.abs
@@ -25,7 +22,7 @@ import kotlin.math.min
  * that will scale based on the distance to the viewer to prevent z-fighting with the
  * block overlaid upon.
  * 
- * (see [RebarBlock.blockTextureEntity] and [BlockTextureEngine])
+ * (see [RebarBlock.blockTextureEntity] and [BlockCullingEngine])
  */
 open class BlockTextureEntity(
     val block: RebarBlock
@@ -165,14 +162,14 @@ open class BlockTextureEntity(
         /**
          * The maximum scale increase to prevent the item display from becoming too large at long distances.
          */
-        const val MAX_SCALE_INCREASE = 0.2f
+        const val MAX_SCALE_INCREASE = 0.1f
 
         /**
          * The problem with making the item display too large is that the block break overlay will be obscured by the item display.
          * This issue is mainly only prevalent when close to the block, so the farther away they are from the block the more we can
          * increase the scale to prevent z-fighting without worrying about the block break overlay being obscured.
          */
-        const val DOUBLE_OVERLAP_INCREASE_DISTANCE = 2
+        const val DOUBLE_OVERLAP_INCREASE_DISTANCE = 3
 
         /**
          * Calculate scale increase so that at EXPECTED_REACH_DISTANCE, the scale increase is double BLOCK_OVERLAP_SCALE

@@ -136,6 +136,9 @@ object RebarSerializers {
     internal val PLAYER_WAILA_CONFIG = PlayerWailaConfigPersistentDataType
 
     @JvmSynthetic
+    internal val PLAYER_CULLING_CONFIG = PlayerCullingConfigPersistentDataType
+
+    @JvmSynthetic
     internal val FLUID_BUFFER_DATA = FluidBufferDataPersistentDataType
 
     @JvmSynthetic

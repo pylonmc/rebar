@@ -15,6 +15,9 @@ object MainSettingsPage : PlayerSettingsPage(rebarKey("settings")) {
     val wailaSettingsButton = PageButton(Material.SPYGLASS, WailaSettingsPage)
 
     @JvmStatic
+    val blockCullingSettingsButton = PageButton(Material.TINTED_GLASS, BlockCullingSettingsPage)
+
+    @JvmStatic
     val resourcePackSettingsButton = PageButton(Material.PAINTING, ResourcePackSettingsPage)
 
     @JvmStatic
@@ -39,8 +42,12 @@ object MainSettingsPage : PlayerSettingsPage(rebarKey("settings")) {
     )
 
     init {
-        if (RebarConfig.WailaConfig.enabled) {
+        if (RebarConfig.WailaConfig.ENABLED) {
             addSetting(wailaSettingsButton)
+        }
+
+        if (RebarConfig.CullingEngineConfig.ENABLED) {
+            addSetting(blockCullingSettingsButton)
         }
 
         addSetting(resourcePackSettingsButton)

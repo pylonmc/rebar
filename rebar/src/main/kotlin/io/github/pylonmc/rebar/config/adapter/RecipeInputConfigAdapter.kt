@@ -29,7 +29,7 @@ object RecipeInputItemAdapter : ConfigAdapter<RecipeInput.Item> {
 
             is Pair<*, *> -> {
                 val tag = ConfigAdapter.ITEM_TAG.convert(value.first!!)
-                val amount = ConfigAdapter.INT.convert(value.second!!)
+                val amount = ConfigAdapter.INTEGER.convert(value.second!!)
                 RecipeInput.Item(tag, amount)
             }
 

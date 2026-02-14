@@ -2,18 +2,19 @@ package io.github.pylonmc.rebar.util
 
 import org.bukkit.util.BoundingBox
 import org.bukkit.util.Vector
-import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.CopyOnWriteArraySet
 
 open class Octree<N>(
     private val maxDepth: Int = DEFAULT_MAX_DEPTH,
     private val maxEntries: Int = DEFAULT_MAX_ENTRIES,
 
-    private val bounds: BoundingBox,
+    private var bounds: BoundingBox,
     private val depth: Int,
     private val entryStrategy: (N) -> BoundingBox,
+    private val storeOutOfBoundsEntries: Boolean = false
 ) : Iterable<N> {
     private var entries: MutableSet<N> = CopyOnWriteArraySet()
+    private var outOfBoundsEntries: MutableSet<N> = CopyOnWriteArraySet()
     private var children: Array<Octree<N>>? = null
 
     constructor(bounds: BoundingBox, depth: Int, entryStrategy: (N) -> BoundingBox) : this(
@@ -26,7 +27,10 @@ open class Octree<N>(
 
     open fun insert(entry: N) : Boolean {
         val entryBounds = entryStrategy(entry)
-        if (!bounds.overlaps(entryBounds)) return false
+        if (!bounds.overlaps(entryBounds)) {
+            if (storeOutOfBoundsEntries) outOfBoundsEntries.add(entry)
+            return false
+        }
 
         if (children != null) {
             for (child in children!!) {
@@ -47,7 +51,10 @@ open class Octree<N>(
 
     open fun remove(entry: N): Boolean {
         val entryBounds = entryStrategy(entry)
-        if (!bounds.overlaps(entryBounds)) return false
+        if (!bounds.overlaps(entryBounds)) {
+            if (storeOutOfBoundsEntries) outOfBoundsEntries.remove(entry)
+            return false
+        }
 
         if (entries.remove(entry)) {
             return true
@@ -66,8 +73,21 @@ open class Octree<N>(
         return false
     }
 
+    open fun resize(newBounds: BoundingBox) {
+        if (bounds == newBounds) return
+
+        val allEntries = entries.toList().plus(outOfBoundsEntries)
+        clear()
+
+        bounds = newBounds
+        for (entry in allEntries) {
+            insert(entry)
+        }
+    }
+
     open fun clear() {
         entries.clear()
+        outOfBoundsEntries.clear()
         children?.forEach { it.clear() }
         children = null
     }
@@ -126,6 +146,14 @@ open class Octree<N>(
 
     fun maxDepth(): Int {
         return children?.maxOfOrNull { it.maxDepth() } ?: depth
+    }
+
+    fun allEntries(): Set<N> {
+        val result = mutableSetOf<N>()
+        result.addAll(entries)
+        if (storeOutOfBoundsEntries) result.addAll(outOfBoundsEntries)
+        children?.forEach { result.addAll(it.allEntries()) }
+        return result
     }
 
     override fun iterator(): Iterator<N> = OctreeIterator(this)

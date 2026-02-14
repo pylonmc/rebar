@@ -625,7 +625,7 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
             )
 
             if (hasDurability) {
-                builder.durability(settings.getOrThrow("durability", ConfigAdapter.INT))
+                builder.durability(settings.getOrThrow("durability", ConfigAdapter.INTEGER))
             } else {
                 builder.unset(DataComponentTypes.DAMAGE).unset(DataComponentTypes.MAX_DAMAGE)
             }
@@ -668,11 +668,11 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
             builder.tool(
                 mineable,
                 settings.getOrThrow("mining-speed", ConfigAdapter.FLOAT),
-                settings.getOrThrow("mining-durability-damage", ConfigAdapter.INT)
+                settings.getOrThrow("mining-durability-damage", ConfigAdapter.INTEGER)
             )
 
             if (hasDurability) {
-                builder.durability(settings.getOrThrow("durability", ConfigAdapter.INT))
+                builder.durability(settings.getOrThrow("durability", ConfigAdapter.INTEGER))
             } else {
                 builder.unset(DataComponentTypes.DAMAGE).unset(DataComponentTypes.MAX_DAMAGE)
             }
@@ -724,7 +724,7 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
             builder.weapon(
                 settings.getOrThrow("attack-damage", ConfigAdapter.DOUBLE),
                 settings.getOrThrow("attack-speed", ConfigAdapter.DOUBLE),
-                settings.getOrThrow("attack-durability-damage", ConfigAdapter.INT),
+                settings.getOrThrow("attack-durability-damage", ConfigAdapter.INTEGER),
                 if (disablesShield) settings.getOrThrow("disable-shield-seconds", ConfigAdapter.FLOAT) else 0f
             )
 
@@ -735,7 +735,7 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
             }
 
             if (hasDurability) {
-                builder.durability(settings.getOrThrow("durability", ConfigAdapter.INT))
+                builder.durability(settings.getOrThrow("durability", ConfigAdapter.INTEGER))
             } else {
                 builder.unset(DataComponentTypes.DAMAGE).unset(DataComponentTypes.MAX_DAMAGE)
             }
@@ -802,7 +802,7 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
             return rebarWeapon(stack, key, hasDurability, hasKnockback, disablesShield).tool(
                 mineable,
                 settings.getOrThrow("mining-speed", ConfigAdapter.FLOAT),
-                settings.getOrThrow("mining-durability-damage", ConfigAdapter.INT)
+                settings.getOrThrow("mining-durability-damage", ConfigAdapter.INTEGER)
             )
         }
 

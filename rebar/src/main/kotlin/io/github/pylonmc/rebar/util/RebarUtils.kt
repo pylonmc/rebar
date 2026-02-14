@@ -413,6 +413,10 @@ fun <T> persistentData(
     default: T
 ) = persistentData(key, type) { default }
 
+@get:JvmSynthetic
+val Player.pdc: PersistentDataContainer
+    get() = this.persistentDataContainer
+
 /**
  * Merges config from addons to the Rebar config directory.
  * Used for stuff like item settings and language files.

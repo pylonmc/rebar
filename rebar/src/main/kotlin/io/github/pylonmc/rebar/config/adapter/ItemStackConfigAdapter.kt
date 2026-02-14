@@ -13,7 +13,7 @@ object ItemStackConfigAdapter : ConfigAdapter<ItemStack> {
         return when (value) {
             is Pair<*, *> -> {
                 val itemKey = ConfigAdapter.STRING.convert(value.first!!)
-                val amount = ConfigAdapter.INT.convert(value.second!!)
+                val amount = ConfigAdapter.INTEGER.convert(value.second!!)
                 convert(itemKey).asQuantity(amount)
             }
 

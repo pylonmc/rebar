@@ -57,7 +57,7 @@ import kotlin.time.Duration.Companion.seconds
  * If you need something more flexible (eg: a fluid tank that can have up to 10
  * fluid casings added to increase the capacity), see [RebarMultiblock].
  */
-interface RebarSimpleMultiblock : RebarMultiblock, RebarEntityHolderBlock, RebarCulledBlock {
+interface RebarSimpleMultiblock : RebarMultiblock, RebarEntityHolderBlock, RebarEntityCulledBlock {
 
     /**
      * Implement this together with [MultiblockComponent], it is used to spawn a single entity

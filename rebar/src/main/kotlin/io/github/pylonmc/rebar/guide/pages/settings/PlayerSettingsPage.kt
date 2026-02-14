@@ -36,6 +36,6 @@ open class PlayerSettingsPage(key: NamespacedKey) : SimpleStaticGuidePage(key, m
 
     fun addSetting(item: Item) {
         buttons.add(item)
-        buttons.sortBy { if (it is PageButton) 0 else 1 }
+        buttons.sortBy { if (it is PageButton) it.priority() else 1.0 }
     }
 }

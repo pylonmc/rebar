@@ -73,7 +73,7 @@ private inline fun <T : CookingRecipe<T>> loadCookingRecipe(
     defaultCookingTime: Int,
     cons: (NamespacedKey, ItemStack, RecipeChoice, Float, Int) -> T
 ): T {
-    val cookingTime = config.get("cookingtime", ConfigAdapter.INT, defaultCookingTime)
+    val cookingTime = config.get("cookingtime", ConfigAdapter.INTEGER, defaultCookingTime)
     val experience = config.get("experience", ConfigAdapter.FLOAT, 0f)
     val ingredient = config.getOrThrow("ingredient", ConfigAdapter.RECIPE_INPUT_ITEM)
     val result = config.getOrThrow("result", ConfigAdapter.ITEM_STACK)

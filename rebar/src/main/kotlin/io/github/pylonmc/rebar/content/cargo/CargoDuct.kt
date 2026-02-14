@@ -6,7 +6,7 @@ import io.github.pylonmc.rebar.block.base.RebarBreakHandler
 import io.github.pylonmc.rebar.block.base.RebarCargoBlock
 import io.github.pylonmc.rebar.block.base.RebarEntityHolderBlock
 import io.github.pylonmc.rebar.block.base.RebarEntityHolderBlock.Companion.holders
-import io.github.pylonmc.rebar.block.base.RebarGroupCulledBlock
+import io.github.pylonmc.rebar.block.base.RebarEntityGroupCulledBlock
 import io.github.pylonmc.rebar.block.context.BlockBreakContext
 import io.github.pylonmc.rebar.block.context.BlockCreateContext
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
@@ -32,10 +32,10 @@ import org.bukkit.event.Listener
 import org.bukkit.event.entity.EntityRemoveEvent
 import org.bukkit.persistence.PersistentDataContainer
 
-class CargoDuct : RebarBlock, RebarBreakHandler, RebarEntityHolderBlock, RebarGroupCulledBlock {
+class CargoDuct : RebarBlock, RebarBreakHandler, RebarEntityHolderBlock, RebarEntityGroupCulledBlock {
 
     var connectedFaces = mutableListOf<BlockFace>()
-    val faceGroups = mutableMapOf<BlockFace, RebarGroupCulledBlock.CullingGroup>()
+    val faceGroups = mutableMapOf<BlockFace, RebarEntityGroupCulledBlock.EntityCullingGroup>()
     override val cullingGroups
         get() = faceGroups.values
     override var disableBlockTextureEntity = true
@@ -58,7 +58,7 @@ class CargoDuct : RebarBlock, RebarBreakHandler, RebarEntityHolderBlock, RebarGr
                     return@whenEntityLoads
                 }
 
-                val cullingGroup = RebarGroupCulledBlock.CullingGroup(face.name)
+                val cullingGroup = RebarEntityGroupCulledBlock.EntityCullingGroup(face.name)
                 cullingGroup.entityIds.add(display.uniqueId)
 
                 val blockPositions = display.persistentDataContainer.get(blocksKey, blocksType) ?: return@whenEntityLoads
@@ -164,7 +164,7 @@ class CargoDuct : RebarBlock, RebarBreakHandler, RebarEntityHolderBlock, RebarGr
             // Spawn a cube display
             createNotConnectedDuctDisplay(block.location.toCenterLocation())
             // We are the only one using this display, so a singular group for ourselves
-            faceGroups[BlockFace.SELF] = RebarGroupCulledBlock.CullingGroup("SELF").also {
+            faceGroups[BlockFace.SELF] = RebarEntityGroupCulledBlock.EntityCullingGroup("SELF").also {
                 it.blocks.add(this)
                 it.entityIds.add(getHeldEntityUuidOrThrow(NOT_CONNECTED_DUCT_DISPLAY_NAME))
             }
@@ -271,7 +271,7 @@ class CargoDuct : RebarBlock, RebarBreakHandler, RebarEntityHolderBlock, RebarGr
 
         // Add the display to every CargoDuct on the line
         val associatedBlocks = mutableListOf<BlockPosition>()
-        val cullingGroup = RebarGroupCulledBlock.CullingGroup(fromToFace.name)
+        val cullingGroup = RebarEntityGroupCulledBlock.EntityCullingGroup(fromToFace.name)
         cullingGroup.entityIds.add(display.uniqueId)
         // (start)
         BlockStorage.getAs<CargoDuct>(from)?.let {

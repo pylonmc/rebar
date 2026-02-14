@@ -1,35 +1,41 @@
 package io.github.pylonmc.rebar.block.base
 
+import io.github.pylonmc.rebar.block.RebarBlock
 import io.github.pylonmc.rebar.Rebar
-import io.github.pylonmc.rebar.resourcepack.block.BlockTextureEngine.isVisibilityInverted
+import io.github.pylonmc.rebar.culling.BlockCullingEngine
+import io.github.pylonmc.rebar.culling.BlockCullingEngine.isVisibilityInverted
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import java.util.UUID
 
+/**
+ * Enables a [RebarBlock] to take advantage of the [BlockCullingEngine]
+ * to do something per player when the block is considered culled or visible.
+ */
 interface RebarCulledBlock {
     /**
-     * Any entities that should be culled when the block is considered culled by the BlockTextureEngine.
-     * You **cannot** include entities in this list that are invisible by default, if you do they will not be culled properly.
+     * If [onVisible] and [onCulled] should be called asynchronously instead of scheduled to be called on the main thread.
      */
-    val culledEntityIds: Iterable<UUID>
+    val isCulledAsync: Boolean
+        get() = false
 
-    fun showEntities(player: Player) {
-        for (entityId in culledEntityIds) {
-            if (player.isVisibilityInverted(entityId)) {
-                Bukkit.getEntity(entityId)?.let { entity ->
-                    player.showEntity(Rebar, entity)
-                }
-            }
-        }
-    }
+    /**
+     * If the block is currently visible to the player.
+     * Used only to determine which [io.github.pylonmc.rebar.culling.PlayerCullingConfig] interval to use
+     */
+    fun isVisible(player: Player): Boolean
 
-    fun hideEntities(player: Player) {
-        for (entityId in culledEntityIds) {
-            if (!player.isVisibilityInverted(entityId)) {
-                Bukkit.getEntity(entityId)?.let { entity ->
-                    player.hideEntity(Rebar, entity)
-                }
-            }
-        }
-    }
+    /**
+     * What to do when the block is considered visible to the player.
+     * This method will be called regardless of if the block was already considered visible
+     * So you should still run checks in this method to prevent doing unnecessary work.
+     */
+    fun onVisible(player: Player)
+
+    /**
+     * What to do when the block is considered culled to the player.
+     * This method will be called regardless of if the block was already considered culled
+     * So you should still run checks in this method to prevent doing unnecessary work.
+     */
+    fun onCulled(player: Player)
 }
