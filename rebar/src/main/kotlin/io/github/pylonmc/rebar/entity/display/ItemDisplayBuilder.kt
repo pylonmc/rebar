@@ -17,6 +17,7 @@ import org.joml.Matrix4f
 open class ItemDisplayBuilder() {
 
     var itemStack: ItemStack? = null
+    var itemDisplayTransform : ItemDisplay.ItemDisplayTransform? = null
     var transformation: Matrix4f? = null
     var brightness: Brightness? = null
     var glowColor: Color? = null
@@ -29,6 +30,7 @@ open class ItemDisplayBuilder() {
 
     constructor(other: ItemDisplayBuilder): this() {
         this.itemStack = other.itemStack
+        this.itemDisplayTransform = other.itemDisplayTransform
         this.transformation = other.transformation
         this.brightness = other.brightness
         this.glowColor = other.glowColor
@@ -40,20 +42,21 @@ open class ItemDisplayBuilder() {
         this.height = other.height
     }
 
-    fun material(material: Material): ItemDisplayBuilder = apply { this.itemStack = ItemStack(material) }
-    fun itemStack(itemStack: ItemStack?): ItemDisplayBuilder = apply { this.itemStack = itemStack }
-    fun itemStack(builder: ItemStackBuilder): ItemDisplayBuilder = apply { this.itemStack = builder.build() }
-    fun transformation(transformation: Matrix4f?): ItemDisplayBuilder = apply { this.transformation = transformation }
-    fun transformation(builder: TransformBuilder): ItemDisplayBuilder = apply { this.transformation = builder.buildForItemDisplay() }
-    fun brightness(brightness: Brightness): ItemDisplayBuilder = apply { this.brightness = brightness }
-    fun brightness(brightness: Int): ItemDisplayBuilder = brightness(Brightness(0, brightness))
-    fun glow(glowColor: Color?): ItemDisplayBuilder = apply { this.glowColor = glowColor }
-    fun billboard(billboard: Billboard?): ItemDisplayBuilder = apply { this.billboard = billboard }
-    fun viewRange(viewRange: Float): ItemDisplayBuilder = apply { this.viewRange = viewRange }
-    fun interpolationDelay(interpolationDelay: Int): ItemDisplayBuilder = apply { this.interpolationDelay = interpolationDelay }
-    fun interpolationDuration(interpolationDuration: Int): ItemDisplayBuilder = apply { this.interpolationDuration = interpolationDuration }
-    fun width(width: Float): ItemDisplayBuilder = apply { this.width = width }
-    fun height(height: Float): ItemDisplayBuilder = apply { this.height = height }
+    fun material(material: Material) = apply { this.itemStack = ItemStack(material) }
+    fun itemStack(itemStack: ItemStack?) = apply { this.itemStack = itemStack }
+    fun itemStack(builder: ItemStackBuilder) = apply { this.itemStack = builder.build() }
+    fun itemDisplayTransform(itemDisplayTransform: ItemDisplay.ItemDisplayTransform?) = apply { this.itemDisplayTransform = itemDisplayTransform }
+    fun transformation(transformation: Matrix4f?) = apply { this.transformation = transformation }
+    fun transformation(builder: TransformBuilder) = apply { this.transformation = builder.buildForItemDisplay() }
+    fun brightness(brightness: Brightness) = apply { this.brightness = brightness }
+    fun brightness(brightness: Int) = brightness(Brightness(0, brightness))
+    fun glow(glowColor: Color?)  = apply { this.glowColor = glowColor }
+    fun billboard(billboard: Billboard?) = apply { this.billboard = billboard }
+    fun viewRange(viewRange: Float) = apply { this.viewRange = viewRange }
+    fun interpolationDelay(interpolationDelay: Int) = apply { this.interpolationDelay = interpolationDelay }
+    fun interpolationDuration(interpolationDuration: Int) = apply { this.interpolationDuration = interpolationDuration }
+    fun width(width: Float) = apply { this.width = width }
+    fun height(height: Float) = apply { this.height = height }
 
     open fun build(location: Location): ItemDisplay {
         val finalLocation = location.clone()
@@ -68,6 +71,9 @@ open class ItemDisplayBuilder() {
         }
         if (itemStack != null) {
             display.setItemStack(itemStack)
+        }
+        if (itemDisplayTransform != null) {
+            display.itemDisplayTransform = itemDisplayTransform!!
         }
         if (transformation != null) {
             display.setTransformationMatrix(transformation!!)

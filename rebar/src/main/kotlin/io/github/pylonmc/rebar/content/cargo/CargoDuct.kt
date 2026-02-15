@@ -16,6 +16,7 @@ import io.github.pylonmc.rebar.entity.display.transform.LineBuilder
 import io.github.pylonmc.rebar.entity.display.transform.TransformBuilder
 import io.github.pylonmc.rebar.event.RebarCargoConnectEvent
 import io.github.pylonmc.rebar.event.RebarCargoDisconnectEvent
+import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
 import io.github.pylonmc.rebar.util.IMMEDIATE_FACES
 import io.github.pylonmc.rebar.util.position.BlockPosition
 import io.github.pylonmc.rebar.util.position.position
@@ -265,7 +266,8 @@ class CargoDuct : RebarBlock, RebarBreakHandler, RebarEntityHolderBlock, RebarEn
                 .extraLength(thickness)
                 .build()
             )
-            .material(Material.GRAY_CONCRETE)
+            .itemStack(ItemStackBuilder.of(Material.GRAY_CONCRETE)
+                .addCustomModelDataString("$key:line"))
             .build(spawnLocation)
         display.persistentDataContainer.set(thicknessKey, thicknessType, thickness)
 
@@ -332,7 +334,8 @@ class CargoDuct : RebarBlock, RebarBreakHandler, RebarEntityHolderBlock, RebarEn
             .transformation(TransformBuilder()
                 .scale(thicknesses[0])
             )
-            .material(Material.GRAY_CONCRETE)
+            .itemStack(ItemStackBuilder.of(Material.GRAY_CONCRETE)
+                .addCustomModelDataString("$key:single"))
             .build(center)
 
         addEntity(NOT_CONNECTED_DUCT_DISPLAY_NAME, display)
