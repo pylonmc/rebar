@@ -300,8 +300,8 @@ object BlockStorage : Listener {
             blocksByChunk[blockPosition.chunk]!!.add(pyBlock)
         }
 
-        BlockCullingEngine.insert(pyBlock)
         RebarBlockPlaceEvent(block, pyBlock, context).callEvent()
+        BlockCullingEngine.insert(pyBlock)
 
         return pyBlock
     }
@@ -546,8 +546,8 @@ object BlockStorage : Listener {
         save(event.chunk, chunkBlocks)
 
         for (block in chunkBlocks) {
-            RebarBlockUnloadEvent(block.block, block).callEvent()
             BlockCullingEngine.remove(block)
+            RebarBlockUnloadEvent(block.block, block).callEvent()
         }
 
         RebarChunkBlocksUnloadEvent(event.chunk, chunkBlocks.toList()).callEvent()
@@ -587,6 +587,7 @@ object BlockStorage : Listener {
      */
     @JvmSynthetic
     internal fun makePhantom(block: RebarBlock) = lockBlockWrite {
+        BlockCullingEngine.remove(block)
         RebarBlockSchema.schemaCache[block.block.position] = PhantomBlock.schema
         val phantomBlock = PhantomBlock(
             RebarBlock.serialize(block, block.block.chunk.persistentDataContainer.adapterContext),
@@ -599,7 +600,6 @@ object BlockStorage : Listener {
         blocksByKey[block.key]!!.add(phantomBlock)
         blocksByChunk[block.block.chunk.position]!!.remove(block)
         blocksByChunk[block.block.chunk.position]!!.add(phantomBlock)
-        BlockCullingEngine.remove(block)
     }
 
     @JvmSynthetic
