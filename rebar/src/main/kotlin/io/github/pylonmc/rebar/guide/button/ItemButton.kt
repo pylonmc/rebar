@@ -120,9 +120,6 @@ class ItemButton @JvmOverloads constructor(
                 } else {
                     builder.lore(Component.translatable("rebar.guide.button.item.hints.researched"))
                 }
-                if (player.hasPermission("rebar.guide.cheat")) {
-                    builder.lore(Component.translatable("rebar.guide.button.item.hints.admin"))
-                }
             }
 
             return builder
