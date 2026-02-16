@@ -12,6 +12,13 @@ import org.bukkit.plugin.PluginManager
 import java.lang.invoke.MethodHandles
 import kotlin.jvm.java
 
+/**
+ * A custom type of [Listener] that allows methods annotated with [MultiHandler] or [UniversalHandler] to be registered for multiple event priorities at once.
+ * To use, simply implement this interface and use the custom [register] method to register the listener with the plugin manager.
+ * Methods annotated with [MultiHandler] will be registered for the specified priorities, while methods annotated with [UniversalHandler] will be registered for all priorities.
+ *
+ * All methods should be formatted as `fun methodName(event: Event, priority: EventPriority)`
+ */
 interface MultiListener : Listener {
     fun register(plugin: Plugin, pluginManager: PluginManager) {
         pluginManager.registerEvents(this, plugin)

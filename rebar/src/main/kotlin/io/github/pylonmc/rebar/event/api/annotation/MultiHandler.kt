@@ -1,7 +1,10 @@
 package io.github.pylonmc.rebar.event.api.annotation
 
+import io.github.pylonmc.rebar.event.api.MultiListener
+import io.github.pylonmc.rebar.item.base.RebarInteractor
 import org.bukkit.event.Cancellable
 import org.bukkit.event.Event
+import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import java.lang.invoke.MethodHandles
 import java.lang.reflect.Method
@@ -9,6 +12,13 @@ import java.lang.reflect.Modifier
 import kotlin.collections.getOrPut
 import kotlin.collections.toSet
 
+/**
+ * A variant of [EventHandler] that listens to all priorities specified
+ * Must be used with [MultiListener] registered using [MultiListener.register] unless it's a
+ * Rebar block/item/entity interface such as [RebarInteractor], those are handled internally using [MultiHandler.handleEvent]
+ *
+ * All methods annotated with this should be formatted as `fun methodName(event: Event, priority: EventPriority)`
+ */
 annotation class MultiHandler(
     val priorities: Array<EventPriority> = [EventPriority.NORMAL],
     val ignoreCancelled: Boolean = false
