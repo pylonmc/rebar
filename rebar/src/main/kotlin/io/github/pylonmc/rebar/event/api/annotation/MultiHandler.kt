@@ -27,6 +27,7 @@ annotation class MultiHandler(
         private val DEFAULT = MultiHandler()
         private val HANDLERS = mutableMapOf<Class<*>, MutableMap<EventInfo, (Any, Any, EventPriority) -> Unit>>()
 
+        @JvmSynthetic
         internal fun <H, E : Event> handleEvent(
             handler: H,
             handlerMethod: String,
@@ -67,7 +68,8 @@ annotation class MultiHandler(
             function(handler, event, priority)
         }
 
-        internal fun findMethod(clazz: Class<*>, info: EventInfo) : Method {
+        @JvmSynthetic
+        private fun findMethod(clazz: Class<*>, info: EventInfo) : Method {
             return try {
                 clazz.declaredMethods.firstOrNull {
                     it.parameters.size == 2
@@ -93,7 +95,7 @@ annotation class MultiHandler(
             }
         }
 
-        internal data class EventInfo(
+        private data class EventInfo(
             val handlerMethod: String,
             val eventClass: Class<*>
         )
