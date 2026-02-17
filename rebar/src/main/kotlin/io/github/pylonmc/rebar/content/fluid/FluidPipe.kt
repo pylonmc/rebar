@@ -61,7 +61,7 @@ open class FluidPipe(stack: ItemStack) : RebarItem(stack), RebarInteractor {
     open fun canPass(fluid: RebarFluid) = allowedTemperatures == null
             || fluid.hasTag<FluidTemperature>() && fluid.getTag<FluidTemperature>() in allowedTemperatures
 
-    @MultiHandler(priorities = [ EventPriority.NORMAL, EventPriority.MONITOR ])
+    @MultiHandler(priorities = [ EventPriority.LOW, EventPriority.MONITOR ])
     override fun onUsedToClick(event: PlayerInteractEvent, priority: EventPriority) {
         if (!event.action.isRightClick
             || event.hand != EquipmentSlot.HAND
@@ -69,7 +69,7 @@ open class FluidPipe(stack: ItemStack) : RebarItem(stack), RebarInteractor {
             return
         }
 
-        if (priority == EventPriority.NORMAL) {
+        if (priority == EventPriority.LOW) {
             event.setUseInteractedBlock(Event.Result.DENY)
             return
         }
