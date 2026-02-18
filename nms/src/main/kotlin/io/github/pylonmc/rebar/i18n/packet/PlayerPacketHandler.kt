@@ -123,9 +123,8 @@ class PlayerPacketHandler(private val player: ServerPlayer, val handler: PlayerT
                     }
                 }
 
-                if (translated.isEmpty()) {
-                    return@let it
-                } else ClientboundSetEntityDataPacket(
+                if (translated.isEmpty()) it
+                else ClientboundSetEntityDataPacket(
                     it.id,
                     it.packedItems.mapIndexed { i, item ->
                         translated[i] ?: item
