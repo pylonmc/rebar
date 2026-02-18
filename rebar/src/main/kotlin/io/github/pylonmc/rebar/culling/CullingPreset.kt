@@ -48,7 +48,7 @@ data class CullingPreset(
     }
 
     private fun checkValid(propertyName: String, value: Int, range: IntRange) {
-        require(value in range) { "$propertyName must be between ${range.first} and ${range.last}, but was $value" }
+        check(value in range) { "$propertyName must be between ${range.first} and ${range.last}, but was $value" }
     }
 }
 
