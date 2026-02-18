@@ -592,4 +592,7 @@ class MachineUpdateReason : UpdateReason
 fun getBlockBreakTicks(tool: ItemStack, block: Block)
     = round(100 * block.type.getHardness() / block.getDestroySpeed(tool, true))
 
+/**
+ * Schedules the entity to be removed next tick
+ */
 fun Entity.scheduleRemove() = Bukkit.getScheduler().runTask(Rebar, this::remove)
