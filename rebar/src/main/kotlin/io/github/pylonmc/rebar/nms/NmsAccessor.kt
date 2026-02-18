@@ -12,6 +12,7 @@ import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataContainer
 import org.jetbrains.annotations.ApiStatus
+import java.util.UUID
 
 /**
  * Internal, not for innocent eyes to see, move along now.
@@ -25,6 +26,8 @@ interface NmsAccessor {
     fun damageItem(itemStack: ItemStack, amount: Int, entity: LivingEntity, slot: EquipmentSlot, force: Boolean = false)
 
     fun registerTranslationHandler(player: Player, handler: PlayerTranslationHandler)
+
+    fun getTranslationHandler(playerId: UUID): PlayerTranslationHandler?
 
     fun unregisterTranslationHandler(player: Player)
 

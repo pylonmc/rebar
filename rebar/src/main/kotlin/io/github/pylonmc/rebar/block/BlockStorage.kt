@@ -13,7 +13,7 @@ import io.github.pylonmc.rebar.config.RebarConfig
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.event.*
 import io.github.pylonmc.rebar.registry.RebarRegistry
-import io.github.pylonmc.rebar.resourcepack.block.BlockTextureEngine
+import io.github.pylonmc.rebar.culling.BlockCullingEngine
 import io.github.pylonmc.rebar.util.isFromAddon
 import io.github.pylonmc.rebar.util.position.BlockPosition
 import io.github.pylonmc.rebar.util.position.ChunkPosition
@@ -258,9 +258,9 @@ object BlockStorage : Listener {
             blocksByChunk[blockPosition.chunk]!!.add(block)
         }
 
-        BlockTextureEngine.insert(block)
         RebarBlockPlaceEvent(blockPosition.block, block, context).callEvent()
         block.postInitialise()
+        BlockCullingEngine.insert(block)
 
         return block
     }
@@ -300,8 +300,8 @@ object BlockStorage : Listener {
             blocksByChunk[blockPosition.chunk]!!.add(pyBlock)
         }
 
-        BlockTextureEngine.insert(pyBlock)
         RebarBlockPlaceEvent(block, pyBlock, context).callEvent()
+        BlockCullingEngine.insert(pyBlock)
 
         return pyBlock
     }
@@ -388,7 +388,7 @@ object BlockStorage : Listener {
             block.postBreak(context)
         }
 
-        BlockTextureEngine.remove(block)
+        BlockCullingEngine.remove(block)
         RebarBlockBreakEvent(blockPosition.block, block, context, drops).callEvent()
 
         for (drop in drops) {
@@ -472,7 +472,7 @@ object BlockStorage : Listener {
             block.postBreak(context)
         }
 
-        BlockTextureEngine.remove(block)
+        BlockCullingEngine.remove(block)
         RebarBlockBreakEvent(blockPosition.block, block, context, mutableListOf()).callEvent()
     }
 
@@ -524,7 +524,7 @@ object BlockStorage : Listener {
 
         for (block in chunkBlocks) {
             RebarBlockLoadEvent(block.block, block).callEvent()
-            BlockTextureEngine.insert(block)
+            BlockCullingEngine.insert(block)
         }
 
         RebarChunkBlocksLoadEvent(event.chunk, chunkBlocks.toList()).callEvent()
@@ -546,8 +546,8 @@ object BlockStorage : Listener {
         save(event.chunk, chunkBlocks)
 
         for (block in chunkBlocks) {
+            BlockCullingEngine.remove(block)
             RebarBlockUnloadEvent(block.block, block).callEvent()
-            BlockTextureEngine.remove(block)
         }
 
         RebarChunkBlocksUnloadEvent(event.chunk, chunkBlocks.toList()).callEvent()
@@ -587,6 +587,7 @@ object BlockStorage : Listener {
      */
     @JvmSynthetic
     internal fun makePhantom(block: RebarBlock) = lockBlockWrite {
+        BlockCullingEngine.remove(block)
         RebarBlockSchema.schemaCache[block.block.position] = PhantomBlock.schema
         val phantomBlock = PhantomBlock(
             RebarBlock.serialize(block, block.block.chunk.persistentDataContainer.adapterContext),
@@ -599,7 +600,6 @@ object BlockStorage : Listener {
         blocksByKey[block.key]!!.add(phantomBlock)
         blocksByChunk[block.block.chunk.position]!!.remove(block)
         blocksByChunk[block.block.chunk.position]!!.add(phantomBlock)
-        BlockTextureEngine.remove(block)
     }
 
     @JvmSynthetic

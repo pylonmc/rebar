@@ -51,8 +51,12 @@ data class NumericPlayerSettingButton<N : Number>(
     val setter: (Player, N) -> Unit,
 
     val decorator: (Player, N) -> ItemStack,
-    val placeholderProvider: (Player, N) -> MutableList<ComponentLike> = { _, setting -> mutableListOf<ComponentLike>(
-        RebarArgument.of("value", Component.text(setting.toString()))
+    val placeholderProvider: (Player, N) -> MutableList<ComponentLike> = { _, setting -> mutableListOf(
+        RebarArgument.of("value", Component.text(setting.toString())),
+        RebarArgument.of("min", Component.text(min.toString())),
+        RebarArgument.of("max", Component.text(max.toString())),
+        RebarArgument.of("step", Component.text(step.toString())),
+        RebarArgument.of("shift_step", Component.text(shiftStep.toString())),
     ) }
 ) : AbstractItem() {
     override fun getItemProvider(player: Player): ItemProvider {

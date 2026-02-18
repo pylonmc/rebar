@@ -39,7 +39,7 @@ import io.github.pylonmc.rebar.recipe.RecipeCompletion
 import io.github.pylonmc.rebar.recipe.RecipeType
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.resourcepack.armor.ArmorTextureEngine
-import io.github.pylonmc.rebar.resourcepack.block.BlockTextureEngine
+import io.github.pylonmc.rebar.culling.BlockCullingEngine
 import io.github.pylonmc.rebar.util.mergeGlobalConfig
 import io.github.pylonmc.rebar.waila.Waila
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder
@@ -149,7 +149,7 @@ object Rebar : JavaPlugin(), RebarAddon {
 
         Bukkit.getScheduler().runTaskTimer(this, RebarInventoryTicker(), 0, RebarConfig.INVENTORY_TICKER_BASE_RATE)
 
-        if (RebarConfig.WailaConfig.enabled) {
+        if (RebarConfig.WailaConfig.ENABLED) {
             pm.registerEvents(Waila, this)
         }
 
@@ -158,8 +158,9 @@ object Rebar : JavaPlugin(), RebarAddon {
         }
 
         if (RebarConfig.BlockTextureConfig.ENABLED) {
-            pm.registerEvents(BlockTextureEngine, this)
-            BlockTextureEngine.updateOccludingCacheJob.start()
+            pm.registerEvents(BlockCullingEngine, this)
+            BlockCullingEngine.invalidateOccludingCacheJob.start()
+            BlockCullingEngine.syncCullingJob.start()
         }
 
         Bukkit.getScheduler().runTaskTimer(

@@ -211,48 +211,117 @@ guide:
           <guidearrow> Whether your WAILA is displayed as an actionbar or bossbar
           <guidearrow> <green>Bossbar <dark_gray>- <gray>at the top of your screen
           <guidearrow> <aqua>Actionbar <dark_gray>- <gray>at the bottom of your screen
-    toggle-block-textures:
+    toggle-block-culling:
       enabled:
-        name: "<white>Custom block textures: <green>Enabled <dark_gray>(Click to toggle)"
+        name: "<white>Block culling: <green>Enabled <dark_gray>(Click to toggle)"
         lore: |-
-          <guidearrow> Enable only if you are using a resource pack that adds textures for Rebar blocks
-          <guidearrow> <red>Warning:</red> This may negatively affect your game's performance with large numbers of Rebar blocks
+          <guidearrow> Some Rebar blocks use display entities for visuals, which can have negative effects on your client's performance
+          <guidearrow> Block culling will hide those entities if a block is considered culled by your culling settings
+          <guidearrow> Block culling will also cull block texture entities if you have that setting enabled as well.
       disabled:
-        name: "<white>Custom block textures: <red>Disabled <dark_gray>(Click to toggle)"
+        name: "<white>Block culling: <red>Disabled <dark_gray>(Click to toggle)"
         lore: |-
-          <guidearrow> Enable only if you are using a resource pack that adds textures for Rebar blocks
-          <guidearrow> <red>Warning:</red> This may negatively affect your game's performance with large numbers of Rebar blocks
+          <guidearrow> Some Rebar blocks use display entities for visuals, which can have negative effects on your client's performance
+          <guidearrow> Block culling will hide those entities if a block is considered culled by your culling settings
+          <guidearrow> Block culling will also cull block texture entities if you have that setting enabled as well.
     cycle-culling-preset:
       disabled:
         name: "<white>Culling preset: <aqua>No Culling <dark_gray>(Click to cycle)"
         lore: |-
-          <guidearrow> Changes how aggressively block texture entities are hidden from you
+          <guidearrow> Changes how aggressive block culling is
           <guidearrow> More aggressive culling settings will generally improve your game's performance
-          <guidearrow> <aqua>(No Culling) <gray>You will see all block texture entities within view distance
+          <guidearrow> <aqua>(No Culling) <gray>You will see all entities within view distance
+      custom:
+        name: "<white>Culling preset: <light_purple>Custom <dark_gray>(Click to cycle)"
+        lore: |-
+          <guidearrow> Changes how aggressive block culling is
+          <guidearrow> More aggressive culling settings will generally improve your game's performance
+          <guidearrow> <light_purple>(Custom) <gray>Culling will be determined by the advanced culling settings
       low:
         name: "<white>Culling preset: <green>Low <dark_gray>(Click to cycle)"
         lore: |-
-          <guidearrow> Changes how aggressively block texture entities are hidden from you
+          <guidearrow> Changes how aggressive block culling is
           <guidearrow> More aggressive culling settings will generally improve your game's performance
-          <guidearrow> <green>(Low) <gray>You will see all block texture entities within <yellow>%alwaysShowRadius% blocks</yellow>
-          <guidearrow> <green>(Low) <gray>Block texture entities within <yellow>%alwaysShowRadius% to %cullRadius% blocks</yellow> will be conservatively culled
-          <guidearrow> <green>(Low) <gray>Culling will only occur if there are more than <yellow>%maxOccludingCount% blocks</yellow> between you and the block texture entity
+          <guidearrow> <green>(Low) <gray>You will see all block entities within <yellow>%alwaysShowRadius% blocks</yellow>
+          <guidearrow> <green>(Low) <gray>Block entities within <yellow>%alwaysShowRadius% to %cullRadius% blocks</yellow> will be ray-trace culled
+          <guidearrow> <green>(Low) <gray>Culling will only occur if there are more than <yellow>%maxOccludingCount% blocks</yellow> between you and the block
       medium:
         name: "<white>Culling preset: <yellow>Medium <dark_gray>(Click to cycle)"
         lore: |-
-          <guidearrow> Changes how aggressively block texture entities are hidden from you
+          <guidearrow> Changes how aggressive block culling is
           <guidearrow> More aggressive culling settings will generally improve your game's performance
-          <guidearrow> <yellow>(Medium) <gray>You will see all block texture entities within <yellow>%alwaysShowRadius% blocks</yellow>
-          <guidearrow> <yellow>(Medium) <gray>Block texture entities within <yellow>%alwaysShowRadius% to %cullRadius% blocks</yellow> will be moderately culled
-          <guidearrow> <yellow>(Medium) <gray>Culling will only occur if there are more than <yellow>%maxOccludingCount% blocks</yellow> between you and the block texture entity
+          <guidearrow> <yellow>(Medium) <gray>You will see all block entities within <yellow>%alwaysShowRadius% blocks</yellow>
+          <guidearrow> <yellow>(Medium) <gray>Block entities within <yellow>%alwaysShowRadius% to %cullRadius% blocks</yellow> will be ray-trace culled
+          <guidearrow> <yellow>(Medium) <gray>Culling will only occur if there are more than <yellow>%maxOccludingCount% blocks</yellow> between you and the block
       high:
         name: "<white>Culling preset: <red>High <dark_gray>(Click to cycle)"
         lore: |-
-          <guidearrow> Changes how aggressively block texture entities are hidden from you
+          <guidearrow> Changes how aggressive block culling is
           <guidearrow> More aggressive culling settings will generally improve your game's performance
-          <guidearrow> <red>(High) <gray>You will see all block texture entities within <yellow>%alwaysShowRadius% blocks</yellow>
-          <guidearrow> <red>(High) <gray>Block texture entities within <yellow>%alwaysShowRadius% to %cullRadius% blocks</yellow> will be aggressively culled
-          <guidearrow> <red>(High) <gray>Culling will only occur if there are more than <yellow>%maxOccludingCount% blocks</yellow> between you and the block texture entity
+          <guidearrow> <red>(High) <gray>You will see all block entities within <yellow>%alwaysShowRadius% blocks</yellow>
+          <guidearrow> <red>(High) <gray>Block entities within <yellow>%alwaysShowRadius% to %cullRadius% blocks</yellow> will be ray-trace culled
+          <guidearrow> <red>(High) <gray>Culling will only occur if there are more than <yellow>%maxOccludingCount% blocks</yellow> between you and the block
+    culling-update-interval:
+        name: "<white>Culling update interval: <yellow>%value% ticks"
+        lore: |-
+            <guidearrow> How often the rebar runs all culling logic, in ticks (20 ticks = 1 second)
+            <guidearrow> Higher values may improve server performance but cause culling to be less responsive or appear laggy
+            <guidearrow> <guideinsn>Left click</guideinsn> to increase by <yellow>%step%</yellow>
+            <guidearrow> <guideinsn>Right click</guideinsn> to decrease by <yellow>%step%</yellow>
+            <guidearrow> <guideinsn>Shift click</guideinsn> to increase/decrease by <yellow>%shift_step%</yellow>
+            <guidearrow> Min: <yellow>%min%</yellow>
+            <guidearrow> Max: <yellow>%max%</yellow>
+    culling-hidden-interval:
+        name: "<white>Hidden entity check interval: <yellow>%value% updates"
+        lore: |-
+            <guidearrow> How often (every X updates) to perform the ray tracing cull on hidden entities
+            <guidearrow> Lower values make entities become visible faster after being hidden but require more frequent checks
+            <guidearrow> <guideinsn>Left click</guideinsn> to increase by <yellow>%step%</yellow>
+            <guidearrow> <guideinsn>Right click</guideinsn> to decrease by <yellow>%step%</yellow>
+            <guidearrow> <guideinsn>Shift click</guideinsn> to increase/decrease by <yellow>%shift_step%</yellow>
+            <guidearrow> Min: <yellow>%min%</yellow>
+            <guidearrow> Max: <yellow>%max%</yellow>
+    culling-visible-interval:
+        name: "<white>Visible entity check interval: <yellow>%value% updates"
+        lore: |-
+            <guidearrow> How often (every X updates) to perform the ray tracing cull on visible entities
+            <guidearrow> Lower values make entities hide faster when obstructed but require more frequent checks
+            <guidearrow> Higher values are recommended as the performance impact to clients is negligible
+            <guidearrow> <guideinsn>Left click</guideinsn> to increase by <yellow>%step%</yellow>
+            <guidearrow> <guideinsn>Right click</guideinsn> to decrease by <yellow>%step%</yellow>
+            <guidearrow> <guideinsn>Shift click</guideinsn> to increase/decrease by <yellow>%shift_step%</yellow>
+            <guidearrow> Min: <yellow>%min%</yellow>
+            <guidearrow> Max: <yellow>%max%</yellow>
+    culling-always-show-radius:
+        name: "<white>Always show radius: <yellow>%value% blocks"
+        lore: |-
+            <guidearrow> The radius around the player to always send entities for
+            <guidearrow> Entities within this radius will always be visible without culling checks
+            <guidearrow> <guideinsn>Left click</guideinsn> to increase by <yellow>%step%</yellow>
+            <guidearrow> <guideinsn>Right click</guideinsn> to decrease by <yellow>%step%</yellow>
+            <guidearrow> <guideinsn>Shift click</guideinsn> to increase/decrease by <yellow>%shift_step%</yellow>
+            <guidearrow> Min: <yellow>%min%</yellow>
+            <guidearrow> Max: <yellow>%max%</yellow>
+    culling-cull-radius:
+        name: "<white>Cull radius: <yellow>%value% blocks"
+        lore: |-
+            <guidearrow> The radius around the player to check for entities to cull
+            <guidearrow> Anything outside this radius is automatically hidden
+            <guidearrow> <guideinsn>Left click</guideinsn> to increase by <yellow>%step%</yellow>
+            <guidearrow> <guideinsn>Right click</guideinsn> to decrease by <yellow>%step%</yellow>
+            <guidearrow> <guideinsn>Shift click</guideinsn> to increase/decrease by <yellow>%shift_step%</yellow>
+            <guidearrow> Min: <yellow>%min%</yellow>
+            <guidearrow> Max: <yellow>%max%</yellow>
+    culling-max-occluding-count:
+        name: "<white>Max occluding blocks: <yellow>%value% blocks"
+        lore: |-
+            <guidearrow> The maximum number of occluding blocks between the player's eye and an entity before it is culled
+            <guidearrow> Lower values make culling more aggressive, higher values are more forgiving
+            <guidearrow> <guideinsn>Left click</guideinsn> to increase by <yellow>%step%</yellow>
+            <guidearrow> <guideinsn>Right click</guideinsn> to decrease by <yellow>%step%</yellow>
+            <guidearrow> <guideinsn>Shift click</guideinsn> to increase/decrease by <yellow>%shift_step%</yellow>
+            <guidearrow> Min: <yellow>%min%</yellow>
+            <guidearrow> Max: <yellow>%max%</yellow>
     toggle-armor-textures:
       enabled:
         name: "<white>Custom Armor Textures: <green>Enabled <dark_gray>(Click to toggle)"
@@ -264,6 +333,17 @@ guide:
         lore: |-
           <guidearrow> Enable only if you are using a resource pack which adds custom armour textures
           <guidearrow> This setting is for the textures that display when you <bold>wear</bold> the armour - not the texture displayed in your inventory
+    toggle-block-textures:
+      enabled:
+        name: "<white>Custom block textures: <green>Enabled <dark_gray>(Click to toggle)"
+        lore: |-
+          <guidearrow> Enable only if you are using a resource pack that adds textures for Rebar blocks
+          <guidearrow> <red>Warning:</red> This may negatively affect your game's performance with large numbers of Rebar blocks
+      disabled:
+        name: "<white>Custom block textures: <red>Disabled <dark_gray>(Click to toggle)"
+        lore: |-
+          <guidearrow> Enable only if you are using a resource pack that adds textures for Rebar blocks
+          <guidearrow> <red>Warning:</red> This may negatively affect your game's performance with large numbers of Rebar blocks
     toggle-research-confetti:
       enabled:
         name: "<white>Research Confetti: <green>Enabled <dark_gray>(Click to toggle)"
@@ -299,8 +379,9 @@ guide:
     search: "Search"
     settings: "Settings"
     waila_settings: "WAILA settings"
+    block_culling_settings: "Block culling settings"
+    advanced_block_culling_settings: "Advanced block culling settings"
     resource_pack_settings: "Resource pack settings"
-    block_texture_settings: "Block texture settings"
     item_recipes: "Item recipes"
     fluid_recipes: "Fluid recipes"
     item_usages: "Item usages"

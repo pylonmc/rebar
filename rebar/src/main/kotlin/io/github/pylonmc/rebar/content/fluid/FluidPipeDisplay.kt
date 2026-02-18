@@ -29,7 +29,7 @@ class FluidPipeDisplay : RebarEntity<ItemDisplay> {
 
     constructor(
         pipe: FluidPipe, pipeAmount: Int, from: FluidPointDisplay, to: FluidPointDisplay
-    ) : super(KEY, makeDisplay(pipe, from, to)) {
+    ) : super(KEY, makeDisplay(pipe, pipeAmount, from, to)) {
         this.pipe = pipe
         this.pipeAmount = pipeAmount
         this.fromDisplay = from.uuid
@@ -70,6 +70,11 @@ class FluidPipeDisplay : RebarEntity<ItemDisplay> {
         pdc.set(TO_DISPLAY_KEY, RebarSerializers.UUID, toDisplay)
         pdc.set(PIPE_KEY, PIPE_TYPE, pipe.schema)
         pdc.set(PIPE_AMOUNT_KEY, RebarSerializers.INTEGER, pipeAmount)
+    }
+
+    override fun writeDebugInfo(pdc: PersistentDataContainer) {
+        super.writeDebugInfo(pdc)
+        pdc.set(rebarKey("display_item"), RebarSerializers.ITEM_STACK_READABLE, entity.itemStack)
     }
 
     fun getFrom(): FluidPointDisplay
@@ -114,7 +119,7 @@ class FluidPipeDisplay : RebarEntity<ItemDisplay> {
         private val FROM_DISPLAY_KEY = rebarKey("from_display")
         private val TO_DISPLAY_KEY = rebarKey("to_display")
 
-        private fun makeDisplay(pipe: FluidPipe, from: FluidPointDisplay, to: FluidPointDisplay): ItemDisplay {
+        private fun makeDisplay(pipe: FluidPipe, pipeAmount: Int, from: FluidPointDisplay, to: FluidPointDisplay): ItemDisplay {
             val height = from.entity.height
             val fromLocation = from.entity.location.add(0.0, height / 2.0, 0.0)
             val toLocation = to.entity.location.add(0.0, height / 2.0, 0.0)
@@ -134,6 +139,7 @@ class FluidPipeDisplay : RebarEntity<ItemDisplay> {
                 )
                 .itemStack(ItemStackBuilder.of(pipe.material)
                     .addCustomModelDataString("fluid_pipe_display:${pipe.key.key}")
+                    .addCustomModelDataString("fluid_pipe_length:${pipeAmount}")
                 )
                 .build(centerLocation)
         }

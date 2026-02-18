@@ -6,31 +6,40 @@ import io.github.pylonmc.rebar.block.base.RebarBreakHandler
 import io.github.pylonmc.rebar.block.base.RebarCargoBlock
 import io.github.pylonmc.rebar.block.base.RebarEntityHolderBlock
 import io.github.pylonmc.rebar.block.base.RebarEntityHolderBlock.Companion.holders
+import io.github.pylonmc.rebar.block.base.RebarEntityGroupCulledBlock
 import io.github.pylonmc.rebar.block.context.BlockBreakContext
 import io.github.pylonmc.rebar.block.context.BlockCreateContext
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
+import io.github.pylonmc.rebar.entity.EntityStorage
 import io.github.pylonmc.rebar.entity.display.ItemDisplayBuilder
 import io.github.pylonmc.rebar.entity.display.transform.LineBuilder
 import io.github.pylonmc.rebar.entity.display.transform.TransformBuilder
 import io.github.pylonmc.rebar.event.RebarCargoConnectEvent
 import io.github.pylonmc.rebar.event.RebarCargoDisconnectEvent
+import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
 import io.github.pylonmc.rebar.util.IMMEDIATE_FACES
 import io.github.pylonmc.rebar.util.position.BlockPosition
 import io.github.pylonmc.rebar.util.position.position
 import io.github.pylonmc.rebar.util.rebarKey
+import io.github.pylonmc.rebar.util.scheduleRemove
 import io.github.pylonmc.rebar.util.setNullable
 import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
+import org.bukkit.entity.ItemDisplay
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.entity.EntityRemoveEvent
 import org.bukkit.persistence.PersistentDataContainer
 
-class CargoDuct : RebarBlock, RebarBreakHandler, RebarEntityHolderBlock {
+class CargoDuct : RebarBlock, RebarBreakHandler, RebarEntityHolderBlock, RebarEntityGroupCulledBlock {
 
     var connectedFaces = mutableListOf<BlockFace>()
+    val faceGroups = mutableMapOf<BlockFace, RebarEntityGroupCulledBlock.EntityCullingGroup>()
+    override val cullingGroups
+        get() = faceGroups.values
+    override var disableBlockTextureEntity = true
 
     @Suppress("unused")
     constructor(block: Block, context: BlockCreateContext) : super(block) {
@@ -40,6 +49,27 @@ class CargoDuct : RebarBlock, RebarBreakHandler, RebarEntityHolderBlock {
     @Suppress("unused")
     constructor(block: Block, pdc: PersistentDataContainer) : super(block) {
         connectedFaces = pdc.get(connectedFacesKey, connectedFacesType)!!.toMutableList()
+    }
+
+    override fun postLoad() {
+        for (face in connectedFaces) {
+            val displayId = getHeldEntityUuid(ductDisplayName(face)) ?: continue
+            EntityStorage.whenEntityLoads(displayId) { display: ItemDisplay ->
+                if (faceGroups.containsKey(face)) {
+                    return@whenEntityLoads
+                }
+
+                val cullingGroup = RebarEntityGroupCulledBlock.EntityCullingGroup(face.name)
+                cullingGroup.entityIds.add(display.uniqueId)
+
+                val blockPositions = display.persistentDataContainer.get(blocksKey, blocksType) ?: return@whenEntityLoads
+                for (blockPos in blockPositions) {
+                    val block = BlockStorage.get(blockPos) as? CargoDuct ?: continue
+                    block.faceGroups[face] = cullingGroup
+                    cullingGroup.blocks.add(block)
+                }
+            }
+        }
     }
 
     override fun write(pdc: PersistentDataContainer) {
@@ -111,16 +141,17 @@ class CargoDuct : RebarBlock, RebarBreakHandler, RebarEntityHolderBlock {
         // Delete any existing, outdated displays (either a single 'not connected' cube display or a
         // display that continues the same direction as any of the connected faces)
         for (face in connectedFaces) {
-            (connectedBlock(face) as? CargoDuct)
-                ?.getHeldEntity(ductDisplayName(face))
-                ?.remove()
-            (connectedBlock(face) as? CargoDuct)
-                ?.getHeldEntity(NOT_CONNECTED_DUCT_DISPLAY_NAME)
-                ?.remove()
+            (connectedBlock(face) as? CargoDuct)?.let {
+                it.getHeldEntity(ductDisplayName(face))?.scheduleRemove()
+                it.getHeldEntity(NOT_CONNECTED_DUCT_DISPLAY_NAME)?.scheduleRemove()
+                it.faceGroups.remove(face)
+                it.faceGroups.remove(BlockFace.SELF)
+            }
         }
         for (entity in heldEntities.keys.toList()) { // clone to prevent concurrent modification exception
-            getHeldEntity(entity)?.remove()
+            getHeldEntity(entity)?.scheduleRemove()
         }
+        faceGroups.clear()
 
         // For performance reasons, if we can use one display entity instead of
         // several, we always should. We do this by deleting any existing entities
@@ -133,6 +164,11 @@ class CargoDuct : RebarBlock, RebarBreakHandler, RebarEntityHolderBlock {
         if (connectedFaces.isEmpty()) {
             // Spawn a cube display
             createNotConnectedDuctDisplay(block.location.toCenterLocation())
+            // We are the only one using this display, so a singular group for ourselves
+            faceGroups[BlockFace.SELF] = RebarEntityGroupCulledBlock.EntityCullingGroup("SELF").also {
+                it.blocks.add(this)
+                it.entityIds.add(getHeldEntityUuidOrThrow(NOT_CONNECTED_DUCT_DISPLAY_NAME))
+            }
         }
 
         // Case 2: Duct has two connected blocks on opposite sides, forming a line
@@ -221,7 +257,7 @@ class CargoDuct : RebarBlock, RebarBreakHandler, RebarEntityHolderBlock {
         // This would occlude the display entity and cause it to render with brightness 0
         // To avoid this, we'll just spawn the entity at this duct, since we know it's a duct (and therefore a
         // structure void, which will not occlude the display entity)
-        var spawnLocation = this.block.location.toCenterLocation()
+        val spawnLocation = this.block.location.toCenterLocation()
         val display = ItemDisplayBuilder()
             .transformation(LineBuilder()
                 .from(from.location.toCenterLocation().subtract(spawnLocation).toVector().toVector3d())
@@ -230,17 +266,26 @@ class CargoDuct : RebarBlock, RebarBreakHandler, RebarEntityHolderBlock {
                 .extraLength(thickness)
                 .build()
             )
-            .material(Material.GRAY_CONCRETE)
+            .itemStack(ItemStackBuilder.of(Material.GRAY_CONCRETE)
+                .addCustomModelDataString("$key:line"))
             .build(spawnLocation)
         display.persistentDataContainer.set(thicknessKey, thicknessType, thickness)
 
         // Add the display to every CargoDuct on the line
         val associatedBlocks = mutableListOf<BlockPosition>()
+        val cullingGroup = RebarEntityGroupCulledBlock.EntityCullingGroup(fromToFace.name)
+        cullingGroup.entityIds.add(display.uniqueId)
         // (start)
-        BlockStorage.getAs<CargoDuct>(from)?.addEntity(ductDisplayName(fromToFace), display)
+        BlockStorage.getAs<CargoDuct>(from)?.let {
+            it.addEntity(ductDisplayName(fromToFace), display)
+            it.faceGroups[fromToFace] = cullingGroup
+            cullingGroup.blocks.add(it)
+        }
         if (from == this.block) {
             // Special case: This block is not in BlockStorage yet so above code will not work
-            addEntity(ductDisplayName(fromToFace), display)
+            this.addEntity(ductDisplayName(fromToFace), display)
+            this.faceGroups[fromToFace] = cullingGroup
+            cullingGroup.blocks.add(this)
         }
         associatedBlocks.add(from.position)
         // (middle)
@@ -253,19 +298,30 @@ class CargoDuct : RebarBlock, RebarBreakHandler, RebarEntityHolderBlock {
             BlockStorage.getAs<CargoDuct>(current)?.let {
                 it.addEntity(ductDisplayName(fromToFace), display)
                 it.addEntity(ductDisplayName(fromToFace.oppositeFace), display)
+                it.faceGroups[fromToFace] = cullingGroup
+                it.faceGroups[fromToFace.oppositeFace] = cullingGroup
+                cullingGroup.blocks.add(it)
             }
             if (current == this.block) {
                 // Special case: This block is not in BlockStorage yet so above code will not work
-                addEntity(ductDisplayName(fromToFace), display)
-                addEntity(ductDisplayName(fromToFace.oppositeFace), display)
+                this.addEntity(ductDisplayName(fromToFace), display)
+                this.addEntity(ductDisplayName(fromToFace.oppositeFace), display)
+                this.faceGroups[fromToFace] = cullingGroup
+                cullingGroup.blocks.add(this)
             }
             associatedBlocks.add(current.position)
         }
         // (end)
-        BlockStorage.getAs<CargoDuct>(to)?.addEntity(ductDisplayName(fromToFace.oppositeFace), display)
+        BlockStorage.getAs<CargoDuct>(to)?.let {
+            it.addEntity(ductDisplayName(fromToFace.oppositeFace), display)
+            it.faceGroups[fromToFace.oppositeFace] = cullingGroup
+            cullingGroup.blocks.add(it)
+        }
         if (to == this.block) {
             // Special case: This block is not in BlockStorage yet so above code will not work
-            addEntity(ductDisplayName(fromToFace.oppositeFace), display)
+            this.addEntity(ductDisplayName(fromToFace.oppositeFace), display)
+            this.faceGroups[fromToFace.oppositeFace] = cullingGroup
+            cullingGroup.blocks.add(this)
         }
         associatedBlocks.add(to.position)
 
@@ -278,7 +334,8 @@ class CargoDuct : RebarBlock, RebarBreakHandler, RebarEntityHolderBlock {
             .transformation(TransformBuilder()
                 .scale(thicknesses[0])
             )
-            .material(Material.GRAY_CONCRETE)
+            .itemStack(ItemStackBuilder.of(Material.GRAY_CONCRETE)
+                .addCustomModelDataString("$key:single"))
             .build(center)
 
         addEntity(NOT_CONNECTED_DUCT_DISPLAY_NAME, display)

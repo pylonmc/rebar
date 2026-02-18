@@ -26,9 +26,7 @@ class BlockPosition(val worldId: UUID?, val x: Int, val y: Int, val z: Int) {
 
     @get:JvmSynthetic
     internal val asLong: Long
-        get() = ((x and 0x3FFFFFF).toLong() shl 38)
-            .or((z and 0x3FFFFFF).toLong() shl 12)
-            .or((y and 0xFFF).toLong())
+        get() = asLong(x, y, z)
 
     internal constructor(asLong: Long) : this(null, asLong)
 
@@ -112,6 +110,14 @@ class BlockPosition(val worldId: UUID?, val x: Int, val y: Int, val z: Int) {
 
     val block: Block
         get() = world?.getBlockAt(x, y, z) ?: error("World is null")
+
+    companion object {
+        fun asLong(x: Int, y: Int, z: Int): Long {
+            return ((x and 0x3FFFFFF).toLong() shl 38)
+                .or((z and 0x3FFFFFF).toLong() shl 12)
+                .or((y and 0xFFF).toLong())
+        }
+    }
 }
 
 @get:JvmSynthetic

@@ -142,9 +142,13 @@ custom-armor-textures:
   force: false
 
 custom-block-textures:
-  # Should Rebar send item displays to the client for custom block textures?
+  # Should Rebar send packet based item displays to the client for custom block textures?
+  # These item displays have custom model data allowing a resource pack to give them custom models/textures.
   # If a player has no resource pack that adds textures installed, the entities will appear invisible.
-  # Players can also disable this on a per-player basis, and can configure with culling preset they want.
+  # Players can also disable this on a per-player basis in the guide settings.
+  # By default, all rebar blocks will have one entity, however some blocks utilize display entities or other forms
+  # of custom visuals and will not have a block texture entity.
+  # If this is enabled you must also have the block culling engine enabled as it's used to send the packets to the client. (see the entity culling engine section below)
   enabled: true
 
   # If true, players will not be able to disable custom block textures themselves
@@ -155,77 +159,131 @@ custom-block-textures:
   # the entities will appear invisible (no visual change).
   default: true
 
-  # Custom Block Textures uses ray tracing to cull entities not visible to the player.
-  # There are 4 default presets to choose from, each with different client performance and visual quality tradeoffs.
-  # It is not recommended to change these settings (excluding default-preset) unless you know what you're doing
-  culling:
-    # Culling caches if a block is occluding the first time its checked, to avoid reading the world every time.
-    # When players break/place blocks, the cache will automatically update, but other changes to the world
-    # will not be respected until the cache is refreshed. This setting controls how often (in Minecraft ticks) the cache is refreshed.
-    occluding-cache-refresh-interval: 3600
-    # The proportion of the occluding cache to refresh every occluding-cache-refresh-interval
-    # By default, half of the cache is refreshed every interval, meaning the entire cache is refreshed every 2 intervals, or every 6 minutes
-    occluding-cache-refresh-share: 0.5
+block-culling-engine:
+  # Should rebar enable its async ray trace culling engine to allow blocks to change based on if a player can see them or not.
+  # A common way this is used is to hide/show entities that a block uses for its visuals to improve client fps.
+  # This only applies to rebar blocks that explicitly support it (for example: cargo blocks from pylon)
+  # or custom block textures (more on that in the section below this one)
+  enabled: true
 
-    # players can choose a preset themselves, but this is the default one they will get if they haven't chosen one
-    default-preset: "medium"
+  # Culling caches if a block is occluding the first time its checked, to avoid reading the world every time.
+  # When players break/place blocks, or blocks are destroyed or exploded, the cache will automatically update,
+  # but other changes to the world will not be respected until the cache is refreshed.
+  # This setting controls how often (in Minecraft ticks) the cache is invalidated. (and therefore forced to refresh)
+  occluding-cache-invalidate-interval: 6000
 
-    presets:
-      # No culling, all entities are sent to the client, do NOT remove this preset
-      disabled:
-        index: 0
-        id: "disabled"
-        material: "minecraft:gray_concrete"
-        update-interval: 10
+  # The proportion of the occluding cache to invalidate every occluding-cache-invalidate-interval
+  # By default, half of the cache is invalidated every interval, meaning the entire cache is invalidated every 2 intervals,
+  # or every 10 minutes by default.
+  occluding-cache-invalidate-share: 0.5
 
-      low:
-        index: 1
-        id: "low"
-        material: "minecraft:green_concrete"
+  # If the culling engine needs to apply synchronously (for ex: hiding/showing REAL entities to the player)
+  # the application is scheduled to be applied next time this task runs. (all the ray tracing and logic is still done async)
+  # This setting controls how often (in Minecraft ticks) the task runs to apply any pending synchronous applications.
+  sync-apply-interval: 10
 
-        update-interval: 1
-        hidden-interval: 1
-        visible-interval: 10
+  # How often (in Minecraft ticks) to send all block texture entities within range of the client when a player has culling disabled
+  # Block texture entities are packet based entities so we have to manually control their visibility
+  # which is why "disabled" is not truly disabled, it just skips raytracing, but we still have to update the client on what should be visible to them.
+  disabled-update-interval: 10
 
-        always-show-radius: 48
-        cull-radius: 128
+  # The culling system works off of a number of settings that control the performance and visual quality of the culling.
+  # By default, there are a series of presets that players can choose between, but they can also tweak the settings themselves.
+  # If you want to enforce only using presets, and prevent players from tweaking the settings themselves, set this to true
+  presets-only: false
 
-        max-occluding-count: 5
+  # If you want to force all players to use one singular preset, enable presets-only and set to the id of preset you want to force
+  # If you want to force culling to be "disabled" for all players set this to "disabled" (but still sending block texture entities if enabled)
+  # If you do not want to force anything, set this to "none" or disable presets-only
+  forced: "none"
 
-      # A balance between performance and visual quality
-      medium:
-        # Used to order the presets in the gui, lower -> higher
-        index: 2
-        # Should match the key used to identify this preset
-        id: "medium"
-        # What material is shown in the guide for this preset
-        material: "minecraft:yellow_concrete"
+  # If you want players culling settings to default to a specific preset, set this to the id of the preset
+  # If you want it to default to "disabled" set this to "disabled", but still sending block texture entities if enabled
+  default: "medium"
 
-        # How often (in Minecraft ticks) to run the custom block texture logic & check for entities to show/hide
-        update-interval: 1
-        # How often (in Minecraft ticks) to perform the ray tracing cull on hidden entities
-        hidden-interval: 1
-        # How often (in Minecraft ticks) to perform the ray tracing cull on visible entities
-        visible-interval: 20
+  # The culling presets that players can choose between, or that you can enforce players to use.
+  # You can change the values for each preset, or add/remove presets (EXCLUDING THE DISABLED PRESET) as you like.
+  # However, it is not recommended to change these options unless you know what you are doing.
+  # **THERE ALWAYS MUST BE AT LEAST ONE PRESET**
+  presets:
+    # The least aggressive culling preset for the highest visual quality while still utilizing culling
+    low:
+      # Used to order the presets in the gui, lower -> higher
+      index: 1
+      # Should match the key used to identify this preset
+      id: "low"
+      # What material is shown in the guide for this preset
+      material: "minecraft:green_concrete"
 
-        # The radius around the player to always send entities for
-        always-show-radius: 16
-        # The radius around the player to check for entities to cull, anything outside this radius automatically hidden
-        cull-radius: 64
+      # How often (in Minecraft ticks) to run all culling logic & check for entities to show/hide
+      # This acts as a delay between every time the culling engine runs for the player
+      # The higher this number is the higher the options below effectively are.
+      # Most of the time you can leave this at 1
+      update-interval: 1
+      # How often (every X updates) to perform the ray tracing cull on hidden entities
+      # The lower this is the faster entities will become visible after being hidden but the more often it has to check if it should remain hidden
+      hidden-interval: 1
+      # How often (every Z updates) to perform the ray tracing cull on visible entities
+      # The lower this is the faster entities should be hidden after becoming obstructed but the more often it has to check if it should remain visible
+      # It is recommended to keep this a higher value always as the performance impact to clients is negligible, but it significantly reduces the amount of raytracing done on visible entities
+      visible-interval: 10
 
-        # The maximum number of occluding blocks between the players eye and an entity before it is culled
-        max-occluding-count: 3
+      # The radius around the player to always send entities for
+      always-show-radius: 48
+      # The radius around the player to check for entities to cull, anything outside this radius automatically hidden
+      cull-radius: 128
 
-      high:
-        index: 3
-        id: "high"
-        material: "minecraft:red_concrete"
+      # The maximum number of occluding blocks between the players eye and an entity before it is culled
+      max-occluding-count: 5
 
-        update-interval: 1
-        hidden-interval: 1
-        visible-interval: 40
+    # A balance between performance and visual quality
+    medium:
+      index: 2
+      id: "medium"
+      material: "minecraft:yellow_concrete"
 
-        always-show-radius: 8
-        cull-radius: 64
+      update-interval: 1
+      hidden-interval: 2
+      visible-interval: 20
 
-        max-occluding-count: 2
+      always-show-radius: 16
+      cull-radius: 64
+
+      max-occluding-count: 3
+
+    # The most aggressive culling preset for the best performance but lowest visual quality
+    high:
+      index: 3
+      id: "high"
+      material: "minecraft:red_concrete"
+
+      update-interval: 1
+      hidden-interval: 3
+      visible-interval: 40
+
+      always-show-radius: 8
+      cull-radius: 64
+
+      max-occluding-count: 2
+
+  # If presets-only is false, players can tweak the settings themselves, below you can restrict how low/high they can
+  # set them. Keep in mind the presets defined above must also follow these limits as well.
+  limits:
+    update-interval:
+      min: 1
+      max: 20
+    hidden-interval:
+      min: 1
+      max: 20
+    visible-interval:
+      min: 10
+      max: 100
+    always-show-radius:
+      min: 0
+      max: 64
+    cull-radius:
+      min: 16
+      max: 256
+    max-occluding-count:
+      min: 1
+      max: 10

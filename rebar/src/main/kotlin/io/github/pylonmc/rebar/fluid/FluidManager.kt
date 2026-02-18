@@ -84,7 +84,7 @@ internal object FluidManager {
         segments[point.segment]!!.points.remove(point)
         if (segments[point.segment]!!.points.isEmpty()) {
             segments.remove(point.segment)
-            tickers[point.segment]!!.cancel()
+            removeTicker(point.segment)
         }
     }
 
@@ -434,5 +434,12 @@ internal object FluidManager {
                 tick(segment)
             }
         }
+    }
+
+    private fun removeTicker(segment: UUID) {
+        check(segment in tickers) { "Ticker does not exist" }
+
+        tickers[segment]!!.cancel()
+        tickers.remove(segment)
     }
 }

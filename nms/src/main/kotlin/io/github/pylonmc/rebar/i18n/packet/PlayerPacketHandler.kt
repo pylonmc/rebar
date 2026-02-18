@@ -14,17 +14,23 @@ import net.minecraft.network.HashedPatchMap
 import net.minecraft.network.HashedStack
 import net.minecraft.network.protocol.Packet
 import net.minecraft.network.protocol.game.*
+import net.minecraft.network.syncher.EntityDataSerializers
+import net.minecraft.network.syncher.SynchedEntityData
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.util.HashOps
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.crafting.display.*
 import org.bukkit.craftbukkit.inventory.CraftItemStack
+import java.lang.invoke.MethodHandles
+import java.util.Optional
 import java.util.logging.Level
+import kotlin.jvm.javaClass
+import kotlin.let
 
 
 // Much inspiration has been taken from https://github.com/GuizhanCraft/SlimefunTranslation
 // with permission from the author
-class PlayerPacketHandler(private val player: ServerPlayer, private val handler: PlayerTranslationHandler) {
+class PlayerPacketHandler(private val player: ServerPlayer, val handler: PlayerTranslationHandler) {
 
     private val channel = player.connection.connection.channel
 
@@ -105,6 +111,26 @@ class PlayerPacketHandler(private val player: ServerPlayer, private val handler:
                 packet.containerId,
                 handleRecipeDisplay(packet.recipeDisplay)
             )
+
+            is ClientboundSetEntityDataPacket -> packet.let {
+                val translated = mutableMapOf<Int, SynchedEntityData.DataValue<*>>()
+                it.packedItems.forEachIndexed { i, item ->
+                    val value = item.value
+                    if (value is ItemStack) {
+                        val copy = value.copy()
+                        translate(copy)
+                        translated[i] = SynchedEntityData.DataValue(item.id, EntityDataSerializers.ITEM_STACK, copy)
+                    }
+                }
+
+                if (translated.isEmpty()) it
+                else ClientboundSetEntityDataPacket(
+                    it.id,
+                    it.packedItems.mapIndexed { i, item ->
+                        translated[i] ?: item
+                    }
+                )
+            }
 
             else -> packet
         }
