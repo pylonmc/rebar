@@ -19,12 +19,15 @@ import io.github.pylonmc.rebar.util.position.BlockPosition
 import io.github.pylonmc.rebar.util.position.ChunkPosition
 import io.github.pylonmc.rebar.util.position.position
 import io.github.pylonmc.rebar.util.rebarKey
+import io.papermc.paper.command.brigadier.argument.ArgumentTypes.blockPosition
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import org.bukkit.*
 import org.bukkit.block.Block
+import org.bukkit.entity.Item
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
+import org.bukkit.event.block.BlockDropItemEvent
 import org.bukkit.event.world.ChunkLoadEvent
 import org.bukkit.event.world.ChunkUnloadEvent
 import org.bukkit.inventory.ItemStack
@@ -225,6 +228,40 @@ object BlockStorage : Listener {
      *
      * @return The block that was placed, or null if the block placement was cancelled
      *
+     * @throws IllegalArgumentException if the chunk of the given [block] is not
+     * loaded, the block already contains a Rebar block, or the block type given by
+     * [key] does not exist.
+     */
+    @JvmStatic
+    @JvmOverloads
+    fun placeBlock(
+        block: Block,
+        key: NamespacedKey,
+        context: BlockCreateContext = BlockCreateContext.Default(block)
+    ) = placeBlock(block.position, key, context)
+
+    /**
+     * Creates a new Rebar block. Only call on the main thread.
+     *
+     * @return The block that was placed, or null if the block placement was cancelled
+     *
+     * @throws IllegalArgumentException if the chunk of the given [location] is not
+     * loaded, the block already contains a Rebar block, or the block type given by
+     * [key] does not exist.
+     */
+    @JvmStatic
+    @JvmOverloads
+    fun placeBlock(
+        location: Location,
+        key: NamespacedKey,
+        context: BlockCreateContext = BlockCreateContext.Default(location.block)
+    ) = placeBlock(BlockPosition(location), key, context)
+
+    /**
+     * Creates a new Rebar block. Only call on the main thread.
+     *
+     * @return The block that was placed, or null if the block placement was cancelled
+     *
      * @throws IllegalArgumentException if the chunk of the given [blockPosition] is not
      * loaded, the block already contains a Rebar block, or the block type given by
      * [key] does not exist.
@@ -244,6 +281,15 @@ object BlockStorage : Listener {
 
         if (!PreRebarBlockPlaceEvent(blockPosition.block, schema, context).callEvent()) return null
 
+        return setBlock(blockPosition, schema, context)
+    }
+
+    @JvmSynthetic
+    internal fun setBlock(
+        blockPosition: BlockPosition,
+        schema: RebarBlockSchema,
+        context: BlockCreateContext
+    ) : RebarBlock {
         if (context.shouldSetType) {
             blockPosition.block.type = schema.material
         }
@@ -307,40 +353,6 @@ object BlockStorage : Listener {
     }
 
     /**
-     * Creates a new Rebar block. Only call on the main thread.
-     *
-     * @return The block that was placed, or null if the block placement was cancelled
-     *
-     * @throws IllegalArgumentException if the chunk of the given [block] is not
-     * loaded, the block already contains a Rebar block, or the block type given by
-     * [key] does not exist.
-     */
-    @JvmStatic
-    @JvmOverloads
-    fun placeBlock(
-        block: Block,
-        key: NamespacedKey,
-        context: BlockCreateContext = BlockCreateContext.Default(block)
-    ) = placeBlock(block.position, key, context)
-
-    /**
-     * Creates a new Rebar block. Only call on the main thread.
-     *
-     * @return The block that was placed, or null if the block placement was cancelled
-     *
-     * @throws IllegalArgumentException if the chunk of the given [location] is not
-     * loaded, the block already contains a Rebar block, or the block type given by
-     * [key] does not exist.
-     */
-    @JvmStatic
-    @JvmOverloads
-    fun placeBlock(
-        location: Location,
-        key: NamespacedKey,
-        context: BlockCreateContext = BlockCreateContext.Default(location.block)
-    ) = placeBlock(BlockPosition(location), key, context)
-
-    /**
      * Removes a Rebar block and breaks the physical block in the world.
      * Does nothing if the block is not a Rebar block.
      * Only call on the main thread.
@@ -355,18 +367,30 @@ object BlockStorage : Listener {
     fun breakBlock(
         blockPosition: BlockPosition,
         context: BlockBreakContext = BlockBreakContext.PluginBreak(blockPosition.block)
-    ): List<ItemStack>? {
+    ): List<Item>? {
         require(blockPosition.chunk.isLoaded) { "You can only break Rebar blocks in loaded chunks" }
-
         val block = get(blockPosition) ?: return null
+        if (!preBreakBlock(block, context)) return null
+        return removeBlock(block, blockPosition, context)
+    }
+
+    @JvmSynthetic
+    internal fun preBreakBlock(
+        block: RebarBlock,
+        context: BlockBreakContext
+    ) : Boolean {
         if (block is RebarBreakHandler && !block.preBreak(context)) {
-            return null
+            return false
         }
+        return PreRebarBlockBreakEvent(block.block, block, context).callEvent()
+    }
 
-        val event = PreRebarBlockBreakEvent(blockPosition.block, block, context)
-        event.callEvent()
-        if (event.isCancelled) return null
-
+    @JvmSynthetic
+    internal fun removeBlock(
+        block: RebarBlock,
+        blockPosition: BlockPosition,
+        context: BlockBreakContext
+    ) : List<Item> {
         val drops = mutableListOf<ItemStack>()
         if (context.normallyDrops) {
             block.getDropItem(context)?.let { drops.add(it.clone()) }
@@ -391,11 +415,13 @@ object BlockStorage : Listener {
         BlockCullingEngine.remove(block)
         RebarBlockBreakEvent(blockPosition.block, block, context, drops).callEvent()
 
+        val droppedItems = mutableListOf<Item>()
+        val dropLocation = block.block.location.add(0.5, 0.1, 0.5)
         for (drop in drops) {
-            block.block.world.dropItemNaturally(block.block.location.add(0.5, 0.1, 0.5), drop)
+            droppedItems.add(block.block.world.dropItemNaturally(dropLocation, drop))
         }
-        // This is fully backed, just actually enforces the immutability of the drops list and prevents casting to MutableList
-        return Collections.unmodifiableList(drops)
+
+        return Collections.unmodifiableList(droppedItems)
     }
 
     /**

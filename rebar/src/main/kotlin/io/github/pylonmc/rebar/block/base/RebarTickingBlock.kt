@@ -5,6 +5,7 @@ import com.github.shynixn.mccoroutine.bukkit.launch
 import com.github.shynixn.mccoroutine.bukkit.minecraftDispatcher
 import com.github.shynixn.mccoroutine.bukkit.ticks
 import io.github.pylonmc.rebar.Rebar
+import io.github.pylonmc.rebar.block.BlockListener
 import io.github.pylonmc.rebar.block.BlockListener.logEventHandleErr
 import io.github.pylonmc.rebar.block.RebarBlock
 import io.github.pylonmc.rebar.config.RebarConfig
@@ -154,7 +155,7 @@ interface RebarTickingBlock {
                         tickingBlock.tick()
                     } catch (e: Exception) {
                         Rebar.launch(Rebar.minecraftDispatcher) {
-                            logEventHandleErr(null, e, tickingBlock as RebarBlock)
+                            BlockListener.logEventHandleErr(null, e, tickingBlock as RebarBlock)
                         }
                     }
                 }

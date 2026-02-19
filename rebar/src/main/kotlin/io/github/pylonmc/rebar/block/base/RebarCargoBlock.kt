@@ -13,6 +13,9 @@ import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.entity.display.ItemDisplayBuilder
 import io.github.pylonmc.rebar.entity.display.transform.LineBuilder
 import io.github.pylonmc.rebar.event.*
+import io.github.pylonmc.rebar.event.api.MultiListener
+import io.github.pylonmc.rebar.event.api.annotation.MultiHandler
+import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
 import io.github.pylonmc.rebar.logistics.CargoRoutes
 import io.github.pylonmc.rebar.logistics.LogisticGroup
@@ -25,7 +28,6 @@ import org.bukkit.Material
 import org.bukkit.block.BlockFace
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
-import org.bukkit.event.Listener
 import org.jetbrains.annotations.ApiStatus
 import org.joml.Vector3d
 import java.util.IdentityHashMap
@@ -84,9 +86,9 @@ interface RebarCargoBlock : RebarLogisticBlock, RebarEntityHolderBlock {
         @ApiStatus.NonExtendable
         get() = cargoBlockData.transferRate
 
-    fun onDuctConnected(event: RebarCargoConnectEvent) {}
+    fun onDuctConnected(event: RebarCargoConnectEvent, priority: EventPriority) {}
 
-    fun onDuctDisconnected(event: RebarCargoDisconnectEvent) {}
+    fun onDuctDisconnected(event: RebarCargoDisconnectEvent, priority: EventPriority) {}
 
     /**
      * Checks if the block can connect to any adjacent cargo blocks, and if so, creates
@@ -196,7 +198,7 @@ interface RebarCargoBlock : RebarLogisticBlock, RebarEntityHolderBlock {
     }
 
     @ApiStatus.Internal
-    companion object : Listener {
+    companion object : MultiListener {
 
         @JvmStatic
         fun cargoItemsTransferredPerSecond(cargoTransferRate: Int)
@@ -308,27 +310,27 @@ interface RebarCargoBlock : RebarLogisticBlock, RebarEntityHolderBlock {
             }
         }
 
-        @EventHandler
-        private fun onDuctConnected(event: RebarCargoConnectEvent) {
+        @UniversalHandler
+        private fun onDuctConnected(event: RebarCargoConnectEvent, priority: EventPriority) {
             val block1 = event.block1
             if (block1 is RebarCargoBlock) {
-                block1.onDuctConnected(event)
+                MultiHandler.handleEvent(block1, "onDuctConnected", event, priority)
             }
             val block2 = event.block2
             if (block2 is RebarCargoBlock) {
-                block2.onDuctConnected(event)
+                MultiHandler.handleEvent(block2, "onDuctConnected", event, priority)
             }
         }
 
-        @EventHandler
-        private fun onDuctDisconnected(event: RebarCargoDisconnectEvent) {
+        @UniversalHandler
+        private fun onDuctDisconnected(event: RebarCargoDisconnectEvent, priority: EventPriority) {
             val block1 = event.block1
             if (block1 is RebarCargoBlock) {
-                block1.onDuctDisconnected(event)
+                MultiHandler.handleEvent(block1, "onDuctDisconnected", event, priority)
             }
             val block2 = event.block2
             if (block2 is RebarCargoBlock) {
-                block2.onDuctDisconnected(event)
+                MultiHandler.handleEvent(block2, "onDuctDisconnected", event, priority)
             }
         }
     }

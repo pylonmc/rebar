@@ -1,5 +1,6 @@
 package io.github.pylonmc.rebar.block.base
 
+import io.github.pylonmc.rebar.block.BlockStorage
 import io.github.pylonmc.rebar.block.RebarBlock
 import io.github.pylonmc.rebar.event.RebarBlockBreakEvent
 import io.github.pylonmc.rebar.event.RebarBlockLoadEvent
@@ -8,6 +9,7 @@ import io.github.pylonmc.rebar.event.RebarBlockUnloadEvent
 import net.kyori.adventure.text.Component
 import org.bukkit.event.Event
 import org.bukkit.event.EventHandler
+import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.EquipmentSlot
@@ -28,7 +30,7 @@ import java.util.IdentityHashMap
  * @see VirtualInventory
  * @see RebarVirtualInventoryBlock
  */
-interface RebarGuiBlock : RebarBreakHandler, RebarInteractBlock, RebarNoVanillaContainerBlock {
+interface RebarGuiBlock : RebarBreakHandler, RebarNoVanillaContainerBlock {
 
     /**
      * Returns the block's GUI. Called when a block is created.
@@ -40,27 +42,6 @@ interface RebarGuiBlock : RebarBreakHandler, RebarInteractBlock, RebarNoVanillaC
      */
     val guiTitle: Component
         get() = (this as RebarBlock).nameTranslationKey
-
-    @MustBeInvokedByOverriders
-    override fun onInteract(event: PlayerInteractEvent) {
-        if (!event.action.isRightClick
-            || event.player.isSneaking
-            || event.hand != EquipmentSlot.HAND
-            || event.useInteractedBlock() == Event.Result.DENY
-        ) {
-            return
-        }
-
-        event.setUseInteractedBlock(Event.Result.DENY)
-        event.setUseItemInHand(Event.Result.DENY)
-
-        Window.builder()
-            .setUpperGui(guiBlocks[this]!!)
-            .setTitle(guiTitle)
-            .setViewer(event.player)
-            .build()
-            .open()
-    }
 
     companion object : Listener {
         private val guiBlocks = IdentityHashMap<RebarGuiBlock, Gui>()
@@ -77,6 +58,29 @@ interface RebarGuiBlock : RebarBreakHandler, RebarInteractBlock, RebarNoVanillaC
             if (event.rebarBlock is RebarGuiBlock) {
                 guiBlocks[event.rebarBlock] = event.rebarBlock.createGui()
             }
+        }
+
+        @EventHandler(priority = EventPriority.HIGH)
+        private fun onInteract(event: PlayerInteractEvent) {
+            val guiBlock = BlockStorage.getAs(RebarGuiBlock::class.java, event.clickedBlock ?: return) ?: return
+
+            if (!event.action.isRightClick
+                || event.player.isSneaking
+                || event.hand != EquipmentSlot.HAND
+                || event.useInteractedBlock() == Event.Result.DENY
+            ) {
+                return
+            }
+
+            event.setUseInteractedBlock(Event.Result.DENY)
+            event.setUseItemInHand(Event.Result.DENY)
+
+            Window.builder()
+                .setUpperGui(guiBlocks[guiBlock]!!)
+                .setTitle(guiBlock.guiTitle)
+                .setViewer(event.player)
+                .build()
+                .open()
         }
 
         @EventHandler

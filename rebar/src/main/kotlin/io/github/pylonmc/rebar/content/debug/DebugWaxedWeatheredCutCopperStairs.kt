@@ -6,6 +6,7 @@ import io.github.pylonmc.rebar.block.base.RebarTickingBlock
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.entity.EntityStorage
 import io.github.pylonmc.rebar.event.RebarBlockSerializeEvent
+import io.github.pylonmc.rebar.event.api.annotation.MultiHandler
 import io.github.pylonmc.rebar.i18n.RebarArgument
 import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.item.base.RebarBlockInteractor
@@ -23,6 +24,7 @@ import net.kyori.adventure.text.Component
 import org.bukkit.Material
 import org.bukkit.block.Block
 import org.bukkit.entity.Player
+import org.bukkit.event.EventPriority
 import org.bukkit.event.block.Action
 import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.player.PlayerInteractEntityEvent
@@ -33,7 +35,8 @@ import org.bukkit.inventory.ItemStack
 internal class DebugWaxedWeatheredCutCopperStairs(stack: ItemStack)
     : RebarItem(stack), RebarBlockInteractor, RebarItemEntityInteractor, RebarWeapon {
 
-    override fun onUsedToClickBlock(event: PlayerInteractEvent) {
+    @MultiHandler(priorities = [EventPriority.LOWEST])
+    override fun onUsedToClickBlock(event: PlayerInteractEvent, priority: EventPriority) {
         event.isCancelled = true
         if (event.action == Action.PHYSICAL) return
 
@@ -103,7 +106,8 @@ internal class DebugWaxedWeatheredCutCopperStairs(stack: ItemStack)
         )
     }
 
-    override fun onUsedToDamageEntity(event: EntityDamageByEntityEvent) {
+    @MultiHandler(priorities = [EventPriority.LOWEST])
+    override fun onUsedToDamageEntity(event: EntityDamageByEntityEvent, priority: EventPriority) {
         event.isCancelled = true
         val player = event.damager as? Player ?: return
         val rebarEntity = EntityStorage.get(event.entity)
@@ -123,7 +127,8 @@ internal class DebugWaxedWeatheredCutCopperStairs(stack: ItemStack)
         }
     }
 
-    override fun onUsedToRightClickEntity(event: PlayerInteractEntityEvent) {
+    @MultiHandler(priorities = [EventPriority.LOWEST])
+    override fun onUsedToRightClickEntity(event: PlayerInteractEntityEvent, priority: EventPriority) {
         event.isCancelled = true
         val rebarEntity = EntityStorage.get(event.rightClicked)
         val player = event.player

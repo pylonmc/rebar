@@ -3,6 +3,7 @@ package io.github.pylonmc.rebar.content.fluid
 import io.github.pylonmc.rebar.block.BlockStorage
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter
 import io.github.pylonmc.rebar.entity.EntityStorage
+import io.github.pylonmc.rebar.event.api.annotation.MultiHandler
 import io.github.pylonmc.rebar.fluid.FluidManager
 import io.github.pylonmc.rebar.fluid.RebarFluid
 import io.github.pylonmc.rebar.fluid.placement.FluidPipePlacementPoint
@@ -19,6 +20,8 @@ import net.kyori.adventure.text.JoinConfiguration
 import org.bukkit.block.Block
 import org.bukkit.entity.Entity
 import org.bukkit.entity.Player
+import org.bukkit.event.Event
+import org.bukkit.event.EventPriority
 import org.bukkit.event.block.Action
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.EquipmentSlot
@@ -58,8 +61,16 @@ open class FluidPipe(stack: ItemStack) : RebarItem(stack), RebarInteractor {
     open fun canPass(fluid: RebarFluid) = allowedTemperatures == null
             || fluid.hasTag<FluidTemperature>() && fluid.getTag<FluidTemperature>() in allowedTemperatures
 
-    override fun onUsedToRightClick(event: PlayerInteractEvent) {
-        if (event.hand != EquipmentSlot.HAND) {
+    @MultiHandler(priorities = [ EventPriority.LOW, EventPriority.MONITOR ])
+    override fun onUsedToClick(event: PlayerInteractEvent, priority: EventPriority) {
+        if (!event.action.isRightClick
+            || event.hand != EquipmentSlot.HAND
+            || event.useItemInHand() == Event.Result.DENY) {
+            return
+        }
+
+        if (priority == EventPriority.LOW) {
+            event.setUseInteractedBlock(Event.Result.DENY)
             return
         }
 

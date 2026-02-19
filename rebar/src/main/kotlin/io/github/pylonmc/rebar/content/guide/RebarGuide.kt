@@ -2,6 +2,7 @@ package io.github.pylonmc.rebar.content.guide
 
 import io.github.pylonmc.rebar.addon.RebarAddon
 import io.github.pylonmc.rebar.config.RebarConfig
+import io.github.pylonmc.rebar.event.api.annotation.MultiHandler
 import io.github.pylonmc.rebar.guide.button.BackButton
 import io.github.pylonmc.rebar.guide.button.FluidButton
 import io.github.pylonmc.rebar.guide.button.PageButton
@@ -28,6 +29,7 @@ import net.kyori.adventure.key.Key
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
 import org.bukkit.entity.Player
+import org.bukkit.event.Event
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
@@ -41,10 +43,14 @@ import java.util.UUID
  */
 class RebarGuide(stack: ItemStack) : RebarItem(stack), RebarInteractor {
 
-    override fun onUsedToRightClick(event: PlayerInteractEvent) {
-        if (event.action.isRightClick) {
+    @MultiHandler(priorities = [EventPriority.NORMAL, EventPriority.MONITOR])
+    override fun onUsedToClick(event: PlayerInteractEvent, priority: EventPriority) {
+        if (!event.action.isRightClick || event.useItemInHand() == Event.Result.DENY) return
+
+        if (priority == EventPriority.NORMAL) {
+            event.setUseInteractedBlock(Event.Result.DENY)
+        } else {
             open(event.player)
-            event.isCancelled = true
         }
     }
 

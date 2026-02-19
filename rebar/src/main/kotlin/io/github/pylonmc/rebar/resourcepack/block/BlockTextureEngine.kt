@@ -13,4 +13,5 @@ object BlockTextureEngine {
     var Player.hasCustomBlockTextures: Boolean
         get() = this.pdc.getOrDefault(customBlockTexturesKey, RebarSerializers.BOOLEAN, RebarConfig.BlockTextureConfig.DEFAULT) || RebarConfig.BlockTextureConfig.FORCED
         set(value) = this.pdc.set(customBlockTexturesKey, RebarSerializers.BOOLEAN, value || RebarConfig.BlockTextureConfig.FORCED)
+
 }

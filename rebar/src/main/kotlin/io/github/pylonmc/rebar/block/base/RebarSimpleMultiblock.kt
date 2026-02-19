@@ -105,14 +105,10 @@ interface RebarSimpleMultiblock : RebarMultiblock, RebarEntityHolderBlock, Rebar
      * needs to be placed in a specific location.
      */
     class MultiblockGhostBlock(entity: Display, val name: String) :
-        RebarEntity<Display>(KEY, entity), RebarInteractEntity {
+        RebarEntity<Display>(KEY, entity) {
 
         constructor(entity: Display)
                 : this(entity, entity.persistentDataContainer.get(NAME_KEY, RebarSerializers.STRING)!!)
-
-        override fun onInteract(event: PlayerInteractEntityEvent) {
-            event.player.sendMessage(name)
-        }
 
         override fun write(pdc: PersistentDataContainer) {
             pdc.set(NAME_KEY, RebarSerializers.STRING, name)
