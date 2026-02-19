@@ -1,5 +1,6 @@
 package io.github.pylonmc.rebar.recipe
 
+import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.config.ConfigSection
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter
 import io.github.pylonmc.rebar.recipe.RebarRecipe.Companion.priority
@@ -22,10 +23,8 @@ abstract class ConfigurableRecipeType<T : RebarRecipe>(key: NamespacedKey) : Rec
                 }
                 addRecipe(recipe)
             } catch (e: Exception) {
-                throw IllegalArgumentException(
-                    "Failed to load recipe with key '$key' from config for recipe type ${this.key}",
-                    e
-                )
+                Rebar.logger.severe("Failed to load recipe with key '$key' from config for recipe type ${this.key}")
+                e.printStackTrace()
             }
         }
     }
