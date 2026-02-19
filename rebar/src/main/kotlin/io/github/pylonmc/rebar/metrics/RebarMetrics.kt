@@ -21,7 +21,7 @@ internal object RebarMetrics {
         val dataSection = dataConfig.getSection("commandsRun")
         if (dataSection != null) {
             for (key in dataSection.keys) {
-                commandsRun.put(key, dataSection.getOrThrow(key, ConfigAdapter.INT))
+                commandsRun.put(key, dataSection.getOrThrow(key, ConfigAdapter.INTEGER))
             }
         }
     }

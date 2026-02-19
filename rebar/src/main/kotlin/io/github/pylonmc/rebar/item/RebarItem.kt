@@ -100,7 +100,7 @@ open class RebarItem(val stack: ItemStack) : Keyed {
                                 ItemStackBuilder.nameKey(
                                     schema.key
                                 )
-                            }"
+                            })"
                         )
                     }
                 }

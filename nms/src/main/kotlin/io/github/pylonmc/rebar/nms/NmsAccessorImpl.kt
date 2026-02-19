@@ -60,6 +60,10 @@ object NmsAccessorImpl : NmsAccessor {
         handler.register()
     }
 
+    override fun getTranslationHandler(playerId: UUID): PlayerTranslationHandler? {
+        return players[playerId]?.handler
+    }
+
     override fun unregisterTranslationHandler(player: Player) {
         val handler = players.remove(player.uniqueId) ?: return
         handler.unregister()

@@ -3,6 +3,7 @@ package io.github.pylonmc.rebar.recipe
 import io.github.pylonmc.rebar.fluid.RebarFluid
 import io.github.pylonmc.rebar.item.ItemTypeWrapper
 import io.github.pylonmc.rebar.item.RebarItem
+import io.github.pylonmc.rebar.recipe.RebarRecipe.Companion.priority
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import org.bukkit.NamespacedKey
 import org.bukkit.inventory.ItemStack
@@ -95,29 +96,23 @@ class IngredientCalculator private constructor() {
     }
 
     private fun findRecipeFor(item: RebarItem): RebarRecipe? {
-        // 1. if there's a recipe with the same key as the item, use that
-        RebarRegistry.RECIPE_TYPES
-            .map { it.getRecipe(item.schema.key) }
-            .find { it != null && it !in blacklistedRecipes }
-            ?.let { return it }
-
-        // 2. if there's a recipe which produces *only* that item, use that
-        // 3. if there's multiple recipes which produce only that item, choose the *lowest* one lexographically
+        // 1. if there's a recipe which produces *only* that item, use that
+        // 2. if there's multiple recipes which produce only that item, choose the highest one by priority, then the *lowest* one lexographically
         val singleOutputRecipes = RebarRegistry.RECIPE_TYPES
             .flatMap { it.recipes }
             .filter { recipe -> recipe !in blacklistedRecipes && recipe.isOutput(item.stack) && recipe.results.size == 1 }
-            .sortedBy { it.key }
+            .sortedWith(compareByDescending<RebarRecipe> { it.priority }.thenBy { it.key })
 
         if (singleOutputRecipes.isNotEmpty()) {
             return singleOutputRecipes.first()
         }
 
-        // 4. if there's a recipe which produces the item *alongside* other things, use that
-        // 5. if there's multiple recipes which produce the item alongside other things, choose the *lowest* one lexographically
+        // 3. if there's a recipe which produces the item *alongside* other things, use that
+        // 4. if there's multiple recipes which produce the item alongside other things, choose the highest one by priority, then the *lowest* one lexographically
         val multiOutputRecipes = RebarRegistry.RECIPE_TYPES
             .flatMap { it.recipes }
             .filter { recipe -> recipe !in blacklistedRecipes && recipe.isOutput(item.stack) && recipe.results.size > 1 }
-            .sortedBy { it.key }
+            .sortedWith(compareByDescending<RebarRecipe> { it.priority }.thenBy { it.key })
 
         if (multiOutputRecipes.isNotEmpty()) {
             return multiOutputRecipes.first()
@@ -127,29 +122,37 @@ class IngredientCalculator private constructor() {
     }
 
     private fun findRecipeFor(fluid: RebarFluid): RebarRecipe? {
-        // 1. if there's a recipe with the same key as the fluid, use that
-        RebarRegistry.RECIPE_TYPES
-            .map { it.getRecipe(fluid.key) }
-            .find { it != null && it !in blacklistedRecipes }
-            ?.let { return it }
-
-        // 2. if there's a recipe which produces *only* that fluid, use that
-        // 3. if there's multiple recipes which produce only that fluid, choose the *lowest* one lexographically
+        // 1. if there's a recipe which produces *only* that fluid, use that
+        // 2. if there's multiple recipes which produce only that fluid, choose the highest one by priority, then the one with the most inputs
         val singleOutputRecipes = RebarRegistry.RECIPE_TYPES
             .flatMap { it.recipes }
             .filter { recipe -> recipe !in blacklistedRecipes && recipe.isOutput(fluid) && recipe.results.size == 1 }
-            .sortedBy { it.key }
+            .sortedWith(compareByDescending<RebarRecipe> { it.priority }.thenByDescending { recipe ->
+                recipe.inputs.distinctBy {
+                    when (it) {
+                        is RecipeInput.Fluid -> it.fluids
+                        is RecipeInput.Item -> it.items
+                    }
+                }.size
+            })
 
         if (singleOutputRecipes.isNotEmpty()) {
             return singleOutputRecipes.first()
         }
 
-        // 4. if there's a recipe which produces the fluid *alongside* other things, use that
-        // 5. if there's multiple recipes which produce the fluid alongside other things, choose the *lowest* one lexographically
+        // 3. if there's a recipe which produces the fluid *alongside* other things, use that
+        // 4. if there's multiple recipes which produce the fluid alongside other things, choose the highest one by priority, then the one with the most inputs
         val multiOutputRecipes = RebarRegistry.RECIPE_TYPES
             .flatMap { it.recipes }
             .filter { recipe -> recipe !in blacklistedRecipes && recipe.isOutput(fluid) && recipe.results.size > 1 }
-            .sortedBy { it.key }
+            .sortedWith(compareByDescending<RebarRecipe> { it.priority }.thenByDescending { recipe ->
+                recipe.inputs.distinctBy {
+                    when (it) {
+                        is RecipeInput.Fluid -> it.fluids
+                        is RecipeInput.Item -> it.items
+                    }
+                }.size
+            })
 
         if (multiOutputRecipes.isNotEmpty()) {
             return multiOutputRecipes.first()

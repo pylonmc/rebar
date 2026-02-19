@@ -1,5 +1,6 @@
 package io.github.pylonmc.rebar.recipe
 
+import com.google.common.collect.MapMaker
 import io.github.pylonmc.rebar.fluid.RebarFluid
 import org.bukkit.Keyed
 import org.bukkit.inventory.ItemStack
@@ -42,4 +43,15 @@ interface RebarRecipe : Keyed {
     }
 
     fun display(): Gui?
+
+    companion object {
+        private val priorities = MapMaker().weakKeys().makeMap<RebarRecipe, Double>()
+
+        @JvmStatic
+        var RebarRecipe.priority: Double
+            get() = priorities.getOrDefault(this, 0.0)
+            set(value) {
+                priorities[this] = value
+            }
+    }
 }

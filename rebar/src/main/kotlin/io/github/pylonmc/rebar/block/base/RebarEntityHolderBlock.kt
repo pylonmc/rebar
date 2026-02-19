@@ -17,6 +17,7 @@ import org.bukkit.entity.Entity
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.entity.EntityRemoveEvent
+import org.bukkit.persistence.PersistentDataContainer
 import org.jetbrains.annotations.ApiStatus
 import java.util.IdentityHashMap
 import java.util.UUID
@@ -126,6 +127,8 @@ interface RebarEntityHolderBlock {
         val blockKey = rebarKey("entity_holder_block")
         @JvmStatic
         val entityType = RebarSerializers.MAP.mapTypeFrom(RebarSerializers.STRING, RebarSerializers.UUID)
+        @JvmStatic
+        val debugEntityType = RebarSerializers.MAP.mapTypeFrom(RebarSerializers.STRING, RebarSerializers.TAG_CONTAINER)
 
         @JvmSynthetic
         internal val holders = IdentityHashMap<RebarEntityHolderBlock, MutableMap<String, UUID>>()
@@ -142,7 +145,22 @@ interface RebarEntityHolderBlock {
         private fun onSerialize(event: RebarBlockSerializeEvent) {
             val block = event.rebarBlock
             if (block !is RebarEntityHolderBlock) return
-            holders[block]?.let { event.pdc.set(entityKey, entityType, it) }
+            if (event.debug) {
+                val debugMap = mutableMapOf<String, PersistentDataContainer>()
+                holders[block]?.forEach { (name, uuid) ->
+                    val entityPdc = event.pdc.adapterContext.newPersistentDataContainer()
+                    val entity = EntityStorage.get(uuid)
+                    if (entity != null) {
+                        entity.writeDebugInfo(entityPdc)
+                    } else {
+                        entityPdc.set(rebarKey("rebar_entity_not_found"), RebarSerializers.BOOLEAN, true)
+                    }
+                    debugMap[name] = entityPdc
+                }
+                event.pdc.set(entityKey, debugEntityType, debugMap)
+            } else {
+                holders[block]?.let { event.pdc.set(entityKey, entityType, it) }
+            }
         }
 
         @EventHandler

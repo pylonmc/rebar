@@ -16,6 +16,7 @@ import io.github.pylonmc.rebar.event.*
 import io.github.pylonmc.rebar.event.api.MultiListener
 import io.github.pylonmc.rebar.event.api.annotation.MultiHandler
 import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
+import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
 import io.github.pylonmc.rebar.logistics.CargoRoutes
 import io.github.pylonmc.rebar.logistics.LogisticGroup
 import io.github.pylonmc.rebar.logistics.LogisticGroupType
@@ -121,7 +122,8 @@ interface RebarCargoBlock : RebarLogisticBlock, RebarEntityHolderBlock {
                         .extraLength(0.3505)
                         .build()
                 )
-                .material(Material.GRAY_CONCRETE)
+                .itemStack(ItemStackBuilder.of(Material.GRAY_CONCRETE)
+                    .addCustomModelDataString("pylon:cargo_duct:line"))
                 .build(fromLocation)
             addEntity("cargo:direct-connection:${face}", display)
         }

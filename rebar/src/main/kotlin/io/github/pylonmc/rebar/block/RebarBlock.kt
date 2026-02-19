@@ -164,7 +164,7 @@ open class RebarBlock internal constructor(val block: Block) {
         meta.item = SpigotConversionUtil.fromBukkitItemStack(item)
         meta.displayType = ItemDisplayMeta.DisplayType.FIXED
         meta.brightnessOverride = 15 shl 4 or 15 shl 20;
-        meta.scale = Vector3f(BlockTextureEntity.BLOCK_OVERLAP_SCALE, BlockTextureEntity.BLOCK_OVERLAP_SCALE, BlockTextureEntity.BLOCK_OVERLAP_SCALE)
+        meta.scale = Vector3f(1 + BlockTextureEntity.BLOCK_OVERLAP_INCREASE, 1 + BlockTextureEntity.BLOCK_OVERLAP_INCREASE, 1 + BlockTextureEntity.BLOCK_OVERLAP_INCREASE)
         meta.width = 0f
         meta.height = 0f
     }
@@ -365,7 +365,7 @@ open class RebarBlock internal constructor(val block: Block) {
             pdc.set(rebarBlockPositionKey, RebarSerializers.LONG, block.block.position.asLong)
 
             block.write(pdc)
-            RebarBlockSerializeEvent(block.block, block, pdc).callEvent()
+            RebarBlockSerializeEvent(block.block, block, pdc, false).callEvent()
 
             return pdc
         }

@@ -3,6 +3,8 @@ package io.github.pylonmc.rebar.guide.pages.item
 import io.github.pylonmc.rebar.content.guide.RebarGuide
 import io.github.pylonmc.rebar.guide.pages.base.PagedGuidePage
 import io.github.pylonmc.rebar.recipe.FluidOrItem
+import io.github.pylonmc.rebar.recipe.RebarRecipe
+import io.github.pylonmc.rebar.recipe.RebarRecipe.Companion.priority
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.util.gui.GuiItems
 import io.github.pylonmc.rebar.util.rebarKey
@@ -20,11 +22,19 @@ open class ItemRecipesPage(val stack: ItemStack) : PagedGuidePage {
     val pages: MutableList<Gui> = mutableListOf()
 
     init {
+        val recipes = mutableListOf<RebarRecipe>()
         for (type in RebarRegistry.RECIPE_TYPES) {
             for (recipe in type.recipes) {
                 if (!recipe.isHidden && recipe.isOutput(stack)) {
-                    recipe.display()?.let { pages.add(it) }
+                    recipes.add(recipe)
                 }
+            }
+        }
+        recipes.sortByDescending { it.priority }
+        for (recipe in recipes) {
+            val display = recipe.display()
+            if (display != null) {
+                pages.add(display)
             }
         }
     }

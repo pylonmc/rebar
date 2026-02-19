@@ -34,4 +34,6 @@ open class PageButton(val stack: ItemStack, val page: GuidePage) : AbstractItem(
     override fun handleClick(clickType: ClickType, player: Player, click: Click) {
         page.open(player)
     }
+
+    open fun priority(): Double = 0.0
 }
