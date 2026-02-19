@@ -28,8 +28,8 @@ open class ConfigSection(val internalSection: ConfigurationSection) {
      * Gets all the values in the section that are themselves sections.
      * @throws NullPointerException if any top level keys do not correspond to a section
      */
-    fun getSections(): Set<ConfigSection> {
-        val configSections: MutableSet<ConfigSection> = mutableSetOf()
+    fun getSections(): List<ConfigSection> {
+        val configSections: MutableList<ConfigSection> = mutableListOf()
         for (key in internalSection.getKeys(false)) {
             configSections.add(getSection(key)!!)
         }
