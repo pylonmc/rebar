@@ -301,7 +301,7 @@ class Research(
 
 
         @JvmStatic
-        fun loadFromConfig(section: ConfigSection, key : NamespacedKey) : Research {
+        fun loadFromConfig(section: ConfigSection, key : NamespacedKey) : Research? {
 
             try {
                 val item = section.getOrThrow("item", ConfigAdapter.ITEM_STACK)
@@ -311,10 +311,9 @@ class Research(
 
                 return Research(key, item, Component.translatable(name), cost, unlocks)
             } catch (e: Exception) {
-                throw IllegalArgumentException(
-                    "Failed to load research '$key' from config",
-                    e
-                )
+                Rebar.logger.severe("Failed to load research '$key' from config")
+                e.printStackTrace()
+                return null
             }
         }
     }
