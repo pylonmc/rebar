@@ -393,7 +393,7 @@ object Rebar : JavaPlugin(), RebarAddon {
                     val nsKey = NamespacedKey(namespace, key)
                     val section = mainResearchConfig.getSection(key) ?: continue
 
-                    Research.loadFromConfig(section, nsKey).register()
+                    Research.loadFromConfig(section, nsKey)?.register()
                 }
             }
         }

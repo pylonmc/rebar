@@ -8,7 +8,9 @@ import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.ComponentLike
 import net.kyori.adventure.text.TextReplacementConfig
 import net.kyori.adventure.text.format.NamedTextColor
+import net.kyori.adventure.text.format.Style
 import net.kyori.adventure.text.format.TextColor
+import net.kyori.adventure.text.format.TextDecoration
 import net.kyori.adventure.text.minimessage.Context
 import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.text.minimessage.tag.Modifying
@@ -40,6 +42,7 @@ val customMiniMessage = MiniMessage.builder()
         it.tag("star", ::star)
         it.tag(setOf("instruction", "insn")) { _, _ -> Tag.styling(TextColor.color(0xf9d104)) }
         it.tag(setOf("guideinstruction", "guideinsn")) { _, _ -> Tag.styling(TextColor.color(0xc907f4)) }
+        it.tag("story") { _, _ -> Tag.styling { builder -> builder.color(TextColor.color(0xcc9bf2)).decorate(TextDecoration.ITALIC) } }
         it.tag(setOf("attribute", "attr")) { _, _ -> Tag.styling(TextColor.color(0xa9d9e8)) }
         it.tag(setOf("unit", "u"), ::unit)
         // No break space

@@ -57,13 +57,13 @@ import io.papermc.paper.math.BlockPosition as PaperBlockPosition
 private val guide = buildCommand("guide") {
     permission("rebar.command.guide")
     executesWithPlayer { player ->
-        RebarMetrics.onCommandRun("/re guide")
+        RebarMetrics.onCommandRun("/rb guide")
         player.inventory.addItem(RebarGuide.STACK)
     }
     argument("players", ArgumentTypes.players()) {
         permission("rebar.command.guide.others")
         executes {
-            RebarMetrics.onCommandRun("/re guide")
+            RebarMetrics.onCommandRun("/rb guide")
             val players = getArgument<List<Player>>("players")
             for (player in players) {
                 player.inventory.addItem(RebarGuide.STACK)
@@ -102,14 +102,14 @@ private val give = buildCommand("give") {
 
             permission("rebar.command.give")
             executes {
-                RebarMetrics.onCommandRun("/re give")
+                RebarMetrics.onCommandRun("/rb give")
                 givePlayers(this, 1)
             }
 
             argument("amount", IntegerArgumentType.integer(1)) {
                 permission("rebar.command.give")
                 executes {
-                    RebarMetrics.onCommandRun("/re give")
+                    RebarMetrics.onCommandRun("/rb give")
                     givePlayers(this, IntegerArgumentType.getInteger(this, "amount"))
                 }
             }
@@ -120,7 +120,7 @@ private val give = buildCommand("give") {
 private val debug = buildCommand("debug") {
     permission("rebar.command.debug")
     executesWithPlayer { player ->
-        RebarMetrics.onCommandRun("/re debug")
+        RebarMetrics.onCommandRun("/rb debug")
         player.inventory.addItem(DebugWaxedWeatheredCutCopperStairs.STACK)
         player.sendVanillaFeedback("give.success.single", Component.text(1), DebugWaxedWeatheredCutCopperStairs.STACK.vanillaDisplayName(), player.name())
     }
@@ -129,7 +129,7 @@ private val debug = buildCommand("debug") {
 private val key = buildCommand("key") {
     permission("rebar.command.key")
     executesWithPlayer { player ->
-        RebarMetrics.onCommandRun("/re key")
+        RebarMetrics.onCommandRun("/rb key")
         val item = RebarItem.fromStack(player.inventory.getItem(EquipmentSlot.HAND))
         if (item == null) {
             player.sendFeedback("key.no_item")
@@ -146,7 +146,7 @@ private val setblock = buildCommand("setblock") {
         argument("block", RegistryCommandArgument(RebarRegistry.BLOCKS)) {
             permission("rebar.command.setblock")
             executes {
-                RebarMetrics.onCommandRun("/re setblock")
+                RebarMetrics.onCommandRun("/rb setblock")
                 val location = getArgument<PaperBlockPosition>("pos").toLocation(source.location.world)
                 if (!location.world.isPositionLoaded(location)) {
                     source.sender.sendMessage(Component.translatable("argument.pos.unloaded"))
@@ -172,7 +172,7 @@ private val gametest = buildCommand("gametest") {
         argument("test", RegistryCommandArgument(RebarRegistry.GAMETESTS)) {
             permission("rebar.command.gametest")
             executesWithPlayer { player ->
-                RebarMetrics.onCommandRun("/re gametest")
+                RebarMetrics.onCommandRun("/rb gametest")
                 val position = BlockPosition(getArgument<PaperBlockPosition>("pos").toLocation(player.world))
                 val test = getArgument<GameTestConfig>("test")
                 player.sendFeedback(
@@ -219,7 +219,7 @@ private val researchAdd = buildCommand("add") {
             permission("rebar.command.research.add")
             executes {
                 // no confetti for all research otherwise server go big boom
-                RebarMetrics.onCommandRun("/re research add")
+                RebarMetrics.onCommandRun("/rb research add")
                 addResearches(this, RebarRegistry.RESEARCHES.toList(), false)
             }
         }
@@ -227,7 +227,7 @@ private val researchAdd = buildCommand("add") {
         argument("research", RegistryCommandArgument(RebarRegistry.RESEARCHES)) {
             permission("rebar.command.research.add")
             executes {
-                RebarMetrics.onCommandRun("/re research add")
+                RebarMetrics.onCommandRun("/rb research add")
                 val res = getArgument<Research>("research")
                 addResearches(this, listOf(res))
             }
@@ -254,7 +254,7 @@ private val researchList = buildCommand("list") {
     argument("player", ArgumentTypes.player()) {
         permission("rebar.command.research.list")
         executes { sender ->
-            RebarMetrics.onCommandRun("/re research list")
+            RebarMetrics.onCommandRun("/rb research list")
             val player = getArgument<Player>("player")
             listResearches(sender, player, "_other")
         }
@@ -281,7 +281,7 @@ private val researchRemove = buildCommand("remove") {
         literal("*") {
             permission("rebar.command.research.remove")
             executes {
-                RebarMetrics.onCommandRun("/re research remove")
+                RebarMetrics.onCommandRun("/rb research remove")
                 removeResearches(this, RebarRegistry.RESEARCHES.toList())
             }
         }
@@ -289,7 +289,7 @@ private val researchRemove = buildCommand("remove") {
         argument("research", RegistryCommandArgument(RebarRegistry.RESEARCHES)) {
             permission("rebar.command.research.remove")
             executes {
-                RebarMetrics.onCommandRun("/re research remove")
+                RebarMetrics.onCommandRun("/rb research remove")
                 val res = getArgument<Research>("research")
                 removeResearches(this, listOf(res))
             }
@@ -302,7 +302,7 @@ private val researchPointsSet = buildCommand("set") {
         argument("points", LongArgumentType.longArg(0)) {
             permission("rebar.command.research.points.set")
             executes { sender ->
-                RebarMetrics.onCommandRun("/re research points set")
+                RebarMetrics.onCommandRun("/rb research points set")
                 val points = getArgument<Long>("points")
                 for (player in getArgument<List<Player>>("players")) {
                     player.researchPoints = points
@@ -322,7 +322,7 @@ private val researchPointsAdd = buildCommand("add") {
         argument("points", LongArgumentType.longArg()) {
             permission("rebar.command.research.points.add")
             executes { sender ->
-                RebarMetrics.onCommandRun("/re research points add")
+                RebarMetrics.onCommandRun("/rb research points add")
                 val points = getArgument<Long>("points")
                 for (player in getArgument<List<Player>>("players")) {
                     player.researchPoints += points
@@ -342,7 +342,7 @@ private val researchPointsSubtract = buildCommand("subtract") {
         argument("points", LongArgumentType.longArg()) {
             permission("rebar.command.research.points.subtract")
             executes { sender ->
-                RebarMetrics.onCommandRun("/re research points subtract")
+                RebarMetrics.onCommandRun("/rb research points subtract")
                 val points = getArgument<Long>("points")
                 for (player in getArgument<List<Player>>("players")) {
                     player.researchPoints -= points
@@ -361,7 +361,7 @@ private val researchPointQuery = buildCommand("get") {
     argument("player", ArgumentTypes.player()) {
         permission("rebar.command.research.points.get")
         executes { sender ->
-            RebarMetrics.onCommandRun("/re research points get")
+            RebarMetrics.onCommandRun("/rb research points get")
             val player = getArgument<Player>("player")
             val points = player.researchPoints
             sender.sendFeedback(
@@ -392,7 +392,7 @@ private val exposeRecipeConfig = buildCommand("exposerecipeconfig") {
         argument("recipe", RegistryCommandArgument(RebarRegistry.RECIPE_TYPES)) {
             permission("rebar.command.exposerecipeconfig")
             executes { sender ->
-                RebarMetrics.onCommandRun("/re exposerecipeconfig")
+                RebarMetrics.onCommandRun("/rb exposerecipeconfig")
                 val addon = getArgument<RebarAddon>("addon")
                 val recipeType = getArgument<RecipeType<*>>("recipe")
                 if (recipeType !is ConfigurableRecipeType) {
@@ -401,7 +401,7 @@ private val exposeRecipeConfig = buildCommand("exposerecipeconfig") {
                 }
                 sender.sendFeedback(
                     "exposerecipe.warning",
-                    RebarArgument.of("file", "plugins/Rebar/${recipeType.filePath}")
+                    RebarArgument.of("file", "plugins/rbbar/${recipeType.filePath}")
                 )
                 mergeGlobalConfig(addon, recipeType.filePath, recipeType.filePath)
             }
@@ -413,19 +413,19 @@ private val confetti = buildCommand("confetti") {
     argument("amount", IntegerArgumentType.integer(1)) {
         permission("rebar.command.confetti")
         executesWithPlayer { player ->
-            RebarMetrics.onCommandRun("/re confetti")
+            RebarMetrics.onCommandRun("/rb confetti")
             ConfettiParticle.spawnMany(player.location, IntegerArgumentType.getInteger(this, "amount")).run()
         }
         argument("speed", DoubleArgumentType.doubleArg(0.0)) {
             permission("rebar.command.confetti")
             executesWithPlayer { player ->
-                RebarMetrics.onCommandRun("/re confetti")
+                RebarMetrics.onCommandRun("/rb confetti")
                 ConfettiParticle.spawnMany(player.location, IntegerArgumentType.getInteger(this, "amount"), DoubleArgumentType.getDouble(this, "speed")).run()
             }
             argument("lifetime", IntegerArgumentType.integer(1)) {
                 permission("rebar.command.confetti")
                 executesWithPlayer { player ->
-                    RebarMetrics.onCommandRun("/re confetti")
+                    RebarMetrics.onCommandRun("/rb confetti")
                     ConfettiParticle.spawnMany(
                         player.location,
                         IntegerArgumentType.getInteger(this, "amount"),
@@ -442,7 +442,7 @@ private val setphantom = buildCommand("setphantom") {
     argument("pos", ArgumentTypes.blockPosition()) {
         permission("rebar.command.setphantom")
         executes { sender ->
-            RebarMetrics.onCommandRun("/re setphantom")
+            RebarMetrics.onCommandRun("/rb setphantom")
             val position = getArgument<PaperBlockPosition>("pos").toLocation(source.location.world)
             if (!position.world.isPositionLoaded(position)) {
                 source.sender.sendMessage(Component.translatable("argument.pos.unloaded"))
@@ -468,7 +468,7 @@ private val setphantom = buildCommand("setphantom") {
 internal val ROOT_COMMAND = buildCommand("rebar") {
     permission("rebar.command.guide")
     executesWithPlayer { player ->
-        RebarMetrics.onCommandRun("/re")
+        RebarMetrics.onCommandRun("/rb")
         RebarGuide.open(player)
     }
 
@@ -485,7 +485,7 @@ internal val ROOT_COMMAND = buildCommand("rebar") {
 }
 
 @JvmSynthetic
-internal val ROOT_COMMAND_RE_ALIAS = buildCommand("re") {
+internal val ROOT_COMMAND_RE_ALIAS = buildCommand("rb") {
     redirect(ROOT_COMMAND)
 }
 
