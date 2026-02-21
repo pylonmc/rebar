@@ -48,7 +48,7 @@ internal object RebarMetrics {
         })
 
         metrics.addCustomChart(SimplePie("researches_enabled") {
-            if (RebarConfig.RESEARCHES_ENABLED) { "yes" } else { "no" }
+            if (RebarConfig.ResearchConfig.ENABLED) { "yes" } else { "no" }
         })
 
         metrics.addCustomChart(AdvancedPie("researches_unlocked") {

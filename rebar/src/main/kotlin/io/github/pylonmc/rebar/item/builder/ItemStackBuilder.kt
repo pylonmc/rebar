@@ -1,5 +1,6 @@
 package io.github.pylonmc.rebar.item.builder
 
+import io.github.pylonmc.rebar.addon.RebarAddon
 import io.github.pylonmc.rebar.config.Config
 import io.github.pylonmc.rebar.config.Settings
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter
@@ -407,9 +408,17 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
          * a custom model data string for resource packs.
          */
         @JvmStatic
-        fun gui(material: Material, key: NamespacedKey): ItemStackBuilder {
-            return gui(ItemStack(material), key)
+        fun gui(material: Material, key: NamespacedKey) = gui(ItemStack(material), key)
+
+        @JvmStatic
+        fun guide(stack: ItemStack, addon: RebarAddon, key: String): ItemStackBuilder {
+            return gui(stack, "guide_$key")
+                .name(Component.translatable("${addon.key.namespace}.guide.button.$key.name"))
+                .lore(Component.translatable("${addon.key.namespace}.guide.button.$key.lore"))
         }
+
+        @JvmStatic
+        fun guide(material: Material, addon: RebarAddon, key: String) = guide(ItemStack(material), addon, key)
 
         /**
          * Creates a new [ItemStack] for a [RebarItem] by setting

@@ -126,6 +126,9 @@ object RebarSerializers {
     @JvmField
     val PROGRESS_ITEM = ProgressItemPersistentDataType
 
+    @JvmField
+    val COMPONENT = ComponentPersistentDataType
+
     @JvmSynthetic
     internal val CARGO_BLOCK_DATA = CargoBlockPersistentDataType
 

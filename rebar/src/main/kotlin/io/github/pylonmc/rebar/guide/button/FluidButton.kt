@@ -7,7 +7,6 @@ import io.github.pylonmc.rebar.guide.pages.fluid.FluidRecipesPage
 import io.github.pylonmc.rebar.guide.pages.fluid.FluidUsagesPage
 import io.github.pylonmc.rebar.i18n.RebarArgument
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
-import io.github.pylonmc.rebar.item.research.Research.Companion.guideHints
 import io.github.pylonmc.rebar.recipe.RecipeInput
 import io.github.pylonmc.rebar.util.gui.unit.UnitFormat
 import io.papermc.paper.datacomponent.DataComponentTypes
@@ -86,9 +85,6 @@ open class FluidButton(
                         RebarArgument.of("amount", UnitFormat.MILLIBUCKETS.format(amount).decimalPlaces(2))
                     )
                 )
-        }
-        if (player.guideHints) {
-            stack.lore(Component.translatable("rebar.guide.button.fluid.hints"))
         }
         stack
     } catch (e: Exception) {

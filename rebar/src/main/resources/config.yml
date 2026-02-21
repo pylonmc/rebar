@@ -132,6 +132,10 @@ metrics-save-interval-ticks: 6000
 # those items can't be crafted.
 disabled-items: []
 
+guide:
+  # Should there be a button linking to the official rebar/pylon discord server in the info section of the guide?
+  discord-button: true
+
 custom-armor-textures:
   # Should Rebar support modifying the equipment component of armor items to use custom armor textures?
   # If a player has no resource pack that adds textures installed, and has armor textures enabled the armor will appear invisible.

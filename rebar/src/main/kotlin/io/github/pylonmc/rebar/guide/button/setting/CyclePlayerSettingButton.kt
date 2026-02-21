@@ -45,7 +45,7 @@ data class CyclePlayerSettingButton<S> (
     val setter: (Player, S) -> Unit,
 
     val decorator: (Player, S) -> ItemStack,
-    val placeholderProvider: (Player, S) -> MutableList<ComponentLike> = { _, _ -> mutableListOf<ComponentLike>() }
+    val placeholderProvider: (Player, S) -> MutableList<ComponentLike> = { _, _ -> mutableListOf() }
 ) : AbstractItem() {
     override fun getItemProvider(player: Player): ItemProvider {
         val setting = getter(player)
@@ -57,8 +57,9 @@ data class CyclePlayerSettingButton<S> (
     }
 
     override fun handleClick(clickType: ClickType, player: Player, click: Click) {
+        val size = sortedValues.size
         val currentIndex = sortedValues.indexOfFirst { identifier(it) == identifier(getter(player)) }
-        val nextIndex = (currentIndex + (if (clickType.isLeftClick) 1 else -1)) % sortedValues.size
+        val nextIndex = (currentIndex + (if (clickType.isLeftClick) 1 else -1) + size) % size
         setter(player, sortedValues[nextIndex])
         notifyWindows()
     }

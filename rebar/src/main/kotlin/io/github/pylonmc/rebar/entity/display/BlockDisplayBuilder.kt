@@ -21,6 +21,8 @@ open class BlockDisplayBuilder() {
     protected var viewRange: Float? = null
     protected var interpolationDelay: Int? = null
     protected var interpolationDuration: Int? = null
+    protected var displayWidth: Float? = null
+    protected var displayHeight: Float? = null
 
     constructor(other: BlockDisplayBuilder): this() {
         this.material = other.material
@@ -31,6 +33,8 @@ open class BlockDisplayBuilder() {
         this.viewRange = other.viewRange
         this.interpolationDelay = other.interpolationDelay
         this.interpolationDuration = other.interpolationDuration
+        this.displayWidth = other.displayWidth
+        this.displayHeight = other.displayHeight
     }
 
     fun material(material: Material?): BlockDisplayBuilder {
@@ -47,6 +51,8 @@ open class BlockDisplayBuilder() {
     fun viewRange(viewRange: Float): BlockDisplayBuilder = apply { this.viewRange = viewRange }
     fun interpolationDelay(interpolationDelay: Int): BlockDisplayBuilder = apply { this.interpolationDelay = interpolationDelay }
     fun interpolationDuration(interpolationDuration: Int): BlockDisplayBuilder = apply { this.interpolationDuration = interpolationDuration }
+    fun displayWidth(displayWidth: Float): BlockDisplayBuilder = apply { this.displayWidth = displayWidth }
+    fun displayHeight(displayHeight: Float): BlockDisplayBuilder = apply { this.displayHeight = displayHeight }
 
     open fun build(location: Location): BlockDisplay {
         val finalLocation = location.clone()
@@ -80,6 +86,12 @@ open class BlockDisplayBuilder() {
         }
         if (interpolationDuration != null) {
             display.interpolationDuration = interpolationDuration!!
+        }
+        if (displayWidth != null) {
+            display.displayWidth = displayWidth!!
+        }
+        if (displayHeight != null) {
+            display.displayHeight = displayHeight!!
         }
     }
 }

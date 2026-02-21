@@ -6,12 +6,12 @@ import io.github.pylonmc.rebar.event.api.annotation.MultiHandler
 import io.github.pylonmc.rebar.guide.button.BackButton
 import io.github.pylonmc.rebar.guide.button.FluidButton
 import io.github.pylonmc.rebar.guide.button.PageButton
-import io.github.pylonmc.rebar.guide.button.ResearchesButton
+import io.github.pylonmc.rebar.guide.button.AddonPageButton
 import io.github.pylonmc.rebar.guide.pages.RootPage
 import io.github.pylonmc.rebar.guide.pages.SearchItemsAndFluidsPage
 import io.github.pylonmc.rebar.guide.pages.base.GuidePage
 import io.github.pylonmc.rebar.guide.pages.base.SimpleDynamicGuidePage
-import io.github.pylonmc.rebar.guide.pages.base.SimpleStaticGuidePage
+import io.github.pylonmc.rebar.guide.pages.info.InfoPage
 import io.github.pylonmc.rebar.guide.pages.item.ItemIngredientsPage
 import io.github.pylonmc.rebar.guide.pages.research.AddonResearchesPage
 import io.github.pylonmc.rebar.guide.pages.research.ResearchItemsPage
@@ -110,7 +110,7 @@ class RebarGuide(stack: ItemStack) : RebarItem(stack), RebarInteractor {
         val fluidsButton = PageButton(Material.WATER_BUCKET, fluidsPage)
 
         @JvmStatic
-        val infoPage = SimpleStaticGuidePage(rebarKey("info"))
+        val infoPage = InfoPage
 
         @JvmStatic
         val infoButton = PageButton(Material.LANTERN, infoPage)
@@ -125,7 +125,7 @@ class RebarGuide(stack: ItemStack) : RebarItem(stack), RebarInteractor {
         fun addonResearchesPage(addon: RebarAddon) = AddonResearchesPage(addon)
 
         @JvmStatic
-        fun addonResearchesButton(addon: RebarAddon) = ResearchesButton(addon)
+        fun addonResearchesButton(addon: RebarAddon) = AddonPageButton(addon, addonResearchesPage(addon))
 
         @JvmStatic
         fun researchItemsPage(research: Research) = ResearchItemsPage(research)

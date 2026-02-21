@@ -22,18 +22,23 @@ import xyz.xenondevs.invui.item.ItemProvider
  *
  * @see GuidePage
  */
-open class PageButton(val stack: ItemStack, val page: GuidePage) : AbstractItem() {
+open class PageButton(val stack: ItemStack, val page: GuidePage) : GuideButton() {
+
+    constructor(builder: ItemStackBuilder, page: GuidePage) : this(builder.build(), page)
 
     constructor(material: Material, page: GuidePage) : this(ItemStack(material), page)
 
     override fun getItemProvider(viewer: Player): ItemProvider = ItemStackBuilder.gui(stack, "${rebarKey("guide_page")}:${page.key}")
         .name(Component.translatable("${page.key.namespace}.guide.page.${page.key.key}"))
         .clearLore()
-        .lore(Component.translatable("${page.key.namespace}.guide.button.${page.key.key}", ""))
+        .lore(Component.translatable("${page.key.namespace}.guide.button.${page.key.key}.lore", ""))
 
     override fun handleClick(clickType: ClickType, player: Player, click: Click) {
         page.open(player)
     }
 
-    open fun priority(): Double = 0.0
+    override fun shouldDisplay(player: Player) = page.shouldDisplay(player)
+
+    override fun priority(): Double = 0.0
+
 }

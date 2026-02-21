@@ -4,8 +4,10 @@ import io.github.pylonmc.rebar.addon.RebarAddon
 import io.github.pylonmc.rebar.content.guide.RebarGuide
 import io.github.pylonmc.rebar.guide.button.ResearchButton
 import io.github.pylonmc.rebar.guide.pages.base.SimpleDynamicGuidePage
+import io.github.pylonmc.rebar.i18n.RebarArgument
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.util.rebarKey
+import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.Style
 
 /**
@@ -21,5 +23,6 @@ class AddonResearchesPage(val addon: RebarAddon) : SimpleDynamicGuidePage(
         }
     }
 ) {
-    override val title = addon.displayName.style(Style.empty())
+    override val title = Component.translatable("rebar.guide.page.researches_addon",
+        RebarArgument.of("addon", addon.displayName))
 }

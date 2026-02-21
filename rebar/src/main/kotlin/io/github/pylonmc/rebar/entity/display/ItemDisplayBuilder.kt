@@ -25,8 +25,8 @@ open class ItemDisplayBuilder() {
     var viewRange: Float? = null
     var interpolationDelay: Int? = null
     var interpolationDuration: Int? = null
-    var width: Float? = null
-    var height: Float? = null
+    var displayWidth: Float? = null
+    var displayHeight: Float? = null
 
     constructor(other: ItemDisplayBuilder): this() {
         this.itemStack = other.itemStack
@@ -38,8 +38,8 @@ open class ItemDisplayBuilder() {
         this.viewRange = other.viewRange
         this.interpolationDelay = other.interpolationDelay
         this.interpolationDuration = other.interpolationDuration
-        this.width = other.width
-        this.height = other.height
+        this.displayWidth = other.displayWidth
+        this.displayHeight = other.displayHeight
     }
 
     fun material(material: Material) = apply { this.itemStack = ItemStack(material) }
@@ -55,8 +55,8 @@ open class ItemDisplayBuilder() {
     fun viewRange(viewRange: Float) = apply { this.viewRange = viewRange }
     fun interpolationDelay(interpolationDelay: Int) = apply { this.interpolationDelay = interpolationDelay }
     fun interpolationDuration(interpolationDuration: Int) = apply { this.interpolationDuration = interpolationDuration }
-    fun width(width: Float) = apply { this.width = width }
-    fun height(height: Float) = apply { this.height = height }
+    fun displayWidth(displayWidth: Float): ItemDisplayBuilder = apply { this.displayWidth = displayWidth }
+    fun displayHeight(displayHeight: Float): ItemDisplayBuilder = apply { this.displayHeight = displayHeight }
 
     open fun build(location: Location): ItemDisplay {
         val finalLocation = location.clone()
@@ -97,11 +97,11 @@ open class ItemDisplayBuilder() {
         if (interpolationDuration != null) {
             display.interpolationDuration = interpolationDuration!!
         }
-        if (width != null) {
-            display.displayWidth = width!!
+        if (displayWidth != null) {
+            display.displayWidth = displayWidth!!
         }
-        if (height != null) {
-            display.displayWidth = height!!
+        if (displayHeight != null) {
+            display.displayWidth = displayHeight!!
         }
     }
 }

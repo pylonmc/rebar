@@ -25,7 +25,7 @@ class PlayerTranslationHandler internal constructor(private val player: Player) 
         if (rebarItem != null) {
             stack.editData(DataComponentTypes.LORE) { lore ->
                 val newLore = lore.lines().toMutableList()
-                newLore.add(GlobalTranslator.render(rebarItem.addon.displayName, player.locale()))
+                newLore.add(GlobalTranslator.render(rebarItem.addon.footerName, player.locale()))
                 if (rebarItem.isDisabled) {
                     newLore.add(
                         GlobalTranslator.render(

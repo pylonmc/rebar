@@ -1,5 +1,6 @@
 package io.github.pylonmc.rebar.config
 
+import com.google.common.base.Defaults.defaultValue
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter
 import org.bukkit.configuration.ConfigurationSection
 import java.lang.reflect.ParameterizedType
@@ -63,6 +64,13 @@ open class ConfigSection(val internalSection: ConfigurationSection) {
      */
     fun <T> get(key: String, adapter: ConfigAdapter<T>, defaultValue: T): T {
         return get(key, adapter) ?: defaultValue
+    }
+
+    /**
+     * Returns the computed [defaultValue] if the key does not exist or if the value cannot be converted to the desired type.
+     */
+    fun <T> get(key: String, adapter: ConfigAdapter<T>, defaultValue: () -> T): T {
+        return get(key, adapter) ?: defaultValue.invoke()
     }
 
     /**

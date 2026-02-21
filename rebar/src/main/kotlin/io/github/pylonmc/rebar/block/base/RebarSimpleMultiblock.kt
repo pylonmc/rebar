@@ -23,7 +23,9 @@ import io.github.pylonmc.rebar.util.position.ChunkPosition
 import io.github.pylonmc.rebar.util.position.position
 import io.github.pylonmc.rebar.util.rebarKey
 import io.github.pylonmc.rebar.util.rotateVectorToFace
+import io.github.pylonmc.rebar.waila.WailaDisplay
 import kotlinx.coroutines.delay
+import net.kyori.adventure.text.Component
 import org.bukkit.Color
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
@@ -33,6 +35,7 @@ import org.bukkit.block.data.BlockData
 import org.bukkit.entity.BlockDisplay
 import org.bukkit.entity.Display
 import org.bukkit.entity.ItemDisplay
+import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerInteractEntityEvent
@@ -104,19 +107,26 @@ interface RebarSimpleMultiblock : RebarMultiblock, RebarEntityHolderBlock, Rebar
      * A block display that represents this block, showing the player what block
      * needs to be placed in a specific location.
      */
-    class MultiblockGhostBlock(entity: Display, val name: String) :
+    class MultiblockGhostBlock(entity: Display, val displayName: Component) :
         RebarEntity<Display>(KEY, entity) {
 
+        constructor(entity: Display, displayName: String)
+                : this(entity, Component.text(displayName))
+
         constructor(entity: Display)
-                : this(entity, entity.persistentDataContainer.get(NAME_KEY, RebarSerializers.STRING)!!)
+                : this(entity, entity.persistentDataContainer.get(NAME_KEY, RebarSerializers.COMPONENT)!!)
+
+        override fun getWaila(player: Player): WailaDisplay {
+            return WailaDisplay(displayName)
+        }
 
         override fun write(pdc: PersistentDataContainer) {
-            pdc.set(NAME_KEY, RebarSerializers.STRING, name)
+            pdc.set(NAME_KEY, RebarSerializers.COMPONENT, displayName)
         }
 
         companion object {
             val KEY = rebarKey("multiblock_ghost_block")
-            val NAME_KEY = rebarKey("name")
+            val NAME_KEY = rebarKey("display_name")
         }
     }
 
@@ -143,6 +153,8 @@ interface RebarSimpleMultiblock : RebarMultiblock, RebarEntityHolderBlock, Rebar
                 .material(materials.first())
                 .glow(Color.WHITE)
                 .transformation(TransformBuilder().scale(0.5))
+                .displayWidth(0.5f)
+                .displayHeight(0.5f)
                 .build(block.location.toCenterLocation())
             EntityStorage.add(MultiblockGhostBlock(display, materials.joinToString(", ") { it.key.toString() }))
 

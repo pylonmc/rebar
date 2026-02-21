@@ -1,4 +1,4 @@
-addon: "Core"
+addon: "Rebar"
 
 item:
   error_item:
@@ -122,9 +122,6 @@ guide:
   button:
     back:
       name: "<white>Back"
-      hints: |-
-        <guidearrow> <guideinsn>Click</guideinsn> to go back one page
-        <guidearrow> <guideinsn>Shift left click</guideinsn> to go back to the main menu
     search-specifiers:
       name: "Search Specifiers"
       lore: |-
@@ -157,11 +154,6 @@ guide:
     fluid:
       name: "%fluid% <gray>(%amount%<gray>)"
       error: "<red>Fluid item failed to load"
-      hints: |-
-        
-          <u>Hints</u>
-          <guidearrow> <guideinsn>Left click</guideinsn> to see recipe
-          <guidearrow> <guideinsn>Right click</guideinsn> to see usages
     item:
       not-researched:
         no-research-cost: "<guidearrow> <red>Unresearched"
@@ -169,18 +161,10 @@ guide:
         not-enough-points: "<guidearrow> <red>Unresearched <gray>(%research_name% <gray>| <#e23b28>%player_points%/%unlock_cost%<gray>)"
 
       hints:
-        researched: |-
-          
-          <u>Hints</u>
-          <guidearrow> <guideinsn>Left click</guideinsn> to see recipe
-          <guidearrow> <guideinsn>Right click</guideinsn> to see usages
         unresearched: |-
           
           <u>Hints</u>
-          <guidearrow> <guideinsn>Left click</guideinsn> to see recipe
-          <guidearrow> <guideinsn>Right click</guideinsn> to see usages
           <guidearrow> <guideinsn>Shift left click</guideinsn> to research
-          <guidearrow> <guideinsn>Shift right click</guideinsn> to see other research unlocks
       error: "<red>Item failed to load"
       amount: "%name%: <gray>%amount%%breakdown%"
       amount-breakdown: " (%stacks%x%stack-size% + %remainder%)"
@@ -367,6 +351,57 @@ guide:
         name: "<white>Guide Hints: <red>Disabled <dark_gray>(Click to toggle)"
         lore: |-
           <guidearrow> Whether to show <guideinsn>hints</guideinsn> in the guide
+    info:
+      discord:
+        name: "<white>Discord"
+        lore: |-
+          <guidearrow> <guideinsn>Click</guideinsn> to get a link to the official Rebar discord server
+        message: "Click to open the rebar discord invite link!"
+      rebar_setup:
+        name: "<white>Rebar Setup"
+        lore: |-
+          <guidearrow> <guideinsn>Click</guideinsn> to get a link to the installation and setup guide for Rebar
+        message: "Click to open the rebar installation and setup guide!"
+      rebar_addons:
+        name: "<white>Rebar Addons"
+        lore: |-
+          <guidearrow> <guideinsn>Click</guideinsn> to get a link to the official list of addons for Rebar
+        message: "Click to open the list of addons for Rebar!"
+      cheat_controls:
+        name: "<white>Guide Cheat Controls"
+        lore: |-
+          <guidearrow> In the rebar guide as an admin there are a few cheat controls
+          <guidearrow> <guideinsn>Press Q</guideinsn> on a Rebar Item to cheat in one item
+          <guidearrow> <guideinsn>Middle click</guideinsn> a Rebar Item to cheat in a stack
+      rebar:
+        name: "<white>What is Rebar?"
+        lore: |-
+          <guidearrow> Rebar is a minecraft plugin framework for adding custom blocks, items, entities, and more!
+          <guidearrow> Rebar itself only provides this guide and back-end systems, addons (such as Pylon) are what introduce all of the content
+      guide_controls:
+        name: "<white>Guide Controls"
+        lore: |-
+          <u>Item/Fluid Buttons</u>
+          <guidearrow> <guideinsn>Left click</guideinsn> to see recipe
+          <guidearrow> <guideinsn>Right click</guideinsn> to see usages
+          <guidearrow> <guideinsn>Shift right click</guideinsn> to open research (if any)
+          
+          <u>Back Button</u>
+          <guidearrow> <guideinsn>Click</guideinsn> to go back one page
+          <guidearrow> <guideinsn>Shift left click</guideinsn> to go back to the main menu
+      settings:
+        name: "<white>Guide Settings"
+        lore: |-
+          <guidearrow> In the top left of the main page you'll find the settings
+          <guidearrow> Settings contain a variety of options like WAILA, block culling, resource pack settings, and more
+          
+          <guidearrow> <guideinsn>Click</guideinsn> to open the settings page
+      researches:
+        name: "<white>Researches"
+        lore: |-
+          <guidearrow> Rebar items/blocks can be locked behind and grouped into researches, which you can view in the guide
+          <guidearrow> By default, researches are unlocked by spending research points, which addons can add ways to obtain
+          <guidearrow> If you have not unlocked a research, you will not be able to use the items/blocks in that research
   recipe:
     cooking: "<attr>Cooking time:</attr> %time%"
 
@@ -374,6 +409,7 @@ guide:
     fluids: "Fluids"
     info: "Info"
     researches: "Researches"
+    researches_addon: "%addon% researches"
     research-items: "Research items"
     root: "Rebar guide"
     search: "Search"
@@ -390,6 +426,11 @@ guide:
     tab:
       ingredients: "Ingredients"
       byproducts: "Byproducts"
+    info_administrators: "Administrators info"
+    contributors: "Contributors"
+    contributors_addon: "%addon% contributors"
+    info_rebar: "Rebar info"
+    info_researching: "Researching info"
 
 unit:
   prefix:
