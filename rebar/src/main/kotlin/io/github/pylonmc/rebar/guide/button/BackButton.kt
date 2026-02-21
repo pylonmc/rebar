@@ -2,7 +2,6 @@ package io.github.pylonmc.rebar.guide.button
 
 import io.github.pylonmc.rebar.content.guide.RebarGuide
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
-import io.github.pylonmc.rebar.item.research.Research.Companion.guideHints
 import io.github.pylonmc.rebar.util.rebarKey
 import io.papermc.paper.datacomponent.DataComponentTypes
 import net.kyori.adventure.text.Component
@@ -22,9 +21,6 @@ class BackButton : AbstractItem() {
         val stack = ItemStackBuilder.gui(Material.ENCHANTED_BOOK, rebarKey("guide_back"))
             .set(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, false)
             .name(Component.translatable("rebar.guide.button.back.name"))
-        if (player.guideHints) {
-            stack.lore(Component.translatable("rebar.guide.button.back.hints"))
-        }
         return stack
     }
 

@@ -150,6 +150,7 @@ class CargoDuct : RebarBlock, RebarBreakHandler, RebarEntityHolderBlock, RebarEn
         }
         for (entity in heldEntities.keys.toList()) { // clone to prevent concurrent modification exception
             getHeldEntity(entity)?.scheduleRemove()
+            heldEntities.remove(entity)
         }
         faceGroups.clear()
 

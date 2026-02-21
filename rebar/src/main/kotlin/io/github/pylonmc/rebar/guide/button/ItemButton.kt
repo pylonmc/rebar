@@ -117,8 +117,6 @@ class ItemButton @JvmOverloads constructor(
             if (player.guideHints) {
                 if (!player.canCraft(item, respectBypass = false)) {
                     builder.lore(Component.translatable("rebar.guide.button.item.hints.unresearched"))
-                } else {
-                    builder.lore(Component.translatable("rebar.guide.button.item.hints.researched"))
                 }
             }
 
