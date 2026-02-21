@@ -10,6 +10,7 @@ import io.github.pylonmc.rebar.config.ConfigSection
 import io.github.pylonmc.rebar.config.ContributorConfig
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter
 import io.github.pylonmc.rebar.item.RebarItem
+import io.github.pylonmc.rebar.item.builder.customMiniMessage
 import io.github.pylonmc.rebar.nms.NmsAccessor
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.util.position.BlockPosition
@@ -305,7 +306,7 @@ private fun Class<*>.isSubclassOf(other: Class<*>): Boolean = other.isAssignable
  * @returns The string as a component
  */
 @JvmSynthetic
-fun fromMiniMessage(string: String): Component = MiniMessage.miniMessage().deserialize(string)
+fun fromMiniMessage(string: String): Component = customMiniMessage.deserialize(string)
 
 /**
  * Finds a Rebar item in an inventory. Use this to find Rebar items instead of traditional
