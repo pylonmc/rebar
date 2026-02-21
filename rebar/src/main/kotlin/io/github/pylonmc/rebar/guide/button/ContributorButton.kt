@@ -4,10 +4,12 @@ import io.github.pylonmc.rebar.addon.RebarAddon
 import io.github.pylonmc.rebar.config.ContributorConfig
 import io.github.pylonmc.rebar.i18n.RebarArgument
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
+import io.github.pylonmc.rebar.util.fromMiniMessage
 import io.papermc.paper.datacomponent.DataComponentTypes
 import io.papermc.paper.datacomponent.item.ResolvableProfile
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.event.ClickEvent
+import net.kyori.adventure.text.minimessage.MiniMessage
 import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.event.inventory.ClickType
@@ -19,7 +21,7 @@ class ContributorButton(val addon: RebarAddon, val contributor: ContributorConfi
         .name(contributor.displayName)
         .lore(
             if (contributor.description != null) {
-                Component.text(contributor.description)
+                fromMiniMessage(contributor.description)
             } else {
                 Component.translatable("rebar.guide.button.contributor.default-description",
                     RebarArgument.of("contributor", contributor.displayName),
