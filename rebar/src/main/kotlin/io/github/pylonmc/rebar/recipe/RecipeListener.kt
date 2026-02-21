@@ -234,11 +234,11 @@ internal object RebarRecipeListener : Listener {
         val firstRebarItem = RebarItem.fromStack(firstItem)
         val secondRebarItem = RebarItem.fromStack(secondItem)
 
-        // Disallow using Rebar items
+        // Disallow using Rebar items but allow renaming them
         // Have tried to support this. It's really hard because you end up effectively
         // having to do the repair manually for items that can't usually be repaired.
         // Gave up after 2 hours or so
-        if (firstRebarItem != null || secondRebarItem != null) {
+        if ((firstRebarItem != null && (secondItem != null && !secondItem.isEmpty)) || secondRebarItem != null) {
             e.result = null
             return
         }

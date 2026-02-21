@@ -83,12 +83,12 @@ class ItemButton @JvmOverloads constructor(
             val displayStack = preDisplayDecorator.invoke(currentStack.clone(), player)
             val item = RebarItem.fromStack(displayStack) ?: return ItemStackBuilder.of(displayStack)
 
-            val builder = ItemStackBuilder.of(displayStack.clone())
+            val builder = ItemStackBuilder.of(displayStack)
             if (item.isDisabled) {
                 builder.set(DataComponentTypes.ITEM_MODEL, Material.STRUCTURE_VOID.key)
             }
 
-            if (!player.canCraft(item)) {
+            if (!player.canCraft(item, respectBypass = false)) {
                 builder.set(DataComponentTypes.ITEM_MODEL, Material.BARRIER.key)
                     .set(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, false)
 
@@ -115,7 +115,7 @@ class ItemButton @JvmOverloads constructor(
             }
 
             if (player.guideHints) {
-                if (!player.canCraft(item)) {
+                if (!player.canCraft(item, respectBypass = false)) {
                     builder.lore(Component.translatable("rebar.guide.button.item.hints.unresearched"))
                 } else {
                     builder.lore(Component.translatable("rebar.guide.button.item.hints.researched"))

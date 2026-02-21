@@ -171,7 +171,7 @@ abstract class SearchPage(key: NamespacedKey) : SimpleStaticGuidePage(key) {
         data class Namespace(val filter: String) : SearchSpecifier {
             override fun weight(player: Player, entry: Pair<Item, String>): Double? {
                 val item = entry.first
-                var key: NamespacedKey = if (item is FluidButton) {
+                val key: NamespacedKey = if (item is FluidButton) {
                     item.currentFluid.key
                 } else {
                     RebarItem.fromStack(item.getItemProvider(player).get())?.key ?: return null

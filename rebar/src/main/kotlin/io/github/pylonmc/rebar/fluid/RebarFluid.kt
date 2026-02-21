@@ -40,7 +40,7 @@ open class RebarFluid(
             builder.lore(tag.displayText)
         }
 
-        builder.lore(getAddon(key).displayName)
+        builder.lore(getAddon(key).footerName)
 
         builder.build()
     }

@@ -7,6 +7,8 @@ import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.addon.RebarAddon
 import io.github.pylonmc.rebar.config.Config
 import io.github.pylonmc.rebar.config.ConfigSection
+import io.github.pylonmc.rebar.config.ContributorConfig
+import io.github.pylonmc.rebar.config.adapter.ConfigAdapter
 import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.nms.NmsAccessor
 import io.github.pylonmc.rebar.registry.RebarRegistry
@@ -457,6 +459,25 @@ internal fun mergeGlobalConfig(addon: RebarAddon, from: String, to: String, warn
 }
 
 private val globalConfigCache: MutableMap<Pair<String, String>, Config> = mutableMapOf()
+
+internal fun getContributors(addon: RebarAddon): List<ContributorConfig> {
+    val cached = contributorsCache[addon]
+    if (cached != null) {
+        return cached
+    }
+
+    val resource = addon.javaPlugin.getResource("contributors.yml")
+    val contributors = if (resource != null) {
+        val config = YamlConfiguration.loadConfiguration(resource.reader())
+        ConfigSection(config).get("contributors", ConfigAdapter.LIST.from(ConfigAdapter.CONTRIBUTOR), emptyList())
+    } else {
+        emptyList()
+    }
+    contributorsCache[addon] = contributors
+    return contributors
+}
+
+private val contributorsCache: MutableMap<RebarAddon, List<ContributorConfig>> = mutableMapOf()
 
 val Block.replaceableOrAir: Boolean
     get() = type.isAir || isReplaceable

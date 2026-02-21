@@ -1,6 +1,7 @@
 package io.github.pylonmc.rebar.guide.pages.base
 
 import io.github.pylonmc.rebar.content.guide.RebarGuide
+import io.github.pylonmc.rebar.guide.button.GuideButton
 import io.github.pylonmc.rebar.guide.button.PageButton
 import io.github.pylonmc.rebar.util.gui.GuiItems
 import org.bukkit.NamespacedKey
@@ -56,17 +57,13 @@ open class SimpleDynamicGuidePage(
         .addPageChangeHandler { _, newPage -> saveCurrentPage(player, newPage) }
 
     override fun getGui(player: Player): Gui {
-        val buttons = buttonSupplier.get()
+        val buttons = buttonSupplier.get().sortedBy { if (it is GuideButton) it.priority() else 1.0 }
         val gui = getHeader(player, buttons)
 
         gui.setContent(buildList {
             for (button in buttons) {
-                if (button is PageButton) {
-                    if (button.page.shouldDisplay(player)) {
-                        add(button)
-                    }
-                } else {
-                    add(button)
+                if (button !is GuideButton || button.shouldDisplay(player)) {
+                     add(button)
                 }
             }
         })

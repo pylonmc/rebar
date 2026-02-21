@@ -52,7 +52,7 @@ object MainSettingsPage : PlayerSettingsPage(rebarKey("settings")) {
 
         addSetting(resourcePackSettingsButton)
 
-        if (RebarConfig.RESEARCHES_ENABLED) {
+        if (RebarConfig.ResearchConfig.ENABLED) {
             addSetting(researchConfettiButton)
             addSetting(researchSoundsButton)
         }

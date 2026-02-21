@@ -34,21 +34,6 @@ object RebarConfig {
     val ENTITY_DATA_AUTOSAVE_INTERVAL_SECONDS = config.getOrThrow("entity-data-autosave-interval-seconds", ConfigAdapter.LONG)
 
     @JvmField
-    val RESEARCHES_ENABLED = config.getOrThrow("research.enabled", ConfigAdapter.BOOLEAN)
-
-    @JvmField
-    val RESEARCH_BASE_CONFETTI_AMOUNT = config.get("research.confetti.base-amount", ConfigAdapter.DOUBLE, 70.0)
-
-    @JvmField
-    val RESEARCH_MULTIPLIER_CONFETTI_AMOUNT = config.get("research.confetti.multiplier", ConfigAdapter.DOUBLE, 0.2)
-
-    @JvmField
-    val RESEARCH_MAX_CONFETTI_AMOUNT = config.get("research.confetti.max-amount", ConfigAdapter.INTEGER, 700)
-
-    @JvmField
-    val RESEARCH_SOUNDS = config.getOrThrow("research.sounds", ConfigAdapter.MAP.from(ConfigAdapter.LONG, ConfigAdapter.RANDOMIZED_SOUND))
-
-    @JvmField
     val PIPE_PLACEMENT_TASK_INTERVAL_TICKS = config.getOrThrow("pipe-placement.tick-interval", ConfigAdapter.LONG)
 
     @JvmField
@@ -74,6 +59,25 @@ object RebarConfig {
 
     @JvmField
     val CARGO_TRANSFER_RATE_MULTIPLIER = config.getOrThrow("cargo-transfer-rate-multiplier", ConfigAdapter.INTEGER)
+
+    object ResearchConfig {
+
+        @JvmField
+        val ENABLED = config.getOrThrow("research.enabled", ConfigAdapter.BOOLEAN)
+
+        @JvmField
+        val BASE_CONFETTI_AMOUNT = config.get("research.confetti.base-amount", ConfigAdapter.DOUBLE, 70.0)
+
+        @JvmField
+        val MULTIPLIER_CONFETTI_AMOUNT = config.get("research.confetti.multiplier", ConfigAdapter.DOUBLE, 0.2)
+
+        @JvmField
+        val MAX_CONFETTI_AMOUNT = config.get("research.confetti.max-amount", ConfigAdapter.INTEGER, 700)
+
+        @JvmField
+        val SOUNDS = config.getOrThrow("research.sounds", ConfigAdapter.MAP.from(ConfigAdapter.LONG, ConfigAdapter.RANDOMIZED_SOUND))
+
+    }
 
     object WailaConfig {
 
@@ -109,6 +113,13 @@ object RebarConfig {
                 throw IllegalStateException("Default bossbar overlay $overlay is not in the list of allowed overlays: $ALLOWED_BOSS_BAR_OVERLAYS")
             }
         }
+    }
+
+    object GuideConfig {
+
+        @JvmField
+        val DISCORD_BUTTON = config.getOrThrow("guide.discord-button", ConfigAdapter.BOOLEAN)
+
     }
 
     object ArmorTextureConfig {

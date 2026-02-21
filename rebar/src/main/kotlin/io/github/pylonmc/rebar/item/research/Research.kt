@@ -102,14 +102,14 @@ class Research(
 
         if (effects) {
             if (player.researchConfetti) {
-                val multiplier = (cost?.toDouble() ?: 0.0) * RebarConfig.RESEARCH_MULTIPLIER_CONFETTI_AMOUNT
-                val amount = (RebarConfig.RESEARCH_BASE_CONFETTI_AMOUNT * multiplier).toInt()
-                val spawnedConfetti = min(amount, RebarConfig.RESEARCH_MAX_CONFETTI_AMOUNT)
+                val multiplier = (cost?.toDouble() ?: 0.0) * RebarConfig.ResearchConfig.MULTIPLIER_CONFETTI_AMOUNT
+                val amount = (RebarConfig.ResearchConfig.BASE_CONFETTI_AMOUNT * multiplier).toInt()
+                val spawnedConfetti = min(amount, RebarConfig.ResearchConfig.MAX_CONFETTI_AMOUNT)
                 ConfettiParticle.spawnMany(player.location, spawnedConfetti).run()
             }
 
             if (player.researchSounds) {
-                for ((delay, sound) in RebarConfig.RESEARCH_SOUNDS) {
+                for ((delay, sound) in RebarConfig.ResearchConfig.SOUNDS) {
                     Bukkit.getScheduler().runTaskLater(Rebar, Runnable {
                         player.playSound(sound.create(), Sound.Emitter.self())
                     }, delay)
@@ -199,8 +199,8 @@ class Research(
         @JvmStatic
         @JvmOverloads
         @JvmName("canPlayerCraft")
-        fun Player.canCraft(item: RebarItem, sendMessage: Boolean = false): Boolean {
-            if (!RebarConfig.RESEARCHES_ENABLED || this.hasPermission(item.researchBypassPermission)) return true
+        fun Player.canCraft(item: RebarItem, sendMessage: Boolean = false, respectBypass: Boolean = true): Boolean {
+            if (!RebarConfig.ResearchConfig.ENABLED || (respectBypass && this.hasPermission(item.researchBypassPermission))) return true
 
             val research = item.research ?: return true
 
@@ -282,7 +282,7 @@ class Research(
 
         @EventHandler
         private fun onJoin(e: PlayerJoinEvent) {
-            if (!RebarConfig.RESEARCHES_ENABLED) return
+            if (!RebarConfig.ResearchConfig.ENABLED) return
             val player = e.player
 
             // discover only the recipes that have no research whenever an ingredient is added to the inventory

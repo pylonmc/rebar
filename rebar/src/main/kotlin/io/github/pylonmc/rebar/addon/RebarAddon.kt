@@ -41,11 +41,17 @@ interface RebarAddon : Keyed {
     val material: Material
 
     /**
-     * The name used to represent this addon in the item tooltips.
-     * By default, a blue italic `<your-addon-key>.addon` translation key.
+     * The name used to represent this addon in the guide and other places.
      */
     val displayName: TranslatableComponent
         get() = Component.translatable("${key.namespace}.addon")
+
+    /**
+     * The name used to represent this addon in the item tooltips.
+     * By default, a blue italic `<your-addon-key>.addon` translation key.
+     */
+    val footerName: TranslatableComponent
+        get() = displayName
             .decoration(TextDecoration.ITALIC, true)
             .color(NamedTextColor.BLUE)
 

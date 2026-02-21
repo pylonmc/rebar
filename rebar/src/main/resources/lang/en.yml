@@ -1,4 +1,4 @@
-addon: "Core"
+addon: "Rebar"
 
 item:
   error_item:
@@ -367,6 +367,44 @@ guide:
         name: "<white>Guide Hints: <red>Disabled <dark_gray>(Click to toggle)"
         lore: |-
           <guidearrow> Whether to show <guideinsn>hints</guideinsn> in the guide
+    info:
+      discord:
+        name: "<white>Discord"
+        lore: |-
+          <guidearrow> <guideinsn>Click</guideinsn> to get a link to the official Rebar discord server
+        message: "Click to open the rebar discord invite link!"
+      rebar_setup:
+        name: "<white>Rebar Setup"
+        lore: |-
+          <guidearrow> <guideinsn>Click</guideinsn> to get a link to the installation and setup guide for Rebar
+        message: "Click to open the rebar installation and setup guide!"
+      rebar_addons:
+        name: "<white>Rebar Addons"
+        lore: |-
+          <guidearrow> <guideinsn>Click</guideinsn> to get a link to the official list of addons for Rebar
+        message: "Click to open the list of addons for Rebar!"
+      cheat_controls:
+        name: "<white>Guide Cheat Controls"
+        lore: |-
+          <guidearrow> In the rebar guide as an admin there are a few cheat controls
+          <guidearrow> <guideinsn>Press Q</guideinsn> on a Rebar Item to cheat in one item
+          <guidearrow> <guideinsn>Middle click</guideinsn> a Rebar Item to cheat in a stack
+      rebar:
+        name: "<white>What is Rebar?"
+        lore: |-
+          <guidearrow> TODO THIS DESCRIPTION
+      guide_controls:
+        name: "<white>Guide Controls"
+        lore: |-
+          <guidearrow> TODO
+      settings:
+        name: "<white>Guide Settings"
+        lore: |-
+          <guidearrow> TODO
+      researches:
+        name: "<white>Researches"
+        lore: |-
+          <guidearrow> TODO
   recipe:
     cooking: "<attr>Cooking time:</attr> %time%"
 
@@ -374,6 +412,7 @@ guide:
     fluids: "Fluids"
     info: "Info"
     researches: "Researches"
+    researches_addon: "%addon% researches"
     research-items: "Research items"
     root: "Rebar guide"
     search: "Search"
@@ -390,6 +429,11 @@ guide:
     tab:
       ingredients: "Ingredients"
       byproducts: "Byproducts"
+    info_administrators: "Administrators info"
+    contributors: "Contributors"
+    contributors_addon: "%addon% contributors"
+    info_rebar: "Rebar info"
+    info_researching: "Researching info"
 
 unit:
   prefix:

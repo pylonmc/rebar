@@ -1,5 +1,6 @@
 package io.github.pylonmc.rebar.config.adapter
 
+import io.github.pylonmc.rebar.datatypes.RebarSerializers.KEYED
 import io.github.pylonmc.rebar.fluid.tags.FluidTemperature
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.util.RandomizedSound
@@ -43,6 +44,8 @@ interface ConfigAdapter<T> {
         @JvmField val SET = SetConfigAdapter
         @JvmField val MAP = MapConfigAdapter
         @JvmField val ENUM = EnumConfigAdapter
+
+        @JvmField val UUID = UUIDConfigAdapter
 
         @JvmField val KEYED = KeyedConfigAdapter
         @JvmField val NAMESPACED_KEY = ConfigAdapter { NamespacedKey.fromString(STRING.convert(it))!! }
@@ -135,6 +138,7 @@ interface ConfigAdapter<T> {
         @JvmField val CULLING_PRESET = CullingPresetConfigAdapter
         @JvmField val WAILA_DISPLAY = WailaDisplayConfigAdapter
         @JvmField val CONFIG_SECTION = ConfigSectionConfigAdapter
+        @JvmField val CONTRIBUTOR = ContributorConfigAdapter
         // @formatter:on
     }
 }
