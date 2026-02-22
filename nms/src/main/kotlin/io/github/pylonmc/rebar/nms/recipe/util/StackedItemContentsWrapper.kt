@@ -38,14 +38,13 @@ fun StackedItemContents.getRaw(): StackedContents<ItemOrExact> = rawGetter.invok
 fun StackedItemContents.accountStackRebar(stack: ItemStack, maxStackSize: Int = stack.maxStackSize) {
     if (stack.isEmpty) return
 
-    val min = min(maxStackSize, stack.count)
-
     // Determine if this is a Rebar item
     if (RebarItem.isRebarItem(stack.bukkitStack)) {
+        val min = min(maxStackSize, stack.count)
         val r = ItemOrExact.Exact(stack.copy())
         this.getRaw().account(r, min)
         return
     }
 
-    this.accountStack(stack, maxStackSize)
+    this.accountSimpleStack(stack)
 }
