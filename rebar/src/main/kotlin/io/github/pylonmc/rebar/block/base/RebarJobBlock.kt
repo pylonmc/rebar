@@ -16,7 +16,7 @@ interface RebarJobBlock {
     companion object : MultiListener {
         @UniversalHandler
         private fun onVillagerChangeProfession(event: VillagerCareerChangeEvent, priority: EventPriority) {
-            if(event.reason != VillagerCareerChangeEvent.ChangeReason.EMPLOYED) return;
+            if (event.reason != VillagerCareerChangeEvent.ChangeReason.EMPLOYED) return;
             val jobSite = event.entity.getMemory(MemoryKey.JOB_SITE) ?: return
             val rebarBlock = BlockStorage.get(jobSite)
             if (rebarBlock is RebarJobBlock) {
