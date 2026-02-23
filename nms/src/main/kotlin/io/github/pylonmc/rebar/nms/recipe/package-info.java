@@ -4,7 +4,7 @@
  * <br>
  * as of right now this is what is happening:
  * <br>
- * - We intercept ServerboundPlaceRecipePacket
+ * - We intercept PlayerRecipeBookClickEvent
  * - HandlerRecipeBookClick has to update the logic to fix the issue, made another class cuz it might get bigger, which it did
  * - Many classes seem to use such behaviour, but we only care about crafting tables so we need to only process AbstractCraftingMenu, but by that point we did 99% of the logic anyway
  * - handlePylonItemPlacement method should handle how placement takes place, we have a method but normallly it is handled by a method in AbstractCraftingMenu, so we need to use reflection to call some stuff around to simulate normal behaviour and just change what we need
