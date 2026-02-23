@@ -600,7 +600,18 @@ object BlockStorage : Listener {
         }
 
         blocks.replaceAll { _, block -> replacer.invoke(block) }
-        for (blocks in blocksByKey.values) {
+        for ((key, blocks) in blocksByKey) {
+            val iter = blocks.listIterator()
+            while (iter.hasNext()) {
+                val block = iter.next()
+                try {
+                    iter.set(replacer.invoke(block))
+                } catch (e: Exception) {
+                    Rebar.logger.severe("Exception while cleaning up block at ${block.block.position} (while cleaning up ${addon.key})")
+                    e.printStackTrace()
+                    iter.remove()
+                }
+            }
             blocks.replaceAll(replacer)
         }
         for (blocks in blocksByChunk.values) {
