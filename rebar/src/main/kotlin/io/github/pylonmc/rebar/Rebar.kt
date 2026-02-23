@@ -215,6 +215,7 @@ object Rebar : JavaPlugin(), RebarAddon {
         RebarRedstoneBlock.register(this, pm)
         RebarInteractBlock.register(this, pm)
         RebarSneakableBlock.register(this, pm)
+        RebarJobBlock.register(this, pm)
         RebarJumpBlock.register(this, pm)
         RebarUnloadBlock.register(this, pm)
         RebarFlowerPot.register(this, pm)
