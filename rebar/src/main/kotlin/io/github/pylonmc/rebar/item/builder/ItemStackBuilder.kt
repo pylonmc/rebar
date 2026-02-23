@@ -1,5 +1,6 @@
 package io.github.pylonmc.rebar.item.builder
 
+import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.addon.RebarAddon
 import io.github.pylonmc.rebar.config.Config
 import io.github.pylonmc.rebar.config.Settings
@@ -252,8 +253,8 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
     ) = apply {
         removeAttributeModifiers(Attribute.ARMOR)
         removeAttributeModifiers(Attribute.ARMOR_TOUGHNESS)
-        addAttributeModifier(Attribute.ARMOR, AttributeModifier(NamespacedKey("", java.util.UUID.randomUUID().toString()), armor, AttributeModifier.Operation.ADD_NUMBER, slot))
-        addAttributeModifier(Attribute.ARMOR_TOUGHNESS, AttributeModifier(NamespacedKey("", java.util.UUID.randomUUID().toString()), armorToughness, AttributeModifier.Operation.ADD_NUMBER, slot))
+        addAttributeModifier(Attribute.ARMOR, AttributeModifier(getArmorKey(slot), armor, AttributeModifier.Operation.ADD_NUMBER, slot))
+        addAttributeModifier(Attribute.ARMOR_TOUGHNESS, AttributeModifier(getArmorToughnessKey(slot), armorToughness, AttributeModifier.Operation.ADD_NUMBER, slot))
     }
 
     fun axe(
@@ -336,13 +337,19 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
     override fun get(locale: Locale) = build()
 
     companion object {
-
         val baseAttackDamage = NamespacedKey.minecraft("base_attack_damage")
         val baseAttackSpeed = NamespacedKey.minecraft("base_attack_speed")
         val baseAttackKnockback = NamespacedKey.minecraft("base_attack_knockback")
 
         val disableNameHacksKey = rebarKey("disable_name_hacks")
 
+        private fun getArmorKey(slot: EquipmentSlotGroup) : NamespacedKey {
+            return NamespacedKey(Rebar.name, "armor_$slot")
+        }
+
+        private fun getArmorToughnessKey(slot: EquipmentSlotGroup) : NamespacedKey {
+            return NamespacedKey(Rebar.name, "armor_toughness_$slot")
+        }
         /**
          * The default name language key for a Rebar item.
          */
