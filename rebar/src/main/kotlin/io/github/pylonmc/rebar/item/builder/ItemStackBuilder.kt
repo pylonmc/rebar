@@ -344,11 +344,11 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
         val disableNameHacksKey = rebarKey("disable_name_hacks")
 
         private fun getArmorKey(slot: EquipmentSlotGroup) : NamespacedKey {
-            return NamespacedKey(Rebar.name, "armor_$slot")
+            return NamespacedKey(Rebar, "armor_$slot")
         }
 
         private fun getArmorToughnessKey(slot: EquipmentSlotGroup) : NamespacedKey {
-            return NamespacedKey(Rebar.name, "armor_toughness_$slot")
+            return NamespacedKey(Rebar, "armor_toughness_$slot")
         }
         /**
          * The default name language key for a Rebar item.
