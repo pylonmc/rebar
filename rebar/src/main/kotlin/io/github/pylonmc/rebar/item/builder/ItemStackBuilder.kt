@@ -252,8 +252,8 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
     ) = apply {
         removeAttributeModifiers(Attribute.ARMOR)
         removeAttributeModifiers(Attribute.ARMOR_TOUGHNESS)
-        addAttributeModifier(Attribute.ARMOR, AttributeModifier(baseArmor, armor, AttributeModifier.Operation.ADD_NUMBER, slot))
-        addAttributeModifier(Attribute.ARMOR_TOUGHNESS, AttributeModifier(baseArmorToughness, armorToughness, AttributeModifier.Operation.ADD_NUMBER, slot))
+        addAttributeModifier(Attribute.ARMOR, AttributeModifier(NamespacedKey("", java.util.UUID.randomUUID().toString()), armor, AttributeModifier.Operation.ADD_NUMBER, slot))
+        addAttributeModifier(Attribute.ARMOR_TOUGHNESS, AttributeModifier(NamespacedKey("", java.util.UUID.randomUUID().toString()), armorToughness, AttributeModifier.Operation.ADD_NUMBER, slot))
     }
 
     fun axe(
@@ -336,9 +336,6 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
     override fun get(locale: Locale) = build()
 
     companion object {
-
-        val baseArmor = NamespacedKey.minecraft("base_armor")
-        val baseArmorToughness = NamespacedKey.minecraft("base_armor_toughness")
 
         val baseAttackDamage = NamespacedKey.minecraft("base_attack_damage")
         val baseAttackSpeed = NamespacedKey.minecraft("base_attack_speed")
