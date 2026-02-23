@@ -138,7 +138,7 @@ interface RebarEntityHolderBlock {
             val block = event.rebarBlock
             if (block !is RebarEntityHolderBlock) return
             holders[block] = event.pdc.get(entityKey, entityType)?.toMutableMap()
-                ?: error("Held entities not found for ${block.key}")
+                ?: mutableMapOf()
         }
 
         @EventHandler
