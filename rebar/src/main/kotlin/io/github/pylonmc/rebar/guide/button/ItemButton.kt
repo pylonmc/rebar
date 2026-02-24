@@ -91,6 +91,7 @@ class ItemButton @JvmOverloads constructor(
             if (!player.canCraft(item, respectBypass = false)) {
                 builder.set(DataComponentTypes.ITEM_MODEL, Material.BARRIER.key)
                     .set(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, false)
+                    .clearLore()
 
                 val research = item.research
                 if (research != null) {
@@ -107,10 +108,7 @@ class ItemButton @JvmOverloads constructor(
                         Component.translatable("rebar.guide.button.item.not-researched")
                     }
 
-                    val lore = builder.lore()?.lines()?.toMutableList() ?: mutableListOf()
-                    lore.add(0, loreLine)
-                    builder.clearLore()
-                    builder.lore(lore)
+                    builder.lore(loreLine)
                 }
             }
 
