@@ -4,7 +4,7 @@ import io.github.pylonmc.rebar.block.BlockListener
 import io.github.pylonmc.rebar.block.BlockListener.logEventHandleErr
 import io.github.pylonmc.rebar.block.BlockStorage
 import io.github.pylonmc.rebar.event.api.MultiListener
-import io.github.pylonmc.rebar.event.api.annotation.MultiHandler
+import io.github.pylonmc.rebar.event.api.annotation.MultiHandlers
 import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import io.papermc.paper.event.player.PlayerInsertLecternBookEvent
 import io.papermc.paper.event.player.PlayerLecternPageChangeEvent
@@ -22,7 +22,7 @@ interface RebarLectern {
             val rebarBlock = BlockStorage.get(event.block)
             if (rebarBlock is RebarLectern) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, "onInsertBook", event, priority)
+                    MultiHandlers.handleEvent(rebarBlock, "onInsertBook", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }
@@ -34,7 +34,7 @@ interface RebarLectern {
             val rebarBlock = BlockStorage.get(event.lectern.block)
             if (rebarBlock is RebarLectern) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, "onRemoveBook", event, priority)
+                    MultiHandlers.handleEvent(rebarBlock, "onRemoveBook", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }
@@ -46,7 +46,7 @@ interface RebarLectern {
             val rebarBlock = BlockStorage.get(event.lectern.block)
             if (rebarBlock is RebarLectern) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, "onChangePage", event, priority)
+                    MultiHandlers.handleEvent(rebarBlock, "onChangePage", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }

@@ -6,7 +6,7 @@ import com.destroystokyo.paper.event.entity.WitchThrowPotionEvent
 import io.github.pylonmc.rebar.entity.EntityListener.logEventHandleErr
 import io.github.pylonmc.rebar.entity.EntityStorage
 import io.github.pylonmc.rebar.event.api.MultiListener
-import io.github.pylonmc.rebar.event.api.annotation.MultiHandler
+import io.github.pylonmc.rebar.event.api.annotation.MultiHandlers
 import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import org.bukkit.event.EventPriority
 
@@ -21,7 +21,7 @@ interface RebarWitch {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarWitch) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, "onConsumePotion", event, priority)
+                    MultiHandlers.handleEvent(rebarEntity, "onConsumePotion", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }
@@ -33,7 +33,7 @@ interface RebarWitch {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarWitch) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, "onReadyPotion", event, priority)
+                    MultiHandlers.handleEvent(rebarEntity, "onReadyPotion", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }
@@ -45,7 +45,7 @@ interface RebarWitch {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarWitch) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, "onThrowPotion", event, priority)
+                    MultiHandlers.handleEvent(rebarEntity, "onThrowPotion", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }

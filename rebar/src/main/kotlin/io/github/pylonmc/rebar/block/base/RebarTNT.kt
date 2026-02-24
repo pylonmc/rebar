@@ -4,7 +4,7 @@ import io.github.pylonmc.rebar.block.BlockListener
 import io.github.pylonmc.rebar.block.BlockListener.logEventHandleErr
 import io.github.pylonmc.rebar.block.BlockStorage
 import io.github.pylonmc.rebar.event.api.MultiListener
-import io.github.pylonmc.rebar.event.api.annotation.MultiHandler
+import io.github.pylonmc.rebar.event.api.annotation.MultiHandlers
 import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.block.TNTPrimeEvent
@@ -18,7 +18,7 @@ interface RebarTNT {
             val rebarBlock = BlockStorage.get(event.block)
             if (rebarBlock is RebarTNT) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, "onIgnite", event, priority)
+                    MultiHandlers.handleEvent(rebarBlock, "onIgnite", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }

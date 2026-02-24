@@ -1,11 +1,11 @@
 package io.github.pylonmc.rebar.item.base
 
+import io.github.pylonmc.rebar.event.api.MultiListener
+import io.github.pylonmc.rebar.event.api.annotation.MultiHandlers
+import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.item.RebarItemListener
 import io.github.pylonmc.rebar.item.research.Research.Companion.canUse
-import io.github.pylonmc.rebar.event.api.MultiListener
-import io.github.pylonmc.rebar.event.api.annotation.MultiHandler
-import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.player.PlayerItemBreakEvent
 import org.bukkit.event.player.PlayerItemDamageEvent
@@ -37,7 +37,7 @@ interface RebarItemDamageable {
             }
 
             try {
-                MultiHandler.handleEvent(rebarItem, "onItemDamaged", event, priority)
+                MultiHandlers.handleEvent(rebarItem, "onItemDamaged", event, priority)
             } catch (e: Exception) {
                 RebarItemListener.logEventHandleErr(event, e, rebarItem)
             }
@@ -52,7 +52,7 @@ interface RebarItemDamageable {
             }
 
             try {
-                MultiHandler.handleEvent(rebarItem, "onItemBreaks", event, priority)
+                MultiHandlers.handleEvent(rebarItem, "onItemBreaks", event, priority)
             } catch (e: Exception) {
                 RebarItemListener.logEventHandleErr(event, e, rebarItem)
             }
@@ -68,7 +68,7 @@ interface RebarItemDamageable {
             }
 
             try {
-                MultiHandler.handleEvent(rebarItem, "onItemMended", event, priority)
+                MultiHandlers.handleEvent(rebarItem, "onItemMended", event, priority)
             } catch (e: Exception) {
                 RebarItemListener.logEventHandleErr(event, e, rebarItem)
             }

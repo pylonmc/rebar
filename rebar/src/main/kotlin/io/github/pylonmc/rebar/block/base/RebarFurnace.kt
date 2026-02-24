@@ -4,7 +4,7 @@ import io.github.pylonmc.rebar.block.BlockListener
 import io.github.pylonmc.rebar.block.BlockListener.logEventHandleErr
 import io.github.pylonmc.rebar.block.BlockStorage
 import io.github.pylonmc.rebar.event.api.MultiListener
-import io.github.pylonmc.rebar.event.api.annotation.MultiHandler
+import io.github.pylonmc.rebar.event.api.annotation.MultiHandlers
 import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.block.BlockCookEvent
@@ -24,7 +24,7 @@ interface RebarFurnace {
             val rebarBlock = BlockStorage.get(event.block)
             if (rebarBlock is RebarFurnace) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, "onStartSmelting", event, priority)
+                    MultiHandlers.handleEvent(rebarBlock, "onStartSmelting", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }
@@ -36,7 +36,7 @@ interface RebarFurnace {
             val rebarBlock = BlockStorage.get(event.block)
             if (rebarBlock is RebarFurnace) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, "onEndSmelting", event, priority)
+                    MultiHandlers.handleEvent(rebarBlock, "onEndSmelting", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }
@@ -48,7 +48,7 @@ interface RebarFurnace {
             val rebarBlock = BlockStorage.get(event.block)
             if (rebarBlock is RebarFurnace) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, "onExtractItem", event, priority)
+                    MultiHandlers.handleEvent(rebarBlock, "onExtractItem", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }
@@ -60,7 +60,7 @@ interface RebarFurnace {
             val rebarBlock = BlockStorage.get(event.block)
             if (rebarBlock is RebarFurnace) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, "onFuelBurn", event, priority)
+                    MultiHandlers.handleEvent(rebarBlock, "onFuelBurn", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }

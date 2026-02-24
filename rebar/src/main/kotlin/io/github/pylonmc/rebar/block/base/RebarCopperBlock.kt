@@ -4,7 +4,7 @@ import io.github.pylonmc.rebar.block.BlockListener
 import io.github.pylonmc.rebar.block.BlockListener.logEventHandleErr
 import io.github.pylonmc.rebar.block.BlockStorage
 import io.github.pylonmc.rebar.event.api.MultiListener
-import io.github.pylonmc.rebar.event.api.annotation.MultiHandler
+import io.github.pylonmc.rebar.event.api.annotation.MultiHandlers
 import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import net.kyori.adventure.key.Key
 import org.bukkit.Material
@@ -80,7 +80,7 @@ interface RebarCopperBlock {
 
             if (rebarBlock is RebarCopperBlock) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, method, event, priority)
+                    MultiHandlers.handleEvent(rebarBlock, method, event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }

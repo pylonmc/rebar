@@ -4,7 +4,7 @@ import com.destroystokyo.paper.event.entity.CreeperIgniteEvent
 import io.github.pylonmc.rebar.entity.EntityListener.logEventHandleErr
 import io.github.pylonmc.rebar.entity.EntityStorage
 import io.github.pylonmc.rebar.event.api.MultiListener
-import io.github.pylonmc.rebar.event.api.annotation.MultiHandler
+import io.github.pylonmc.rebar.event.api.annotation.MultiHandlers
 import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.entity.CreeperPowerEvent
@@ -19,7 +19,7 @@ interface RebarCreeper {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarCreeper) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, "onIgnite", event, priority)
+                    MultiHandlers.handleEvent(rebarEntity, "onIgnite", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }
@@ -31,7 +31,7 @@ interface RebarCreeper {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarCreeper) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, "onPower", event, priority)
+                    MultiHandlers.handleEvent(rebarEntity, "onPower", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }

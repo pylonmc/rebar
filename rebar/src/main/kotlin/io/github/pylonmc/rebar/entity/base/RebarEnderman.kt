@@ -5,7 +5,7 @@ import com.destroystokyo.paper.event.entity.EndermanEscapeEvent
 import io.github.pylonmc.rebar.entity.EntityListener.logEventHandleErr
 import io.github.pylonmc.rebar.entity.EntityStorage
 import io.github.pylonmc.rebar.event.api.MultiListener
-import io.github.pylonmc.rebar.event.api.annotation.MultiHandler
+import io.github.pylonmc.rebar.event.api.annotation.MultiHandlers
 import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import org.bukkit.event.EventPriority
 
@@ -19,7 +19,7 @@ interface RebarEnderman {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarEnderman) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, "onAttackPlayer", event, priority)
+                    MultiHandlers.handleEvent(rebarEntity, "onAttackPlayer", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }
@@ -31,7 +31,7 @@ interface RebarEnderman {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarEnderman) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, "onEscape", event, priority)
+                    MultiHandlers.handleEvent(rebarEntity, "onEscape", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }

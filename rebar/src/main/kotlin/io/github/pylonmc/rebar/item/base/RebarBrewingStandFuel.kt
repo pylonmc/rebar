@@ -1,10 +1,10 @@
 package io.github.pylonmc.rebar.item.base
 
+import io.github.pylonmc.rebar.event.api.MultiListener
+import io.github.pylonmc.rebar.event.api.annotation.MultiHandlers
+import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.item.RebarItemListener
-import io.github.pylonmc.rebar.event.api.MultiListener
-import io.github.pylonmc.rebar.event.api.annotation.MultiHandler
-import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.inventory.BrewingStandFuelEvent
 
@@ -21,7 +21,7 @@ interface RebarBrewingStandFuel {
             if (rebarItem !is RebarBrewingStandFuel) return
 
             try {
-                MultiHandler.handleEvent(rebarItem, "onUsedAsBrewingStandFuel", event, priority)
+                MultiHandlers.handleEvent(rebarItem, "onUsedAsBrewingStandFuel", event, priority)
             } catch (e: Exception) {
                 RebarItemListener.logEventHandleErr(event, e, rebarItem)
             }

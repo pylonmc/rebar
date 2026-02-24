@@ -3,7 +3,7 @@ package io.github.pylonmc.rebar.entity.base
 import io.github.pylonmc.rebar.entity.EntityListener.logEventHandleErr
 import io.github.pylonmc.rebar.entity.EntityStorage
 import io.github.pylonmc.rebar.event.api.MultiListener
-import io.github.pylonmc.rebar.event.api.annotation.MultiHandler
+import io.github.pylonmc.rebar.event.api.annotation.MultiHandlers
 import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.entity.EntityDismountEvent
@@ -19,7 +19,7 @@ interface RebarMountableEntity {
             val mount = EntityStorage.get(event.mount)
             if (mount is RebarMountableEntity) {
                 try {
-                    MultiHandler.handleEvent(mount, "onMount", event, priority)
+                    MultiHandlers.handleEvent(mount, "onMount", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, mount)
                 }
@@ -31,7 +31,7 @@ interface RebarMountableEntity {
             val mount = EntityStorage.get(event.dismounted)
             if (mount is RebarMountableEntity) {
                 try {
-                    MultiHandler.handleEvent(mount, "onDismount", event, priority)
+                    MultiHandlers.handleEvent(mount, "onDismount", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, mount)
                 }

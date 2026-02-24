@@ -5,7 +5,7 @@ import io.github.pylonmc.rebar.block.BlockListener
 import io.github.pylonmc.rebar.block.BlockListener.logEventHandleErr
 import io.github.pylonmc.rebar.block.BlockStorage
 import io.github.pylonmc.rebar.event.api.MultiListener
-import io.github.pylonmc.rebar.event.api.annotation.MultiHandler
+import io.github.pylonmc.rebar.event.api.annotation.MultiHandlers
 import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import io.papermc.paper.event.block.BeaconActivatedEvent
 import io.papermc.paper.event.block.BeaconDeactivatedEvent
@@ -25,7 +25,7 @@ interface RebarBeacon {
             val rebarBlock = BlockStorage.get(event.block)
             if (rebarBlock is RebarBeacon) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, "onActivated", event, priority)
+                    MultiHandlers.handleEvent(rebarBlock, "onActivated", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }
@@ -37,7 +37,7 @@ interface RebarBeacon {
             val rebarBlock = BlockStorage.get(event.block)
             if (rebarBlock is RebarBeacon) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, "onDeactivated", event, priority)
+                    MultiHandlers.handleEvent(rebarBlock, "onDeactivated", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }
@@ -49,7 +49,7 @@ interface RebarBeacon {
             val rebarBlock = BlockStorage.get(event.beacon)
             if (rebarBlock is RebarBeacon) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, "onEffectChange", event, priority)
+                    MultiHandlers.handleEvent(rebarBlock, "onEffectChange", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }
@@ -61,7 +61,7 @@ interface RebarBeacon {
             val rebarBlock = BlockStorage.get(event.block)
             if (rebarBlock is RebarBeacon) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, "onEffectApply", event, priority)
+                    MultiHandlers.handleEvent(rebarBlock, "onEffectApply", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }
