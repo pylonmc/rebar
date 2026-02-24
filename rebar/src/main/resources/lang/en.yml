@@ -11,8 +11,8 @@ item:
     name: "<white>Rebar Guide"
     lore: |-
       <arrow> <insn>Right click</insn> to open
-      <arrow> Use <insn>/re guide</insn> to get a new guide
-      <arrow> You can open the guide without this item with <insn>/re</insn>
+      <arrow> Use <insn>/rb guide</insn> to get a new guide
+      <arrow> You can open the guide without this item with <insn>/rb</insn>
 
   phantom_block:
     name: "<red>Phantom Block (%block%)"
