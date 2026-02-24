@@ -4,7 +4,7 @@ import io.github.pylonmc.rebar.block.BlockListener
 import io.github.pylonmc.rebar.block.BlockListener.logEventHandleErr
 import io.github.pylonmc.rebar.block.BlockStorage
 import io.github.pylonmc.rebar.event.api.MultiListener
-import io.github.pylonmc.rebar.event.api.annotation.MultiHandler
+import io.github.pylonmc.rebar.event.api.annotation.MultiHandlers
 import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import org.bukkit.block.Container
 import org.bukkit.event.EventPriority
@@ -28,7 +28,7 @@ interface RebarVanillaContainerBlock {
                 val rebarBlock = BlockStorage.get(holder.block)
                 if (rebarBlock is RebarVanillaContainerBlock) {
                     try {
-                        MultiHandler.handleEvent(rebarBlock, "onInventoryOpen", event, priority)
+                        MultiHandlers.handleEvent(rebarBlock, "onInventoryOpen", event, priority)
                     } catch (e: Exception) {
                         BlockListener.logEventHandleErr(event, e, rebarBlock)
                     }
@@ -43,7 +43,7 @@ interface RebarVanillaContainerBlock {
                 val sourceBlock = BlockStorage.get(sourceHolder.block)
                 if (sourceBlock is RebarVanillaContainerBlock) {
                     try {
-                        MultiHandler.handleEvent(sourceBlock, "onItemMoveFrom", event, priority)
+                        MultiHandlers.handleEvent(sourceBlock, "onItemMoveFrom", event, priority)
                     } catch (e: Exception) {
                         BlockListener.logEventHandleErr(event, e, sourceBlock)
                     }
@@ -55,7 +55,7 @@ interface RebarVanillaContainerBlock {
                 val destBlock = BlockStorage.get(destHolder.block)
                 if (destBlock is RebarVanillaContainerBlock) {
                     try {
-                        MultiHandler.handleEvent(destBlock, "onItemMoveTo", event, priority)
+                        MultiHandlers.handleEvent(destBlock, "onItemMoveTo", event, priority)
                     } catch (e: Exception) {
                         BlockListener.logEventHandleErr(event, e, destBlock)
                     }

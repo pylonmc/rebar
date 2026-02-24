@@ -1,11 +1,11 @@
 package io.github.pylonmc.rebar.item.base
 
+import io.github.pylonmc.rebar.event.api.MultiListener
+import io.github.pylonmc.rebar.event.api.annotation.MultiHandlers
+import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.item.RebarItemListener
 import io.github.pylonmc.rebar.item.research.Research.Companion.canUse
-import io.github.pylonmc.rebar.event.api.MultiListener
-import io.github.pylonmc.rebar.event.api.annotation.MultiHandler
-import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.player.PlayerInteractEntityEvent
 
@@ -26,7 +26,7 @@ interface RebarItemEntityInteractor : RebarCooldownable {
                     event.isCancelled = true
                 } else {
                     try {
-                        MultiHandler.handleEvent(rebarItemMainHand, "onUsedToRightClickEntity", event, priority)
+                        MultiHandlers.handleEvent(rebarItemMainHand, "onUsedToRightClickEntity", event, priority)
                     } catch (e: Exception) {
                         RebarItemListener.logEventHandleErr(event, e, rebarItemMainHand)
                     }
@@ -41,7 +41,7 @@ interface RebarItemEntityInteractor : RebarCooldownable {
                     event.isCancelled = true
                 } else {
                     try {
-                        MultiHandler.handleEvent(rebarItemOffHand, "onUsedToRightClickEntity", event, priority)
+                        MultiHandlers.handleEvent(rebarItemOffHand, "onUsedToRightClickEntity", event, priority)
                     } catch (e: Exception) {
                         RebarItemListener.logEventHandleErr(event, e, rebarItemOffHand)
                     }

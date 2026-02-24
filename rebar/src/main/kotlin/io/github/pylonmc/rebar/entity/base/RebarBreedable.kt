@@ -3,7 +3,7 @@ package io.github.pylonmc.rebar.entity.base
 import io.github.pylonmc.rebar.entity.EntityListener.logEventHandleErr
 import io.github.pylonmc.rebar.entity.EntityStorage
 import io.github.pylonmc.rebar.event.api.MultiListener
-import io.github.pylonmc.rebar.event.api.annotation.MultiHandler
+import io.github.pylonmc.rebar.event.api.annotation.MultiHandlers
 import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.entity.EntityBreedEvent
@@ -19,7 +19,7 @@ interface RebarBreedable {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarBreedable) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, "onBreed", event, priority)
+                    MultiHandlers.handleEvent(rebarEntity, "onBreed", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }
@@ -31,7 +31,7 @@ interface RebarBreedable {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarBreedable) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, "onEnterLoveMode", event, priority)
+                    MultiHandlers.handleEvent(rebarEntity, "onEnterLoveMode", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }

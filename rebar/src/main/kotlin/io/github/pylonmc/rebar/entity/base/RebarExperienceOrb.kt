@@ -4,7 +4,7 @@ import com.destroystokyo.paper.event.entity.ExperienceOrbMergeEvent
 import io.github.pylonmc.rebar.entity.EntityListener.logEventHandleErr
 import io.github.pylonmc.rebar.entity.EntityStorage
 import io.github.pylonmc.rebar.event.api.MultiListener
-import io.github.pylonmc.rebar.event.api.annotation.MultiHandler
+import io.github.pylonmc.rebar.event.api.annotation.MultiHandlers
 import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import org.bukkit.event.EventPriority
 
@@ -18,7 +18,7 @@ interface RebarExperienceOrb {
             val source = EntityStorage.get(event.mergeSource)
             if (source is RebarExperienceOrb) {
                 try {
-                    MultiHandler.handleEvent(source, "onMergeOrb", event, priority)
+                    MultiHandlers.handleEvent(source, "onMergeOrb", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, source)
                 }
@@ -30,7 +30,7 @@ interface RebarExperienceOrb {
             val target = EntityStorage.get(event.mergeTarget)
             if (target is RebarExperienceOrb) {
                 try {
-                    MultiHandler.handleEvent(target, "onAbsorbedByOrb", event, priority)
+                    MultiHandlers.handleEvent(target, "onAbsorbedByOrb", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, target)
                 }

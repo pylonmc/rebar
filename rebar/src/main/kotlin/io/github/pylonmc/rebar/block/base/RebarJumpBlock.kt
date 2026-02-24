@@ -5,7 +5,7 @@ import io.github.pylonmc.rebar.block.BlockListener
 import io.github.pylonmc.rebar.block.BlockListener.logEventHandleErr
 import io.github.pylonmc.rebar.block.BlockStorage
 import io.github.pylonmc.rebar.event.api.MultiListener
-import io.github.pylonmc.rebar.event.api.annotation.MultiHandler
+import io.github.pylonmc.rebar.event.api.annotation.MultiHandlers
 import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import org.bukkit.event.EventPriority
 
@@ -20,7 +20,7 @@ interface RebarJumpBlock {
             val rebarBlock = BlockStorage.get(blockUnder) ?: BlockStorage.get(blockIn)
             if (rebarBlock is RebarJumpBlock) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, "onJumpedOn", event, priority)
+                    MultiHandlers.handleEvent(rebarBlock, "onJumpedOn", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }

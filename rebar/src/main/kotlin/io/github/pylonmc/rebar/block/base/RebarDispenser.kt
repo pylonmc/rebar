@@ -4,7 +4,7 @@ import io.github.pylonmc.rebar.block.BlockListener
 import io.github.pylonmc.rebar.block.BlockListener.logEventHandleErr
 import io.github.pylonmc.rebar.block.BlockStorage
 import io.github.pylonmc.rebar.event.api.MultiListener
-import io.github.pylonmc.rebar.event.api.annotation.MultiHandler
+import io.github.pylonmc.rebar.event.api.annotation.MultiHandlers
 import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import io.papermc.paper.event.block.BlockFailedDispenseEvent
 import io.papermc.paper.event.block.BlockPreDispenseEvent
@@ -28,7 +28,7 @@ interface RebarDispenser {
             val rebarBlock = BlockStorage.get(event.block)
             if (rebarBlock is RebarDispenser) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, "onDispenseArmor", event, priority)
+                    MultiHandlers.handleEvent(rebarBlock, "onDispenseArmor", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }
@@ -40,7 +40,7 @@ interface RebarDispenser {
             val rebarBlock = BlockStorage.get(event.block)
             if (rebarBlock is RebarDispenser) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, "onDispenseItem", event, priority)
+                    MultiHandlers.handleEvent(rebarBlock, "onDispenseItem", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }
@@ -52,7 +52,7 @@ interface RebarDispenser {
             val rebarBlock = BlockStorage.get(event.block)
             if (rebarBlock is RebarDispenser) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, "onDispenseLoot", event, priority)
+                    MultiHandlers.handleEvent(rebarBlock, "onDispenseLoot", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }
@@ -64,7 +64,7 @@ interface RebarDispenser {
             val rebarBlock = BlockStorage.get(event.block)
             if (rebarBlock is RebarDispenser) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, "onShearSheep", event, priority)
+                    MultiHandlers.handleEvent(rebarBlock, "onShearSheep", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }
@@ -76,7 +76,7 @@ interface RebarDispenser {
             val rebarBlock = BlockStorage.get(event.block)
             if (rebarBlock is RebarDispenser) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, "onPreDispense", event, priority)
+                    MultiHandlers.handleEvent(rebarBlock, "onPreDispense", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }
@@ -88,7 +88,7 @@ interface RebarDispenser {
             val rebarBlock = BlockStorage.get(event.block)
             if (rebarBlock is RebarDispenser) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, "onFailDispense", event, priority)
+                    MultiHandlers.handleEvent(rebarBlock, "onFailDispense", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }

@@ -4,7 +4,7 @@ import io.github.pylonmc.rebar.block.BlockListener
 import io.github.pylonmc.rebar.block.BlockListener.logEventHandleErr
 import io.github.pylonmc.rebar.block.BlockStorage
 import io.github.pylonmc.rebar.event.api.MultiListener
-import io.github.pylonmc.rebar.event.api.annotation.MultiHandler
+import io.github.pylonmc.rebar.event.api.annotation.MultiHandlers
 import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import io.papermc.paper.event.block.CompostItemEvent
 import io.papermc.paper.event.entity.EntityCompostItemEvent
@@ -20,7 +20,7 @@ interface RebarComposter {
             val rebarBlock = BlockStorage.get(event.block)
             if (rebarBlock is RebarComposter) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, "onCompostByHopper", event, priority)
+                    MultiHandlers.handleEvent(rebarBlock, "onCompostByHopper", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }
@@ -32,7 +32,7 @@ interface RebarComposter {
             val rebarBlock = BlockStorage.get(event.block)
             if (rebarBlock is RebarComposter) {
                 try {
-                    MultiHandler.handleEvent(rebarBlock, "onCompostByEntity", event, priority)
+                    MultiHandlers.handleEvent(rebarBlock, "onCompostByEntity", event, priority)
                 } catch (e: Exception) {
                     BlockListener.logEventHandleErr(event, e, rebarBlock)
                 }

@@ -4,7 +4,7 @@ import io.github.pylonmc.rebar.block.BlockListener
 import io.github.pylonmc.rebar.block.BlockListener.logEventHandleErr
 import io.github.pylonmc.rebar.block.BlockStorage
 import io.github.pylonmc.rebar.event.api.MultiListener
-import io.github.pylonmc.rebar.event.api.annotation.MultiHandler
+import io.github.pylonmc.rebar.event.api.annotation.MultiHandlers
 import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import org.bukkit.block.Hopper
 import org.bukkit.event.EventPriority
@@ -21,7 +21,7 @@ interface RebarHopper {
                 val rebarBlock = BlockStorage.get(holder.block)
                 if (rebarBlock is RebarHopper) {
                     try {
-                        MultiHandler.handleEvent(rebarBlock, "onHopperPickUpItem", event, priority)
+                        MultiHandlers.handleEvent(rebarBlock, "onHopperPickUpItem", event, priority)
                     } catch (e: Exception) {
                         BlockListener.logEventHandleErr(event, e, rebarBlock)
                     }

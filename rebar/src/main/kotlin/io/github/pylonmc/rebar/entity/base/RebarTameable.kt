@@ -3,7 +3,7 @@ package io.github.pylonmc.rebar.entity.base
 import io.github.pylonmc.rebar.entity.EntityListener.logEventHandleErr
 import io.github.pylonmc.rebar.entity.EntityStorage
 import io.github.pylonmc.rebar.event.api.MultiListener
-import io.github.pylonmc.rebar.event.api.annotation.MultiHandler
+import io.github.pylonmc.rebar.event.api.annotation.MultiHandlers
 import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import io.papermc.paper.event.entity.TameableDeathMessageEvent
 import org.bukkit.event.EventPriority
@@ -19,7 +19,7 @@ interface RebarTameable {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarTameable) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, "onTamed", event, priority)
+                    MultiHandlers.handleEvent(rebarEntity, "onTamed", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }
@@ -31,7 +31,7 @@ interface RebarTameable {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarTameable) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, "onDeath", event, priority)
+                    MultiHandlers.handleEvent(rebarEntity, "onDeath", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }

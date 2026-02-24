@@ -3,7 +3,7 @@ package io.github.pylonmc.rebar.entity.base
 import io.github.pylonmc.rebar.entity.EntityListener.logEventHandleErr
 import io.github.pylonmc.rebar.entity.EntityStorage
 import io.github.pylonmc.rebar.event.api.MultiListener
-import io.github.pylonmc.rebar.event.api.annotation.MultiHandler
+import io.github.pylonmc.rebar.event.api.annotation.MultiHandlers
 import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.entity.EntityDamageEvent
@@ -19,7 +19,7 @@ interface RebarDamageableEntity {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarDamageableEntity) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, "onDamage", event, priority)
+                    MultiHandlers.handleEvent(rebarEntity, "onDamage", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }
@@ -31,7 +31,7 @@ interface RebarDamageableEntity {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarDamageableEntity) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, "onRegainHealth", event, priority)
+                    MultiHandlers.handleEvent(rebarEntity, "onRegainHealth", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }

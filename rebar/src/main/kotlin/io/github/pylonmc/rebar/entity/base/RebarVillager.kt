@@ -3,7 +3,7 @@ package io.github.pylonmc.rebar.entity.base
 import io.github.pylonmc.rebar.entity.EntityListener.logEventHandleErr
 import io.github.pylonmc.rebar.entity.EntityStorage
 import io.github.pylonmc.rebar.event.api.MultiListener
-import io.github.pylonmc.rebar.event.api.annotation.MultiHandler
+import io.github.pylonmc.rebar.event.api.annotation.MultiHandlers
 import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.entity.VillagerAcquireTradeEvent
@@ -21,7 +21,7 @@ interface RebarVillager {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarVillager) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, "onAcquireTrade", event, priority)
+                    MultiHandlers.handleEvent(rebarEntity, "onAcquireTrade", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }
@@ -33,7 +33,7 @@ interface RebarVillager {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarVillager) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, "onCareerChange", event, priority)
+                    MultiHandlers.handleEvent(rebarEntity, "onCareerChange", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }
@@ -45,7 +45,7 @@ interface RebarVillager {
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarVillager) {
                 try {
-                    MultiHandler.handleEvent(rebarEntity, "onReplenishTrade", event, priority)
+                    MultiHandlers.handleEvent(rebarEntity, "onReplenishTrade", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }

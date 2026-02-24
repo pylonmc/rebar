@@ -1,7 +1,7 @@
 package io.github.pylonmc.rebar.item.base
 
 import io.github.pylonmc.rebar.event.api.MultiListener
-import io.github.pylonmc.rebar.event.api.annotation.MultiHandler
+import io.github.pylonmc.rebar.event.api.annotation.MultiHandlers
 import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.item.RebarItemListener.logEventHandleErr
@@ -20,7 +20,7 @@ interface RebarLingeringPotion {
             val rebarPotion = RebarItem.fromStack(event.entity.item)
             if (rebarPotion is RebarLingeringPotion) {
                 try {
-                    MultiHandler.handleEvent(rebarPotion, "onSplash", event, priority)
+                    MultiHandlers.handleEvent(rebarPotion, "onSplash", event, priority)
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarPotion)
                 }

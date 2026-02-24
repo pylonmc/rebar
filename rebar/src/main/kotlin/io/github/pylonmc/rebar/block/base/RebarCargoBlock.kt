@@ -14,7 +14,7 @@ import io.github.pylonmc.rebar.entity.display.ItemDisplayBuilder
 import io.github.pylonmc.rebar.entity.display.transform.LineBuilder
 import io.github.pylonmc.rebar.event.*
 import io.github.pylonmc.rebar.event.api.MultiListener
-import io.github.pylonmc.rebar.event.api.annotation.MultiHandler
+import io.github.pylonmc.rebar.event.api.annotation.MultiHandlers
 import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
 import io.github.pylonmc.rebar.logistics.CargoRoutes
@@ -314,11 +314,11 @@ interface RebarCargoBlock : RebarLogisticBlock, RebarEntityHolderBlock {
         private fun onDuctConnected(event: RebarCargoConnectEvent, priority: EventPriority) {
             val block1 = event.block1
             if (block1 is RebarCargoBlock) {
-                MultiHandler.handleEvent(block1, "onDuctConnected", event, priority)
+                MultiHandlers.handleEvent(block1, "onDuctConnected", event, priority)
             }
             val block2 = event.block2
             if (block2 is RebarCargoBlock) {
-                MultiHandler.handleEvent(block2, "onDuctConnected", event, priority)
+                MultiHandlers.handleEvent(block2, "onDuctConnected", event, priority)
             }
         }
 
@@ -326,11 +326,11 @@ interface RebarCargoBlock : RebarLogisticBlock, RebarEntityHolderBlock {
         private fun onDuctDisconnected(event: RebarCargoDisconnectEvent, priority: EventPriority) {
             val block1 = event.block1
             if (block1 is RebarCargoBlock) {
-                MultiHandler.handleEvent(block1, "onDuctDisconnected", event, priority)
+                MultiHandlers.handleEvent(block1, "onDuctDisconnected", event, priority)
             }
             val block2 = event.block2
             if (block2 is RebarCargoBlock) {
-                MultiHandler.handleEvent(block2, "onDuctDisconnected", event, priority)
+                MultiHandlers.handleEvent(block2, "onDuctDisconnected", event, priority)
             }
         }
     }

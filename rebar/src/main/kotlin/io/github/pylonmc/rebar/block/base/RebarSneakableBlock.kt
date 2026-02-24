@@ -4,7 +4,7 @@ import io.github.pylonmc.rebar.block.BlockListener
 import io.github.pylonmc.rebar.block.BlockListener.logEventHandleErr
 import io.github.pylonmc.rebar.block.BlockStorage
 import io.github.pylonmc.rebar.event.api.MultiListener
-import io.github.pylonmc.rebar.event.api.annotation.MultiHandler
+import io.github.pylonmc.rebar.event.api.annotation.MultiHandlers
 import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.player.PlayerToggleSneakEvent
@@ -26,13 +26,13 @@ interface RebarSneakableBlock {
                  */
                 if (!event.player.isSneaking) {
                     try {
-                        MultiHandler.handleEvent(rebarBlock, "onSneakedOn", event, priority)
+                        MultiHandlers.handleEvent(rebarBlock, "onSneakedOn", event, priority)
                     } catch (e: Exception) {
                         BlockListener.logEventHandleErr(event, e, rebarBlock)
                     }
                 } else {
                     try {
-                        MultiHandler.handleEvent(rebarBlock, "onUnsneakedOn", event, priority)
+                        MultiHandlers.handleEvent(rebarBlock, "onUnsneakedOn", event, priority)
                     } catch (e: Exception) {
                         BlockListener.logEventHandleErr(event, e, rebarBlock)
                     }
