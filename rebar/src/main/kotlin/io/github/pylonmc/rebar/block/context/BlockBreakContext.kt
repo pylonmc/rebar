@@ -3,6 +3,7 @@ package io.github.pylonmc.rebar.block.context
 import com.destroystokyo.paper.event.block.BlockDestroyEvent
 import io.github.pylonmc.rebar.block.BlockStorage
 import io.github.pylonmc.rebar.content.debug.DebugWaxedWeatheredCutCopperStairs
+import io.papermc.paper.event.block.BlockBreakBlockEvent
 import org.bukkit.GameMode
 import org.bukkit.block.Block
 import org.bukkit.event.block.BlockBreakEvent
@@ -105,6 +106,14 @@ interface BlockBreakContext {
     data class Faded(val event: BlockFadeEvent) : BlockBreakContext {
         override val block = event.block
         override val normallyDrops = false
+    }
+
+    /**
+     * The block is being broken by another block (see [BlockBreakBlockEvent] for more details)
+     */
+    data class BlockBreak(val event: BlockBreakBlockEvent) : BlockBreakContext {
+        override val block = event.block
+        override val normallyDrops = true
     }
 
     /**
