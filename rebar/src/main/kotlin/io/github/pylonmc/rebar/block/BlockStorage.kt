@@ -19,7 +19,6 @@ import io.github.pylonmc.rebar.util.position.BlockPosition
 import io.github.pylonmc.rebar.util.position.ChunkPosition
 import io.github.pylonmc.rebar.util.position.position
 import io.github.pylonmc.rebar.util.rebarKey
-import io.papermc.paper.command.brigadier.argument.ArgumentTypes.blockPosition
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import org.bukkit.*
@@ -27,7 +26,6 @@ import org.bukkit.block.Block
 import org.bukkit.entity.Item
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
-import org.bukkit.event.block.BlockDropItemEvent
 import org.bukkit.event.world.ChunkLoadEvent
 import org.bukkit.event.world.ChunkUnloadEvent
 import org.bukkit.inventory.ItemStack
@@ -586,8 +584,10 @@ object BlockStorage : Listener {
      */
     @JvmSynthetic
     internal fun cleanup(addon: RebarAddon) = lockBlockWrite {
-        val replacer: (RebarBlock) -> RebarBlock = { block ->
-            if (block.schema.key.isFromAddon(addon)) {
+        val phantomise: (RebarBlock) -> RebarBlock? = { block ->
+            if (block is PhantomBlock) { // don't try to re-phantomise phantom blocks
+                null
+            } else if (block.schema.key.isFromAddon(addon)) {
                 RebarBlockSchema.schemaCache[block.block.position] = PhantomBlock.schema
                 PhantomBlock(
                     RebarBlock.serialize(block, block.block.chunk.persistentDataContainer.adapterContext),
@@ -599,12 +599,21 @@ object BlockStorage : Listener {
             }
         }
 
-        blocks.replaceAll { _, block -> replacer.invoke(block) }
-        for (blocks in blocksByKey.values) {
-            blocks.replaceAll(replacer)
-        }
-        for (blocks in blocksByChunk.values) {
-            blocks.replaceAll(replacer)
+        run {
+            val iter = blocks.iterator()
+            while (iter.hasNext()) {
+                val (position, block) = iter.next()
+                try {
+                    phantomise.invoke(block)?.let {
+                        blocks[position] = it
+                        blocksByKey[block.key]!!.remove(block)
+                        blocksByChunk[position.chunk]!!.remove(block)
+                    }
+                } catch (e: Exception) {
+                    Rebar.logger.severe("Error while cleaning up block at $position from ${addon.key}")
+                    e.printStackTrace()
+                }
+            }
         }
     }
 
@@ -631,7 +640,12 @@ object BlockStorage : Listener {
     @JvmSynthetic
     internal fun cleanupEverything() {
         for ((chunkPosition, chunkBlocks) in blocksByChunk) {
-            save(chunkPosition.chunk!!, chunkBlocks)
+            try {
+                save(chunkPosition.chunk!!, chunkBlocks)
+            } catch (e: Exception) {
+                Rebar.logger.severe("Failed to save chunk at $chunkPosition")
+                e.printStackTrace()
+            }
         }
     }
 
