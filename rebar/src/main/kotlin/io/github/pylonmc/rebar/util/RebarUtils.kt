@@ -19,13 +19,8 @@ import io.papermc.paper.registry.keys.tags.BlockTypeTagKeys
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.TranslatableComponent
 import net.kyori.adventure.text.TranslationArgumentLike
-import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
-import org.bukkit.Bukkit
-import org.bukkit.Material
-import org.bukkit.NamespacedKey
-import org.bukkit.Registry
-import org.bukkit.World
+import org.bukkit.*
 import org.bukkit.attribute.Attribute
 import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
@@ -297,8 +292,7 @@ internal fun Class<*>.findConstructorMatching(vararg types: Class<*>): MethodHan
 
 // I can never remember which way around `isAssignableFrom` goes,
 // so this is a helper function to make it more readable
-@JvmSynthetic
-private fun Class<*>.isSubclassOf(other: Class<*>): Boolean = other.isAssignableFrom(this)
+fun Class<*>.isSubclassOf(other: Class<*>): Boolean = other.isAssignableFrom(this)
 
 /**
  * Small helper function to convert a minimessage string (eg: '<red>bruh') into a component
