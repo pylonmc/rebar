@@ -1,6 +1,5 @@
 package io.github.pylonmc.rebar.item.builder
 
-import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.addon.RebarAddon
 import io.github.pylonmc.rebar.config.Config
 import io.github.pylonmc.rebar.config.Settings
@@ -253,8 +252,8 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
     ) = apply {
         removeAttributeModifiers(Attribute.ARMOR)
         removeAttributeModifiers(Attribute.ARMOR_TOUGHNESS)
-        addAttributeModifier(Attribute.ARMOR, AttributeModifier(getArmorKey(slot), armor, AttributeModifier.Operation.ADD_NUMBER, slot))
-        addAttributeModifier(Attribute.ARMOR_TOUGHNESS, AttributeModifier(getArmorToughnessKey(slot), armorToughness, AttributeModifier.Operation.ADD_NUMBER, slot))
+        addAttributeModifier(Attribute.ARMOR, AttributeModifier(vanillaArmorKey(slot), armor, AttributeModifier.Operation.ADD_NUMBER, slot))
+        addAttributeModifier(Attribute.ARMOR_TOUGHNESS, AttributeModifier(vanillaArmorKey(slot), armorToughness, AttributeModifier.Operation.ADD_NUMBER, slot))
     }
 
     fun axe(
@@ -343,13 +342,24 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
 
         val disableNameHacksKey = rebarKey("disable_name_hacks")
 
-        private fun getArmorKey(slot: EquipmentSlotGroup) : NamespacedKey {
-            return NamespacedKey(Rebar, "armor_$slot")
+        private fun vanillaArmorType(slot: EquipmentSlotGroup) = when (slot) {
+            EquipmentSlotGroup.HEAD -> "helmet"
+            EquipmentSlotGroup.CHEST -> "chestplate"
+            EquipmentSlotGroup.LEGS -> "leggings"
+            EquipmentSlotGroup.FEET -> "boots"
+            EquipmentSlotGroup.BODY -> "body"
+            else -> slot.toString() // All others are not an ArmorType vanilla logic wise
         }
 
-        private fun getArmorToughnessKey(slot: EquipmentSlotGroup) : NamespacedKey {
-            return NamespacedKey(Rebar, "armor_toughness_$slot")
+        /**
+         * Mimics the NMS logic for creating base armor attributes so that they display correctly in the tooltip
+         * This key should be used for base armor, armor toughness, and knockback resistance.
+         */
+        @JvmStatic
+        fun vanillaArmorKey(slot: EquipmentSlotGroup) : NamespacedKey {
+            return NamespacedKey.minecraft("armor.${vanillaArmorType(slot)}")
         }
+
         /**
          * The default name language key for a Rebar item.
          */
