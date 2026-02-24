@@ -53,10 +53,7 @@ object MultiHandlers {
                 val ignoreCancelled = annotation.ignoreCancelled
 
                 { instance, evt, priority ->
-                    if ((evt !is Cancellable || !evt.isCancelled || !ignoreCancelled) && priorities.contains(
-                            priority
-                        )
-                    ) {
+                    if ((evt !is Cancellable || !evt.isCancelled || !ignoreCancelled) && priority in priorities) {
                         methodHandle.invoke(instance, evt, priority)
                     }
                 }
