@@ -99,6 +99,10 @@ interface RebarAddon : Keyed {
                 RebarRegistry.ITEMS.unregisterAllFromAddon(plugin)
                 RebarRegistry.RECIPE_TYPES.unregisterAllFromAddon(plugin)
                 RebarRegistry.ADDONS.unregister(plugin)
+
+                if (plugin is Rebar) {
+                    plugin.preDisable()
+                }
             }
         }
     }

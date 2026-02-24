@@ -249,7 +249,12 @@ object EntityStorage : Listener {
     internal fun cleanup(addon: RebarAddon) = lockEntityWrite {
         for ((_, value) in entitiesByKey.filter { it.key.isFromAddon(addon) }) {
             for (entity in value) {
-                RebarEntity.serialize(entity)
+                try {
+                    RebarEntity.serialize(entity)
+                } catch (e: Exception) {
+                    Rebar.logger.severe("Error while unloading entity ${entity.uuid} (${entity.key}")
+                    e.printStackTrace()
+                }
             }
         }
 

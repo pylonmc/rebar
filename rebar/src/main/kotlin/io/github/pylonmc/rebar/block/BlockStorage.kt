@@ -3,6 +3,7 @@ package io.github.pylonmc.rebar.block
 
 import com.github.shynixn.mccoroutine.bukkit.launch
 import com.github.shynixn.mccoroutine.bukkit.minecraftDispatcher
+import com.google.common.base.Preconditions
 import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.addon.RebarAddon
 import io.github.pylonmc.rebar.block.BlockStorage.breakBlock
@@ -19,7 +20,6 @@ import io.github.pylonmc.rebar.util.position.BlockPosition
 import io.github.pylonmc.rebar.util.position.ChunkPosition
 import io.github.pylonmc.rebar.util.position.position
 import io.github.pylonmc.rebar.util.rebarKey
-import io.papermc.paper.command.brigadier.argument.ArgumentTypes.blockPosition
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import org.bukkit.*
@@ -27,7 +27,6 @@ import org.bukkit.block.Block
 import org.bukkit.entity.Item
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
-import org.bukkit.event.block.BlockDropItemEvent
 import org.bukkit.event.world.ChunkLoadEvent
 import org.bukkit.event.world.ChunkUnloadEvent
 import org.bukkit.inventory.ItemStack
@@ -36,6 +35,7 @@ import org.bukkit.persistence.PersistentDataType
 import java.util.Collections
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.locks.ReentrantReadWriteLock
+import kotlin.collections.mutableListOf
 import kotlin.random.Random
 
 /**
@@ -586,8 +586,10 @@ object BlockStorage : Listener {
      */
     @JvmSynthetic
     internal fun cleanup(addon: RebarAddon) = lockBlockWrite {
-        val replacer: (RebarBlock) -> RebarBlock = { block ->
-            if (block.schema.key.isFromAddon(addon)) {
+        fun phantomise(block: RebarBlock): RebarBlock? =
+            if (block is PhantomBlock) { // don't try to re-phantomise phantom blocks
+                null
+            } else if (block.schema.key.isFromAddon(addon)) {
                 RebarBlockSchema.schemaCache[block.block.position] = PhantomBlock.schema
                 PhantomBlock(
                     RebarBlock.serialize(block, block.block.chunk.persistentDataContainer.adapterContext),
@@ -595,16 +597,24 @@ object BlockStorage : Listener {
                     block.block
                 )
             } else {
-                block
+                null
             }
-        }
 
-        blocks.replaceAll { _, block -> replacer.invoke(block) }
-        for (blocks in blocksByKey.values) {
-            blocks.replaceAll(replacer)
-        }
-        for (blocks in blocksByChunk.values) {
-            blocks.replaceAll(replacer)
+        val iter = blocks.iterator()
+        while (iter.hasNext()) {
+            val (position, block) = iter.next()
+            try {
+                phantomise(block)?.let { phantomBlock ->
+                    blocks[position] = phantomBlock
+                    blocksByKey[block.key]!!.remove(block)
+                    blocksByKey.computeIfAbsent(phantomBlock.key) { mutableListOf() }.add(phantomBlock)
+                    blocksByChunk[position.chunk]!!.remove(block)
+                    blocksByChunk[phantomBlock.block.position.chunk]!!.add(phantomBlock)
+                }
+            } catch (e: Exception) {
+                Rebar.logger.severe("Error while cleaning up block at $position from ${addon.key}")
+                e.printStackTrace()
+            }
         }
     }
 
@@ -623,15 +633,20 @@ object BlockStorage : Listener {
 
         blocks.replace(block.block.position, block, phantomBlock)
         blocksByKey[block.key]!!.remove(block)
-        blocksByKey[block.key]!!.add(phantomBlock)
+        blocksByKey.computeIfAbsent(phantomBlock.key) { mutableListOf() }.add(phantomBlock)
         blocksByChunk[block.block.chunk.position]!!.remove(block)
-        blocksByChunk[block.block.chunk.position]!!.add(phantomBlock)
+        blocksByChunk[phantomBlock.block.chunk.position]!!.add(phantomBlock)
     }
 
     @JvmSynthetic
     internal fun cleanupEverything() {
         for ((chunkPosition, chunkBlocks) in blocksByChunk) {
-            save(chunkPosition.chunk!!, chunkBlocks)
+            try {
+                save(chunkPosition.chunk!!, chunkBlocks)
+            } catch (e: Exception) {
+                Rebar.logger.severe("Failed to save chunk at $chunkPosition")
+                e.printStackTrace()
+            }
         }
     }
 
