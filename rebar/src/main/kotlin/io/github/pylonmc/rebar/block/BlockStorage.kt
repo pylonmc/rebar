@@ -3,6 +3,7 @@ package io.github.pylonmc.rebar.block
 
 import com.github.shynixn.mccoroutine.bukkit.launch
 import com.github.shynixn.mccoroutine.bukkit.minecraftDispatcher
+import com.google.common.base.Preconditions
 import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.addon.RebarAddon
 import io.github.pylonmc.rebar.block.BlockStorage.breakBlock
@@ -34,6 +35,7 @@ import org.bukkit.persistence.PersistentDataType
 import java.util.Collections
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.locks.ReentrantReadWriteLock
+import kotlin.collections.mutableListOf
 import kotlin.random.Random
 
 /**
@@ -595,7 +597,7 @@ object BlockStorage : Listener {
                     block.block
                 )
             } else {
-                block
+                null
             }
         }
 
@@ -604,10 +606,12 @@ object BlockStorage : Listener {
             while (iter.hasNext()) {
                 val (position, block) = iter.next()
                 try {
-                    phantomise.invoke(block)?.let {
-                        blocks[position] = it
+                    phantomise.invoke(block)?.let { phantomBlock ->
+                        blocks[position] = phantomBlock
                         blocksByKey[block.key]!!.remove(block)
+                        blocksByKey.computeIfAbsent(phantomBlock.key) { mutableListOf() }.add(phantomBlock)
                         blocksByChunk[position.chunk]!!.remove(block)
+                        blocksByChunk[phantomBlock.block.position.chunk]!!.add(phantomBlock)
                     }
                 } catch (e: Exception) {
                     Rebar.logger.severe("Error while cleaning up block at $position from ${addon.key}")
@@ -632,9 +636,9 @@ object BlockStorage : Listener {
 
         blocks.replace(block.block.position, block, phantomBlock)
         blocksByKey[block.key]!!.remove(block)
-        blocksByKey[block.key]!!.add(phantomBlock)
+        blocksByKey.computeIfAbsent(phantomBlock.key) { mutableListOf() }.add(phantomBlock)
         blocksByChunk[block.block.chunk.position]!!.remove(block)
-        blocksByChunk[block.block.chunk.position]!!.add(phantomBlock)
+        blocksByChunk[phantomBlock.block.chunk.position]!!.add(phantomBlock)
     }
 
     @JvmSynthetic

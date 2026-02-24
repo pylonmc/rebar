@@ -90,7 +90,7 @@ interface RebarAddon : Keyed {
         @EventHandler
         private fun onPluginDisable(event: PluginDisableEvent) {
             val plugin = event.plugin
-            if (plugin is RebarAddon && plugin !is Rebar) {
+            if (plugin is RebarAddon) {
                 BlockStorage.cleanup(plugin)
                 RebarRegistry.BLOCKS.unregisterAllFromAddon(plugin)
                 EntityStorage.cleanup(plugin)
@@ -99,6 +99,10 @@ interface RebarAddon : Keyed {
                 RebarRegistry.ITEMS.unregisterAllFromAddon(plugin)
                 RebarRegistry.RECIPE_TYPES.unregisterAllFromAddon(plugin)
                 RebarRegistry.ADDONS.unregister(plugin)
+
+                if (plugin is Rebar) {
+                    plugin.preDisable()
+                }
             }
         }
     }
