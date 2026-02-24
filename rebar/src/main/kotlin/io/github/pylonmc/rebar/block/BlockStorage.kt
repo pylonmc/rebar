@@ -586,7 +586,7 @@ object BlockStorage : Listener {
      */
     @JvmSynthetic
     internal fun cleanup(addon: RebarAddon) = lockBlockWrite {
-        val phantomise: (RebarBlock) -> RebarBlock? = { block ->
+        fun phantomise(block: RebarBlock): RebarBlock? =
             if (block is PhantomBlock) { // don't try to re-phantomise phantom blocks
                 null
             } else if (block.schema.key.isFromAddon(addon)) {
@@ -599,24 +599,21 @@ object BlockStorage : Listener {
             } else {
                 null
             }
-        }
 
-        run {
-            val iter = blocks.iterator()
-            while (iter.hasNext()) {
-                val (position, block) = iter.next()
-                try {
-                    phantomise.invoke(block)?.let { phantomBlock ->
-                        blocks[position] = phantomBlock
-                        blocksByKey[block.key]!!.remove(block)
-                        blocksByKey.computeIfAbsent(phantomBlock.key) { mutableListOf() }.add(phantomBlock)
-                        blocksByChunk[position.chunk]!!.remove(block)
-                        blocksByChunk[phantomBlock.block.position.chunk]!!.add(phantomBlock)
-                    }
-                } catch (e: Exception) {
-                    Rebar.logger.severe("Error while cleaning up block at $position from ${addon.key}")
-                    e.printStackTrace()
+        val iter = blocks.iterator()
+        while (iter.hasNext()) {
+            val (position, block) = iter.next()
+            try {
+                phantomise(block)?.let { phantomBlock ->
+                    blocks[position] = phantomBlock
+                    blocksByKey[block.key]!!.remove(block)
+                    blocksByKey.computeIfAbsent(phantomBlock.key) { mutableListOf() }.add(phantomBlock)
+                    blocksByChunk[position.chunk]!!.remove(block)
+                    blocksByChunk[phantomBlock.block.position.chunk]!!.add(phantomBlock)
                 }
+            } catch (e: Exception) {
+                Rebar.logger.severe("Error while cleaning up block at $position from ${addon.key}")
+                e.printStackTrace()
             }
         }
     }

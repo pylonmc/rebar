@@ -403,7 +403,8 @@ object Rebar : JavaPlugin(), RebarAddon {
         logger.info("Loaded researches in ${(end - start) / 1000.0}s")
     }
 
-    fun preDisable() {
+    @JvmSynthetic
+    internal fun preDisable() {
         // Anything that requires listeners to still be registered should be done here
         FluidPipePlacementService.cleanup()
         BlockStorage.cleanupEverything()
