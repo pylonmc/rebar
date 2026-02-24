@@ -224,7 +224,7 @@ internal object BlockListener : MultiListener {
         }
     }
 
-    @MultiHandler(priorities = [ EventPriority.MONITOR ], ignoreCancelled = true)
+    @MultiHandler(priorities = [ EventPriority.MONITOR ])
     private fun blockRemove(event: BlockBreakBlockEvent, @Suppress("unused") priority: EventPriority) {
         val block = BlockStorage.get(event.block) ?: return
         val context = BlockBreakContext.BlockBreak(event)
