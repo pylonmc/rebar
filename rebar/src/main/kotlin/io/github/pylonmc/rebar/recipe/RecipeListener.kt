@@ -23,6 +23,7 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.ShapedRecipe
 import org.bukkit.inventory.ShapelessRecipe
 import org.bukkit.inventory.StonecutterInventory
+import org.bukkit.inventory.meta.Damageable
 
 internal object RebarRecipeListener : Listener {
 
@@ -231,14 +232,15 @@ internal object RebarRecipeListener : Listener {
         val inventory = e.inventory
         val firstItem = inventory.firstItem
         val secondItem = inventory.secondItem
-        val firstRebarItem = RebarItem.fromStack(firstItem)
-        val secondRebarItem = RebarItem.fromStack(secondItem)
-
-        // Disallow using Rebar items but allow renaming them
-        // Have tried to support this. It's really hard because you end up effectively
-        // having to do the repair manually for items that can't usually be repaired.
-        // Gave up after 2 hours or so
-        if ((firstRebarItem != null && (secondItem != null && !secondItem.isEmpty)) || secondRebarItem != null) {
+        // Check if the result is a repaired item and if so, cancel it.
+        if(firstItem != null && e.result != null
+            && firstItem.itemMeta is Damageable && e.result!!.itemMeta is Damageable
+            && (firstItem.itemMeta as Damageable).damage < (e.result!!.itemMeta as Damageable).damage){
+            e.result = null
+            return
+        }
+        // Check if either input is a rebar item without VanillaAnvilItem and if the output is vanilla, cancel it
+        if((firstItem.isRebarAndIsNot<VanillaAnvilItem>() || secondItem.isRebarAndIsNot<VanillaAnvilItem>()) && RebarItem.fromStack(e.result) == null) {
             e.result = null
             return
         }
