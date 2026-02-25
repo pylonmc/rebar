@@ -24,9 +24,11 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import org.bukkit.*
 import org.bukkit.block.Block
+import org.bukkit.entity.FallingBlock
 import org.bukkit.entity.Item
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
+import org.bukkit.event.entity.EntityChangeBlockEvent
 import org.bukkit.event.world.ChunkLoadEvent
 import org.bukkit.event.world.ChunkUnloadEvent
 import org.bukkit.inventory.ItemStack
@@ -577,6 +579,14 @@ object BlockStorage : Listener {
         }
 
         RebarChunkBlocksUnloadEvent(event.chunk, chunkBlocks.toList()).callEvent()
+    }
+
+    @EventHandler
+    private fun onBlockFallOn(event: EntityChangeBlockEvent) {
+        // Issue #579 - Prevent pylon blocks being broken by gravity blocks
+        if (event.entity is FallingBlock && get(event.block) != null) {
+            event.isCancelled = true
+        }
     }
 
     /**
