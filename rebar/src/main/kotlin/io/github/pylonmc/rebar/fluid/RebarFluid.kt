@@ -3,6 +3,7 @@ package io.github.pylonmc.rebar.fluid
 import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.i18n.RebarTranslator.Companion.translator
+import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.util.getAddon
@@ -56,11 +57,13 @@ open class RebarFluid(
     )
 
     init {
-        val addon = RebarRegistry.ADDONS[NamespacedKey(key.namespace, key.namespace)]!!
-        for (locale in addon.languages) {
-            val translationKey = "${key.namespace}.fluid.${key.key}"
-            if (!addon.translator.canTranslate(translationKey, locale)) {
-                Rebar.logger.warning("${key.namespace} is missing a translation key for fluid ${key.key} (locale: ${locale.displayName} | expected translation key: $translationKey)")
+        if (key !in nameWarningsSuppressed) {
+            val addon = RebarRegistry.ADDONS[NamespacedKey(key.namespace, key.namespace)]!!
+            for (locale in addon.languages) {
+                val translationKey = "${key.namespace}.fluid.${key.key}"
+                if (!addon.translator.canTranslate(translationKey, locale)) {
+                    Rebar.logger.warning("${key.namespace} is missing a translation key for fluid ${key.key} (locale: ${locale.displayName} | expected translation key: $translationKey)")
+                }
             }
         }
     }
@@ -100,6 +103,7 @@ open class RebarFluid(
     override fun toString(): String = key.toString()
 
     companion object {
+        private val nameWarningsSuppressed: MutableSet<NamespacedKey> = mutableSetOf()
         val rebarFluidKeyKey = rebarKey("rebar_fluid_key")
 
         /**
@@ -110,6 +114,15 @@ open class RebarFluid(
             if (stack == null || stack.isEmpty) return null
             val id = stack.persistentDataContainer.get(rebarFluidKeyKey, RebarSerializers.NAMESPACED_KEY) ?: return null
             return RebarRegistry.FLUIDS[id]
+        }
+
+        /**
+         * Suppresses warnings about missing/incorrect translation keys for the fluid name
+         * for the given fluid key
+         */
+        @JvmStatic
+        fun suppressNameWarnings(key: NamespacedKey) {
+            nameWarningsSuppressed.add(key)
         }
     }
 }
