@@ -281,6 +281,8 @@ class Research(
                 if (rebar == null) return
 
                 if (!entity.canPickUp(rebar, sendMessage = true)) {
+                    // See net.minecraft.world.entity.item.ItemEntity#setDefaultPickUpDelay
+                    event.item.pickupDelay = 10
                     event.isCancelled = true
                 }
             }
