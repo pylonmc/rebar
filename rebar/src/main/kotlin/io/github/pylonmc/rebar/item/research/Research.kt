@@ -273,9 +273,11 @@ class Research(
         private fun onPlayerPickup(event: EntityPickupItemEvent) {
             val entity = event.entity
             if (entity is Player) {
-                Rebar.launch {
-                    delay(1.ticks)
-                    entity.ejectUnknownItems()
+                val rebar = RebarItem.fromStack(event.item.itemStack)
+                if (rebar == null) return
+
+                if (!entity.canPickUp(rebar)) {
+                    event.isCancelled = true
                 }
             }
         }
@@ -326,7 +328,7 @@ private fun Player.ejectUnknownItems() {
         rebarItem != null && !canPickUp(rebarItem, sendMessage = true)
     }
     for (item in toRemove) {
-        inventory.remove(item)
+        inventory.removeItemAnySlot(item)
         dropItem(item)
     }
 }
