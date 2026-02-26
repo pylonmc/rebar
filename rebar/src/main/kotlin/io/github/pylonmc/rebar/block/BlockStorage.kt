@@ -586,6 +586,8 @@ object BlockStorage : Listener {
         // Issue #579 - Prevent pylon blocks being broken by gravity blocks
         if (event.entity is FallingBlock && get(event.block) != null) {
             event.isCancelled = true
+            event.block.world.dropItemNaturally(event.block.location,
+                ItemStack.of((event.entity as FallingBlock).material))
         }
     }
 
