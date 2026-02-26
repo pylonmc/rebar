@@ -87,6 +87,7 @@ import io.github.pylonmc.rebar.recipe.RecipeType
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.resourcepack.armor.ArmorTextureEngine
 import io.github.pylonmc.rebar.culling.BlockCullingEngine
+import io.github.pylonmc.rebar.event.RebarConfigurableRecipesLoadedEvent
 import io.github.pylonmc.rebar.util.mergeGlobalConfig
 import io.github.pylonmc.rebar.waila.Waila
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder
@@ -372,6 +373,7 @@ object Rebar : JavaPlugin(), RebarAddon {
 
         val end = System.currentTimeMillis()
         logger.info("Loaded recipes in ${(end - start) / 1000.0}s")
+        RebarConfigurableRecipesLoadedEvent().callEvent()
     }
 
     private fun loadResearches() {
