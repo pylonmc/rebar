@@ -13,7 +13,7 @@ import org.bukkit.inventory.EquipmentSlot
  * Represents a block that takes the form of another block when right clicked, such as fluid
  * pipes and cargo ducts.
  */
-interface RebarFacadeBlock : RebarInteractBlock, RebarBreakHandler {
+interface RebarFacadeBlock : RebarInteractBlock {
 
     /**
      * Implemented automatically by any class that extends PylonBlock
