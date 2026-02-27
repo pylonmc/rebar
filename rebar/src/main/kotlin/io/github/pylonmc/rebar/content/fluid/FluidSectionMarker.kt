@@ -38,7 +38,6 @@ class FluidSectionMarker : RebarBlock, RebarBreakHandler, RebarEntityHolderBlock
         get() = pipeDisplay?.pipe
 
     override fun onBreak(drops: MutableList<ItemStack>, context: BlockBreakContext) {
-        super<RebarFacadeBlock>.onBreak(drops, context)
         var player: Player? = null
         if (context is PlayerBreak) {
             player = context.event.player

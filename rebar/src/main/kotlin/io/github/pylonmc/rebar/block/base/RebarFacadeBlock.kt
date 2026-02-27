@@ -1,6 +1,5 @@
 package io.github.pylonmc.rebar.block.base
 
-import io.github.pylonmc.rebar.block.context.BlockBreakContext
 import io.github.pylonmc.rebar.event.api.annotation.MultiHandler
 import io.github.pylonmc.rebar.item.RebarItem
 import org.bukkit.Material
@@ -9,7 +8,6 @@ import org.bukkit.event.Event
 import org.bukkit.event.EventPriority
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.EquipmentSlot
-import org.bukkit.inventory.ItemStack
 
 /**
  * Represents a block that takes the form of another block when right clicked, such as fluid
@@ -35,24 +33,17 @@ interface RebarFacadeBlock : RebarInteractBlock, RebarBreakHandler {
             return
         }
 
-
         if (block.type != Material.STRUCTURE_VOID) {
-            event.player.give(ItemStack(block.type))
             block.type = Material.STRUCTURE_VOID
             event.setUseItemInHand(Event.Result.DENY)
+            event.setUseInteractedBlock(Event.Result.DENY)
             return
         }
 
-        if (item.type.isBlock) {
+        if (item.type.isBlock && !item.type.isAir) {
             block.type = item.type
-            item.subtract()
             event.setUseItemInHand(Event.Result.DENY)
-        }
-    }
-
-    override fun onBreak(drops: MutableList<ItemStack>, context: BlockBreakContext) {
-        if (block.type != facadeDefaultBlockType) {
-            drops.add(ItemStack(block.type))
+            event.setUseInteractedBlock(Event.Result.DENY)
         }
     }
 }

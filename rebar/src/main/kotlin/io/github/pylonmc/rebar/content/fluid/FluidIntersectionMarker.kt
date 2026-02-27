@@ -39,7 +39,6 @@ class FluidIntersectionMarker : RebarBlock, RebarEntityHolderBlock, RebarBreakHa
         get() = getHeldRebarEntityOrThrow(FluidIntersectionDisplay::class.java, "intersection")
 
     override fun onBreak(drops: MutableList<ItemStack>, context: BlockBreakContext) {
-        super<RebarFacadeBlock>.onBreak(drops, context)
         var player: Player? = if (context is PlayerBreak) context.event.player else null
 
         // Clone to prevent ConcurrentModificationException if pipeDisplay.delete modified connectedPipeDisplays
