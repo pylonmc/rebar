@@ -28,6 +28,8 @@ class RebarRegistry<T : Keyed>(val key: NamespacedKey) : Iterable<T> {
 
     private val values: MutableMap<NamespacedKey, T> = LinkedHashMap()
 
+    private val keyMapping = mutableMapOf<NamespacedKey, NamespacedKey>()
+
     fun register(vararg values: T) {
         for (value in values) {
             val key = value.key
@@ -63,15 +65,34 @@ class RebarRegistry<T : Keyed>(val key: NamespacedKey) : Iterable<T> {
     }
 
     operator fun get(key: NamespacedKey): T? {
+        var key = key
+        while (key in keyMapping) {
+            key = keyMapping[key]!!
+        }
         return values[key]
     }
 
     fun getOrThrow(key: NamespacedKey): T {
-        return values[key] ?: throw NoSuchElementException("No value found for key $key in registry $this")
+        return get(key) ?: throw NoSuchElementException("No value found for key $key in registry $this")
     }
 
     fun getOrCreate(key: NamespacedKey, creator: () -> T): T {
-        return values.getOrPut(key) { creator().also { register(it) } }
+        val value = get(key)
+        if (value != null) {
+            return value
+        }
+        val newValue = creator()
+        register(newValue)
+        return newValue
+    }
+
+    /**
+     * Maps a key to another key, allowing values to be looked up by either key. This is useful for updating
+     * keys without breaking existing references. For example, if an item is renamed from "addon:old_item" to
+     * "addon:new_item", you can map "addon:old_item" to "addon:new_item" so that both keys will return the same item.
+     */
+    fun mapKey(from: NamespacedKey, to: NamespacedKey) {
+        keyMapping[from] = to
     }
 
     fun getKeys(): Set<NamespacedKey> {
