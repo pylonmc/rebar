@@ -30,6 +30,10 @@ import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.entity.EntityPickupItemEvent
+import org.bukkit.event.inventory.InventoryClickEvent
+import org.bukkit.event.inventory.InventoryCloseEvent
+import org.bukkit.event.inventory.InventoryMoveItemEvent
+import org.bukkit.event.inventory.InventoryOpenEvent
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.inventory.ItemStack
 import kotlin.math.min
@@ -273,11 +277,25 @@ class Research(
         private fun onPlayerPickup(event: EntityPickupItemEvent) {
             val entity = event.entity
             if (entity is Player) {
-                Rebar.launch {
-                    delay(1.ticks)
-                    entity.ejectUnknownItems()
+                val rebar = RebarItem.fromStack(event.item.itemStack)
+                if (rebar == null) return
+
+                if (!entity.canPickUp(rebar, sendMessage = true)) {
+                    // See net.minecraft.world.entity.item.ItemEntity#setDefaultPickUpDelay
+                    event.item.pickupDelay = 10
+                    event.isCancelled = true
                 }
             }
+        }
+
+        @EventHandler
+        private fun onPlayerOpenInventory(event: InventoryOpenEvent) {
+            (event.player as Player).ejectUnknownItems()
+        }
+
+        @EventHandler
+        private fun onPlayerCloseInventory(event: InventoryCloseEvent) {
+            (event.player as Player).ejectUnknownItems()
         }
 
         @EventHandler
@@ -326,7 +344,7 @@ private fun Player.ejectUnknownItems() {
         rebarItem != null && !canPickUp(rebarItem, sendMessage = true)
     }
     for (item in toRemove) {
-        inventory.remove(item)
+        inventory.removeItemAnySlot(item)
         dropItem(item)
     }
 }
