@@ -9,6 +9,7 @@ import io.github.pylonmc.rebar.config.adapter.ConfigAdapter
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.i18n.RebarArgument
 import io.github.pylonmc.rebar.item.RebarItem
+import io.github.pylonmc.rebar.item.RebarItemSchema
 import io.github.pylonmc.rebar.item.research.Research.Companion.canPickUp
 import io.github.pylonmc.rebar.particles.ConfettiParticle
 import io.github.pylonmc.rebar.recipe.FluidOrItem
@@ -193,6 +194,12 @@ class Research(
         fun removeResearch(player: Player, research: Research)
             = setResearches(player, getResearches(player) - research)
 
+        @JvmStatic
+        @JvmOverloads
+        @JvmName("canPlayerCraft")
+        fun Player.canCraft(item: RebarItem, sendMessage: Boolean = false, respectBypass: Boolean = true): Boolean
+            = canCraft(item.schema, sendMessage, respectBypass)
+
         /**
          * Checks whether a player can craft an item (ie has the associated research, or
          * has permission to bypass research.
@@ -203,10 +210,10 @@ class Research(
         @JvmStatic
         @JvmOverloads
         @JvmName("canPlayerCraft")
-        fun Player.canCraft(item: RebarItem, sendMessage: Boolean = false, respectBypass: Boolean = true): Boolean {
-            if (!RebarConfig.ResearchConfig.ENABLED || (respectBypass && this.hasPermission(item.researchBypassPermission))) return true
+        fun Player.canCraft(schema: RebarItemSchema, sendMessage: Boolean = false, respectBypass: Boolean = true): Boolean {
+            if (!RebarConfig.ResearchConfig.ENABLED || (respectBypass && this.hasPermission(schema.researchBypassPermission))) return true
 
-            val research = item.research ?: return true
+            val research = schema.research ?: return true
 
             val canUse = this.hasResearch(research)
             if (!canUse && sendMessage) {
@@ -226,7 +233,7 @@ class Research(
                 this.sendMessage(
                     Component.translatable(
                         "rebar.message.research.unknown",
-                        RebarArgument.of("item", item.stack.effectiveName()),
+                        RebarArgument.of("item", schema.getItemStack().effectiveName()),
                         RebarArgument.of("research", researchName)
                     )
                 )
@@ -247,6 +254,12 @@ class Research(
         @JvmName("canPlayerPickUp")
         fun Player.canPickUp(item: RebarItem, sendMessage: Boolean = false): Boolean = canCraft(item, sendMessage)
 
+        @JvmStatic
+        @JvmOverloads
+        @JvmName("canPlayerUse")
+        fun Player.canUse(item: RebarItem, sendMessage: Boolean = false): Boolean
+            = canUse(item.schema, sendMessage)
+
         /**
          * Checks whether a player can use an item (ie has the associated research, or
          * has permission to bypass research.
@@ -257,20 +270,20 @@ class Research(
         @JvmStatic
         @JvmOverloads
         @JvmName("canPlayerUse")
-        fun Player.canUse(item: RebarItem, sendMessage: Boolean = false): Boolean {
-            if (RebarConfig.DISABLED_ITEMS.contains(item.key)) {
+        fun Player.canUse(schema: RebarItemSchema, sendMessage: Boolean = false): Boolean {
+            if (RebarConfig.DISABLED_ITEMS.contains(schema.key)) {
                 if (sendMessage) {
                     this.sendMessage(
                         Component.translatable(
                             "rebar.message.disabled.message",
-                            RebarArgument.of("item", item.stack.effectiveName()),
+                            RebarArgument.of("item", schema.getItemStack().effectiveName()),
                         )
                     )
                 }
                 return false
             }
 
-            return canCraft(item, sendMessage)
+            return canCraft(schema, sendMessage)
         }
 
         @EventHandler
