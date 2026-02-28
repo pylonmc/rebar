@@ -12,6 +12,7 @@ import io.github.pylonmc.rebar.event.api.MultiListener
 import io.github.pylonmc.rebar.event.api.annotation.MultiHandler
 import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.item.research.Research.Companion.canUse
+import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.util.isFakeEvent
 import io.github.pylonmc.rebar.util.position.position
 import io.papermc.paper.event.block.BlockBreakBlockEvent
@@ -28,6 +29,7 @@ import org.bukkit.event.entity.EntityExplodeEvent
 import org.bukkit.event.entity.EntityRemoveEvent
 import org.bukkit.event.player.PlayerBucketEmptyEvent
 import org.bukkit.event.world.StructureGrowEvent
+import org.bukkit.inventory.ItemStack
 import java.util.UUID
 import java.util.WeakHashMap
 
@@ -103,10 +105,39 @@ internal object BlockListener : MultiListener {
                 fallMap[entity.uniqueId] = Pair(rebarFallingBlock, fallingEntity)
             }
         } else {
-            val rebarEntity = EntityStorage.get(entity) as? RebarFallingBlock.RebarFallingBlockEntity ?: return
-            val rebarBlock = BlockStorage.loadBlock(block.position, rebarEntity.blockSchema, rebarEntity.blockData) as RebarFallingBlock
+            val isRebarEntity = EntityStorage.get(entity) is RebarFallingBlock.RebarFallingBlockEntity
+            if (event.entity is FallingBlock && BlockStorage.get(event.block) != null) {
+                // Issue #579 - Prevent pylon blocks being broken by gravity blocks
+                event.isCancelled = true
+                if (isRebarEntity) {
+                    // Rebar gravity block hits a rebar block
+                    val rebarEntity = EntityStorage.get(entity) as RebarFallingBlock.RebarFallingBlockEntity
+                    val rebarItemSchema = RebarRegistry.ITEMS.get(rebarEntity.blockSchema.key)
+                    if (rebarItemSchema != null) {
+                        event.block.world.dropItemNaturally(
+                            event.block.location,
+                            rebarItemSchema.getItemStack()
+                        )
+                    }
+                } else {
+                    // Vanilla gravity block hits a rebar block
+                    event.block.world.dropItemNaturally(
+                        event.block.location,
+                        ItemStack.of((event.entity as FallingBlock).material)
+                    )
+                }
+                return
+            } else if (isRebarEntity) {
+                // Rebar gravity block normally falls
+                val rebarEntity = EntityStorage.get(entity) as RebarFallingBlock.RebarFallingBlockEntity
+                val rebarBlock = BlockStorage.loadBlock(
+                    block.position,
+                    rebarEntity.blockSchema,
+                    rebarEntity.blockData
+                ) as RebarFallingBlock
 
-            rebarBlock.onFallStop(event, rebarEntity)
+                rebarBlock.onFallStop(event, rebarEntity)
+            }
         }
     }
 
