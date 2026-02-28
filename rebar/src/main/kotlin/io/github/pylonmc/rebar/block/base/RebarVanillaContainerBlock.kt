@@ -50,7 +50,7 @@ interface RebarVanillaContainerBlock {
                 }
             }
 
-            val destHolder = event.destination.holder
+            val destHolder = event.destination.getHolder(false)
             if (destHolder is BlockInventoryHolder) {
                 val destBlock = BlockStorage.get(destHolder.block)
                 if (destBlock is RebarVanillaContainerBlock) {
