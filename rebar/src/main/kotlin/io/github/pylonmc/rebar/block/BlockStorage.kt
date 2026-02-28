@@ -24,11 +24,9 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import org.bukkit.*
 import org.bukkit.block.Block
-import org.bukkit.entity.FallingBlock
 import org.bukkit.entity.Item
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
-import org.bukkit.event.entity.EntityChangeBlockEvent
 import org.bukkit.event.world.ChunkLoadEvent
 import org.bukkit.event.world.ChunkUnloadEvent
 import org.bukkit.inventory.ItemStack
