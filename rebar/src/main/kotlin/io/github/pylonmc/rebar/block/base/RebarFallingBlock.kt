@@ -13,6 +13,7 @@ import org.bukkit.NamespacedKey
 import org.bukkit.entity.FallingBlock
 import org.bukkit.event.entity.EntityChangeBlockEvent
 import org.bukkit.event.entity.EntityDropItemEvent
+import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataContainer
 
 /**
@@ -33,6 +34,8 @@ interface RebarFallingBlock {
     /**
      * When calling this, the entity doesn't exist yet in [io.github.pylonmc.rebar.entity.EntityStorage]
      * Called after serialization
+     *
+     * Can also be used to change the fallback item on deletion
      */
     fun onFallStart(event: EntityChangeBlockEvent, spawnedEntity: RebarFallingBlockEntity)
 
@@ -72,6 +75,10 @@ interface RebarFallingBlock {
             pdc.set(FALLING_BLOCK_DATA, RebarSerializers.TAG_CONTAINER, blockData)
             pdc.set(FALLING_BLOCK_START, RebarSerializers.BLOCK_POSITION, fallStartPosition)
         }
+
+        fun fallbackItem() : ItemStack? {
+            return this.entity.persistentDataContainer.get(FALLBACK_ITEM, RebarSerializers.ITEM_STACK) ?: RebarRegistry.ITEMS[blockSchema.key]?.getItemStack()
+        }
     }
 
     companion object {
@@ -86,5 +93,8 @@ interface RebarFallingBlock {
 
         @JvmField
         val FALLING_BLOCK_START = NamespacedKey(Rebar, "falling_rebar_block_start")
+
+        @JvmField
+        val FALLBACK_ITEM = NamespacedKey(Rebar, "fallback_item")
     }
 }
