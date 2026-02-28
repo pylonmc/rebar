@@ -144,11 +144,8 @@ internal object BlockListener : MultiListener {
         val context = BlockBreakContext.PlayerBreak(event);
         if (priority == EventPriority.LOWEST) {
             val schema = block.defaultItem
-            if (schema != null && !event.player.canUse(schema, true)) {
-                return
-            }
-
-            if (!BlockStorage.preBreakBlock(block, context)) {
+            if ((schema != null && !event.player.canUse(schema, true))
+                || !BlockStorage.preBreakBlock(block, context)) {
                 event.isCancelled = true
                 return
             }
