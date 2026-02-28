@@ -151,13 +151,15 @@ private val setblock = buildCommand("setblock") {
                 if (!location.world.isPositionLoaded(location)) {
                     source.sender.sendMessage(Component.translatable("argument.pos.unloaded"))
                     return@executes
-                } else if (location.blockX !in -30000000..30000000 || location.blockZ !in -30000000..30000000 || location.blockY !in location.world.minHeight..location.world.maxHeight) {
+                } else if (!location.world.worldBorder.isInside(location)) {
                     source.sender.sendMessage(Component.translatable("argument.pos.outofworld"))
                     return@executes
                 }
 
                 val block = getArgument<RebarBlockSchema>("block")
-                val failed = BlockStorage.placeBlock(location, block.key) == null
+                val failed = BlockStorage.isRebarBlock(location)
+                        || BlockStorage.placeBlock(location, block.key) == null
+                
                 source.sender.sendVanillaFeedback(
                     if (failed) "setblock.failed" else "setblock.success",
                     Component.text(location.blockX), Component.text(location.blockY), Component.text(location.blockZ)
@@ -447,7 +449,7 @@ private val setphantom = buildCommand("setphantom") {
             if (!position.world.isPositionLoaded(position)) {
                 source.sender.sendMessage(Component.translatable("argument.pos.unloaded"))
                 return@executes
-            } else if (position.blockX !in -30000000..30000000 || position.blockZ !in -30000000..30000000 || position.blockY !in position.world.minHeight..position.world.maxHeight) {
+            } else if (!position.world.worldBorder.isInside(position)) {
                 source.sender.sendMessage(Component.translatable("argument.pos.outofworld"))
                 return@executes
             }
