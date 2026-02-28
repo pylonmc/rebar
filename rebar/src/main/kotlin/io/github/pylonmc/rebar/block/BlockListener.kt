@@ -104,7 +104,7 @@ internal object BlockListener : MultiListener {
     ) {
         val rebarEntity = EntityStorage.get(entity) as? RebarFallingBlock.RebarFallingBlockEntity
 
-        // handle structure void or falling onto another pylon block
+        // falling onto another pylon block
         if (BlockStorage.get(block) != null) {
             val drop = if (rebarEntity == null) {
                 ItemStack.of(entity.blockData.material)
