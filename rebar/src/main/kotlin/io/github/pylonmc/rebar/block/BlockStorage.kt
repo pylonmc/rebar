@@ -581,16 +581,6 @@ object BlockStorage : Listener {
         RebarChunkBlocksUnloadEvent(event.chunk, chunkBlocks.toList()).callEvent()
     }
 
-    @EventHandler
-    private fun onBlockFallOn(event: EntityChangeBlockEvent) {
-        // Issue #579 - Prevent pylon blocks being broken by gravity blocks
-        if (event.entity is FallingBlock && get(event.block) != null) {
-            event.isCancelled = true
-            event.block.world.dropItemNaturally(event.block.location,
-                ItemStack.of((event.entity as FallingBlock).material))
-        }
-    }
-
     /**
      * Unloads blocks from a specific addon.
      * This doesn't actually delete them from memory, but instead converts them into
