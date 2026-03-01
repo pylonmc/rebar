@@ -275,7 +275,6 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
         miningSpeed: Float,
         miningDurabilityDamage: Int
     ) = tool(Registry.BLOCK.getTag(BlockTypeTagKeys.MINEABLE_HOE), miningSpeed, miningDurabilityDamage)
-
     fun tool(
         blocks: RegistryKeySet<BlockType>,
         miningSpeed: Float,
