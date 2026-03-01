@@ -613,4 +613,4 @@ fun getBlockBreakTicks(tool: ItemStack, block: Block)
  */
 fun Entity.scheduleRemove() = Bukkit.getScheduler().runTask(Rebar, this::remove)
 
-fun Block.getrelative(vector: Vector3i) = this.getRelative(vector.x, vector.y, vector.z)
+fun Block.getRelative(vector: Vector3i) = this.getRelative(vector.x, vector.y, vector.z)

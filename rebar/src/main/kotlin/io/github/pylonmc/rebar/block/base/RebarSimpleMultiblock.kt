@@ -6,7 +6,6 @@ import io.github.pylonmc.rebar.block.BlockStorage
 import io.github.pylonmc.rebar.block.MultiblockCache
 import io.github.pylonmc.rebar.block.RebarBlock
 import io.github.pylonmc.rebar.block.RebarBlockSchema
-import io.github.pylonmc.rebar.block.context.BlockCreateContext
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.entity.EntityStorage
 import io.github.pylonmc.rebar.entity.RebarEntity
@@ -19,7 +18,7 @@ import io.github.pylonmc.rebar.event.RebarBlockSerializeEvent
 import io.github.pylonmc.rebar.event.RebarBlockUnloadEvent
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
 import io.github.pylonmc.rebar.registry.RebarRegistry
-import io.github.pylonmc.rebar.util.getrelative
+import io.github.pylonmc.rebar.util.getRelative
 import io.github.pylonmc.rebar.util.position.ChunkPosition
 import io.github.pylonmc.rebar.util.position.position
 import io.github.pylonmc.rebar.util.rebarKey
@@ -510,9 +509,9 @@ interface RebarSimpleMultiblock : RebarMultiblock, RebarEntityHolderBlock, Rebar
     fun getMultiblockBlock(position: Vector3i): Block {
         val direction = getMultiblockDirection()
         return if (direction != null) {
-            block.getrelative(rotateVectorToFace(position, direction))
+            block.getRelative(rotateVectorToFace(position, direction))
         } else {
-            block.getrelative(position)
+            block.getRelative(position)
         }
     }
 
