@@ -6,6 +6,7 @@ import io.github.pylonmc.rebar.block.BlockStorage
 import io.github.pylonmc.rebar.block.MultiblockCache
 import io.github.pylonmc.rebar.block.RebarBlock
 import io.github.pylonmc.rebar.block.RebarBlockSchema
+import io.github.pylonmc.rebar.block.context.BlockCreateContext
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.entity.EntityStorage
 import io.github.pylonmc.rebar.entity.RebarEntity
@@ -23,6 +24,7 @@ import io.github.pylonmc.rebar.util.position.ChunkPosition
 import io.github.pylonmc.rebar.util.position.position
 import io.github.pylonmc.rebar.util.rebarKey
 import io.github.pylonmc.rebar.util.rotateVectorToFace
+import io.github.pylonmc.rebar.waila.Waila
 import io.github.pylonmc.rebar.waila.WailaDisplay
 import kotlinx.coroutines.delay
 import net.kyori.adventure.text.Component
@@ -88,6 +90,14 @@ interface RebarSimpleMultiblock : RebarMultiblock, RebarEntityHolderBlock, Rebar
     interface MultiblockComponent {
         fun matches(block: Block): Boolean
 
+        /**
+         * Sets [block] to a 'default' value which matches this MultiblockComponent.
+         *
+         * For example, if a MultiblockComponent can be grass or dirt, this should set
+         * the block to either grass or dirt
+         */
+        fun placeDefaultBlock(block: Block)
+
         companion object {
 
             @JvmStatic
@@ -145,6 +155,12 @@ interface RebarSimpleMultiblock : RebarMultiblock, RebarEntityHolderBlock, Rebar
         }
 
         override fun matches(block: Block): Boolean = !BlockStorage.isRebarBlock(block) && block.type in materials
+
+        override fun placeDefaultBlock(block: Block) {
+            if (block.type.isAir && !BlockStorage.isRebarBlock(block)) {
+                block.type = materials.first()
+            }
+        }
 
         override fun spawnGhostBlock(block: Block): UUID {
             val blockDataList = blockDataList()
@@ -214,6 +230,12 @@ interface RebarSimpleMultiblock : RebarMultiblock, RebarEntityHolderBlock, Rebar
             return false
         }
 
+        override fun placeDefaultBlock(block: Block) {
+            if (block.type.isAir && !BlockStorage.isRebarBlock(block)) {
+                block.blockData = blockDatas.first()
+            }
+        }
+
         override fun spawnGhostBlock(block: Block): UUID {
             val stringDatas: List<String> = blockDatas.map { it.getAsString(true) }
             val display = BlockDisplayBuilder()
@@ -262,6 +284,10 @@ interface RebarSimpleMultiblock : RebarMultiblock, RebarEntityHolderBlock, Rebar
             }
 
             return false
+        }
+
+        override fun placeDefaultBlock(block: Block) {
+            multiblockComponents.first().placeDefaultBlock(block)
         }
 
         override fun spawnGhostBlocks(block: Block): List<UUID> {
@@ -352,6 +378,12 @@ interface RebarSimpleMultiblock : RebarMultiblock, RebarEntityHolderBlock, Rebar
 
         override fun matches(block: Block): Boolean = BlockStorage.get(block)?.schema?.key == key
 
+        override fun placeDefaultBlock(block: Block) {
+            if (block.type.isAir && !BlockStorage.isRebarBlock(block)) {
+                BlockStorage.placeBlock(block, key)
+            }
+        }
+
         override fun spawnGhostBlock(block: Block): UUID {
             val schema = schema()
             val display = ItemDisplayBuilder()
@@ -375,6 +407,11 @@ interface RebarSimpleMultiblock : RebarMultiblock, RebarEntityHolderBlock, Rebar
      * only a multiblock constructed facing in the specified direction will be considered valid.
      */
     val components: Map<Vector3i, MultiblockComponent>
+
+    /**
+     * Automatically implemented by RebarBlock
+     */
+    fun getWaila(player: Player): WailaDisplay?
 
     /**
      * Sets the 'direction' we expect the multiblock to be built in. North is considered the default facing direction -
@@ -525,12 +562,18 @@ interface RebarSimpleMultiblock : RebarMultiblock, RebarEntityHolderBlock, Rebar
             EntityStorage.get(heldEntities[key]!!)!!.entity.remove()
             heldEntities.remove(key)
         }
+        for (position in components.keys) {
+            Waila.addWailaOverride(getMultiblockBlock(position), this::getWaila)
+        }
     }
 
     @MustBeInvokedByOverriders
     override fun onMultiblockUnformed(partUnloaded: Boolean) {
         if (!partUnloaded) {
             spawnGhostBlocks()
+        }
+        for (position in components.keys) {
+            Waila.removeWailaOverride(getMultiblockBlock(position))
         }
     }
 

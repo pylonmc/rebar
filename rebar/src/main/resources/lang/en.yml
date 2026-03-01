@@ -98,6 +98,9 @@ message:
     exposerecipe:
       not-configurable: "<red>This recipe type is not configurable"
       warning: "<yellow>Warning: exposing recipe configs will keep them from updating automatically. Delete %file% to revert"
+    finishmultiblock:
+      failed: "<red>You are not looking at a multiblock"
+      success: "Finished the multiblock"
 
   waila:
     type-disabled: "<red>This server no longer permits the your previously set %type% WAILA display type, it has been reset to default"
