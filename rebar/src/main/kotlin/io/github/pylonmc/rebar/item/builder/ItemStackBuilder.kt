@@ -638,10 +638,15 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
          * armor: 2.0 # double
          * armor-toughness: 0.5 # double
          * durability: 250 # integer
+         * enchantability: 10 # integer
          * ```
          */
         @JvmStatic
         fun rebarArmor(stack: ItemStack, key: NamespacedKey, slot: EquipmentSlotGroup, hasDurability: Boolean) = rebar(stack, key) { builder, settings ->
+            settings.get("enchantability", ConfigAdapter.INTEGER)?.apply {
+                builder.set(DataComponentTypes.ENCHANTABLE, Enchantable.enchantable(this))
+            }
+
             builder.armor(
                 slot,
                 settings.getOrThrow("armor", ConfigAdapter.DOUBLE),
