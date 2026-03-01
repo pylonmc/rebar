@@ -275,12 +275,12 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
         miningSpeed: Float,
         miningDurabilityDamage: Int
     ) = tool(Registry.BLOCK.getTag(BlockTypeTagKeys.MINEABLE_HOE), miningSpeed, miningDurabilityDamage)
-
     fun tool(
         blocks: RegistryKeySet<BlockType>,
         miningSpeed: Float,
         miningDurabilityDamage: Int
     ) = apply {
+
         set(DataComponentTypes.TOOL, Tool.tool()
             .damagePerBlock(miningDurabilityDamage)
             .addRule(Tool.rule(blocks, miningSpeed, TriState.TRUE)))
@@ -637,10 +637,15 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
          * armor: 2.0 # double
          * armor-toughness: 0.5 # double
          * durability: 250 # integer
+         * enchantability: 10 # integer
          * ```
          */
         @JvmStatic
         fun rebarArmor(stack: ItemStack, key: NamespacedKey, slot: EquipmentSlotGroup, hasDurability: Boolean) = rebar(stack, key) { builder, settings ->
+            settings.get("enchantability", ConfigAdapter.INTEGER)?.apply {
+                builder.set(DataComponentTypes.ENCHANTABLE, Enchantable.enchantable(this))
+            }
+
             builder.armor(
                 slot,
                 settings.getOrThrow("armor", ConfigAdapter.DOUBLE),
@@ -684,10 +689,15 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
          * mining-speed: 8.0 # double
          * mining-durability-damage: 1 # integer
          * durability: 500 # integer
+         * enchantability: 10 # integer
          * ```
          */
         @JvmStatic
         fun rebarTool(stack: ItemStack, key: NamespacedKey, mineable: RegistryKeySet<BlockType>, hasDurability: Boolean) = rebar(stack, key) { builder, settings ->
+            settings.get("enchantability", ConfigAdapter.INTEGER)?.apply {
+                builder.set(DataComponentTypes.ENCHANTABLE, Enchantable.enchantable(this))
+            }
+
             builder.tool(
                 mineable,
                 settings.getOrThrow("mining-speed", ConfigAdapter.FLOAT),
@@ -740,10 +750,15 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
          * attack-knockback: 0.4 # double
          * disable-shield-seconds: 3.0 # float
          * durability: 500 # integer
+         * enchantability: 10 # integer
          * ```
          */
         @JvmStatic
         fun rebarWeapon(stack: ItemStack, key: NamespacedKey, hasDurability: Boolean, hasKnockback: Boolean, disablesShield: Boolean) = rebar(stack, key) { builder, settings ->
+            settings.get("enchantability", ConfigAdapter.INTEGER)?.apply {
+                builder.set(DataComponentTypes.ENCHANTABLE, Enchantable.enchantable(this))
+            }
+
             builder.weapon(
                 settings.getOrThrow("attack-damage", ConfigAdapter.DOUBLE),
                 settings.getOrThrow("attack-speed", ConfigAdapter.DOUBLE),
