@@ -471,7 +471,6 @@ interface RebarSimpleMultiblock : RebarMultiblock, RebarEntityHolderBlock, Rebar
         get() = Vector3i(horizontalRadius, components.keys.maxOf { it.y }, horizontalRadius)
 
     fun getMultiblockBlock(position: Vector3i): Block {
-        check(position in components.keys) { "Block at $position is not part of the multiblock" }
         val direction = getMultiblockDirection()
         return if (direction != null) {
             block.getrelative(rotateVectorToFace(position, direction))
