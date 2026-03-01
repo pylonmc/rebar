@@ -199,7 +199,7 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
         replaceExisting: Boolean = true
     ) = apply {
         editDataOrSet(DataComponentTypes.ATTRIBUTE_MODIFIERS) { modifiers ->
-            val copying = modifiers?.modifiers()?.filter { !replaceExisting || it.modifier().key != modifier.key }
+            val copying = modifiers?.modifiers()?.filter { !replaceExisting || it.attribute() != attribute || it.modifier().key != modifier.key }
             ItemAttributeModifiers.itemAttributes().copy(copying)
                 .addModifier(attribute, modifier)
                 .build()
