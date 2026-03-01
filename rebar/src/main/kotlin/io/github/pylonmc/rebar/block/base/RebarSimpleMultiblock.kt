@@ -9,7 +9,6 @@ import io.github.pylonmc.rebar.block.RebarBlockSchema
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.entity.EntityStorage
 import io.github.pylonmc.rebar.entity.RebarEntity
-import io.github.pylonmc.rebar.entity.base.RebarInteractEntity
 import io.github.pylonmc.rebar.entity.display.BlockDisplayBuilder
 import io.github.pylonmc.rebar.entity.display.ItemDisplayBuilder
 import io.github.pylonmc.rebar.entity.display.transform.TransformBuilder
@@ -19,6 +18,7 @@ import io.github.pylonmc.rebar.event.RebarBlockSerializeEvent
 import io.github.pylonmc.rebar.event.RebarBlockUnloadEvent
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
 import io.github.pylonmc.rebar.registry.RebarRegistry
+import io.github.pylonmc.rebar.util.getrelative
 import io.github.pylonmc.rebar.util.position.ChunkPosition
 import io.github.pylonmc.rebar.util.position.position
 import io.github.pylonmc.rebar.util.rebarKey
@@ -38,7 +38,6 @@ import org.bukkit.entity.ItemDisplay
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
-import org.bukkit.event.player.PlayerInteractEntityEvent
 import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.util.Vector
 import org.jetbrains.annotations.ApiStatus
@@ -470,6 +469,28 @@ interface RebarSimpleMultiblock : RebarMultiblock, RebarEntityHolderBlock, Rebar
      */
     val maxCorner: Vector3i
         get() = Vector3i(horizontalRadius, components.keys.maxOf { it.y }, horizontalRadius)
+
+    fun getMultiblockBlock(position: Vector3i): Block {
+        check(position in components.keys) { "Block at $position is not part of the multiblock" }
+        val direction = getMultiblockDirection()
+        return if (direction != null) {
+            block.getrelative(rotateVectorToFace(position, direction))
+        } else {
+            block.getrelative(position)
+        }
+    }
+
+    fun getMultiblockComponent(position: Vector3i) =
+        BlockStorage.get(getMultiblockBlock(position))
+
+    fun <T> getMultiblockComponent(clazz: Class<T>, position: Vector3i) =
+        BlockStorage.getAs(clazz, getMultiblockBlock(position))
+
+    fun getMultiblockComponentOrThrow(position: Vector3i) =
+        getMultiblockComponent(position) ?: throw IllegalStateException("There is no Rebar block at $position")
+
+    fun <T> getMultiblockComponentOrThrow(clazz: Class<T>, position: Vector3i) =
+        getMultiblockComponent(clazz, position) ?: throw IllegalStateException("There is no Rebar block at $position or it is not of type $clazz")
 
     override val chunksOccupied: Set<ChunkPosition>
         get() {
