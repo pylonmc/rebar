@@ -12,6 +12,7 @@ import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.addon.RebarAddon
 import io.github.pylonmc.rebar.block.BlockStorage
 import io.github.pylonmc.rebar.block.RebarBlockSchema
+import io.github.pylonmc.rebar.block.base.RebarSimpleMultiblock
 import io.github.pylonmc.rebar.content.debug.DebugWaxedWeatheredCutCopperStairs
 import io.github.pylonmc.rebar.content.guide.RebarGuide
 import io.github.pylonmc.rebar.entity.display.transform.Rotation
@@ -464,6 +465,36 @@ private val setphantom = buildCommand("setphantom") {
     }
 }
 
+private val finishMultiblock = buildCommand("finishmultiblock") {
+    permission("rebar.command.finishmultiblock")
+    executesWithPlayer { player ->
+        RebarMetrics.onCommandRun("/rb finishmultiblock")
+
+        val multiblock = player.getTargetBlockExact(5)?.let {
+            BlockStorage.getAs<RebarSimpleMultiblock>(it)
+        }
+        if (multiblock == null) {
+            player.sendFeedback("finishmultiblock.failed")
+            return@executesWithPlayer
+        }
+
+        for ((position, block) in multiblock.components) {
+            block.placeDefaultBlock(multiblock.getMultiblockBlock(position))
+        }
+
+        // finish sub-multiblocks (e.g. hatches)
+        for ((position, block) in multiblock.components) {
+            BlockStorage.getAs<RebarSimpleMultiblock>(multiblock.getMultiblockBlock(position))?.let { subMultiblock ->
+                for ((position, block) in subMultiblock.components) {
+                    block.placeDefaultBlock(subMultiblock.getMultiblockBlock(position))
+                }
+            }
+        }
+
+        player.sendFeedback("finishmultiblock.success")
+    }
+}
+
 @JvmSynthetic
 internal val ROOT_COMMAND = buildCommand("rebar") {
     permission("rebar.command.guide")
@@ -482,6 +513,7 @@ internal val ROOT_COMMAND = buildCommand("rebar") {
     then(research)
     then(exposeRecipeConfig)
     then(confetti)
+    then(finishMultiblock)
 }
 
 @JvmSynthetic
