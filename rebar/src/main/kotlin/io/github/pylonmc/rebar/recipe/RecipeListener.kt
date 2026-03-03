@@ -47,7 +47,7 @@ internal object RebarRecipeListener : Listener {
             var firstItem: ItemStack? = null
             var secondItem: ItemStack? = null
             for (item in e.inventory.matrix) {
-                if (item != null && !item.isEmpty)  {
+                if (item != null && !item.isEmpty) {
                     if (firstItem == null) {
                         firstItem = item
                     } else if (secondItem == null) {
@@ -233,14 +233,18 @@ internal object RebarRecipeListener : Listener {
         val firstItem = inventory.firstItem
         val secondItem = inventory.secondItem
         // Check if the result is a repaired item and if so, cancel it.
-        if(firstItem != null && e.result != null
+        if (firstItem != null && e.result != null
             && firstItem.itemMeta is Damageable && e.result!!.itemMeta is Damageable
-            && (firstItem.itemMeta as Damageable).damage < (e.result!!.itemMeta as Damageable).damage){
+            && (firstItem.itemMeta as Damageable).damage < (e.result!!.itemMeta as Damageable).damage
+        ) {
             e.result = null
             return
         }
         // Check if either input is a rebar item without VanillaAnvilItem and if the output is vanilla, cancel it
-        if((firstItem.isRebarAndIsNot<VanillaAnvilItem>() || secondItem.isRebarAndIsNot<VanillaAnvilItem>()) && RebarItem.fromStack(e.result) == null) {
+        if ((firstItem.isRebarAndIsNot<VanillaAnvilItem>() || secondItem.isRebarAndIsNot<VanillaAnvilItem>()) && RebarItem.fromStack(
+                e.result
+            ) == null
+        ) {
             e.result = null
             return
         }

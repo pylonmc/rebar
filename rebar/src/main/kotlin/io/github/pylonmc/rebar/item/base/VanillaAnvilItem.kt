@@ -25,7 +25,7 @@ interface VanillaAnvilItem {
             }
             if (rebarItem2 is VanillaAnvilItem) {
                 try {
-                    MultiHandler.handleEvent(rebarItem2, "onPrepareAnvil", event, priority)
+                    MultiHandler.handleEvent(rebarItem2, "onPrepareAnvilCraft", event, priority)
                 } catch (e: Exception) {
                     RebarItemListener.logEventHandleErr(event, e, rebarItem2)
                 }
