@@ -86,7 +86,7 @@ interface RebarFluidBlock : RebarEntityHolderBlock, RebarBreakHandler {
     }
 
     /**
-     * Returns a map of fluid types - and their corresponding amounts - that can be supplied by
+     * Returns a list of fluid types - and their corresponding amounts - that can be supplied by
      * the block for this fluid tick.
      *
      * If you have a machine that can supply up to 100 fluid per second, it should supply
@@ -97,7 +97,7 @@ interface RebarFluidBlock : RebarEntityHolderBlock, RebarBreakHandler {
      *
      * Called exactly one per fluid tick.
      */
-    fun getSuppliedFluids(): Map<RebarFluid, Double> = mapOf()
+    fun getSuppliedFluids(): List<Pair<RebarFluid, Double>> = listOf()
 
     /**
      * Returns the amount of the given fluid that the machine wants to receive next tick.

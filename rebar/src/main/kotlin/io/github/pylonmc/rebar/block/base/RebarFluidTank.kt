@@ -151,12 +151,12 @@ interface RebarFluidTank : RebarFluidBlock {
         }
     }
 
-    override fun getSuppliedFluids(): Map<RebarFluid, Double> {
+    override fun getSuppliedFluids(): List<Pair<RebarFluid, Double>> {
         val fluidData = this.fluidData // local variable to save calling fluidData getter multiple times
         return if (fluidData.fluid == null) {
-            emptyMap()
+            emptyList()
         } else {
-            mapOf(fluidData.fluid!! to fluidData.amount)
+            listOf(Pair(fluidData.fluid!!, fluidData.amount))
         }
     }
 
