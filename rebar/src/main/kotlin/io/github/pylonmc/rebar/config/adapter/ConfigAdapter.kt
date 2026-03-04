@@ -139,6 +139,7 @@ interface ConfigAdapter<T> {
         @JvmField val WAILA_DISPLAY = WailaDisplayConfigAdapter
         @JvmField val CONFIG_SECTION = ConfigSectionConfigAdapter
         @JvmField val CONTRIBUTOR = ContributorConfigAdapter
+        @JvmField val TEXT_COLOR = TextColorConfigAdapter
         // @formatter:on
     }
 }
