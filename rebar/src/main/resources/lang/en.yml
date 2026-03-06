@@ -120,6 +120,8 @@ gui:
   input: "Input"
   output: "Output"
 
+  no_permission: "<red>You have no permission to open this inventory here"
+
 guide:
   title: "Rebar Guide"
   button:
