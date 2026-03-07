@@ -412,9 +412,10 @@ internal object FluidManager {
             }
             // Second phase: All remaining requesters want more than we can supply
             // (assuming we distribute fluid evenly), so give the same amount of fluid to
-            // each one
-            for ((block, _) in requesters) {
-                block.onFluidAdded(fluid, totalFluidSupplied / requesters.size)
+            // each one. Any blocks for which requiresExactFluidAmount is true will be skipped.
+            val validRequesters = requesters.keys.filterNot { it.requiresExactFluidAmount }
+            for (block in validRequesters) {
+                block.onFluidAdded(fluid, totalFluidSupplied / validRequesters.size)
             }
 
             // Break to only allow one type of fluid to be distributed per tick

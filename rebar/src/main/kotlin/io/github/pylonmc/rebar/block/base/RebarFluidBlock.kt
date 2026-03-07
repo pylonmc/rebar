@@ -100,6 +100,15 @@ interface RebarFluidBlock : RebarEntityHolderBlock, RebarBreakHandler {
     fun getSuppliedFluids(): Map<RebarFluid, Double> = mapOf()
 
     /**
+     * Indicates that the block requires *the exact* amount of fluid as returned by [fluidAmountRequested].
+     * Any less will fail, and any more will be truncated to the requested amount.
+     */
+    @Suppress("INAPPLICABLE_JVM_NAME")
+    @get:JvmName("requiresExactFluidAmount")
+    val requiresExactFluidAmount: Boolean
+        get() = false
+
+    /**
      * Returns the amount of the given fluid that the machine wants to receive next tick.
      *
      * If you have a machine that consumes 5 water per tick, it should request
@@ -113,13 +122,13 @@ interface RebarFluidBlock : RebarEntityHolderBlock, RebarBreakHandler {
     fun fluidAmountRequested(fluid: RebarFluid): Double = 0.0
 
     /**
-     * `amount` is always at most `getRequestedFluids().get(fluid)` and will never
+     * `amount` is always at most `fluidAmountRequested(fluid)` and will never
      * be zero or less.
      *
      * Called at most once per fluid tick.
      */
     fun onFluidAdded(fluid: RebarFluid, amount: Double) {
-        error("Block requested fluids, but does not implement onFluidAdded")
+        throw UnsupportedOperationException("Block requested fluids, but does not implement onFluidAdded")
     }
 
     /**
@@ -129,7 +138,7 @@ interface RebarFluidBlock : RebarEntityHolderBlock, RebarBreakHandler {
      * Called at most once per fluid tick.
      */
     fun onFluidRemoved(fluid: RebarFluid, amount: Double) {
-        error("Block supplied fluids, but does not implement removeFluid")
+        throw UnsupportedOperationException("Block supplied fluids, but does not implement removeFluid")
     }
 
     companion object {
