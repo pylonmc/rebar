@@ -44,7 +44,7 @@ interface RebarFluidBufferBlock : RebarFluidBlock {
      * @param output whether this buffer can be taken from by fluid output points
      */
     fun createFluidBuffer(fluid: RebarFluid, capacity: Double, input: Boolean, output: Boolean) {
-        fluidBuffers.put(fluid, FluidBufferData(0.0, capacity, input, output))
+        fluidBuffers[fluid] = FluidBufferData(0.0, capacity, input, output)
     }
 
     /**
@@ -132,8 +132,8 @@ interface RebarFluidBufferBlock : RebarFluidBlock {
     override fun fluidAmountRequested(fluid: RebarFluid): Double
             = if (hasFluid(fluid) && fluidData(fluid).input) fluidSpaceRemaining(fluid) else 0.0
 
-    override fun getSuppliedFluids(): Map<RebarFluid, Double>
-            = fluidBuffers.filter { it.value.output }.mapValues { it.value.amount }
+    override fun getSuppliedFluids(): List<Pair<RebarFluid, Double>>
+            = fluidBuffers.filter { it.value.output }.map { Pair(it.key, it.value.amount) }
 
     override fun onFluidAdded(fluid: RebarFluid, amount: Double) {
         addFluid(fluid, amount)

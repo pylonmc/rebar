@@ -7,6 +7,7 @@ import io.github.pylonmc.rebar.block.BlockStorage
 import io.github.pylonmc.rebar.event.api.MultiListener
 import io.github.pylonmc.rebar.event.api.annotation.MultiHandlers
 import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
+import io.github.pylonmc.rebar.util.position.position
 import io.papermc.paper.event.block.BeaconActivatedEvent
 import io.papermc.paper.event.block.BeaconDeactivatedEvent
 import io.papermc.paper.event.player.PlayerChangeBeaconEffectEvent
@@ -34,6 +35,11 @@ interface RebarBeacon {
 
         @UniversalHandler
         private fun onBeaconDeactivate(event: BeaconDeactivatedEvent, priority: EventPriority) {
+            // https://github.com/PaperMC/Paper/issues/8947#issuecomment-1485388179
+            if (!event.block.position.chunk.isLoaded) {
+                return
+            }
+
             val rebarBlock = BlockStorage.get(event.block)
             if (rebarBlock is RebarBeacon) {
                 try {
