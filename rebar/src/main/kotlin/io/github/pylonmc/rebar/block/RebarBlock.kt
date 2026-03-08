@@ -63,9 +63,7 @@ open class RebarBlock internal constructor(val block: Block) : Keyed {
      */
     val schema = RebarBlockSchema.schemaCache.remove(block.position)!!
 
-    @get:JvmName("getRebarKey")
     val key = schema.key
-    
     override fun getKey(): NamespacedKey = key
 
     val nameTranslationKey = schema.nameTranslationKey
