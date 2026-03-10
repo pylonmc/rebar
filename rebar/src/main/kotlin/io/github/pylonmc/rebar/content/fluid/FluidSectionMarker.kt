@@ -26,10 +26,10 @@ class FluidSectionMarker : RebarBlock, RebarBreakHandler, RebarEntityHolderBlock
     override var disableBlockTextureEntity = true
 
     @Suppress("unused")
-    constructor(block: Block, context: BlockCreateContext) : super(block)
+    constructor(block: Block, context: BlockCreateContext) : super(block, context)
 
     @Suppress("unused")
-    constructor(block: Block, pdc: PersistentDataContainer) : super(block)
+    constructor(block: Block, pdc: PersistentDataContainer) : super(block, pdc)
 
     val pipeDisplay
         get() = getHeldRebarEntity(FluidPipeDisplay::class.java, "pipe")

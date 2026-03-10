@@ -40,12 +40,12 @@ class CargoDuct : RebarBlock, RebarBreakHandler, RebarEntityHolderBlock, RebarEn
     override var disableBlockTextureEntity = true
 
     @Suppress("unused")
-    constructor(block: Block, context: BlockCreateContext) : super(block) {
+    constructor(block: Block, context: BlockCreateContext) : super(block, context) {
         updateConnectedFaces()
     }
 
     @Suppress("unused")
-    constructor(block: Block, pdc: PersistentDataContainer) : super(block) {
+    constructor(block: Block, pdc: PersistentDataContainer) : super(block, pdc) {
         connectedFaces = pdc.get(connectedFacesKey, connectedFacesType)!!.toMutableList()
     }
 

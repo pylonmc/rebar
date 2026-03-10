@@ -31,7 +31,7 @@ public class FluidLimiter extends RebarBlock implements RebarFluidTank, RebarUnl
 
     @SuppressWarnings("unused")
     public FluidLimiter(Block block, BlockCreateContext context) {
-        super(block);
+        super(block, context);
 
         input = new VirtualFluidPoint(block, FluidPointType.INPUT);
         output = new VirtualFluidPoint(block, FluidPointType.OUTPUT);
@@ -42,7 +42,7 @@ public class FluidLimiter extends RebarBlock implements RebarFluidTank, RebarUnl
 
     @SuppressWarnings("unused")
     public FluidLimiter(Block block, PersistentDataContainer pdc) {
-        super(block);
+        super(block, pdc);
 
         input = pdc.get(INPUT_KEY, RebarSerializers.FLUID_CONNECTION_POINT);
         output = pdc.get(OUTPUT_KEY, RebarSerializers.FLUID_CONNECTION_POINT);

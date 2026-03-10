@@ -26,14 +26,14 @@ public class FluidConnector extends RebarBlock implements RebarUnloadBlock {
 
     @SuppressWarnings("unused")
     public FluidConnector(Block block, BlockCreateContext context) {
-        super(block);
+        super(block, context);
         point = new VirtualFluidPoint(block, FluidPointType.INTERSECTION);
         FluidManager.add(point);
     }
 
     @SuppressWarnings("unused")
     public FluidConnector(Block block, PersistentDataContainer pdc) {
-        super(block);
+        super(block, pdc);
         point = pdc.get(POINT_KEY, RebarSerializers.FLUID_CONNECTION_POINT);
         FluidManager.add(point);
     }

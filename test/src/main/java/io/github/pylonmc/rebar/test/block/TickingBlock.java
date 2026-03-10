@@ -16,13 +16,13 @@ public class TickingBlock extends RebarBlock implements RebarTickingBlock {
     public int ticks = 0;
 
     @SuppressWarnings("unused")
-    public TickingBlock (Block block, BlockCreateContext context) {
-        super(block);
+    public TickingBlock(Block block, BlockCreateContext context) {
+        super(block, context);
     }
 
     @SuppressWarnings("unused")
-    public TickingBlock (Block block, PersistentDataContainer pdc) {
-        super(block);
+    public TickingBlock(Block block, PersistentDataContainer pdc) {
+        super(block, pdc);
     }
 
     @Override

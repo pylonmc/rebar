@@ -34,14 +34,14 @@ public class FluidProducer extends RebarBlock implements RebarFluidBlock, RebarU
 
     @SuppressWarnings("unused")
     public FluidProducer(@NotNull Block block, @NotNull BlockCreateContext context) {
-        super(block);
+        super(block, context);
         point = new VirtualFluidPoint(block, FluidPointType.OUTPUT);
         FluidManager.add(point);
     }
 
     @SuppressWarnings("unused")
     public FluidProducer(@NotNull Block block, @NotNull PersistentDataContainer pdc) {
-        super(block);
+        super(block, pdc);
         point = pdc.get(pointKey, RebarSerializers.FLUID_CONNECTION_POINT);
         FluidManager.add(point);
     }

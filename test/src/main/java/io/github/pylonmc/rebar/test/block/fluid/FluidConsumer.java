@@ -34,7 +34,7 @@ public class FluidConsumer extends RebarBlock implements RebarFluidBufferBlock, 
 
     @SuppressWarnings("unused")
     public FluidConsumer(Block block, BlockCreateContext context) {
-        super(block);
+        super(block, context);
         point = new VirtualFluidPoint(block, FluidPointType.INPUT);
         FluidManager.add(point);
         createFluidBuffer(getFluidType(), CAPACITY, true, false);
@@ -42,7 +42,7 @@ public class FluidConsumer extends RebarBlock implements RebarFluidBufferBlock, 
 
     @SuppressWarnings("unused")
     public FluidConsumer(Block block, PersistentDataContainer pdc) {
-        super(block);
+        super(block, pdc);
         point = pdc.get(pointKey, RebarSerializers.FLUID_CONNECTION_POINT);
         FluidManager.add(point);
     }

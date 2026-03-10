@@ -28,12 +28,12 @@ class FluidIntersectionMarker : RebarBlock, RebarEntityHolderBlock, RebarBreakHa
     override var disableBlockTextureEntity = true
 
     @Suppress("unused")
-    constructor(block: Block, context: BlockCreateContext) : super(block) {
+    constructor(block: Block, context: BlockCreateContext) : super(block, context) {
         addEntity("intersection", FluidIntersectionDisplay(block))
     }
 
     @Suppress("unused")
-    constructor(block: Block, pdc: PersistentDataContainer) : super(block)
+    constructor(block: Block, pdc: PersistentDataContainer) : super(block, pdc)
 
     val fluidIntersectionDisplay
         get() = getHeldRebarEntityOrThrow(FluidIntersectionDisplay::class.java, "intersection")

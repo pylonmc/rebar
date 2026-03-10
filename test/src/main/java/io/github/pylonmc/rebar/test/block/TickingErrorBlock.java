@@ -15,12 +15,12 @@ public class TickingErrorBlock extends RebarBlock implements RebarTickingBlock {
 
     @SuppressWarnings("unused")
     public TickingErrorBlock(Block block, BlockCreateContext context) {
-        super(block);
+        super(block, context);
     }
 
     @SuppressWarnings("unused")
     public TickingErrorBlock(Block block, PersistentDataContainer pdc) {
-        super(block);
+        super(block, pdc);
     }
 
     @Override

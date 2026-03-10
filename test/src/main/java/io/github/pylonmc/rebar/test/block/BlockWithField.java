@@ -20,13 +20,13 @@ public class BlockWithField extends RebarBlock {
 
     @SuppressWarnings("unused")
     public BlockWithField(Block block, BlockCreateContext context) {
-        super(block);
+        super(block, context);
         progress = 240;
     }
 
     @SuppressWarnings({"unused", "DataFlowIssue"})
     public BlockWithField(Block block, PersistentDataContainer pdc) {
-        super(block);
+        super(block, pdc);
         progress = pdc.get(PROGRESS_KEY, PersistentDataType.INTEGER);
     }
 

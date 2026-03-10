@@ -19,12 +19,12 @@ public class TestRebarSimpleMultiblock extends RebarBlock implements RebarSimple
 
     @SuppressWarnings("unused")
     public TestRebarSimpleMultiblock(Block block, BlockCreateContext context) {
-        super(block);
+        super(block, context);
     }
 
     @SuppressWarnings("unused")
     public TestRebarSimpleMultiblock(Block block, PersistentDataContainer pdc) {
-        super(block);
+        super(block, pdc);
     }
 
     @Override

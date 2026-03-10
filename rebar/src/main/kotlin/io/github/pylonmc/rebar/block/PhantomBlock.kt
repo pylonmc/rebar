@@ -41,7 +41,7 @@ class PhantomBlock(
     val pdc: PersistentDataContainer,
     val erroredBlockKey: NamespacedKey,
     block: Block
-) : RebarBlock(block), RebarBreakHandler {
+) : RebarBlock(block, pdc), RebarBreakHandler {
 
     override var disableBlockTextureEntity: Boolean = true
     private var errorOutlineEntityId : UUID? = null
