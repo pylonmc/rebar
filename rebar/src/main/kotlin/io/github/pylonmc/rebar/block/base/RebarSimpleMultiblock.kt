@@ -434,6 +434,7 @@ interface RebarSimpleMultiblock : RebarMultiblock, RebarEntityHolderBlock, Rebar
      * will be considered complete.
      */
     fun validStructures(): List<Map<Vector3i, MultiblockComponent>> {
+        // TODO: consider caching this
         val facing = simpleMultiblockData.direction
         return if (facing == null) {
             listOf(

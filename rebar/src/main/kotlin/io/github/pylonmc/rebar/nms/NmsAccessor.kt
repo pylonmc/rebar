@@ -6,6 +6,7 @@ import net.kyori.adventure.text.Component
 import org.bukkit.Material
 import org.bukkit.World
 import org.bukkit.block.Block
+import org.bukkit.entity.Entity
 import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Player
 import org.bukkit.inventory.EquipmentSlot
@@ -40,6 +41,8 @@ interface NmsAccessor {
     fun getStateProperties(block: Block, custom: Map<String, Pair<String, Int>> = mutableMapOf()): Map<String, String>
 
     fun handleRecipeBookClick(event: PlayerRecipeBookClickEvent)
+
+    fun hasTrackers(entity: Entity): Boolean
 
     companion object {
         val instance = Class.forName("io.github.pylonmc.rebar.nms.NmsAccessorImpl")
