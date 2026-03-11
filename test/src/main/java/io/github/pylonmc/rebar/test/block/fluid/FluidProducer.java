@@ -13,12 +13,14 @@ import io.github.pylonmc.rebar.fluid.RebarFluid;
 import io.github.pylonmc.rebar.fluid.VirtualFluidPoint;
 import io.github.pylonmc.rebar.test.RebarTest;
 import io.github.pylonmc.rebar.test.fluid.Fluids;
+import kotlin.Pair;
 import lombok.Getter;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
 import java.util.Map;
 
 
@@ -57,9 +59,9 @@ public class FluidProducer extends RebarBlock implements RebarFluidBlock, RebarU
     }
 
     @Override
-    public @NotNull Map<RebarFluid, Double> getSuppliedFluids() {
-        return Map.of(
-                getFluidType(), FLUID_PER_SECOND * RebarConfig.FLUID_TICK_INTERVAL / 20.0
+    public @NotNull List<Pair<RebarFluid, Double>> getSuppliedFluids() {
+        return List.of(
+                new Pair<>(getFluidType(), FLUID_PER_SECOND * RebarConfig.FLUID_TICK_INTERVAL / 20.0)
         );
     }
 
