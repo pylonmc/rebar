@@ -1,7 +1,5 @@
 package io.github.pylonmc.rebar.fluid
 
-import com.github.shynixn.mccoroutine.bukkit.launch
-import com.github.shynixn.mccoroutine.bukkit.ticks
 import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.block.BlockStorage
 import io.github.pylonmc.rebar.block.base.RebarFluidBlock
@@ -11,8 +9,9 @@ import io.github.pylonmc.rebar.event.PreRebarFluidPointDisconnectEvent
 import io.github.pylonmc.rebar.event.RebarFluidPointConnectEvent
 import io.github.pylonmc.rebar.event.RebarFluidPointDisconnectEvent
 import io.github.pylonmc.rebar.fluid.FluidManager.unload
+import io.github.pylonmc.rebar.util.delayTicks
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.util.IdentityHashMap
 import java.util.UUID
 import java.util.function.Predicate
@@ -427,9 +426,9 @@ internal object FluidManager {
     private fun startTicker(segment: UUID) {
         check(segment !in tickers) { "Ticker already active" }
 
-        tickers[segment] = Rebar.launch {
+        tickers[segment] = Rebar.scope.launch {
             while (true) {
-                delay(RebarConfig.FLUID_TICK_INTERVAL.ticks)
+                delayTicks(RebarConfig.FLUID_TICK_INTERVAL.toLong())
                 tick(segment)
             }
         }

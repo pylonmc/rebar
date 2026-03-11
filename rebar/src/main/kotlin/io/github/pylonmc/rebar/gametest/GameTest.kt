@@ -1,10 +1,8 @@
 package io.github.pylonmc.rebar.gametest
 
-import com.github.shynixn.mccoroutine.bukkit.scope
-import com.github.shynixn.mccoroutine.bukkit.ticks
 import io.github.pylonmc.rebar.Rebar
+import io.github.pylonmc.rebar.util.delayTicks
 import io.github.pylonmc.rebar.util.position.BlockPosition
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.future.future
 import kotlinx.coroutines.launch
 import org.bukkit.*
@@ -59,9 +57,9 @@ class GameTest(
     /**
      * Runs [runnable] on the main thread after waiting for the specified number of [ticks]
      */
-    fun withDelay(ticks: Int, runnable: Runnable) {
+    fun withDelay(ticks: Long, runnable: Runnable) {
         Rebar.scope.launch {
-            delay(ticks.ticks)
+            delayTicks(ticks)
             runnable.run()
         }
     }
@@ -98,7 +96,7 @@ class GameTest(
 
     companion object {
         @JvmSynthetic
-        internal fun submit(gameTest: GameTest, delay: Int): CompletableFuture<GameTestFailException?> {
+        internal fun submit(gameTest: GameTest, delay: Long): CompletableFuture<GameTestFailException?> {
             return Rebar.scope.future {
                 val chunks = mutableSetOf<Chunk>()
                 for (x in gameTest.boundingBox.minX.toInt()..gameTest.boundingBox.maxX.toInt()) {
@@ -108,7 +106,7 @@ class GameTest(
                         chunks.add(chunk)
                     }
                 }
-                delay(delay.ticks)
+                delayTicks(delay)
                 var result: GameTestFailException? = null
                 val ticksAtStart = Bukkit.getCurrentTick()
                 try {
@@ -122,7 +120,7 @@ class GameTest(
                             result = null
                             break
                         }
-                        delay(1.ticks)
+                        delayTicks(1)
                     }
                 } catch (e: GameTestFailException) {
                     result = e

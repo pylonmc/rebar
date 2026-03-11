@@ -3,9 +3,6 @@ package io.github.pylonmc.rebar.culling
 import com.destroystokyo.paper.event.block.BlockDestroyEvent
 import com.github.benmanes.caffeine.cache.Cache
 import com.github.benmanes.caffeine.cache.Caffeine
-import com.github.shynixn.mccoroutine.bukkit.asyncDispatcher
-import com.github.shynixn.mccoroutine.bukkit.launch
-import com.github.shynixn.mccoroutine.bukkit.ticks
 import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.block.RebarBlock
 import io.github.pylonmc.rebar.block.base.RebarCulledBlock
@@ -14,14 +11,16 @@ import io.github.pylonmc.rebar.config.RebarConfig
 import io.github.pylonmc.rebar.culling.PlayerCullingJob.Companion.cullingBoundingBox
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.util.Octree
+import io.github.pylonmc.rebar.util.delayTicks
 import io.github.pylonmc.rebar.util.pdc
 import io.github.pylonmc.rebar.util.position.BlockPosition
 import io.github.pylonmc.rebar.util.rebarKey
 import io.papermc.paper.event.world.border.WorldBorderBoundsChangeEvent
 import io.papermc.paper.event.world.border.WorldBorderCenterChangeEvent
 import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.bukkit.Bukkit
 import org.bukkit.World
 import org.bukkit.block.Block
@@ -46,7 +45,6 @@ import java.time.Duration
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.collections.Map.Entry
-import kotlin.collections.iterator
 import kotlin.math.ceil
 
 object BlockCullingEngine : Listener {
@@ -79,9 +77,9 @@ object BlockCullingEngine : Listener {
      * If a block changes its occluding state in any other way the cache will no longer be accurate. This job corrects that.
      */
     @JvmSynthetic
-    internal val invalidateOccludingCacheJob = Rebar.launch(start = CoroutineStart.LAZY) {
+    internal val invalidateOccludingCacheJob = Rebar.scope.launch(start = CoroutineStart.LAZY) {
         while (true) {
-            delay(RebarConfig.CullingEngineConfig.OCCLUDING_CACHE_INVALIDATE_INTERVAL.ticks)
+            delayTicks(RebarConfig.CullingEngineConfig.OCCLUDING_CACHE_INVALIDATE_INTERVAL.toLong())
             val now = System.currentTimeMillis()
             for ((worldId, chunkMap) in occludingCache) {
                 var invalidated = 0
@@ -106,10 +104,10 @@ object BlockCullingEngine : Listener {
     }
 
     @JvmSynthetic
-    internal val syncCullingJob = Rebar.launch(start = CoroutineStart.LAZY) {
+    internal val syncCullingJob = Rebar.scope.launch(start = CoroutineStart.LAZY) {
         var tick = 0
         while (true) {
-            delay(RebarConfig.CullingEngineConfig.SYNC_APPLY_INTERVAL.ticks)
+            delayTicks(RebarConfig.CullingEngineConfig.SYNC_APPLY_INTERVAL.toLong())
 
             for ((uuid, tasks) in syncJobTasks) {
                 val player = Bukkit.getPlayer(uuid) ?: continue
@@ -239,10 +237,12 @@ object BlockCullingEngine : Listener {
         val playerId = player.uniqueId
         if (!RebarConfig.CullingEngineConfig.ENABLED || jobs.containsKey(playerId)) return
 
-        jobs[playerId] = Rebar.launch(
-            context = Rebar.asyncDispatcher,
-            block = PlayerCullingJob(playerId).job
-        )
+        jobs[playerId] = Rebar.scope.launch(Dispatchers.Default) {
+            val job = PlayerCullingJob(playerId)
+            while (true) {
+                job.run()
+            }
+        }
     }
 
     @JvmSynthetic

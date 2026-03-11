@@ -1,19 +1,17 @@
 package io.github.pylonmc.rebar.entity.base
 
-import com.github.shynixn.mccoroutine.bukkit.asyncDispatcher
-import com.github.shynixn.mccoroutine.bukkit.launch
-import com.github.shynixn.mccoroutine.bukkit.minecraftDispatcher
-import com.github.shynixn.mccoroutine.bukkit.ticks
 import io.github.pylonmc.rebar.Rebar
+import io.github.pylonmc.rebar.async.BukkitMainThreadDispatcher
 import io.github.pylonmc.rebar.config.RebarConfig
 import io.github.pylonmc.rebar.entity.EntityListener
 import io.github.pylonmc.rebar.entity.RebarEntity
+import io.github.pylonmc.rebar.entity.RebarEntitySchema
 import io.github.pylonmc.rebar.event.RebarEntityAddEvent
 import io.github.pylonmc.rebar.event.RebarEntityDeathEvent
 import io.github.pylonmc.rebar.event.RebarEntitySerializeEvent
+import io.github.pylonmc.rebar.util.delayTicks
 import io.github.pylonmc.rebar.util.rebarKey
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.*
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.jetbrains.annotations.ApiStatus
@@ -121,15 +119,20 @@ interface RebarTickingEntity {
             tickingEntities[entity]?.job?.cancel()
         }
 
+        private val dispatchers = mutableMapOf<RebarEntitySchema, CoroutineDispatcher>()
+
         private fun startTicker(tickingEntity: RebarTickingEntity) {
-            val dispatcher = if (tickingEntity.isAsync) Rebar.asyncDispatcher else Rebar.minecraftDispatcher
-            tickingEntities[tickingEntity]?.job = Rebar.launch(dispatcher) {
+            val dispatcher = dispatchers.getOrPut((tickingEntity as RebarEntity<*>).schema) {
+                if (tickingEntity.isAsync) Dispatchers.Default
+                else BukkitMainThreadDispatcher(Rebar, 1)
+            }
+            tickingEntities[tickingEntity]?.job = Rebar.scope.launch(dispatcher) {
                 while (true) {
-                    delay(tickingEntity.tickInterval.ticks)
+                    delayTicks(tickingEntity.tickInterval.toLong())
                     try {
                         tickingEntity.tick()
                     } catch (e: Exception) {
-                        Rebar.launch(Rebar.minecraftDispatcher) {
+                        withContext(Rebar.mainThreadDispatcher) {
                             EntityListener.logEventHandleErrTicking(e, tickingEntity as RebarEntity<*>)
                         }
                     }

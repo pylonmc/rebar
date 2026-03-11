@@ -1,13 +1,13 @@
 package io.github.pylonmc.rebar.nms
 
 import com.destroystokyo.paper.event.player.PlayerRecipeBookClickEvent
-import com.github.shynixn.mccoroutine.bukkit.asyncDispatcher
-import com.github.shynixn.mccoroutine.bukkit.launch
-import io.github.pylonmc.rebar.Rebar
+import io.github.pylonmc.rebar.async.PlayerScope
 import io.github.pylonmc.rebar.i18n.PlayerTranslationHandler
 import io.github.pylonmc.rebar.i18n.packet.PlayerPacketHandler
 import io.github.pylonmc.rebar.nms.recipe.HandlerRecipeBookClick
 import io.papermc.paper.adventure.PaperAdventure
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import net.kyori.adventure.text.Component
 import net.minecraft.core.registries.Registries
 import net.minecraft.nbt.TextComponentTagVisitor
@@ -37,6 +37,7 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataContainer
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.coroutines.EmptyCoroutineContext
 
 @Suppress("unused")
 object NmsAccessorImpl : NmsAccessor {
@@ -128,7 +129,7 @@ object NmsAccessorImpl : NmsAccessor {
         event.isCancelled = true
         if (postPlaceAction != PostPlaceAction.PLACE_GHOST_RECIPE || displayRecipes.isEmpty()) return
 
-        Rebar.javaPlugin.launch(Rebar.asyncDispatcher) {
+        PlayerScope(EmptyCoroutineContext, event.player).launch(Dispatchers.Default) {
             val max = displayRecipes.size
             for (i in 0..<max) {
                 serverPlayer.connection.send(

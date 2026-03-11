@@ -1,8 +1,6 @@
 package io.github.pylonmc.rebar.entity
 
 import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent
-import com.github.shynixn.mccoroutine.bukkit.launch
-import com.github.shynixn.mccoroutine.bukkit.minecraftDispatcher
 import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.addon.RebarAddon
 import io.github.pylonmc.rebar.block.BlockStorage
@@ -15,6 +13,7 @@ import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.util.isFromAddon
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.bukkit.NamespacedKey
 import org.bukkit.entity.Entity
 import org.bukkit.event.EventHandler
@@ -183,7 +182,7 @@ object EntityStorage : Listener {
         entitiesByKey.getOrPut(entity.schema.key, ::mutableSetOf).add(entity)
 
         // autosaving
-        entityAutosaveTasks[entity.uuid] = Rebar.launch(Rebar.minecraftDispatcher) {
+        entityAutosaveTasks[entity.uuid] = Rebar.scope.launch {
 
             // Wait a random delay before starting, this is to help smooth out lag from saving
             delay(Random.nextLong(RebarConfig.ENTITY_DATA_AUTOSAVE_INTERVAL_SECONDS * 1000))

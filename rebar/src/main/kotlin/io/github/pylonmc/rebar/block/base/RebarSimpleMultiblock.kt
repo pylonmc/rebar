@@ -1,6 +1,5 @@
 package io.github.pylonmc.rebar.block.base
 
-import com.github.shynixn.mccoroutine.bukkit.launch
 import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.block.BlockStorage
 import io.github.pylonmc.rebar.block.MultiblockCache
@@ -26,6 +25,7 @@ import io.github.pylonmc.rebar.util.rotateVectorToFace
 import io.github.pylonmc.rebar.waila.Waila
 import io.github.pylonmc.rebar.waila.WailaDisplay
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import net.kyori.adventure.text.Component
 import org.bukkit.Color
 import org.bukkit.Material
@@ -173,7 +173,7 @@ interface RebarSimpleMultiblock : RebarMultiblock, RebarEntityHolderBlock, Rebar
             EntityStorage.add(MultiblockGhostBlock(display, materials.joinToString(", ") { it.key.toString() }))
 
             if (materials.size > 1) {
-                Rebar.launch {
+                Rebar.scope.launch(Rebar.mainThreadDispatcher) {
                     var i = 0
                     while (display.isValid) {
                         display.block = blockDataList[i]
@@ -245,7 +245,7 @@ interface RebarSimpleMultiblock : RebarMultiblock, RebarEntityHolderBlock, Rebar
             EntityStorage.add(MultiblockGhostBlock(display, stringDatas.joinToString(", ")))
 
             if (blockDatas.size > 1) {
-                Rebar.launch {
+                Rebar.scope.launch(Rebar.mainThreadDispatcher) {
                     var i = 0
                     while (display.isValid) {
                         display.block = blockDatas[i]
@@ -348,7 +348,7 @@ interface RebarSimpleMultiblock : RebarMultiblock, RebarEntityHolderBlock, Rebar
             }
 
             if (displayUpdates.size > 1) {
-                Rebar.launch {
+                Rebar.scope.launch(Rebar.mainThreadDispatcher) {
                     var i = 0
                     while (itemDisplay?.isValid ?: true && blockDisplay?.isValid ?: true) {
                         displayUpdates[i].run()

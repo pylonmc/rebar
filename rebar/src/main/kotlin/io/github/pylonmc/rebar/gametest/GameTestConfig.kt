@@ -19,8 +19,8 @@ class GameTestConfig(
     private val key: NamespacedKey,
     val size: Int,
     val setUp: Consumer<GameTest>,
-    val delayTicks: Int,
-    val timeoutTicks: Int,
+    val delayTicks: Long,
+    val timeoutTicks: Long,
     val positionOverride: BlockPosition?
 ) : Keyed {
     override fun getKey(): NamespacedKey = key
@@ -31,8 +31,8 @@ class GameTestConfig(
     class Builder(val key: NamespacedKey) {
         private var size by Delegates.notNull<Int>()
         private var setUp: Consumer<GameTest> = Consumer {}
-        private var delayTicks = 0
-        private var timeoutTicks = 5 * 60 * 20
+        private var delayTicks = 0L
+        private var timeoutTicks = 5L * 60 * 20
         private var positionOverride: BlockPosition? = null
 
         /**
@@ -50,12 +50,12 @@ class GameTestConfig(
         /**
          * Delay in ticks before the test starts. Defaults to 0.
          */
-        fun delayTicks(delayTicks: Int): Builder = apply { this.delayTicks = delayTicks }
+        fun delayTicks(delayTicks: Long): Builder = apply { this.delayTicks = delayTicks }
 
         /**
          * Timeout in ticks before the test fails. Defaults to 5 minutes.
          */
-        fun timeoutTicks(timeoutTicks: Int): Builder = apply { this.timeoutTicks = timeoutTicks }
+        fun timeoutTicks(timeoutTicks: Long): Builder = apply { this.timeoutTicks = timeoutTicks }
 
         /**
          * Override the position where the test will be launched.

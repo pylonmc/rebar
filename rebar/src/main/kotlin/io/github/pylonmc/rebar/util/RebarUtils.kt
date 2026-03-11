@@ -16,6 +16,8 @@ import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.util.position.BlockPosition
 import io.papermc.paper.datacomponent.DataComponentType
 import io.papermc.paper.registry.keys.tags.BlockTypeTagKeys
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.TranslatableComponent
 import net.kyori.adventure.text.TranslationArgumentLike
@@ -49,6 +51,7 @@ import java.lang.Math
 import java.lang.invoke.MethodHandle
 import java.lang.invoke.MethodHandles
 import java.util.function.Consumer
+import kotlin.coroutines.CoroutineContext
 import kotlin.math.absoluteValue
 import kotlin.math.max
 import kotlin.math.round
@@ -614,3 +617,12 @@ fun getBlockBreakTicks(tool: ItemStack, block: Block)
 fun Entity.scheduleRemove() = Bukkit.getScheduler().runTask(Rebar, this::remove)
 
 fun Block.getRelative(vector: Vector3i) = this.getRelative(vector.x, vector.y, vector.z)
+
+@JvmSynthetic
+suspend fun delayTicks(ticks: Long) = delay(ticks * 50)
+
+/**
+ * Creates a [CoroutineContext] for a child coroutine, with a [Job] that is a child of the current context's [Job]
+ */
+@JvmSynthetic
+fun CoroutineContext.createChildContext(): CoroutineContext = this + Job(this[Job])

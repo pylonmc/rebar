@@ -1,22 +1,22 @@
 package io.github.pylonmc.rebar.culling
 
-import com.github.shynixn.mccoroutine.bukkit.ticks
 import io.github.pylonmc.rebar.block.RebarBlock
 import io.github.pylonmc.rebar.block.base.RebarCulledBlock
 import io.github.pylonmc.rebar.block.base.RebarGroupCulledBlock
 import io.github.pylonmc.rebar.config.RebarConfig
 import io.github.pylonmc.rebar.culling.BlockCullingEngine.ChunkData
-import io.github.pylonmc.rebar.culling.BlockCullingEngine.hasBlockCulling
 import io.github.pylonmc.rebar.culling.BlockCullingEngine.blockTextureOctrees
 import io.github.pylonmc.rebar.culling.BlockCullingEngine.culledBlockOctrees
 import io.github.pylonmc.rebar.culling.BlockCullingEngine.getOctree
+import io.github.pylonmc.rebar.culling.BlockCullingEngine.hasBlockCulling
 import io.github.pylonmc.rebar.culling.BlockCullingEngine.occludingCache
 import io.github.pylonmc.rebar.culling.BlockCullingEngine.playerCullingConfig
 import io.github.pylonmc.rebar.culling.BlockCullingEngine.syncJobGroupTasks
 import io.github.pylonmc.rebar.culling.BlockCullingEngine.syncJobTasks
 import io.github.pylonmc.rebar.resourcepack.block.BlockTextureEngine.hasCustomBlockTextures
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.delay
+import io.github.pylonmc.rebar.util.delayTicks
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.currentCoroutineContext
 import org.bukkit.Bukkit
 import org.bukkit.Chunk
 import org.bukkit.block.Block
@@ -25,28 +25,17 @@ import org.bukkit.util.BoundingBox
 import org.bukkit.util.Vector
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
-import kotlin.collections.addAll
-import kotlin.collections.forEach
-import kotlin.collections.set
 
 class PlayerCullingJob(
     val playerId: UUID,
     val visible: MutableSet<RebarBlock> = mutableSetOf(),
     var tick: Int = 0
 ) {
-    var running = true
-
-    val job: suspend CoroutineScope.() -> Unit = {
-        while (running) {
-            run()
-        }
-    }
-
     suspend fun run() {
         val player = Bukkit.getPlayer(playerId)
         if (player == null) {
             BlockCullingEngine.stopCullingJob(playerId)
-            running = false
+            currentCoroutineContext().cancel()
             return
         }
 
@@ -72,7 +61,7 @@ class PlayerCullingJob(
                 }
                 visible.addAll(query)
             }
-            delay(RebarConfig.CullingEngineConfig.DISABLED_UPDATE_INTERVAL.ticks)
+            delayTicks(RebarConfig.CullingEngineConfig.DISABLED_UPDATE_INTERVAL.toLong())
             return
         }
 
@@ -209,7 +198,7 @@ class PlayerCullingJob(
             }
         }
 
-        delay(config.updateInterval.ticks)
+        delayTicks(config.updateInterval.toLong())
         tick++
     }
 
