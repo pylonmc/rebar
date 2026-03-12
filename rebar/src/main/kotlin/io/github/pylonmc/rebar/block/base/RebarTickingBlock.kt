@@ -1,19 +1,20 @@
 package io.github.pylonmc.rebar.block.base
 
-import com.github.shynixn.mccoroutine.bukkit.asyncDispatcher
-import com.github.shynixn.mccoroutine.bukkit.launch
-import com.github.shynixn.mccoroutine.bukkit.minecraftDispatcher
-import com.github.shynixn.mccoroutine.bukkit.ticks
 import io.github.pylonmc.rebar.Rebar
+import io.github.pylonmc.rebar.async.BukkitMainThreadDispatcher
+import io.github.pylonmc.rebar.async.ChunkScope
 import io.github.pylonmc.rebar.block.BlockListener
 import io.github.pylonmc.rebar.block.BlockListener.logEventHandleErr
 import io.github.pylonmc.rebar.block.RebarBlock
+import io.github.pylonmc.rebar.block.RebarBlockSchema
 import io.github.pylonmc.rebar.config.RebarConfig
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.event.*
+import io.github.pylonmc.rebar.util.createChildContext
+import io.github.pylonmc.rebar.util.delayTicks
+import io.github.pylonmc.rebar.util.position.position
 import io.github.pylonmc.rebar.util.rebarKey
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.*
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.jetbrains.annotations.ApiStatus
@@ -25,11 +26,13 @@ import java.util.IdentityHashMap
 interface RebarTickingBlock {
 
     private val tickingData: TickingBlockData
-        get() = tickingBlocks.getOrPut(this) { TickingBlockData(
-            RebarConfig.DEFAULT_TICK_INTERVAL,
-            false,
-            null
-        )}
+        get() = tickingBlocks.getOrPut(this) {
+            TickingBlockData(
+                RebarConfig.DEFAULT_TICK_INTERVAL,
+                false,
+                null
+            )
+        }
 
     /**
      * The interval at which the [tick] function is called. You should generally use [setTickInterval]
@@ -46,7 +49,10 @@ interface RebarTickingBlock {
         get() = tickingData.isAsync
 
     /**
-     * Sets how often the [tick] function should be called (in Minecraft ticks)
+     * Sets how often the [tick] function should be called (in Minecraft ticks).
+     *
+     * This is assumed to be constant for all instances of a block. Should you have a use case where you need to have
+     * different blocks have different tick intervals, please make an issue on the GitHub repository and explain your use case.
      */
     fun setTickInterval(tickInterval: Int) {
         tickingData.tickInterval = tickInterval
@@ -54,6 +60,9 @@ interface RebarTickingBlock {
 
     /**
      * Sets whether the [tick] function should be called asynchronously.
+     *
+     * This is assumed to be constant for all instances of a block. Should you have a use case where you need to have
+     * different blocks be async, please make an issue on the GitHub repository and explain your use case.
      *
      * WARNING: Settings a block to tick asynchronously could have unintended consequences.
      *
@@ -146,15 +155,22 @@ interface RebarTickingBlock {
             tickingBlocks[block]?.job?.cancel()
         }
 
+        private val dispatchers = mutableMapOf<RebarBlockSchema, CoroutineDispatcher>()
+
         private fun startTicker(tickingBlock: RebarTickingBlock) {
-            val dispatcher = if (tickingBlock.isAsync) Rebar.asyncDispatcher else Rebar.minecraftDispatcher
-            tickingBlocks[tickingBlock]?.job = Rebar.launch(dispatcher) {
+            val rebarBlock = tickingBlock as RebarBlock
+            val dispatcher = dispatchers.getOrPut(rebarBlock.schema) {
+                if (tickingBlock.isAsync) Dispatchers.Default
+                else BukkitMainThreadDispatcher(Rebar, 1)
+            }
+            val scope = ChunkScope(Rebar.scope.coroutineContext.createChildContext(), rebarBlock.block.chunk.position)
+            tickingBlocks[tickingBlock]?.job = scope.launch(dispatcher) {
                 while (true) {
-                    delay(tickingBlock.tickInterval.ticks)
+                    delayTicks(tickingBlock.tickInterval.toLong())
                     try {
                         tickingBlock.tick()
                     } catch (e: Exception) {
-                        Rebar.launch(Rebar.minecraftDispatcher) {
+                        withContext(Rebar.mainThreadDispatcher) {
                             BlockListener.logEventHandleErr(null, e, tickingBlock as RebarBlock)
                         }
                     }

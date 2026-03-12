@@ -39,8 +39,6 @@ dependencies {
 
     compileOnly("io.papermc.paper:paper-api:$minecraftVersion-R0.1-SNAPSHOT")
 
-    paperLibraryApi("com.github.shynixn.mccoroutine:mccoroutine-bukkit-api:2.22.0")
-    paperLibraryApi("com.github.shynixn.mccoroutine:mccoroutine-bukkit-core:2.22.0")
     paperLibraryApi("xyz.xenondevs.invui:invui:2.0.0-beta.1")
     paperLibraryApi("xyz.xenondevs.invui:invui-kotlin:2.0.0-beta.1")
     implementation("com.github.Tofaa2.EntityLib:spigot:f0318e298f")

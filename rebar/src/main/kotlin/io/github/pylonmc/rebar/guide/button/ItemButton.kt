@@ -1,6 +1,5 @@
 package io.github.pylonmc.rebar.guide.button
 
-import com.github.shynixn.mccoroutine.bukkit.launch
 import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.guide.pages.item.ItemRecipesPage
 import io.github.pylonmc.rebar.guide.pages.item.ItemUsagesPage
@@ -16,6 +15,7 @@ import io.github.pylonmc.rebar.recipe.RecipeInput
 import io.github.pylonmc.rebar.util.gui.unit.UnitFormat
 import io.papermc.paper.datacomponent.DataComponentTypes
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import net.kyori.adventure.text.Component
 import org.bukkit.Material
 import org.bukkit.Registry
@@ -66,7 +66,7 @@ class ItemButton @JvmOverloads constructor(
     init {
         require(stacks.isNotEmpty()) { "ItemButton must have at least one ItemStack" }
         if (stacks.size > 1) {
-            Rebar.launch {
+            Rebar.scope.launch {
                 while (true) {
                     delay(1.seconds)
                     index += 1

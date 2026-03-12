@@ -1,8 +1,5 @@
 package io.github.pylonmc.rebar.block.base
 
-import com.github.shynixn.mccoroutine.bukkit.launch
-import com.github.shynixn.mccoroutine.bukkit.minecraftDispatcher
-import com.github.shynixn.mccoroutine.bukkit.ticks
 import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.block.BlockStorage
 import io.github.pylonmc.rebar.block.RebarBlock
@@ -21,9 +18,10 @@ import io.github.pylonmc.rebar.logistics.CargoRoutes
 import io.github.pylonmc.rebar.logistics.LogisticGroup
 import io.github.pylonmc.rebar.logistics.LogisticGroupType
 import io.github.pylonmc.rebar.util.IMMEDIATE_FACES
+import io.github.pylonmc.rebar.util.delayTicks
 import io.github.pylonmc.rebar.util.rebarKey
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.bukkit.Material
 import org.bukkit.block.BlockFace
 import org.bukkit.event.EventHandler
@@ -215,9 +213,9 @@ interface RebarCargoBlock : RebarLogisticBlock, RebarEntityHolderBlock {
         private val cargoTickers = IdentityHashMap<RebarCargoBlock, Job>()
 
         private fun startTicker(block: RebarCargoBlock) {
-            cargoTickers[block] = Rebar.launch(Rebar.minecraftDispatcher) {
+            cargoTickers[block] = Rebar.scope.launch {
                 while (true) {
-                    delay(RebarConfig.CARGO_TICK_INTERVAL.ticks)
+                    delayTicks(RebarConfig.CARGO_TICK_INTERVAL.toLong())
                     block.tickCargo()
                 }
             }

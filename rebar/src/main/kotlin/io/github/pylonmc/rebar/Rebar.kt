@@ -4,9 +4,10 @@ package io.github.pylonmc.rebar
 
 import com.github.retrooper.packetevents.PacketEvents
 import com.github.retrooper.packetevents.event.PacketListenerPriority
-import com.github.shynixn.mccoroutine.bukkit.launch
-import com.github.shynixn.mccoroutine.bukkit.ticks
 import io.github.pylonmc.rebar.addon.RebarAddon
+import io.github.pylonmc.rebar.async.BukkitMainThreadDispatcher
+import io.github.pylonmc.rebar.async.ChunkScope
+import io.github.pylonmc.rebar.async.PlayerScope
 import io.github.pylonmc.rebar.block.*
 import io.github.pylonmc.rebar.block.base.*
 import io.github.pylonmc.rebar.block.base.RebarFallingBlock.RebarFallingBlockEntity
@@ -19,42 +20,12 @@ import io.github.pylonmc.rebar.content.cargo.CargoDuct
 import io.github.pylonmc.rebar.content.debug.DebugWaxedWeatheredCutCopperStairs
 import io.github.pylonmc.rebar.content.fluid.*
 import io.github.pylonmc.rebar.content.guide.RebarGuide
+import io.github.pylonmc.rebar.culling.BlockCullingEngine
 import io.github.pylonmc.rebar.entity.EntityListener
 import io.github.pylonmc.rebar.entity.EntityStorage
 import io.github.pylonmc.rebar.entity.RebarEntity
-import io.github.pylonmc.rebar.entity.base.RebarBat
-import io.github.pylonmc.rebar.entity.base.RebarBreedable
-import io.github.pylonmc.rebar.entity.base.RebarCombustibleEntity
-import io.github.pylonmc.rebar.entity.base.RebarCop
-import io.github.pylonmc.rebar.entity.base.RebarCreeper
-import io.github.pylonmc.rebar.entity.base.RebarDamageableEntity
-import io.github.pylonmc.rebar.entity.base.RebarDeathEntity
-import io.github.pylonmc.rebar.entity.base.RebarDragonFireball
-import io.github.pylonmc.rebar.entity.base.RebarDyeable
-import io.github.pylonmc.rebar.entity.base.RebarEnderDragon
-import io.github.pylonmc.rebar.entity.base.RebarEnderman
-import io.github.pylonmc.rebar.entity.base.RebarExperienceOrb
-import io.github.pylonmc.rebar.entity.base.RebarExplosiveEntity
-import io.github.pylonmc.rebar.entity.base.RebarFirework
-import io.github.pylonmc.rebar.entity.base.RebarInteractEntity
-import io.github.pylonmc.rebar.entity.base.RebarItemEntity
-import io.github.pylonmc.rebar.entity.base.RebarLeashable
-import io.github.pylonmc.rebar.entity.base.RebarMountableEntity
-import io.github.pylonmc.rebar.entity.base.RebarMountingEntity
-import io.github.pylonmc.rebar.entity.base.RebarMovingEntity
-import io.github.pylonmc.rebar.entity.base.RebarPathingEntity
-import io.github.pylonmc.rebar.entity.base.RebarPiglin
-import io.github.pylonmc.rebar.entity.base.RebarProjectile
-import io.github.pylonmc.rebar.entity.base.RebarResurrectable
-import io.github.pylonmc.rebar.entity.base.RebarSlime
-import io.github.pylonmc.rebar.entity.base.RebarSpellcaster
-import io.github.pylonmc.rebar.entity.base.RebarTameable
-import io.github.pylonmc.rebar.entity.base.RebarTickingEntity
-import io.github.pylonmc.rebar.entity.base.RebarTurtle
-import io.github.pylonmc.rebar.entity.base.RebarVillager
-import io.github.pylonmc.rebar.entity.base.RebarWitch
-import io.github.pylonmc.rebar.entity.base.RebarZombiePigman
-import io.github.pylonmc.rebar.event.api.MultiListener
+import io.github.pylonmc.rebar.entity.base.*
+import io.github.pylonmc.rebar.event.RebarConfigurableRecipesLoadedEvent
 import io.github.pylonmc.rebar.fluid.placement.FluidPipePlacementService
 import io.github.pylonmc.rebar.guide.pages.base.PagedGuidePage
 import io.github.pylonmc.rebar.guide.pages.base.TabbedGuidePage
@@ -62,21 +33,7 @@ import io.github.pylonmc.rebar.i18n.RebarTranslator
 import io.github.pylonmc.rebar.item.RebarInventoryTicker
 import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.item.RebarItemListener
-import io.github.pylonmc.rebar.item.base.RebarArrow
-import io.github.pylonmc.rebar.item.base.RebarBlockInteractor
-import io.github.pylonmc.rebar.item.base.RebarBow
-import io.github.pylonmc.rebar.item.base.RebarBrewingStandFuel
-import io.github.pylonmc.rebar.item.base.RebarBucket
-import io.github.pylonmc.rebar.item.base.RebarConsumable
-import io.github.pylonmc.rebar.item.base.RebarDispensable
-import io.github.pylonmc.rebar.item.base.RebarInteractor
-import io.github.pylonmc.rebar.item.base.RebarItemDamageable
-import io.github.pylonmc.rebar.item.base.RebarItemEntityInteractor
-import io.github.pylonmc.rebar.item.base.RebarLingeringPotion
-import io.github.pylonmc.rebar.item.base.RebarSplashPotion
-import io.github.pylonmc.rebar.item.base.RebarTool
-import io.github.pylonmc.rebar.item.base.RebarWeapon
-import io.github.pylonmc.rebar.item.base.VanillaCookingFuel
+import io.github.pylonmc.rebar.item.base.*
 import io.github.pylonmc.rebar.item.research.Research
 import io.github.pylonmc.rebar.logistics.CargoRoutes
 import io.github.pylonmc.rebar.metrics.RebarMetrics
@@ -86,14 +43,16 @@ import io.github.pylonmc.rebar.recipe.RecipeCompletion
 import io.github.pylonmc.rebar.recipe.RecipeType
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.resourcepack.armor.ArmorTextureEngine
-import io.github.pylonmc.rebar.culling.BlockCullingEngine
-import io.github.pylonmc.rebar.event.RebarConfigurableRecipesLoadedEvent
+import io.github.pylonmc.rebar.util.delayTicks
 import io.github.pylonmc.rebar.util.mergeGlobalConfig
 import io.github.pylonmc.rebar.waila.Waila
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder
 import io.papermc.paper.ServerBuildInfo
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import me.tofaa.entitylib.APIConfig
 import me.tofaa.entitylib.EntityIdProvider
 import me.tofaa.entitylib.EntityLib
@@ -117,6 +76,18 @@ import kotlin.io.path.*
  * The one and only Rebar plugin!
  */
 object Rebar : JavaPlugin(), RebarAddon {
+
+    /**
+     * Ticks once per tick
+     */
+    @get:JvmSynthetic
+    internal val mainThreadDispatcher by lazy { BukkitMainThreadDispatcher(this, 1) }
+
+    /**
+     * By default, dispatches on the main thread
+     */
+    @get:JvmSynthetic
+    internal val scope by lazy { CoroutineScope(SupervisorJob() + mainThreadDispatcher) }
 
     override fun onLoad() {
         PacketEvents.setAPI(SpigotPacketEventsBuilder.build(this))
@@ -189,6 +160,8 @@ object Rebar : JavaPlugin(), RebarAddon {
         pm.registerEvents(PagedGuidePage, this)
         pm.registerEvents(TabbedGuidePage, this)
         pm.registerEvents(RebarTickingEntity, this)
+        pm.registerEvents(ChunkScope, this)
+        pm.registerEvents(PlayerScope, this)
 
         // Rebar Blocks
         BlockListener.register(this, pm)
@@ -334,8 +307,8 @@ object Rebar : JavaPlugin(), RebarAddon {
 
         RecipeType.addVanillaRecipes()
 
-        launch {
-            delay(1.ticks)
+        scope.launch(mainThreadDispatcher) {
+            delayTicks(1)
             loadRecipes()
             loadResearches()
         }
@@ -417,6 +390,7 @@ object Rebar : JavaPlugin(), RebarAddon {
         // Note: At this point all listeners have been unregistered
         PacketEvents.getAPI().terminate()
         RebarMetrics.save()
+        scope.cancel()
     }
 
     override val javaPlugin = this

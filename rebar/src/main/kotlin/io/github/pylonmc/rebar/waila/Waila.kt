@@ -1,7 +1,5 @@
 package io.github.pylonmc.rebar.waila
 
-import com.github.shynixn.mccoroutine.bukkit.launch
-import com.github.shynixn.mccoroutine.bukkit.ticks
 import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.block.BlockStorage
 import io.github.pylonmc.rebar.block.RebarBlock
@@ -12,13 +10,14 @@ import io.github.pylonmc.rebar.entity.RebarEntity
 import io.github.pylonmc.rebar.event.RebarBlockWailaEvent
 import io.github.pylonmc.rebar.event.RebarEntityWailaEvent
 import io.github.pylonmc.rebar.i18n.RebarArgument
+import io.github.pylonmc.rebar.util.delayTicks
 import io.github.pylonmc.rebar.util.position.BlockPosition
 import io.github.pylonmc.rebar.util.position.position
 import io.github.pylonmc.rebar.util.rebarKey
 import io.github.pylonmc.rebar.waila.Waila.Companion.addWailaOverride
 import io.papermc.paper.raytracing.RayTraceTarget
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import net.kyori.adventure.bossbar.BossBar
 import net.kyori.adventure.text.Component
 import org.bukkit.attribute.Attribute
@@ -201,12 +200,12 @@ class Waila private constructor(private val player: Player, playerConfig: Player
                 return
             }
 
-            wailas[player.uniqueId] = Waila(player, config, Rebar.launch {
-                delay(1.ticks)
+            wailas[player.uniqueId] = Waila(player, config, Rebar.scope.launch {
+                delayTicks(1)
                 val waila = wailas[player.uniqueId]!!
                 while (true) {
                     waila.updateDisplay()
-                    delay(RebarConfig.WailaConfig.TICK_INTERVAL.ticks)
+                    delayTicks(RebarConfig.WailaConfig.TICK_INTERVAL.toLong())
                 }
             })
         }

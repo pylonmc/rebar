@@ -1,9 +1,6 @@
 package io.github.pylonmc.rebar.block
 
 
-import com.github.shynixn.mccoroutine.bukkit.launch
-import com.github.shynixn.mccoroutine.bukkit.minecraftDispatcher
-import com.google.common.base.Preconditions
 import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.addon.RebarAddon
 import io.github.pylonmc.rebar.block.BlockStorage.breakBlock
@@ -11,10 +8,11 @@ import io.github.pylonmc.rebar.block.base.RebarBreakHandler
 import io.github.pylonmc.rebar.block.context.BlockBreakContext
 import io.github.pylonmc.rebar.block.context.BlockCreateContext
 import io.github.pylonmc.rebar.config.RebarConfig
+import io.github.pylonmc.rebar.culling.BlockCullingEngine
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.event.*
 import io.github.pylonmc.rebar.registry.RebarRegistry
-import io.github.pylonmc.rebar.culling.BlockCullingEngine
+import io.github.pylonmc.rebar.util.delayTicks
 import io.github.pylonmc.rebar.util.isFromAddon
 import io.github.pylonmc.rebar.util.position.BlockPosition
 import io.github.pylonmc.rebar.util.position.ChunkPosition
@@ -22,6 +20,7 @@ import io.github.pylonmc.rebar.util.position.position
 import io.github.pylonmc.rebar.util.rebarKey
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.bukkit.*
 import org.bukkit.block.Block
 import org.bukkit.entity.Item
@@ -35,7 +34,6 @@ import org.bukkit.persistence.PersistentDataType
 import java.util.Collections
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.locks.ReentrantReadWriteLock
-import kotlin.collections.mutableListOf
 import kotlin.random.Random
 
 /**
@@ -541,7 +539,7 @@ object BlockStorage : Listener {
             }
 
             // autosaving
-            chunkAutosaveTasks[event.chunk.position] = Rebar.launch(Rebar.minecraftDispatcher) {
+            chunkAutosaveTasks[event.chunk.position] = Rebar.scope.launch {
 
                 // Wait a random delay before starting, this is to help smooth out lag from saving
                 delay(Random.nextLong(RebarConfig.BLOCK_DATA_AUTOSAVE_INTERVAL_SECONDS * 1000))
@@ -552,7 +550,7 @@ object BlockStorage : Listener {
                         check(blocksInChunk != null) { "Block autosave task was not cancelled properly" }
                         save(event.chunk, blocksInChunk)
                     }
-                    delay(RebarConfig.BLOCK_DATA_AUTOSAVE_INTERVAL_SECONDS * 1000)
+                    delayTicks(RebarConfig.BLOCK_DATA_AUTOSAVE_INTERVAL_SECONDS * 20)
                 }
             }
         }
