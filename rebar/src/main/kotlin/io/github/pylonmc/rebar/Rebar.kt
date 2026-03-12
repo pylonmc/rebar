@@ -43,6 +43,7 @@ import io.github.pylonmc.rebar.recipe.RecipeCompletion
 import io.github.pylonmc.rebar.recipe.RecipeType
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.resourcepack.armor.ArmorTextureEngine
+import io.github.pylonmc.rebar.util.PlayerInput
 import io.github.pylonmc.rebar.util.delayTicks
 import io.github.pylonmc.rebar.util.mergeGlobalConfig
 import io.github.pylonmc.rebar.waila.Waila
@@ -163,6 +164,7 @@ object Rebar : JavaPlugin(), RebarAddon {
         pm.registerEvents(ChunkScope, this)
         pm.registerEvents(PlayerScope, this)
         pm.registerEvents(RebarElectricBlock, this)
+        pm.registerEvents(PlayerInput, this)
 
         // Rebar Blocks
         BlockListener.register(this, pm)
