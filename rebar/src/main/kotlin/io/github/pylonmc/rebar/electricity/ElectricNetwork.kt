@@ -2,7 +2,7 @@ package io.github.pylonmc.rebar.electricity
 
 import java.util.UUID
 
-class ElectricNetwork(private val nodeMap: MutableMap<UUID, ElectricNode> = mutableMapOf()) {
+class ElectricNetwork @JvmOverloads constructor(private val nodeMap: MutableMap<UUID, ElectricNode> = mutableMapOf()) {
 
     constructor(node: ElectricNode) : this(mutableMapOf(node.id to node))
 

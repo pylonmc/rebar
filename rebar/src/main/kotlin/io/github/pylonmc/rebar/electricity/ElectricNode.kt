@@ -7,19 +7,49 @@ import org.bukkit.persistence.PersistentDataAdapterContext
 import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.persistence.PersistentDataType
 import java.util.UUID
+import java.util.function.BiConsumer
 
 class ElectricNode private constructor(
     val id: UUID,
     val connectionPoint: Location,
     val type: Type,
-    val connections: MutableSet<UUID>
+    private val connectionSet: MutableSet<UUID>
 ) {
 
     constructor(connectionPoint: Location, type: Type) : this(UUID.randomUUID(), connectionPoint, type, mutableSetOf())
 
+    val connections: Set<UUID> get() = connectionSet.toSet()
+
+    private var onConnect: BiConsumer<ElectricNode, ElectricNode> = BiConsumer { _, _ -> }
+    private var onDisconnect: BiConsumer<ElectricNode, ElectricNode> = BiConsumer { _, _ -> }
+
+    /**
+     * Throws an error if this node is not part of any network, which shouldn't happen if the node was added to the [ElectricityManager]
+     */
+    val network: ElectricNetwork get() = ElectricityManager.getNodeNetwork(this)
+
     fun connect(other: ElectricNode) {
-        connections.add(other.id)
-        other.connections.add(this.id)
+        connectionSet.add(other.id)
+        other.connectionSet.add(this.id)
+        ElectricityManager.mergeNetworks()
+        onConnect.accept(this, other)
+    }
+
+    fun disconnect(other: ElectricNode) {
+        connectionSet.remove(other.id)
+        other.connectionSet.remove(this.id)
+        ElectricityManager.refreshNetworks(network, other.network)
+        onDisconnect.accept(this, other)
+    }
+
+    fun isConnectedTo(other: ElectricNode): Boolean = other.id in connectionSet
+
+    fun onConnect(listener: BiConsumer<ElectricNode, ElectricNode>) {
+        onConnect = listener
+    }
+
+    fun onDisconnect(listener: BiConsumer<ElectricNode, ElectricNode>) {
+        onDisconnect = listener
     }
 
     override fun equals(other: Any?): Boolean = other is ElectricNode && other.id == this.id
@@ -46,16 +76,22 @@ class ElectricNode private constructor(
             override fun getPrimitiveType(): Class<PersistentDataContainer> = PersistentDataContainer::class.java
             override fun getComplexType(): Class<ElectricNode> = ElectricNode::class.java
 
-            override fun toPrimitive(complex: ElectricNode, context: PersistentDataAdapterContext): PersistentDataContainer {
+            override fun toPrimitive(
+                complex: ElectricNode,
+                context: PersistentDataAdapterContext
+            ): PersistentDataContainer {
                 val container = context.newPersistentDataContainer()
                 container.set(id, RebarSerializers.UUID, complex.id)
                 container.set(location, RebarSerializers.LOCATION, complex.connectionPoint)
                 container.set(type, typeType, complex.type)
-                container.set(connections, connectionsType, complex.connections)
+                container.set(connections, connectionsType, complex.connectionSet)
                 return container
             }
 
-            override fun fromPrimitive(primitive: PersistentDataContainer, context: PersistentDataAdapterContext): ElectricNode {
+            override fun fromPrimitive(
+                primitive: PersistentDataContainer,
+                context: PersistentDataAdapterContext
+            ): ElectricNode {
                 val id = primitive.get(id, RebarSerializers.UUID)!!
                 val location = primitive.get(location, RebarSerializers.LOCATION)!!
                 val type = primitive.get(type, typeType)!!

@@ -18,26 +18,30 @@ interface RebarElectricBlock {
 
     @ApiStatus.NonExtendable
     fun createElectricNode(node: ElectricNode) {
-        electricBlocks.getOrPut(this, ::mutableSetOf).add(node)
+        electricBlocks.getOrPut(this, ::mutableListOf).add(node)
+        ElectricityManager.addNode(node)
     }
 
     @ApiStatus.NonExtendable
     fun createElectricNode(connectionPoint: Location, type: ElectricNode.Type) {
         createElectricNode(ElectricNode(connectionPoint, type))
     }
+    
+    @ApiStatus.NonExtendable
+    fun getElectricNodes(): List<ElectricNode> = electricBlocks[this].orEmpty()
 
     companion object : Listener {
 
         private val nodesKey = rebarKey("nodes")
-        private val nodesType = RebarSerializers.SET.setTypeFrom(ElectricNode.PDC_TYPE)
+        private val nodesType = RebarSerializers.LIST.listTypeFrom(ElectricNode.PDC_TYPE)
 
-        private val electricBlocks = IdentityHashMap<RebarElectricBlock, MutableSet<ElectricNode>>()
+        private val electricBlocks = IdentityHashMap<RebarElectricBlock, MutableList<ElectricNode>>()
 
         @EventHandler
         private fun onDeserialize(event: RebarBlockDeserializeEvent) {
             val block = event.rebarBlock
             if (block !is RebarElectricBlock) return
-            val nodes = event.pdc.get(nodesKey, nodesType)!!.toMutableSet()
+            val nodes = event.pdc.get(nodesKey, nodesType)!!.toMutableList()
             electricBlocks[block] = nodes
 
             for (node in nodes) {
@@ -64,7 +68,12 @@ interface RebarElectricBlock {
         @EventHandler
         private fun onBreak(event: RebarBlockBreakEvent) {
             if (event.rebarBlock is RebarElectricBlock) {
-                electricBlocks.remove(event.rebarBlock)
+                for (node in electricBlocks.remove(event.rebarBlock)!!) {
+                    for (connection in node.connections) {
+                        ElectricityManager.getNodeById(connection)?.disconnect(node)
+                    }
+                    ElectricityManager.removeNode(node)
+                }
             }
         }
     }

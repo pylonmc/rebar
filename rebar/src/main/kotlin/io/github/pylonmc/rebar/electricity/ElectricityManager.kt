@@ -8,31 +8,39 @@ object ElectricityManager {
 
     private val nodes = mutableMapOf<UUID, ElectricNode>()
 
+    @JvmStatic
     fun addNode(node: ElectricNode) {
         nodes[node.id] = node
         networks.add(ElectricNetwork(node))
         mergeNetworks()
     }
 
+    @JvmStatic
     fun removeNode(node: ElectricNode) {
         nodes.remove(node.id)
-        val network = networks.find { it.isPartOfNetwork(node) } ?: error("Node ${node.id} is not part of any network")
+        val network = node.network
+        network.removeNode(node)
         if (node.type == ElectricNode.Type.CONNECTOR) {
-            // A connector may separate a network into multiple parts, so we need to rebuild the networks of all other nodes in the same network
-            networks.remove(network)
-            for (otherNode in network.nodes) {
-                if (otherNode.id != node.id) {
-                    networks.add(ElectricNetwork(otherNode))
-                }
-            }
-            mergeNetworks()
-        } else {
-            // A producer or consumer cannot separate a network, so we can just remove it from the network
-            network.removeNode(node)
+            refreshNetworks(network)
         }
     }
 
-    private fun mergeNetworks() {
+    @JvmStatic
+    fun getNodeById(id: UUID): ElectricNode? = nodes[id]
+
+    @JvmSynthetic
+    internal fun refreshNetworks(vararg networks: ElectricNetwork) {
+        for (network in networks.toSet()) {
+            this.networks.remove(network)
+            for (node in network.nodes) {
+                this.networks.add(ElectricNetwork(node))
+            }
+        }
+        mergeNetworks()
+    }
+
+    @JvmSynthetic
+    internal fun mergeNetworks() {
         val candidates = ArrayDeque(networks)
         networks.clear()
         while (candidates.isNotEmpty()) {
@@ -53,4 +61,8 @@ object ElectricityManager {
             networks.add(network)
         }
     }
+
+    @JvmSynthetic
+    internal fun getNodeNetwork(node: ElectricNode): ElectricNetwork =
+        networks.find { it.isPartOfNetwork(node) } ?: error("Node ${node.id} is not part of any network")
 }
