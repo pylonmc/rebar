@@ -8,14 +8,24 @@ class ElectricNetwork @JvmOverloads constructor(private val nodeMap: MutableMap<
 
     val nodes: Set<ElectricNode> get() = nodeMap.values.toSet()
 
+    private val producers = nodes.filter { it.type == ElectricNode.Type.PRODUCER }.toMutableSet()
+    private val consumers = nodes.filter { it.type == ElectricNode.Type.CONSUMER }.toMutableSet()
+
     fun isPartOfNetwork(node: ElectricNode): Boolean = node.id in nodeMap
 
     fun addNode(node: ElectricNode) {
         nodeMap[node.id] = node
+        if (node.type == ElectricNode.Type.PRODUCER) {
+            producers.add(node)
+        } else if (node.type == ElectricNode.Type.CONSUMER) {
+            consumers.add(node)
+        }
     }
 
     fun removeNode(node: ElectricNode) {
         nodeMap.remove(node.id)
+        producers.remove(node)
+        consumers.remove(node)
     }
 
     companion object {
@@ -24,10 +34,10 @@ class ElectricNetwork @JvmOverloads constructor(private val nodeMap: MutableMap<
                 return tryMerge(network2, network1)
             }
 
-            if (network1.nodeMap.values.any { node1 -> network2.nodeMap.keys.any { node2 -> node2 in node1.connections } }) {
+            if (network1.nodeMap.values.any { network2.nodeMap.values.any(it::isConnectedTo) }) {
                 val merged = ElectricNetwork()
-                merged.nodeMap.putAll(network1.nodeMap)
-                merged.nodeMap.putAll(network2.nodeMap)
+                network1.nodeMap.values.forEach(merged::addNode)
+                network2.nodeMap.values.forEach(merged::addNode)
                 return merged
             } else {
                 return null

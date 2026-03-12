@@ -563,14 +563,6 @@ unit:
     singular: "second"
     plural: "seconds"
     abbr: "s"
-  joules:
-    singular: "joule"
-    plural: "joules"
-    abbr: "J"
-  watts:
-    singular: "watt"
-    plural: "watts"
-    abbr: "W"
   experience:
     singular: "experience point"
     plural: "experience points"
@@ -593,3 +585,19 @@ unit:
     singular: "cycle per second"
     plural: "cycles per second"
     abbr: "cycles/s"
+  joules:
+    singular: "joule"
+    plural: "joules"
+    abbr: "J"
+  watts:
+    singular: "watt"
+    plural: "watts"
+    abbr: "W"
+  volts:
+    singular: "volt"
+    plural: "volts"
+    abbr: "V"
+  amperes:
+    singular: "ampere"
+    plural: "amperes"
+    abbr: "A"
