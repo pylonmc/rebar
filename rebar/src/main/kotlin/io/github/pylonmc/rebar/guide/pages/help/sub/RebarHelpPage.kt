@@ -1,4 +1,4 @@
-package io.github.pylonmc.rebar.guide.pages.info.sub
+package io.github.pylonmc.rebar.guide.pages.help.sub
 
 import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.config.RebarConfig
@@ -11,7 +11,7 @@ import net.kyori.adventure.text.event.ClickEvent
 import org.bukkit.Material
 import xyz.xenondevs.invui.item.Item
 
-object RebarInfoPage : SimpleStaticGuidePage(rebarKey("info_rebar")) {
+object RebarHelpPage : SimpleStaticGuidePage(rebarKey("info_rebar")) {
     init {
         addButton(Item.simple(ItemStackBuilder.guide(Material.BOOK, Rebar, "info.rebar")))
         if (RebarConfig.GuideConfig.DISCORD_BUTTON) {

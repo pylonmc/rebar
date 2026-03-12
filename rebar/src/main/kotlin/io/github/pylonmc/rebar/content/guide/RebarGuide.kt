@@ -11,7 +11,8 @@ import io.github.pylonmc.rebar.guide.pages.RootPage
 import io.github.pylonmc.rebar.guide.pages.SearchItemsAndFluidsPage
 import io.github.pylonmc.rebar.guide.pages.base.GuidePage
 import io.github.pylonmc.rebar.guide.pages.base.SimpleDynamicGuidePage
-import io.github.pylonmc.rebar.guide.pages.info.InfoPage
+import io.github.pylonmc.rebar.guide.pages.base.SimpleInfoPage
+import io.github.pylonmc.rebar.guide.pages.help.HelpPage
 import io.github.pylonmc.rebar.guide.pages.item.ItemIngredientsPage
 import io.github.pylonmc.rebar.guide.pages.research.AddonResearchesPage
 import io.github.pylonmc.rebar.guide.pages.research.ResearchItemsPage
@@ -23,6 +24,7 @@ import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
 import io.github.pylonmc.rebar.item.research.Research
 import io.github.pylonmc.rebar.recipe.FluidOrItem
 import io.github.pylonmc.rebar.registry.RebarRegistry
+import io.github.pylonmc.rebar.util.gui.GuiItems
 import io.github.pylonmc.rebar.util.rebarKey
 import io.papermc.paper.datacomponent.DataComponentTypes
 import net.kyori.adventure.key.Key
@@ -36,6 +38,7 @@ import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.inventory.ItemStack
+import xyz.xenondevs.invui.item.Item
 import java.util.UUID
 
 /**
@@ -97,6 +100,9 @@ class RebarGuide(stack: ItemStack) : RebarItem(stack), RebarInteractor {
         val hiddenResearches: MutableSet<NamespacedKey> = mutableSetOf()
 
         @JvmStatic
+        val infoPages: MutableMap<NamespacedKey, SimpleInfoPage> = mutableMapOf()
+
+        @JvmStatic
         val fluidsPage = object : SimpleDynamicGuidePage(
             rebarKey("fluids"),
             {
@@ -110,10 +116,10 @@ class RebarGuide(stack: ItemStack) : RebarItem(stack), RebarInteractor {
         val fluidsButton = PageButton(Material.WATER_BUCKET, fluidsPage)
 
         @JvmStatic
-        val infoPage = InfoPage
+        val helpPage = HelpPage
 
         @JvmStatic
-        val infoButton = PageButton(Material.LANTERN, infoPage)
+        val helpButton = PageButton(Material.LANTERN, helpPage)
 
         @JvmStatic
         val researchesPage = ResearchesPage()
@@ -165,6 +171,16 @@ class RebarGuide(stack: ItemStack) : RebarItem(stack), RebarInteractor {
         @JvmStatic
         fun ingredientsButton(input: FluidOrItem) = PageButton(Material.SCULK_SENSOR, ingredientsPage(input))
 
+        @JvmStatic
+        fun infoButton(input: FluidOrItem): Item {
+            val page = getInfoPage(input.key)
+            return if (page == null) {
+                GuiItems.background()
+            } else {
+                PageButton(Material.NETHER_STAR, page)
+            }
+        }
+
         /**
          * Hide an item from showing up in searches
          */
@@ -196,6 +212,22 @@ class RebarGuide(stack: ItemStack) : RebarItem(stack), RebarInteractor {
         fun hideResearch(key: NamespacedKey) {
             hiddenResearches.add(key)
         }
+
+        /**
+         * Returns the info page menu for an item or fluid. If no info page exists
+         * for the item already, a new one will be created when this function
+         * is called.
+         */
+        @JvmStatic
+        fun getOrCreateInfoPage(key: NamespacedKey)
+            = infoPages.computeIfAbsent(key) { SimpleInfoPage() }
+
+        /**
+         * Returns the info page menu for an item or fluid.
+         */
+        @JvmStatic
+        fun getInfoPage(key: NamespacedKey)
+            = infoPages[key]
 
         /**
          * Opens the guide to the last page that the player was on

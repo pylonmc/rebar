@@ -1,4 +1,4 @@
-package io.github.pylonmc.rebar.guide.pages.info
+package io.github.pylonmc.rebar.guide.pages.help
 
 import io.github.pylonmc.rebar.guide.button.AddonPageButton
 import io.github.pylonmc.rebar.guide.pages.base.SimpleDynamicGuidePage

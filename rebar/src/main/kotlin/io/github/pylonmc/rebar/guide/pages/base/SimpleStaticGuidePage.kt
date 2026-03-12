@@ -17,6 +17,9 @@ import xyz.xenondevs.invui.item.Item
  * on the page will ever need to change.
  *
  * The title of the page will be `<youraddon>.guide.page.<key>`
+ *
+ * @see SimpleDynamicGuidePage
+ * @see SimpleInfoPage
  */
 open class SimpleStaticGuidePage @JvmOverloads constructor(
     /**
@@ -29,6 +32,8 @@ open class SimpleStaticGuidePage @JvmOverloads constructor(
      */
     val buttons: MutableList<Item> = mutableListOf()
 ) : SimpleDynamicGuidePage(key, { buttons }) {
+
+    constructor(key: NamespacedKey, vararg buttons: Item) : this(key, buttons.asList().toMutableList()) {}
 
     open fun addButton(button: Item) = buttons.add(button)
     open fun addPage(material: Material, page: GuidePage) = addButton(PageButton(material, page))

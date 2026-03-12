@@ -1,16 +1,16 @@
-package io.github.pylonmc.rebar.guide.pages.info
+package io.github.pylonmc.rebar.guide.pages.help
 
 import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.config.RebarConfig
 import io.github.pylonmc.rebar.guide.button.PageButton
 import io.github.pylonmc.rebar.guide.pages.base.SimpleStaticGuidePage
-import io.github.pylonmc.rebar.guide.pages.info.sub.AdministratorsPage
-import io.github.pylonmc.rebar.guide.pages.info.sub.RebarInfoPage
-import io.github.pylonmc.rebar.guide.pages.info.sub.ResearchingInfoPage
+import io.github.pylonmc.rebar.guide.pages.help.sub.AdministratorsPage
+import io.github.pylonmc.rebar.guide.pages.help.sub.RebarHelpPage
+import io.github.pylonmc.rebar.guide.pages.help.sub.ResearchingHelpPage
 import io.github.pylonmc.rebar.util.rebarKey
 import org.bukkit.Material
 
-object InfoPage : SimpleStaticGuidePage(rebarKey("info")) {
+object HelpPage : SimpleStaticGuidePage(rebarKey("info")) {
     @JvmStatic
     val administratorsPage = AdministratorsPage
 
@@ -18,17 +18,17 @@ object InfoPage : SimpleStaticGuidePage(rebarKey("info")) {
     val contributorsPage = ContributorsPage
 
     @JvmStatic
-    val rebarInfoPageButton = PageButton(Rebar.material, RebarInfoPage)
+    val rebarHelpPageButton = PageButton(Rebar.material, RebarHelpPage)
 
     @JvmStatic
-    val researchingInfoPageButton = PageButton(Material.LECTERN, ResearchingInfoPage)
+    val researchingHelpPageButton = PageButton(Material.LECTERN, ResearchingHelpPage)
 
     init {
         addPage(Material.BARRIER, administratorsPage)
         addPage(Material.PLAYER_HEAD, contributorsPage)
-        addButton(rebarInfoPageButton)
+        addButton(rebarHelpPageButton)
         if (RebarConfig.ResearchConfig.ENABLED) {
-            addButton(researchingInfoPageButton)
+            addButton(researchingHelpPageButton)
         }
     }
 }

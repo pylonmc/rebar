@@ -1,33 +1,29 @@
-package io.github.pylonmc.rebar.guide.pages.item
+package io.github.pylonmc.rebar.guide.pages
 
 import io.github.pylonmc.rebar.content.guide.RebarGuide
 import io.github.pylonmc.rebar.guide.pages.base.PagedGuidePage
-import io.github.pylonmc.rebar.recipe.FluidOrItem
 import io.github.pylonmc.rebar.recipe.RebarRecipe
 import io.github.pylonmc.rebar.recipe.RebarRecipe.Companion.priority
-import io.github.pylonmc.rebar.registry.RebarRegistry
+import io.github.pylonmc.rebar.recipe.RecipeType
 import io.github.pylonmc.rebar.util.gui.GuiItems
 import io.github.pylonmc.rebar.util.rebarKey
 import org.bukkit.entity.Player
-import org.bukkit.inventory.ItemStack
 import xyz.xenondevs.invui.gui.Gui
 import xyz.xenondevs.invui.gui.Markers
 import xyz.xenondevs.invui.gui.PagedGui
 
 /**
- * Displays all the recipes for the given [stack].
+ * Displays all the recipes for the given [io.github.pylonmc.rebar.recipe.RecipeType].
  */
-open class ItemRecipesPage(val stack: ItemStack) : PagedGuidePage {
+open class MachineRecipesPage(recipeType: RecipeType<*>) : PagedGuidePage {
 
     val pages: MutableList<Gui> = mutableListOf()
 
     init {
         val recipes = mutableListOf<RebarRecipe>()
-        for (type in RebarRegistry.RECIPE_TYPES) {
-            for (recipe in type.recipes) {
-                if (!recipe.isHidden && recipe.isOutput(stack)) {
-                    recipes.add(recipe)
-                }
+        for (recipe in recipeType) {
+            if (!recipe.isHidden) {
+                recipes.add(recipe)
             }
         }
         recipes.sortByDescending { it.priority }
@@ -43,7 +39,7 @@ open class ItemRecipesPage(val stack: ItemStack) : PagedGuidePage {
 
     open fun getHeader(player: Player, pages: List<Gui>) = PagedGui.guisBuilder()
         .setStructure(
-            "< b # g # i # s >",
+            "< b # # # # # s >",
             "x x x x x x x x x",
             "x x x x x x x x x",
             "x x x x x x x x x",
@@ -53,8 +49,6 @@ open class ItemRecipesPage(val stack: ItemStack) : PagedGuidePage {
         .addIngredient('#', GuiItems.background())
         .addIngredient('<', GuiItems.pagePrevious())
         .addIngredient('b', RebarGuide.backButton)
-        .addIngredient('g', RebarGuide.ingredientsButton(FluidOrItem.of(stack)))
-        .addIngredient('i', RebarGuide.infoButton(FluidOrItem.of(stack)))
         .addIngredient('s', RebarGuide.searchItemsAndFluidsButton)
         .addIngredient('>', GuiItems.pageNext())
         .addIngredient('x', Markers.CONTENT_LIST_SLOT_HORIZONTAL)
@@ -67,6 +61,6 @@ open class ItemRecipesPage(val stack: ItemStack) : PagedGuidePage {
     }
 
     companion object {
-        val KEY = rebarKey("item_recipes")
+        val KEY = rebarKey("machine_recipes")
     }
 }

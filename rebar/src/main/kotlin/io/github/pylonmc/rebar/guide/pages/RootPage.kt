@@ -17,7 +17,7 @@ import xyz.xenondevs.invui.window.Window
  */
 class RootPage : SimpleStaticGuidePage(
     rebarKey("root"),
-    mutableListOf(RebarGuide.infoButton, RebarGuide.researchesButton, RebarGuide.fluidsButton)
+    mutableListOf(RebarGuide.helpButton, RebarGuide.researchesButton, RebarGuide.fluidsButton)
 ) {
 
     override fun getGui(player: Player): Gui {
