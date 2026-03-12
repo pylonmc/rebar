@@ -1,6 +1,5 @@
 package io.github.pylonmc.rebar.guide.button
 
-import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.guide.pages.item.ItemRecipesPage
 import io.github.pylonmc.rebar.guide.pages.item.ItemUsagesPage
 import io.github.pylonmc.rebar.guide.pages.research.ResearchItemsPage
@@ -14,9 +13,8 @@ import io.github.pylonmc.rebar.item.research.Research.Companion.researchPoints
 import io.github.pylonmc.rebar.recipe.RecipeInput
 import io.github.pylonmc.rebar.util.gui.unit.UnitFormat
 import io.papermc.paper.datacomponent.DataComponentTypes
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import net.kyori.adventure.text.Component
+import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.Registry
 import org.bukkit.entity.Player
@@ -29,7 +27,6 @@ import xyz.xenondevs.invui.gui.get
 import xyz.xenondevs.invui.item.AbstractBoundItem
 import xyz.xenondevs.invui.item.Item
 import xyz.xenondevs.invui.item.ItemProvider
-import kotlin.time.Duration.Companion.seconds
 
 /**
  * Represents an item in the guide.
@@ -59,23 +56,14 @@ class ItemButton @JvmOverloads constructor(
     constructor(stack: ItemStack, preDisplayDecorator: (ItemStack, Player) -> ItemStack) : this(listOf(stack), preDisplayDecorator)
 
     val stacks = stacks.shuffled()
-    private var index = 0
     val currentStack: ItemStack
-        get() = this.stacks[index]
+        get() = this.stacks[(Bukkit.getCurrentTick() / 20) % this.stacks.size]
 
     init {
         require(stacks.isNotEmpty()) { "ItemButton must have at least one ItemStack" }
-        if (stacks.size > 1) {
-            Rebar.scope.launch {
-                while (true) {
-                    delay(1.seconds)
-                    index += 1
-                    index %= stacks.size
-                    notifyWindows()
-                }
-            }
-        }
     }
+
+    override fun getUpdatePeriod(what: Int): Int = if (stacks.size > 1) 20 else -1
 
     @Suppress("UnstableApiUsage")
     override fun getItemProvider(player: Player): ItemProvider {
