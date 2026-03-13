@@ -9,7 +9,7 @@ import java.util.concurrent.PriorityBlockingQueue
  * O(log n) insertions and evictions
  */
 class PriorityQueueScheduler : Scheduler {
-    private val taskQueue = PriorityQueue<ScheduledTask>() // this is not really thread safe, should it be changed?
+    private val taskQueue = PriorityBlockingQueue<ScheduledTask>()
 
     override fun schedule(executeAt: Long, runnable: Runnable) {
         taskQueue.add(ScheduledTask(executeAt, runnable))
