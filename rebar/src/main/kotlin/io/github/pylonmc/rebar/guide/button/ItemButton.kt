@@ -133,7 +133,7 @@ class ItemButton @JvmOverloads constructor(
             when (clickType) {
                 ClickType.LEFT -> {
                     val page = ItemRecipesPage(currentStack)
-                    if (page.pages.isNotEmpty()) {
+                    if (page.hasPages()) {
                         page.open(player)
                     }
                 }
@@ -158,7 +158,7 @@ class ItemButton @JvmOverloads constructor(
 
                 ClickType.RIGHT -> {
                     val page = ItemUsagesPage(currentStack)
-                    if (page.pages.isNotEmpty()) {
+                    if (page.hasPages()) {
                         page.open(player)
                     }
                 }

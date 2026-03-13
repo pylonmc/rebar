@@ -135,6 +135,8 @@ disabled-items: []
 guide:
   # Should there be a button linking to the official rebar/pylon discord server in the info section of the guide?
   discord-button: true
+  # The max amount of pages saved in the history, the last entry will be removed to accommodate the newer page when full
+  history-size: 64
 
 custom-armor-textures:
   # Should Rebar support modifying the equipment component of armor items to use custom armor textures?

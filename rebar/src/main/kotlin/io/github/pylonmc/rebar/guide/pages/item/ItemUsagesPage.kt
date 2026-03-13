@@ -16,18 +16,6 @@ import xyz.xenondevs.invui.gui.PagedGui
  */
 open class ItemUsagesPage(val stack: ItemStack) : PagedGuidePage {
 
-    val pages: MutableList<Gui> = mutableListOf()
-
-    init {
-        for (type in RebarRegistry.RECIPE_TYPES) {
-            for (recipe in type.recipes) {
-                if (!recipe.isHidden && recipe.isInput(stack)) {
-                    recipe.display()?.let { pages.add(it) }
-                }
-            }
-        }
-    }
-
     override fun getKey() = KEY
 
     open fun getHeader(player: Player, pages: List<Gui>) = PagedGui.guisBuilder()
@@ -48,9 +36,36 @@ open class ItemUsagesPage(val stack: ItemStack) : PagedGuidePage {
         .addPageChangeHandler { _, newPage -> saveCurrentPage(player, newPage) }
 
     override fun getGui(player: Player): Gui {
+        val pages: MutableList<Gui> = getPages()
         val gui = getHeader(player, pages)
         gui.setContent(pages)
         return gui.build().apply { loadCurrentPage(player, this) }
+    }
+
+    fun hasPages(): Boolean {
+        for (type in RebarRegistry.RECIPE_TYPES) {
+            for (recipe in type.recipes) {
+                if (!recipe.isHidden && recipe.isInput(stack)) {
+                    recipe.display() ?: continue
+                    return true
+                }
+            }
+        }
+
+        return false
+    }
+
+    fun getPages(): MutableList<Gui> {
+        val pages: MutableList<Gui> = mutableListOf()
+        for (type in RebarRegistry.RECIPE_TYPES) {
+            for (recipe in type.recipes) {
+                if (!recipe.isHidden && recipe.isInput(stack)) {
+                    recipe.display()?.let { pages.add(it) }
+                }
+            }
+        }
+
+        return pages
     }
 
     companion object {

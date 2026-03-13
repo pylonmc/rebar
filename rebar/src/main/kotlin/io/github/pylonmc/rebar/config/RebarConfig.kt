@@ -120,6 +120,8 @@ object RebarConfig {
         @JvmField
         val DISCORD_BUTTON = config.getOrThrow("guide.discord-button", ConfigAdapter.BOOLEAN)
 
+        @JvmField
+        val HISTORY_SIZE = config.getOrThrow("guide.history-size", ConfigAdapter.INTEGER)
     }
 
     object ArmorTextureConfig {

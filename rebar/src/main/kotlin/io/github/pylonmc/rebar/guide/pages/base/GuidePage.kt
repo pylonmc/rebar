@@ -1,5 +1,7 @@
 package io.github.pylonmc.rebar.guide.pages.base
 
+import io.github.pylonmc.rebar.collections.LimitedDeque
+import io.github.pylonmc.rebar.config.RebarConfig
 import io.github.pylonmc.rebar.content.guide.RebarGuide
 import net.kyori.adventure.text.Component
 import org.bukkit.Keyed
@@ -40,7 +42,7 @@ interface GuidePage : Keyed {
                 .setUpperGui(getGui(player))
                 .setTitle(title)
                 .open(player)
-            RebarGuide.history.getOrPut(player.uniqueId) { mutableListOf() }.add(this)
+            RebarGuide.history.getOrPut(player.uniqueId) { LimitedDeque(RebarConfig.GuideConfig.HISTORY_SIZE) }.add(this)
         } catch (t: Throwable) {
             t.printStackTrace()
         }

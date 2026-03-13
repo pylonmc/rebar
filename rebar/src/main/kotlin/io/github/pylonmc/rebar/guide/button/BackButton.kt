@@ -1,6 +1,10 @@
 package io.github.pylonmc.rebar.guide.button
 
+import io.github.pylonmc.rebar.collections.LimitedDeque
+import io.github.pylonmc.rebar.config.RebarConfig
 import io.github.pylonmc.rebar.content.guide.RebarGuide
+import io.github.pylonmc.rebar.content.guide.RebarGuide.Companion.history
+import io.github.pylonmc.rebar.guide.pages.base.GuidePage
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
 import io.github.pylonmc.rebar.util.rebarKey
 import io.papermc.paper.datacomponent.DataComponentTypes
@@ -25,7 +29,7 @@ class BackButton : AbstractItem() {
     }
 
     override fun handleClick(clickType: ClickType, player: Player, click: Click) {
-        val history = RebarGuide.history.getOrPut(player.uniqueId) { mutableListOf() }
+        val history = history.getOrPut(player.uniqueId) { LimitedDeque<GuidePage>(RebarConfig.GuideConfig.HISTORY_SIZE) }
 
         if (clickType.isShiftClick) {
             history.clear()

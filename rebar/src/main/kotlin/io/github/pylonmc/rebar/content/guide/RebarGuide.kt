@@ -1,6 +1,7 @@
 package io.github.pylonmc.rebar.content.guide
 
 import io.github.pylonmc.rebar.addon.RebarAddon
+import io.github.pylonmc.rebar.collections.LimitedDeque
 import io.github.pylonmc.rebar.config.RebarConfig
 import io.github.pylonmc.rebar.event.api.annotation.MultiHandler
 import io.github.pylonmc.rebar.guide.button.BackButton
@@ -35,6 +36,7 @@ import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerJoinEvent
+import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.inventory.ItemStack
 import java.util.UUID
 
@@ -70,7 +72,7 @@ class RebarGuide(stack: ItemStack) : RebarItem(stack), RebarInteractor {
          * Resets when the player ends up on the root page
          */
         @JvmStatic
-        val history: MutableMap<UUID, MutableList<GuidePage>> = mutableMapOf()
+        val history: MutableMap<UUID, LimitedDeque<GuidePage>> = mutableMapOf()
 
         /**
          * Hidden items do not show up in searches
@@ -159,6 +161,11 @@ class RebarGuide(stack: ItemStack) : RebarItem(stack), RebarInteractor {
             }
         }
 
+        @EventHandler(priority = EventPriority.LOWEST)
+        private fun leave(event: PlayerQuitEvent) {
+            history.remove(event.player.uniqueId)
+        }
+
         @JvmStatic
         fun ingredientsPage(input: FluidOrItem) = ItemIngredientsPage(input)
 
@@ -202,7 +209,7 @@ class RebarGuide(stack: ItemStack) : RebarItem(stack), RebarInteractor {
          */
         @JvmStatic
         fun open(player: Player) {
-            val history = history.getOrPut(player.uniqueId) { mutableListOf() }
+            val history = history.getOrPut(player.uniqueId) { LimitedDeque<GuidePage>(RebarConfig.GuideConfig.HISTORY_SIZE) }
             if (history.isEmpty()) {
                 rootPage.open(player)
             } else {

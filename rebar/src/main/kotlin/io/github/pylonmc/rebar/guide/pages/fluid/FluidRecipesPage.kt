@@ -18,17 +18,6 @@ import xyz.xenondevs.invui.gui.PagedGui
 open class FluidRecipesPage(fluidKey: NamespacedKey) : PagedGuidePage {
 
     val fluid = RebarRegistry.FLUIDS[fluidKey]!!
-    val pages: MutableList<Gui> = mutableListOf()
-
-    init {
-        for (type in RebarRegistry.RECIPE_TYPES) {
-            for (recipe in type.recipes) {
-                if (!recipe.isHidden && recipe.isOutput(fluid)) {
-                    recipe.display()?.let { pages.add(it) }
-                }
-            }
-        }
-    }
 
     override fun getKey() = KEY
 
@@ -51,9 +40,36 @@ open class FluidRecipesPage(fluidKey: NamespacedKey) : PagedGuidePage {
         .addPageChangeHandler { _, newPage -> saveCurrentPage(player, newPage) }
 
     override fun getGui(player: Player): Gui {
+        val pages: MutableList<Gui> = getPages()
         val gui = getHeader(player, pages)
         gui.setContent(pages)
         return gui.build().apply { loadCurrentPage(player, this) }
+    }
+
+    fun hasPages(): Boolean {
+        for (type in RebarRegistry.RECIPE_TYPES) {
+            for (recipe in type.recipes) {
+                if (!recipe.isHidden && recipe.isOutput(fluid)) {
+                    recipe.display() ?: continue
+                    return true
+                }
+            }
+        }
+
+        return false
+    }
+
+    fun getPages(): MutableList<Gui> {
+        val pages: MutableList<Gui> = mutableListOf()
+        for (type in RebarRegistry.RECIPE_TYPES) {
+            for (recipe in type.recipes) {
+                if (!recipe.isHidden && recipe.isOutput(fluid)) {
+                    recipe.display()?.let { pages.add(it) }
+                }
+            }
+        }
+
+        return pages
     }
 
     companion object {
