@@ -38,11 +38,11 @@ import org.bukkit.potion.PotionEffectType
  * - `<attribute></attribute>`|`<attr></attr>` - Applies a cyan styling (0xa9d9e8), used for attributes
  * - `<unit:\[prefix\]:[unit name]></unit>` - Formats a **constant** number as a unit, with an optional metric prefix
  * - `<nbsp></nbsp>` - Replaces spaces with non-breaking spaces ( ), useful for preventing line breaks in lore
- * - `<item:[material]>` - Renders the translated name of a material/block (e.g., `<item:stone>` → "Stone")
- * - `<entity:[entity_type]>` - Renders the translated name of an entity type (e.g., `<entity:creeper>` → "Creeper")
- * - `<effect:[effect_type]>` - Renders the translated name of a potion effect (e.g., `<effect:speed>` → "Speed")
- * - `<enchant:[enchantment]>` - Renders the translated name of an enchantment (e.g., `<enchant:sharpness>` → "Sharpness")
- * - `<biome:[biome]>` - Renders the translated name of a biome (e.g., `<biome:plains>` → "Plains")
+ * - `<item:\[material/NamespacedKey\]>` - Renders the translated name of a vanilla/rebar item (e.g., `<item:stone>` → "Stone", `<item:pylon:loupe>` → "Loupe")
+ * - `<entity:\[entity_type\]>` - Renders the translated name of an entity type (e.g., `<entity:creeper>` → "Creeper")
+ * - `<effect:\[effect_type\]>` - Renders the translated name of a potion effect (e.g., `<effect:speed>` → "Speed")
+ * - `<enchant:\[enchantment\]>` - Renders the translated name of an enchantment (e.g., `<enchant:sharpness>` → "Sharpness")
+ * - `<biome:\[biome\]>` - Renders the translated name of a biome (e.g., `<biome:plains>` → "Plains")
  *   
  * For item, entity, effect, enchant, and biome tags:
  * - If no namespace is provided (e.g., `stone`), it defaults to `minecraft:stone`
