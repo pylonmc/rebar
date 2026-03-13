@@ -1,8 +1,8 @@
 package io.github.pylonmc.rebar.async
 
-import io.github.pylonmc.rebar.collections.tasks.PriorityQueueScheduler
-import io.github.pylonmc.rebar.collections.tasks.Scheduler
-import io.github.pylonmc.rebar.collections.tasks.TimingWheel
+import io.github.pylonmc.rebar.async.schedulers.PriorityQueueScheduler
+import io.github.pylonmc.rebar.async.schedulers.Scheduler
+import io.github.pylonmc.rebar.async.schedulers.TimingWheel
 import kotlinx.coroutines.*
 import org.bukkit.plugin.Plugin
 import java.lang.Runnable

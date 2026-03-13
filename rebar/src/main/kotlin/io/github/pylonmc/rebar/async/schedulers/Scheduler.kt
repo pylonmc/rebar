@@ -1,4 +1,6 @@
-package io.github.pylonmc.rebar.collections.tasks
+package io.github.pylonmc.rebar.async.schedulers
+
+import io.github.pylonmc.rebar.async.ScheduledTask
 
 interface Scheduler {
 
