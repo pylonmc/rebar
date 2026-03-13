@@ -1,8 +1,8 @@
 package io.github.pylonmc.rebar.async.schedulers
 
+import com.google.common.collect.Queues
 import io.github.pylonmc.rebar.async.ScheduledTask
 import java.util.*
-import java.util.concurrent.PriorityBlockingQueue
 
 /**
  * Scheduler using a [PriorityQueue] as a delegate
@@ -10,7 +10,7 @@ import java.util.concurrent.PriorityBlockingQueue
  * O(log n) insertions and evictions
  */
 class PriorityQueueScheduler : Scheduler {
-    private val taskQueue = PriorityBlockingQueue<ScheduledTask>()
+    private val taskQueue = Queues.synchronizedQueue(PriorityQueue<ScheduledTask>())
 
     override fun schedule(executeAt: Long, runnable: Runnable) {
         taskQueue.add(ScheduledTask(executeAt, runnable))
