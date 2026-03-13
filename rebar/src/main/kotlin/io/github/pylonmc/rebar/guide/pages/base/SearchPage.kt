@@ -1,7 +1,7 @@
 package io.github.pylonmc.rebar.guide.pages.base
 
 import info.debatty.java.stringsimilarity.JaroWinkler
-import io.github.pylonmc.rebar.collections.LimitedList
+import io.github.pylonmc.rebar.collections.LimitedDeque
 import io.github.pylonmc.rebar.config.RebarConfig
 import io.github.pylonmc.rebar.content.guide.RebarGuide
 import io.github.pylonmc.rebar.guide.button.FluidButton
@@ -78,7 +78,7 @@ abstract class SearchPage(key: NamespacedKey) : SimpleStaticGuidePage(key) {
                     }
                 }
                 .open(player)
-            RebarGuide.history.getOrPut(player.uniqueId) { LimitedList(RebarConfig.GuideConfig.HISTORY_SIZE) }.add(this)
+            RebarGuide.history.getOrPut(player.uniqueId) { LimitedDeque(RebarConfig.GuideConfig.HISTORY_SIZE) }.add(this)
         } catch (t: Throwable) {
             t.printStackTrace()
         }

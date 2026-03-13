@@ -1,6 +1,6 @@
 package io.github.pylonmc.rebar.guide.pages
 
-import io.github.pylonmc.rebar.collections.LimitedList
+import io.github.pylonmc.rebar.collections.LimitedDeque
 import io.github.pylonmc.rebar.config.RebarConfig
 import io.github.pylonmc.rebar.content.guide.RebarGuide
 import io.github.pylonmc.rebar.guide.button.PageButton
@@ -61,7 +61,7 @@ class RootPage : SimpleStaticGuidePage(
                 .setTitle(title)
                 .open(player)
 
-            RebarGuide.history[player.uniqueId] = LimitedList<GuidePage>(RebarConfig.GuideConfig.HISTORY_SIZE).apply {
+            RebarGuide.history[player.uniqueId] = LimitedDeque<GuidePage>(RebarConfig.GuideConfig.HISTORY_SIZE).apply {
                 add(this@RootPage)
             }
 
