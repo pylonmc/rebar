@@ -36,6 +36,7 @@ import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerJoinEvent
+import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.inventory.ItemStack
 import java.util.UUID
 
@@ -158,6 +159,11 @@ class RebarGuide(stack: ItemStack) : RebarItem(stack), RebarInteractor {
             if (RebarConfig.REBAR_GUIDE_ON_FIRST_JOIN && !event.player.hasPlayedBefore()) {
                 event.player.give(STACK.clone())
             }
+        }
+
+        @EventHandler(priority = EventPriority.LOWEST)
+        private fun leave(event: PlayerQuitEvent) {
+            history.remove(event.player.uniqueId)
         }
 
         @JvmStatic
