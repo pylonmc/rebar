@@ -97,12 +97,12 @@ open class FluidButton(
         try {
             if (clickType.isLeftClick) {
                 val page = FluidRecipesPage(currentFluid.key)
-                if (page.pages.isNotEmpty()) {
+                if (page.hasPages()) {
                     page.open(player)
                 }
             } else {
                 val page = FluidUsagesPage(currentFluid)
-                if (page.pages.isNotEmpty()) {
+                if (page.hasPages()) {
                     page.open(player)
                 }
             }

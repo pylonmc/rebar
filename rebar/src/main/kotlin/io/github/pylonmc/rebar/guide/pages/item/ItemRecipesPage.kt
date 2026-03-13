@@ -19,26 +19,6 @@ import xyz.xenondevs.invui.gui.PagedGui
  */
 open class ItemRecipesPage(val stack: ItemStack) : PagedGuidePage {
 
-    val pages: MutableList<Gui> = mutableListOf()
-
-    init {
-        val recipes = mutableListOf<RebarRecipe>()
-        for (type in RebarRegistry.RECIPE_TYPES) {
-            for (recipe in type.recipes) {
-                if (!recipe.isHidden && recipe.isOutput(stack)) {
-                    recipes.add(recipe)
-                }
-            }
-        }
-        recipes.sortByDescending { it.priority }
-        for (recipe in recipes) {
-            val display = recipe.display()
-            if (display != null) {
-                pages.add(display)
-            }
-        }
-    }
-
     override fun getKey() = KEY
 
     open fun getHeader(player: Player, pages: List<Gui>) = PagedGui.guisBuilder()
@@ -60,9 +40,44 @@ open class ItemRecipesPage(val stack: ItemStack) : PagedGuidePage {
         .addPageChangeHandler { _, newPage -> saveCurrentPage(player, newPage) }
 
     override fun getGui(player: Player): Gui {
+        val pages: MutableList<Gui> = getPages()
         val gui = getHeader(player, pages)
         gui.setContent(pages)
         return gui.build().apply { loadCurrentPage(player, this) }
+    }
+
+    fun hasPages(): Boolean {
+        for (type in RebarRegistry.RECIPE_TYPES) {
+            for (recipe in type.recipes) {
+                if (!recipe.isHidden && recipe.isOutput(stack)) {
+                    recipe.display() ?: continue
+                    return true
+                }
+            }
+        }
+
+        return false
+    }
+
+    fun getPages(): MutableList<Gui> {
+        val pages: MutableList<Gui> = mutableListOf()
+        val recipes = mutableListOf<RebarRecipe>()
+        for (type in RebarRegistry.RECIPE_TYPES) {
+            for (recipe in type.recipes) {
+                if (!recipe.isHidden && recipe.isOutput(stack)) {
+                    recipes.add(recipe)
+                }
+            }
+        }
+        recipes.sortByDescending { it.priority }
+        for (recipe in recipes) {
+            val display = recipe.display()
+            if (display != null) {
+                pages.add(display)
+            }
+        }
+
+        return pages
     }
 
     companion object {
