@@ -1,6 +1,7 @@
 package io.github.pylonmc.rebar.collections.tasks
 
 import java.util.*
+import java.util.concurrent.PriorityBlockingQueue
 
 /**
  * Scheduler using a [PriorityQueue] as a delegate
@@ -10,13 +11,13 @@ import java.util.*
 class PriorityQueueScheduler : Scheduler {
     private val taskQueue = PriorityQueue<ScheduledTask>() // this is not really thread safe, should it be changed?
 
-    override fun schedule(tick: Long, delayTicks: Long, runnable: Runnable) {
-        taskQueue.add(ScheduledTask(tick + delayTicks, runnable))
+    override fun schedule(executeAt: Long, runnable: Runnable) {
+        taskQueue.add(ScheduledTask(executeAt, runnable))
     }
 
-    override fun getValid(tick: Long): List<ScheduledTask> {
+    override fun getValid(currentTick: Long): List<ScheduledTask> {
         val list = mutableListOf<ScheduledTask>()
-        while (taskQueue.isNotEmpty() && taskQueue.peek().executeTick <= tick) {
+        while (taskQueue.isNotEmpty() && taskQueue.peek().executeTick <= currentTick) {
             val task = taskQueue.poll()
             list.add(task)
         }

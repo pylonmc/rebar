@@ -21,19 +21,18 @@ class TimingWheel(exponent: Int) : Scheduler {
     // use thread safe queue
     private val incoming = ConcurrentLinkedQueue<ScheduledTask>()
 
-    override fun schedule(tick: Long, delayTicks: Long, runnable: Runnable) {
-        val executeTick = tick + delayTicks
-        incoming.add(ScheduledTask(executeTick, runnable))
+    override fun schedule(executeAt: Long, runnable: Runnable) {
+        incoming.add(ScheduledTask(executeAt, runnable))
     }
 
-    override fun getValid(tick: Long) : List<ScheduledTask> {
+    override fun getValid(currentTick: Long) : List<ScheduledTask> {
         while (true) {
             val task = incoming.poll() ?: break
             val slot = task.executeTick.toInt() and mask
             wheel[slot].add(task)
         }
 
-        val slot = tick.toInt() and mask
+        val slot = currentTick.toInt() and mask
         val bucket = wheel[slot]
         if (bucket.isEmpty()) {
             return emptyList()
@@ -44,7 +43,7 @@ class TimingWheel(exponent: Int) : Scheduler {
         while (iter.hasNext()) {
             val task = iter.next()
 
-            if (task.executeTick <= tick) {
+            if (task.executeTick <= currentTick) {
                 list.add(task)
                 iter.remove()
             }

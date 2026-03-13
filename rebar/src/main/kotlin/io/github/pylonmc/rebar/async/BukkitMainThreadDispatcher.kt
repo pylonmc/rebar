@@ -45,14 +45,14 @@ class BukkitMainThreadDispatcher(private val plugin: Plugin, private val tickRat
 
     override fun dispatch(context: CoroutineContext, block: Runnable) {
         if (!plugin.isEnabled) return
-        scheduler.schedule(0, tick, block)
+        scheduler.schedule(tick, block)
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override fun scheduleResumeAfterDelay(timeMillis: Long, continuation: CancellableContinuation<Unit>) {
         if (!plugin.isEnabled) return
         val ticks = timeMillis / 50L
-        scheduler.schedule(tick, ticks) {
+        scheduler.schedule(tick +ticks) {
             if (continuation.isActive) {
                 with(continuation) { resumeUndispatched(Unit) }
             }
