@@ -1,6 +1,7 @@
 package io.github.pylonmc.rebar.content.guide
 
 import io.github.pylonmc.rebar.addon.RebarAddon
+import io.github.pylonmc.rebar.collections.LimitedList
 import io.github.pylonmc.rebar.config.RebarConfig
 import io.github.pylonmc.rebar.event.api.annotation.MultiHandler
 import io.github.pylonmc.rebar.guide.button.BackButton
@@ -70,7 +71,7 @@ class RebarGuide(stack: ItemStack) : RebarItem(stack), RebarInteractor {
          * Resets when the player ends up on the root page
          */
         @JvmStatic
-        val history: MutableMap<UUID, MutableList<GuidePage>> = mutableMapOf()
+        val history: MutableMap<UUID, LimitedList<GuidePage>> = mutableMapOf()
 
         /**
          * Hidden items do not show up in searches
@@ -202,7 +203,7 @@ class RebarGuide(stack: ItemStack) : RebarItem(stack), RebarInteractor {
          */
         @JvmStatic
         fun open(player: Player) {
-            val history = history.getOrPut(player.uniqueId) { mutableListOf() }
+            val history = history.getOrPut(player.uniqueId) { LimitedList<GuidePage>(RebarConfig.GuideConfig.HISTORY_SIZE) }
             if (history.isEmpty()) {
                 rootPage.open(player)
             } else {

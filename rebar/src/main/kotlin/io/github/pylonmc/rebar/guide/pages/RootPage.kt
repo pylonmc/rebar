@@ -1,7 +1,10 @@
 package io.github.pylonmc.rebar.guide.pages
 
+import io.github.pylonmc.rebar.collections.LimitedList
+import io.github.pylonmc.rebar.config.RebarConfig
 import io.github.pylonmc.rebar.content.guide.RebarGuide
 import io.github.pylonmc.rebar.guide.button.PageButton
+import io.github.pylonmc.rebar.guide.pages.base.GuidePage
 import io.github.pylonmc.rebar.guide.pages.base.SimpleStaticGuidePage
 import io.github.pylonmc.rebar.util.gui.GuiItems
 import io.github.pylonmc.rebar.util.rebarKey
@@ -57,7 +60,11 @@ class RootPage : SimpleStaticGuidePage(
                 .setUpperGui(getGui(player))
                 .setTitle(title)
                 .open(player)
-            RebarGuide.history.put(player.uniqueId, mutableListOf(this))
+
+            RebarGuide.history[player.uniqueId] = LimitedList<GuidePage>(RebarConfig.GuideConfig.HISTORY_SIZE).apply {
+                add(this@RootPage)
+            }
+
         } catch (t: Throwable) {
             t.printStackTrace()
         }
