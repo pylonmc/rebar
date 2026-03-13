@@ -1,9 +1,11 @@
 package io.github.pylonmc.rebar.async
 
+import io.github.pylonmc.rebar.collections.tasks.PriorityQueueScheduler
+import io.github.pylonmc.rebar.collections.tasks.Scheduler
+import io.github.pylonmc.rebar.collections.tasks.TimingWheel
 import kotlinx.coroutines.*
 import org.bukkit.plugin.Plugin
 import java.lang.Runnable
-import java.util.PriorityQueue
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -17,7 +19,13 @@ import kotlin.coroutines.CoroutineContext
 @OptIn(InternalCoroutinesApi::class)
 class BukkitMainThreadDispatcher(private val plugin: Plugin, private val tickRate: Long) : CoroutineDispatcher(), Runnable, Delay {
 
-    private val taskQueue = PriorityQueue<Task>()
+    // while TimingWheel would work for other tickRates (mainly tickRate % 2 != 0),
+    // it would delay their executions, also most tasks use tickRate 1
+    private val scheduler: Scheduler = if (tickRate == 1L) {
+        TimingWheel(11)
+    } else {
+        PriorityQueueScheduler()
+    }
 
     private var tick = 0L
 
@@ -28,10 +36,7 @@ class BukkitMainThreadDispatcher(private val plugin: Plugin, private val tickRat
     override fun run() {
         if (!plugin.isEnabled) return
         tick += tickRate
-        while (taskQueue.isNotEmpty() && taskQueue.peek().executeAt <= tick) {
-            val task = taskQueue.poll()
-            task.runnable.run()
-        }
+        scheduler.getValid(tick).forEach { it.runnable.run() }
     }
 
     override fun isDispatchNeeded(context: CoroutineContext): Boolean {
@@ -40,23 +45,17 @@ class BukkitMainThreadDispatcher(private val plugin: Plugin, private val tickRat
 
     override fun dispatch(context: CoroutineContext, block: Runnable) {
         if (!plugin.isEnabled) return
-        taskQueue.add(Task(tick, block))
+        scheduler.schedule(0, tick, block)
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override fun scheduleResumeAfterDelay(timeMillis: Long, continuation: CancellableContinuation<Unit>) {
         if (!plugin.isEnabled) return
-        val ticks = timeMillis / 50
-        taskQueue.add(Task(tick + ticks) {
+        val ticks = timeMillis / 50L
+        scheduler.schedule(tick, ticks) {
             if (continuation.isActive) {
                 with(continuation) { resumeUndispatched(Unit) }
             }
-        })
-    }
-
-    private data class Task(val executeAt: Long, val runnable: Runnable) : Comparable<Task> {
-        override fun compareTo(other: Task): Int {
-            return executeAt.compareTo(other.executeAt)
         }
     }
 }
