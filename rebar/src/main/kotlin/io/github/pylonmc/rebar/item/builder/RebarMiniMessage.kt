@@ -123,8 +123,13 @@ private val nbspReplacement = TextReplacementConfig.builder()
     .replacement(Typography.nbsp.toString())
     .build()
 
-private fun item(args: ArgumentQueue, @Suppress("unused") ctx: Context): Tag {
-    val arg = args.peek()?.value() ?: throw ctx.newException("Expected argument")
+private fun item(args: ArgumentQueue, ctx: Context): Tag {
+    val argsList = args.iterator().asSequence().toList()
+    val arg = when (argsList.size) {
+        2 -> "${argsList[0].value()}:${argsList[1].value()}"
+        1 -> argsList[0].value()
+        else -> throw ctx.newException("Expected 1 or 2 arguments, got ${argsList.size}")
+    }
     val nsKey = NamespacedKey.fromString(arg) ?: throw ctx.newException("Invalid NamespacedKey: $arg")
 
     val translationKey = if (nsKey.namespace == NamespacedKey.MINECRAFT) {
