@@ -16,8 +16,10 @@ import java.util.concurrent.ConcurrentLinkedQueue
  * @param exponent wheel size (wheelSize = 2 ^ exponent)
  */
 class TimingWheel(exponent: Int) : Scheduler {
+    // note: if we are going to use a lot of tasks with a long delay,
+    // maybe add round support
     private val wheelSize = 1 shl exponent
-    private val mask = wheelSize - 1
+    private val mask = wheelSize - 1L
     private val wheel = Array(wheelSize) { ArrayDeque<ScheduledTask>() }
     // use thread safe queue
     private val incoming = ConcurrentLinkedQueue<ScheduledTask>()
@@ -29,11 +31,11 @@ class TimingWheel(exponent: Int) : Scheduler {
     override fun getValid(currentTick: Long) : List<ScheduledTask> {
         while (true) {
             val task = incoming.poll() ?: break
-            val slot = task.executeTick.toInt() and mask
+            val slot = (task.executeTick and mask).toInt()
             wheel[slot].add(task)
         }
 
-        val slot = currentTick.toInt() and mask
+        val slot = (currentTick and mask).toInt()
         val bucket = wheel[slot]
         if (bucket.isEmpty()) {
             return emptyList()
