@@ -78,7 +78,7 @@ internal class FluidPipePlacementTask(
         recalculateTarget()
 
         // Check status of placement
-        val playerHas = player.inventory.filter { it.isSimilar(hand) }.sumOf { it.amount }
+        val playerHas = player.inventory.filterNotNull().filter { it.isSimilar(hand) }.sumOf { it.amount }
         val playerHasEnoughPipes = pipesUsed(origin.position, target.position) <= playerHas
         if (player.gameMode != GameMode.CREATIVE && !playerHasEnoughPipes) {
             // Player does not have enough pipes
