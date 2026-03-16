@@ -14,6 +14,4 @@ class LimitedDeque<T> private constructor(
         deque.addFirst(element)
         return true
     }
-
-    fun toList(): List<T> = deque.toList()
 }
