@@ -1,6 +1,6 @@
 package io.github.pylonmc.rebar.collections
 
-internal class LimitedDeque<T> private constructor(
+class LimitedDeque<T> private constructor(
     val maxSize: Int,
     private val deque: ArrayDeque<T> = ArrayDeque()
 ) : MutableList<T> by deque {
