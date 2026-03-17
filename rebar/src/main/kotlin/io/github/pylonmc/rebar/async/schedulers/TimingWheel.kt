@@ -15,7 +15,7 @@ import java.util.concurrent.ConcurrentLinkedQueue
  *
  * @param exponent wheel size (wheelSize = 2 ^ exponent)
  */
-class TimingWheel(exponent: Int) : Scheduler {
+internal class TimingWheel(exponent: Int) : Scheduler {
     // note: if we are going to use a lot of tasks with a long delay,
     // maybe add round support
     private val wheelSize = 1 shl exponent
