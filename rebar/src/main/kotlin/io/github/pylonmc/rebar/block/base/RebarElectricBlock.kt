@@ -30,6 +30,10 @@ interface RebarElectricBlock {
     @ApiStatus.NonExtendable
     fun getElectricNodes(): List<ElectricNode> = electricBlocks[this].orEmpty()
 
+    interface Producer : RebarElectricBlock {
+        val voltage: Double
+    }
+
     companion object : Listener {
 
         private val nodesKey = rebarKey("nodes")
