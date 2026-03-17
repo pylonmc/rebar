@@ -1,8 +1,6 @@
 package io.github.pylonmc.rebar.guide.pages.base
 
 import info.debatty.java.stringsimilarity.JaroWinkler
-import io.github.pylonmc.rebar.collections.LimitedDeque
-import io.github.pylonmc.rebar.config.RebarConfig
 import io.github.pylonmc.rebar.content.guide.RebarGuide
 import io.github.pylonmc.rebar.guide.button.FluidButton
 import io.github.pylonmc.rebar.item.RebarItem
@@ -20,7 +18,7 @@ import xyz.xenondevs.invui.gui.Markers
 import xyz.xenondevs.invui.gui.PagedGui
 import xyz.xenondevs.invui.item.Item
 import xyz.xenondevs.invui.window.AnvilWindow
-import java.util.UUID
+import java.util.*
 
 /**
  * A page that allows a collection of things (specified by [getItemNamePairs] to be searched.
@@ -78,7 +76,7 @@ abstract class SearchPage(key: NamespacedKey) : SimpleStaticGuidePage(key) {
                     }
                 }
                 .open(player)
-            RebarGuide.history.getOrPut(player.uniqueId) { LimitedDeque(RebarConfig.GuideConfig.HISTORY_SIZE) }.add(this)
+            RebarGuide.addHistory(player, this)
         } catch (t: Throwable) {
             t.printStackTrace()
         }

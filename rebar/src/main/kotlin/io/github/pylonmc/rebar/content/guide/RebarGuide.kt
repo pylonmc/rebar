@@ -209,12 +209,22 @@ class RebarGuide(stack: ItemStack) : RebarItem(stack), RebarInteractor {
          */
         @JvmStatic
         fun open(player: Player) {
-            val history = history.getOrPut(player.uniqueId) { LimitedDeque<GuidePage>(RebarConfig.GuideConfig.HISTORY_SIZE) }
+            val history = getHistory(player)
             if (history.isEmpty()) {
                 rootPage.open(player)
             } else {
                 history.removeLast().open(player)
             }
+        }
+
+        @JvmStatic
+        fun getHistory(player: Player): LimitedDeque<GuidePage> {
+            return history.getOrPut(player.uniqueId) { LimitedDeque(RebarConfig.GuideConfig.HISTORY_SIZE) }
+        }
+
+        @JvmStatic
+        fun addHistory(player: Player, page: GuidePage) {
+            getHistory(player).add(page)
         }
     }
 }
