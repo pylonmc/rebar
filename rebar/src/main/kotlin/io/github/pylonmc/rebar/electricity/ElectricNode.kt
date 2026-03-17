@@ -11,7 +11,7 @@ import java.util.function.BiConsumer
 
 class ElectricNode private constructor(
     val id: UUID,
-    val connectionPoint: Location,
+    private val actualConnectionPoint: Location,
     val type: Type,
     private val connectionSet: MutableSet<UUID>
 ) {
@@ -19,6 +19,8 @@ class ElectricNode private constructor(
     constructor(connectionPoint: Location, type: Type) : this(UUID.randomUUID(), connectionPoint, type, mutableSetOf())
 
     val connections: Set<UUID> get() = connectionSet.toSet()
+
+    val connectionPoint get() = actualConnectionPoint.clone()
 
     private var onConnect: BiConsumer<ElectricNode, ElectricNode> = BiConsumer { _, _ -> }
     private var onDisconnect: BiConsumer<ElectricNode, ElectricNode> = BiConsumer { _, _ -> }
@@ -33,6 +35,7 @@ class ElectricNode private constructor(
         other.connectionSet.add(this.id)
         ElectricityManager.mergeNetworks()
         onConnect.accept(this, other)
+        other.onConnect.accept(other, this)
     }
 
     fun disconnect(other: ElectricNode) {
@@ -40,6 +43,7 @@ class ElectricNode private constructor(
         other.connectionSet.remove(this.id)
         ElectricityManager.refreshNetworks(network, other.network)
         onDisconnect.accept(this, other)
+        other.onDisconnect.accept(other, this)
     }
 
     fun isConnectedTo(other: ElectricNode): Boolean = other.id in connectionSet

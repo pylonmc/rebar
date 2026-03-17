@@ -182,6 +182,63 @@ object BlockStorage : Listener {
     inline fun <reified T> getAs(location: Location): T? = getAs(T::class.java, location)
 
     /**
+     * Returns the Rebar block (of type [T]) at the given [blockPosition].
+     *
+     * @throws IllegalArgumentException if the chunk containing the block is not loaded or the block is not a Rebar block
+     * @throws ClassCastException if the block is not of the expected class
+     */
+    @JvmStatic
+    fun <T> getAsOrThrow(clazz: Class<T>, blockPosition: BlockPosition): T {
+        val block = get(blockPosition) ?: throw IllegalArgumentException("No Rebar block found at $blockPosition")
+        if (!clazz.isInstance(block)) {
+            throw ClassCastException("Block at $blockPosition is not of type ${clazz.simpleName}")
+        }
+        return clazz.cast(block)
+    }
+
+    /**
+     * Returns the Rebar block (of type [T]) at the given [block].
+     *
+     * @throws IllegalArgumentException if the chunk containing the block is not loaded or the block is not a Rebar block
+     * @throws ClassCastException if the block is not of the expected class
+     */
+    @JvmStatic
+    fun <T> getAsOrThrow(clazz: Class<T>, block: Block): T = getAsOrThrow(clazz, block.position)
+
+    /**
+     * Returns the Rebar block (of type [T]) at the given [location].
+     *
+     * @throws IllegalArgumentException if the chunk containing the block is not loaded or the block is not a Rebar block
+     * @throws ClassCastException if the block is not of the expected class
+     */
+    @JvmStatic
+    fun <T> getAsOrThrow(clazz: Class<T>, location: Location): T = getAsOrThrow(clazz, BlockPosition(location))
+
+    /**
+     * Returns the Rebar block (of type [T]) at the given [blockPosition].
+     *
+     * @throws IllegalArgumentException if the chunk containing the block is not loaded or the block is not a Rebar block
+     * @throws ClassCastException if the block is not of the expected class
+     */
+    inline fun <reified T> getAsOrThrow(blockPosition: BlockPosition): T = getAsOrThrow(T::class.java, blockPosition)
+
+    /**
+     * Returns the Rebar block (of type [T]) at the given [block].
+     *
+     * @throws IllegalArgumentException if the chunk containing the block is not loaded or the block is not a Rebar block
+     * @throws ClassCastException if the block is not of the expected class
+     */
+    inline fun <reified T> getAsOrThrow(block: Block): T = getAsOrThrow(T::class.java, block)
+
+    /**
+     * Returns the Rebar block (of type [T]) at the given [location].
+     *
+     * @throws IllegalArgumentException if the chunk containing the block is not loaded or the block is not a Rebar block
+     * @throws ClassCastException if the block is not of the expected class
+     */
+    inline fun <reified T> getAsOrThrow(location: Location): T = getAsOrThrow(T::class.java, location)
+
+    /**
      * Returns all the Plyon blocks in the chunk at [chunkPosition].
      *
      * @throws IllegalArgumentException if the chunk is not loaded
