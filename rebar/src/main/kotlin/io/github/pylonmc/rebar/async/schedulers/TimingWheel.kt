@@ -1,6 +1,6 @@
 package io.github.pylonmc.rebar.async.schedulers
 
-import io.github.pylonmc.rebar.async.ScheduledTask
+import io.github.pylonmc.rebar.async.RebarScheduledTask
 import java.util.concurrent.ConcurrentLinkedQueue
 
 
@@ -20,15 +20,15 @@ internal class TimingWheel(exponent: Int) : Scheduler {
     // maybe add round support
     private val wheelSize = 1 shl exponent
     private val mask = wheelSize - 1L
-    private val wheel = Array(wheelSize) { ArrayDeque<ScheduledTask>() }
+    private val wheel = Array(wheelSize) { ArrayDeque<RebarScheduledTask>() }
     // use thread safe queue
-    private val incoming = ConcurrentLinkedQueue<ScheduledTask>()
+    private val incoming = ConcurrentLinkedQueue<RebarScheduledTask>()
 
     override fun schedule(executeAt: Long, runnable: Runnable) {
-        incoming.add(ScheduledTask(executeAt, runnable))
+        incoming.add(RebarScheduledTask(executeAt, runnable))
     }
 
-    override fun getValid(currentTick: Long) : List<ScheduledTask> {
+    override fun getValid(currentTick: Long) : List<RebarScheduledTask> {
         while (true) {
             val task = incoming.poll() ?: break
             val slot = (task.executeTick and mask).toInt()
@@ -42,7 +42,7 @@ internal class TimingWheel(exponent: Int) : Scheduler {
         }
 
         val iter = bucket.iterator()
-        val list = mutableListOf<ScheduledTask>()
+        val list = mutableListOf<RebarScheduledTask>()
         while (iter.hasNext()) {
             val task = iter.next()
 

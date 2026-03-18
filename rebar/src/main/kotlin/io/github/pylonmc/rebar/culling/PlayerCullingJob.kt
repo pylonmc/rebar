@@ -89,7 +89,12 @@ class PlayerCullingJob(
         val cullingGroups = mutableSetOf<RebarGroupCulledBlock.CullingGroup>()
 
         fun makeBlockVisible(block: RebarBlock, distanceSquared: Double) {
-            block.blockTextureEntity?.addOrRefreshViewer(playerId, distanceSquared)
+            val entity = block.blockTextureEntity
+            if (entity != null) {
+                entity.addOrRefreshViewer(playerId, distanceSquared)
+                
+            }
+
             if (block is RebarGroupCulledBlock) {
                 cullingGroups.addAll(block.cullingGroups)
             } else if (block is RebarCulledBlock) {

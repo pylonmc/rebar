@@ -1,6 +1,6 @@
 package io.github.pylonmc.rebar.async.schedulers
 
-import io.github.pylonmc.rebar.async.ScheduledTask
+import io.github.pylonmc.rebar.async.RebarScheduledTask
 
 interface Scheduler {
 
@@ -12,5 +12,5 @@ interface Scheduler {
     /**
      * Gets and evicts valid tasks
      */
-    fun getValid(currentTick: Long) : List<ScheduledTask>
+    fun getValid(currentTick: Long) : List<RebarScheduledTask>
 }
