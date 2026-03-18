@@ -22,8 +22,17 @@ interface RebarMovingEntity {
     fun onToggleSit(event: EntityToggleSitEvent, priority: EventPriority) {}
 
     companion object : MultiListener {
+        private var ignoredMoveEvent: EntityMoveEvent? = null
+
         @UniversalHandler
         private fun onMove(event: EntityMoveEvent, priority: EventPriority) {
+            if (event == ignoredMoveEvent) {
+                if (priority == EventPriority.MONITOR) {
+                    ignoredMoveEvent = null
+                }
+                return
+            }
+
             val rebarEntity = EntityStorage.get(event.entity)
             if (rebarEntity is RebarMovingEntity) {
                 try {
@@ -31,6 +40,8 @@ interface RebarMovingEntity {
                 } catch (e: Exception) {
                     logEventHandleErr(event, e, rebarEntity)
                 }
+            } else {
+                ignoredMoveEvent = event
             }
         }
 

@@ -196,6 +196,7 @@ class IngredientCalculator private constructor() {
 
         @JvmStatic
         fun calculateInputsAndByproducts(input: FluidOrItem): IngredientCalculation {
+            // TODO: consider caching
             val calculator = IngredientCalculator()
             calculator.calculate(input.asOne(), input.amount)
 

@@ -207,7 +207,9 @@ class RebarTranslator private constructor(private val addon: RebarAddon) : Trans
                         type = Material.GLASS_BOTTLE
                         check(type == Material.GLASS_BOTTLE) { "ItemStack.setType no longer works" }
                         copyDataFrom(oldStack) { true }
-                        editData(DataComponentTypes.ITEM_MODEL) { oldStack.type.key }
+                        if (!oldStack.isDataOverridden(DataComponentTypes.ITEM_MODEL)) {
+                            editData(DataComponentTypes.ITEM_MODEL) { oldStack.type.key }
+                        }
                     }
                 }
 

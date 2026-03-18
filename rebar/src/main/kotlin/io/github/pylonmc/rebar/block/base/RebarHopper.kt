@@ -16,7 +16,7 @@ interface RebarHopper {
     companion object : MultiListener {
         @UniversalHandler
         private fun onInventoryPickup(event: InventoryPickupItemEvent, priority: EventPriority) {
-            val holder = event.inventory.holder
+            val holder = event.inventory.getHolder(false)
             if (holder is Hopper) {
                 val rebarBlock = BlockStorage.get(holder.block)
                 if (rebarBlock is RebarHopper) {
