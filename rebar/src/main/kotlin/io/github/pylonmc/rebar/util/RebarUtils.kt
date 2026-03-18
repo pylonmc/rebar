@@ -628,3 +628,14 @@ suspend fun delayTicks(ticks: Long) = delay(ticks * 50)
  */
 @JvmSynthetic
 fun CoroutineContext.createChildContext(): CoroutineContext = this + Job(this[Job])
+
+/**
+ * @return Whether the entity has any tracking players, if an entity does not that means no players are receiving packets about it
+ */
+@JvmSynthetic
+fun Entity.hasTrackers() = NmsAccessor.instance.hasTrackers(this)
+
+/**
+ * @return Whether the [entity] has any tracking players, if an entity does not that means no players are receiving packets about it
+ */
+fun hasTrackers(entity: Entity) = NmsAccessor.instance.hasTrackers(entity)
