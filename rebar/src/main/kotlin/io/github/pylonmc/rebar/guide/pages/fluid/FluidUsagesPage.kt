@@ -16,17 +16,18 @@ import xyz.xenondevs.invui.gui.PagedGui
  */
 open class FluidUsagesPage(val fluid: RebarFluid) : PagedGuidePage {
 
-    val pages: MutableList<Gui> = mutableListOf()
-
-    init {
-        for (type in RebarRegistry.RECIPE_TYPES) {
-            for (recipe in type.recipes) {
-                if (!recipe.isHidden && recipe.isInput(fluid)) {
-                    recipe.display()?.let { pages.add(it) }
+    val pages: MutableList<Gui>
+        get() {
+            val pages = mutableListOf<Gui>()
+            for (type in RebarRegistry.RECIPE_TYPES) {
+                for (recipe in type.recipes) {
+                    if (!recipe.isHidden && recipe.isInput(fluid)) {
+                        recipe.display()?.let { pages.add(it) }
+                    }
                 }
             }
+            return pages
         }
-    }
 
     override fun getKey() = KEY
 
