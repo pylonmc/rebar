@@ -220,7 +220,7 @@ class PlayerCullingJob(
     fun obtainLightValue(properties: MutableMap<String, Pair<String, Int>>, key: String) : Int {
         val lightValue = properties[key] ?: return 0
         val intLightValue = lightValue.first.toIntOrNull() ?: return 0
-        return min(intLightValue, 15)
+        return intLightValue.coerceIn(0, 15)
     }
 
     companion object {
