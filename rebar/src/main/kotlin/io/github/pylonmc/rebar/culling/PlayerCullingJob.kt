@@ -28,6 +28,7 @@ import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.experimental.and
 import kotlin.math.max
+import kotlin.math.min
 
 class PlayerCullingJob(
     val playerId: UUID,
@@ -218,7 +219,8 @@ class PlayerCullingJob(
 
     fun obtainLightValue(properties: MutableMap<String, Pair<String, Int>>, key: String) : Int {
         val lightValue = properties[key] ?: return 0
-        return lightValue.first.toIntOrNull() ?: return 0
+        val intLightValue = lightValue.first.toIntOrNull() ?: return 0
+        return min(intLightValue, 15)
     }
 
     companion object {
