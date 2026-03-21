@@ -95,14 +95,6 @@ class PlayerCullingJob(
         fun makeBlockVisible(block: RebarBlock, distanceSquared: Double) {
             block.blockTextureEntity?.apply {
                 addOrRefreshViewer(playerId, distanceSquared)
-                val bukkitBlock = block.block
-
-                val properties = block.getBlockTextureProperties()
-                val blockLight = max(bukkitBlock.lightFromBlocks.toInt(), obtainLightValue(properties, "block_light"))
-                val skyLight = max(bukkitBlock.lightFromSky.toInt(), obtainLightValue(properties, "sky_light"))
-
-                val meta = getEntityMeta(ItemDisplayMeta::class.java)
-                meta.brightnessOverride = (blockLight shl 4) or (skyLight shl 20)
             }
 
             if (block is RebarGroupCulledBlock) {
@@ -215,12 +207,6 @@ class PlayerCullingJob(
 
         delayTicks(config.updateInterval.toLong())
         tick++
-    }
-
-    fun obtainLightValue(properties: MutableMap<String, Pair<String, Int>>, key: String) : Int {
-        val lightValue = properties[key] ?: return 0
-        val intLightValue = lightValue.first.toIntOrNull() ?: return 0
-        return intLightValue.coerceIn(0, 15)
     }
 
     companion object {

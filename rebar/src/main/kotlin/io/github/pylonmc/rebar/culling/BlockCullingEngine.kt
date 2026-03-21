@@ -17,11 +17,14 @@ import io.github.pylonmc.rebar.util.position.BlockPosition
 import io.github.pylonmc.rebar.util.rebarKey
 import io.papermc.paper.event.world.border.WorldBorderBoundsChangeEvent
 import io.papermc.paper.event.world.border.WorldBorderCenterChangeEvent
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import me.tofaa.entitylib.meta.display.ItemDisplayMeta
 import org.bukkit.Bukkit
+import org.bukkit.Chunk
 import org.bukkit.World
 import org.bukkit.block.Block
 import org.bukkit.entity.Player
@@ -42,7 +45,7 @@ import org.bukkit.util.BoundingBox
 import org.bukkit.util.Vector
 import java.lang.invoke.MethodHandles
 import java.time.Duration
-import java.util.UUID
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.collections.Map.Entry
 import kotlin.math.ceil
@@ -53,6 +56,9 @@ object BlockCullingEngine : Listener {
     val cullingConfigKey = rebarKey("block_culling_config")
 
     private val playerConfigCache = mutableMapOf<UUID, PlayerCullingConfig>()
+
+    private val updateLightChunks = HashSet<Long>()
+    private val updateLightBlocks = Long2ObjectOpenHashMap<HashSet<RebarBlock>>()
 
     private val invertedVisibility = Class.forName("org.bukkit.craftbukkit.entity.CraftPlayer").let {
         MethodHandles.privateLookupIn(it, MethodHandles.lookup()).unreflectVarHandle(it.getDeclaredField("invertedVisibilityEntities"))
@@ -67,6 +73,37 @@ object BlockCullingEngine : Listener {
     private val jobs = mutableMapOf<UUID, Job>()
     internal val syncJobTasks = ConcurrentHashMap<UUID, MutableMap<RebarCulledBlock, Boolean>>()
     internal val syncJobGroupTasks = ConcurrentHashMap<UUID, MutableMap<RebarGroupCulledBlock, MutableMap<RebarGroupCulledBlock.CullingGroup, Boolean>>>()
+
+    init {
+        Rebar.scope.launch {
+            while (true) {
+                delayTicks(1L)
+                synchronized(updateLightChunks) {
+                    for (chunk in updateLightChunks) {
+                        val blocks = updateLightBlocks.get(chunk) ?: continue
+                        blocks.forEach { rebarBlock ->
+                            rebarBlock.blockTextureEntity?.apply {
+                                val block = rebarBlock.block
+
+                                val skyLight = block.lightFromSky.toInt()
+                                val blockLight = block.lightFromBlocks.toInt()
+
+                                rebarBlock.blockTextureEntity?.apply {
+                                    val meta = getEntityMeta(ItemDisplayMeta::class.java)
+                                    meta.brightnessOverride = (blockLight shl 4) or (skyLight shl 20)
+                                }
+                            }
+                        }
+                    }
+                    updateLightChunks.clear()
+                }
+            }
+        }
+    }
+
+    fun enqueueLight(chunkKey: Long) = synchronized(updateLightChunks) {
+        updateLightChunks.add(chunkKey)
+    }
 
     /**
      * Periodically invalidates a share of the occluding cache, to ensure stale data isn't perpetuated.
@@ -192,6 +229,13 @@ object BlockCullingEngine : Listener {
         if (!RebarConfig.CullingEngineConfig.ENABLED) return
         if (RebarConfig.BlockTextureConfig.ENABLED && !block.disableBlockTextureEntity) {
             getOctree(block.block.world, blockTextureOctrees).insert(block)
+
+            val chunk = block.block.chunk.chunkKey
+            if (!updateLightBlocks.containsKey(chunk)) {
+                updateLightBlocks.put(chunk, HashSet())
+            }
+
+            updateLightBlocks.get(chunk).add(block)
         }
         if (block is RebarCulledBlock) {
             getOctree(block.block.world, culledBlockOctrees).insert(block)
@@ -204,6 +248,9 @@ object BlockCullingEngine : Listener {
         if (RebarConfig.BlockTextureConfig.ENABLED && !block.disableBlockTextureEntity) {
             getOctree(block.block.world, blockTextureOctrees).remove(block)
             block.blockTextureEntity?.removeAllViewers()
+
+            val chunk = block.block.chunk.chunkKey
+            updateLightBlocks.get(chunk).remove(block)
         }
         if (block is RebarCulledBlock) {
             getOctree(block.block.world, culledBlockOctrees).remove(block)

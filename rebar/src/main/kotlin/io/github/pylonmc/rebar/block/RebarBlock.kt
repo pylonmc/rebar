@@ -160,7 +160,10 @@ open class RebarBlock private constructor(val block: Block) : Keyed {
         item.setData(DataComponentTypes.ITEM_MODEL, Key.key("air"))
         meta.item = SpigotConversionUtil.fromBukkitItemStack(item)
         meta.displayType = ItemDisplayMeta.DisplayType.FIXED
-        meta.brightnessOverride = 15 shl 4 or 15 shl 20;
+
+        val blockLight = this@RebarBlock.block.lightFromBlocks.toInt()
+        val skyLight = this@RebarBlock.block.lightFromSky.toInt()
+        meta.brightnessOverride = (blockLight shl 4) or (skyLight shl 20)
         meta.scale = Vector3f(
             1 + BlockTextureEntity.BLOCK_OVERLAP_INCREASE,
             1 + BlockTextureEntity.BLOCK_OVERLAP_INCREASE,
