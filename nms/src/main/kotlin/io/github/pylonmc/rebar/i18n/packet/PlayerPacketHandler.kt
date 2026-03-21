@@ -3,6 +3,7 @@
 package io.github.pylonmc.rebar.i18n.packet
 
 import io.github.pylonmc.rebar.Rebar
+import io.github.pylonmc.rebar.culling.BlockCullingEngine
 import io.github.pylonmc.rebar.i18n.PlayerTranslationHandler
 import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.util.editData
@@ -20,12 +21,9 @@ import net.minecraft.server.level.ServerPlayer
 import net.minecraft.util.HashOps
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.crafting.display.*
+import org.bukkit.Chunk
 import org.bukkit.craftbukkit.inventory.CraftItemStack
-import java.lang.invoke.MethodHandles
-import java.util.Optional
 import java.util.logging.Level
-import kotlin.jvm.javaClass
-import kotlin.let
 
 
 // Much inspiration has been taken from https://github.com/GuizhanCraft/SlimefunTranslation
@@ -111,6 +109,32 @@ class PlayerPacketHandler(private val player: ServerPlayer, val handler: PlayerT
                 packet.containerId,
                 handleRecipeDisplay(packet.recipeDisplay)
             )
+
+            is ClientboundLevelChunkWithLightPacket -> packet.let{
+                BlockCullingEngine.enqueueLight(Chunk.getChunkKey(packet.x, packet.z))
+                it
+            }
+            is ClientboundLightUpdatePacket -> packet.let{
+                BlockCullingEngine.enqueueLight(Chunk.getChunkKey(packet.x, packet.z))
+                it
+            }
+            is ClientboundBlockUpdatePacket -> packet.let {
+                val pos = it.pos
+
+                val baseX = (pos.x - 8) / 16
+                val topX = (pos.x + 8) / 16
+
+                val baseZ = (pos.z - 8) / 16
+                val topZ = (pos.z + 8) / 16
+
+                for (x in baseX..topX) {
+                    for (z in baseZ..topZ) {
+                        BlockCullingEngine.enqueueLight(Chunk.getChunkKey(x, z))
+                    }
+                }
+
+                it
+            }
 
             is ClientboundSetEntityDataPacket -> packet.let {
                 val translated = mutableMapOf<Int, SynchedEntityData.DataValue<*>>()

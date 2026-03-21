@@ -17,6 +17,7 @@ import io.github.pylonmc.rebar.resourcepack.block.BlockTextureEngine.hasCustomBl
 import io.github.pylonmc.rebar.util.delayTicks
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.currentCoroutineContext
+import me.tofaa.entitylib.meta.display.ItemDisplayMeta
 import org.bukkit.Bukkit
 import org.bukkit.Chunk
 import org.bukkit.block.Block
@@ -25,6 +26,9 @@ import org.bukkit.util.BoundingBox
 import org.bukkit.util.Vector
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.experimental.and
+import kotlin.math.max
+import kotlin.math.min
 
 class PlayerCullingJob(
     val playerId: UUID,
@@ -89,7 +93,10 @@ class PlayerCullingJob(
         val cullingGroups = mutableSetOf<RebarGroupCulledBlock.CullingGroup>()
 
         fun makeBlockVisible(block: RebarBlock, distanceSquared: Double) {
-            block.blockTextureEntity?.addOrRefreshViewer(playerId, distanceSquared)
+            block.blockTextureEntity?.apply {
+                addOrRefreshViewer(playerId, distanceSquared)
+            }
+
             if (block is RebarGroupCulledBlock) {
                 cullingGroups.addAll(block.cullingGroups)
             } else if (block is RebarCulledBlock) {
