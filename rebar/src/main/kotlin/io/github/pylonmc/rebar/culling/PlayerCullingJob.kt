@@ -17,6 +17,7 @@ import io.github.pylonmc.rebar.resourcepack.block.BlockTextureEngine.hasCustomBl
 import io.github.pylonmc.rebar.util.delayTicks
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.currentCoroutineContext
+import me.tofaa.entitylib.meta.display.ItemDisplayMeta
 import org.bukkit.Bukkit
 import org.bukkit.Chunk
 import org.bukkit.block.Block
@@ -25,6 +26,8 @@ import org.bukkit.util.BoundingBox
 import org.bukkit.util.Vector
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.experimental.and
+import kotlin.math.max
 
 class PlayerCullingJob(
     val playerId: UUID,
@@ -89,7 +92,18 @@ class PlayerCullingJob(
         val cullingGroups = mutableSetOf<RebarGroupCulledBlock.CullingGroup>()
 
         fun makeBlockVisible(block: RebarBlock, distanceSquared: Double) {
-            block.blockTextureEntity?.addOrRefreshViewer(playerId, distanceSquared)
+            block.blockTextureEntity?.apply {
+                addOrRefreshViewer(playerId, distanceSquared)
+                val bukkitBlock = block.block
+
+                val properties = block.getBlockTextureProperties()
+                val blockLight = max(bukkitBlock.lightFromBlocks.toInt(), obtainLightValue(properties, "block_light"))
+                val skyLight = max(bukkitBlock.lightFromSky.toInt(), obtainLightValue(properties, "sky_light"))
+
+                val meta = getEntityMeta(ItemDisplayMeta::class.java)
+                meta.brightnessOverride = (blockLight shl 4) or (skyLight shl 20)
+            }
+
             if (block is RebarGroupCulledBlock) {
                 cullingGroups.addAll(block.cullingGroups)
             } else if (block is RebarCulledBlock) {
@@ -200,6 +214,11 @@ class PlayerCullingJob(
 
         delayTicks(config.updateInterval.toLong())
         tick++
+    }
+
+    fun obtainLightValue(properties: MutableMap<String, Pair<String, Int>>, key: String) : Int {
+        val lightValue = properties[key] ?: return 0
+        return lightValue.first.toIntOrNull() ?: return 0
     }
 
     companion object {
