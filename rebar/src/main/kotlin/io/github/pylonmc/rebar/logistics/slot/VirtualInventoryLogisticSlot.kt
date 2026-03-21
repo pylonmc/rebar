@@ -21,5 +21,14 @@ open class VirtualInventoryLogisticSlot(
         })
     }
 
+    override fun canSet(stack: ItemStack?, amount: Long): Boolean {
+        return !inventory.callPreUpdateEvent(
+            LogisticUpdateReason,
+            slot,
+            inventory.getItem(slot),
+            stack
+        ).isCancelled
+    }
+
     object LogisticUpdateReason : UpdateReason
 }
