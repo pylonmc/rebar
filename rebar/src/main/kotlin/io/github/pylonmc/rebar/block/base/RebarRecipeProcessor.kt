@@ -49,6 +49,14 @@ interface RebarRecipeProcessor<T: RebarRecipe> {
         @ApiStatus.NonExtendable
         get() = recipeProcessorData.recipeTicksRemaining
 
+    val recipeTimeTicks: Int?
+        @ApiStatus.NonExtendable
+        get() = recipeProcessorData.recipeTimeTicks
+
+    val recipeProgress: Double?
+        @ApiStatus.NonExtendable
+        get() = recipeTimeTicks?.let { recipeTicksRemaining?.toDouble()?.div(it) }
+
     val isProcessingRecipe: Boolean
         @ApiStatus.NonExtendable
         get() = currentRecipe != null
