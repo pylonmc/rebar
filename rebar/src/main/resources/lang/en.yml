@@ -106,7 +106,7 @@ message:
       <gray>This server uses the following setup of Rebar:</gray>
       <green>%server_implementation% <dark_green>%server_version%</dark_green> <gray>(API: %api_version%)</gray>
       <green>Rebar <dark_green>%rebar_version%</dark_green>
-      <green>Java <dark_green>Java %java_version%</dark_green>
+      <green>Java <dark_green>%java_version%</dark_green>
       
       <gray>Installed Addons:</gray> <dark_gray>(%addon_count%)</dark_gray>
       %addon_list%
