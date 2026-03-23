@@ -228,7 +228,7 @@ class Research(
                 this.sendMessage(
                     Component.translatable(
                         "rebar.message.research.unknown",
-                        RebarArgument.of("item", schema.getItemStack().effectiveName()),
+                        RebarArgument.of("item", schema.template.effectiveName()),
                         RebarArgument.of("research", researchName)
                     )
                 )
@@ -271,7 +271,7 @@ class Research(
                     this.sendMessage(
                         Component.translatable(
                             "rebar.message.disabled.message",
-                            RebarArgument.of("item", schema.getItemStack().effectiveName()),
+                            RebarArgument.of("item", schema.template.effectiveName()),
                         )
                     )
                 }

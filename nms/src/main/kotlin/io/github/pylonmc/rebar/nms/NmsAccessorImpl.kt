@@ -24,12 +24,14 @@ import org.bukkit.block.Block
 import org.bukkit.craftbukkit.CraftEquipmentSlot
 import org.bukkit.craftbukkit.CraftWorld
 import org.bukkit.craftbukkit.block.CraftBlock
+import org.bukkit.craftbukkit.entity.CraftEntity
 import org.bukkit.craftbukkit.entity.CraftLivingEntity
 import org.bukkit.craftbukkit.entity.CraftPlayer
 import org.bukkit.craftbukkit.inventory.CraftItemStack
 import org.bukkit.craftbukkit.inventory.CraftItemType
 import org.bukkit.craftbukkit.persistence.CraftPersistentDataContainer
 import org.bukkit.craftbukkit.util.CraftNamespacedKey
+import org.bukkit.entity.Entity
 import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Player
 import org.bukkit.inventory.EquipmentSlot
@@ -140,5 +142,10 @@ object NmsAccessorImpl : NmsAccessor {
                 )
             }
         }
+    }
+
+    override fun hasTracker(entity: Entity): Boolean {
+        val id = entity.entityId
+        return (entity.world as CraftWorld).handle.chunkSource.chunkMap.entityMap.get(id)?.seenBy?.isNotEmpty() ?: false
     }
 }

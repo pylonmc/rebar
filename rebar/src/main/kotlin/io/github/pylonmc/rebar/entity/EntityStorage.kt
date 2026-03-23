@@ -38,15 +38,15 @@ object EntityStorage : Listener {
     private val entityAutosaveTasks: MutableMap<UUID, Job> = ConcurrentHashMap()
     private val whenEntityLoadsTasks: MutableMap<UUID, MutableSet<Consumer<RebarEntity<*>>>> = ConcurrentHashMap()
 
+    // Access to entities, entitiesById fields must be synchronized to prevent them
+    // briefly going out of sync
+    private val entityLock = ReentrantReadWriteLock()
+
     /**
      * All the loaded [RebarEntity]s
      */
     val loadedEntities: Collection<RebarEntity<*>>
-        get() = entities.values
-
-    // Access to entities, entitiesById fields must be synchronized to prevent them
-    // briefly going out of sync
-    private val entityLock = ReentrantReadWriteLock()
+        get() = lockEntityRead { entities.values.toSet() }
 
     /**
      * Returns the [RebarEntity] with this [uuid], or null if the entity does not exist or is not
@@ -61,8 +61,12 @@ object EntityStorage : Listener {
      * a Rebar entity.
      */
     @JvmStatic
-    fun get(entity: Entity): RebarEntity<*>?
-        = get(entity.uniqueId)
+    fun get(entity: Entity): RebarEntity<*>? {
+        if (entity.persistentDataContainer.has(RebarEntity.rebarEntityKeyKey)) {
+            return get(entity.uniqueId)
+        }
+        return null
+    }
 
     /**
      * Returns the [RebarEntity] with this [uuid], or null if the entity does not exist, is not
@@ -106,7 +110,7 @@ object EntityStorage : Listener {
     fun getByKey(key: NamespacedKey): Collection<RebarEntity<*>> =
         if (key in RebarRegistry.ENTITIES) {
             lockEntityRead {
-                entitiesByKey[key].orEmpty()
+                entitiesByKey[key].orEmpty().toSet()
             }
         } else {
             emptySet()

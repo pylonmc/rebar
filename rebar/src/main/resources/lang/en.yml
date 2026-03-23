@@ -102,6 +102,14 @@ message:
       failed: "<red>You are not looking at a multiblock"
       success: "Finished the multiblock"
     forceload: "Force loaded chunk at %x%, %z%"
+    versions: |-
+      <gray>This server uses the following setup of Rebar:</gray>
+      <green>%server_implementation% <dark_green>%server_version%</dark_green> <gray>(API: %api_version%)</gray>
+      <green>Rebar <dark_green>%rebar_version%</dark_green>
+      <green>Java <dark_green>%java_version%</dark_green>
+      
+      <gray>Installed Addons:</gray> <dark_gray>(%addon_count%)</dark_gray>
+      %addon_list%
 
   waila:
     type-disabled: "<red>This server no longer permits the your previously set %type% WAILA display type, it has been reset to default"
@@ -377,7 +385,7 @@ guide:
         name: "<white>Guide Cheat Controls"
         lore: |-
           <guidearrow> In the rebar guide as an admin there are a few cheat controls
-          <guidearrow> <guideinsn>Press Q</guideinsn> on a Rebar Item to cheat in one item
+          <guidearrow> <guideinsn>Press</guideinsn> <guideinsn><key:key.drop></guideinsn> on a Rebar Item to cheat in one item
           <guidearrow> <guideinsn>Middle click</guideinsn> a Rebar Item to cheat in a stack
       rebar:
         name: "<white>What is Rebar?"

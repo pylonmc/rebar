@@ -83,7 +83,7 @@ open class RebarItem(val stack: ItemStack) : Keyed {
         @Suppress("UnstableApiUsage")
         private fun checkName(schema: RebarItemSchema) {
             // Adventure is a perfect API with absolutely no problems whatsoever.
-            val name = schema.getItemStack().getData(DataComponentTypes.ITEM_NAME) as? TranslatableComponent
+            val name = schema.template.getData(DataComponentTypes.ITEM_NAME) as? TranslatableComponent
 
             var isNameValid = true
             if (name == null || name.key() != ItemStackBuilder.nameKey(schema.key)) {
@@ -114,7 +114,7 @@ open class RebarItem(val stack: ItemStack) : Keyed {
             RebarRegistry.ITEMS.register(schema)
 
             // pre-merge configs and check for constructor errors
-            fromStack(schema.getItemStack())
+            schema.getRebarItem()
         }
 
         @JvmStatic
@@ -133,10 +133,7 @@ open class RebarItem(val stack: ItemStack) : Keyed {
         @Contract("null -> null")
         fun fromStack(stack: ItemStack?): RebarItem? {
             if (stack == null || stack.isEmpty) return null
-            val id = stack.persistentDataContainer.get(RebarItemSchema.rebarItemKeyKey, RebarSerializers.NAMESPACED_KEY)
-                ?: return null
-            val schema = RebarRegistry.ITEMS[id]
-                ?: return null
+            val schema = RebarItemSchema.fromStack(stack) ?: return null
             return schema.itemClass.cast(schema.loadConstructor.invoke(stack))
         }
 
@@ -165,6 +162,16 @@ open class RebarItem(val stack: ItemStack) : Keyed {
         @Contract("null -> false")
         fun isRebarItem(stack: ItemStack?): Boolean {
             return stack != null && stack.persistentDataContainer.has(RebarItemSchema.rebarItemKeyKey)
+        }
+
+        /**
+         * Checks if [stack] is a Rebar item castable to [clazz].
+         */
+        @JvmStatic
+        @Contract("null, _ -> false")
+        fun isRebarItem(stack: ItemStack?, clazz: Class<*>): Boolean {
+            val schema = RebarItemSchema.fromStack(stack) ?: return false
+            return clazz.isAssignableFrom(schema.itemClass)
         }
 
         /**

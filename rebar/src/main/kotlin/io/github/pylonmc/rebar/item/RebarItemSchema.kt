@@ -20,14 +20,14 @@ import org.jetbrains.annotations.Contract
 import java.lang.invoke.MethodHandle
 
 /**
- * Stores information about a Rebar item type, including its key, default [ItemStack], class, and
+ * Stores information about a Rebar item type, including its key, template [ItemStack], class, and
  * any associated blocks.
  *
  * You should not need to use this if you are not working on Rebar.
  */
 class RebarItemSchema @JvmOverloads internal constructor(
     val itemClass: Class<out RebarItem>,
-    private val template: ItemStack,
+    val template: ItemStack,
     val rebarBlockKey: NamespacedKey? = null
 ) : Keyed, RegistryHandler {
 
@@ -36,7 +36,15 @@ class RebarItemSchema @JvmOverloads internal constructor(
 
     val addon = getAddon(key)
 
+    /**
+     * Return's a clone of the [template] [ItemStack]
+     */
     fun getItemStack(): ItemStack = template.clone()
+
+    /**
+     * Return's a new instance of the [RebarItem] from the [itemClass] using a copy of the [template] [ItemStack]
+     */
+    fun getRebarItem(): RebarItem = itemClass.cast(loadConstructor.invoke(getItemStack()))
 
     val research: Research?
         get() = RebarRegistry.RESEARCHES.find { key in it.unlocks }

@@ -560,12 +560,14 @@ fun findClosestDistanceBetweenLineAndPoint(p: Vector3f, p1: Vector3f, d1: Vector
 internal fun getTargetEntity(player: Player, maxDistanceBetweenRayAndEntity: Float): Entity? {
     val range = player.getAttribute(Attribute.ENTITY_INTERACTION_RANGE)!!.value
     val entities = player.getNearbyEntities(range, range, range)
+    val eyeLocation = player.eyeLocation.toVector().toVector3f()
+    val eyeDirection = player.eyeLocation.getDirection().toVector3f()
 
     for (entity in entities) {
         val distance = findClosestDistanceBetweenLineAndPoint(
             entity.location.toVector().toVector3f(),
-            player.eyeLocation.toVector().toVector3f(),
-            player.eyeLocation.getDirection().toVector3f()
+            eyeLocation,
+            eyeDirection
         )
         if (distance <= maxDistanceBetweenRayAndEntity) {
             return entity
@@ -626,3 +628,14 @@ suspend fun delayTicks(ticks: Long) = delay(ticks * 50)
  */
 @JvmSynthetic
 fun CoroutineContext.createChildContext(): CoroutineContext = this + Job(this[Job])
+
+/**
+ * @return Whether the entity has at least one tracking player, a tracking player is just a player who has & is receiving packets for the entity.
+ */
+@JvmSynthetic
+fun Entity.hasTracker() = NmsAccessor.instance.hasTracker(this)
+
+/**
+ * @return Whether the entity has at least one tracking player, a tracking player is just a player who has & is receiving packets for the entity.
+ */
+fun hasAnyTracker(entity: Entity) = NmsAccessor.instance.hasTracker(entity)
