@@ -289,7 +289,6 @@ interface RebarCargoBlock : RebarLogisticBlock, RebarEntityHolderBlock {
             val block = event.rebarBlock
             if (block is RebarCargoBlock) {
                 cargoBlocks[block] = event.pdc.get(cargoBlockKey, RebarSerializers.CARGO_BLOCK_DATA)
-                    ?: error("Ticking block data not found for ${block.key}")
             }
         }
 
@@ -297,7 +296,7 @@ interface RebarCargoBlock : RebarLogisticBlock, RebarEntityHolderBlock {
         private fun onSerialize(event: RebarBlockSerializeEvent) {
             val block = event.rebarBlock
             if (block is RebarCargoBlock) {
-                event.pdc.set(cargoBlockKey, RebarSerializers.CARGO_BLOCK_DATA, cargoBlocks[block]!!)
+                event.pdc.set(cargoBlockKey, RebarSerializers.CARGO_BLOCK_DATA, cargoBlocks[block] ?: return)
             }
         }
 
