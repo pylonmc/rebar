@@ -104,7 +104,7 @@ interface RebarTickingBlock {
         private fun onSerialize(event: RebarBlockSerializeEvent) {
             val block = event.rebarBlock
             if (block is RebarTickingBlock) {
-                event.pdc.set(tickingBlockKey, RebarSerializers.TICKING_BLOCK_DATA, tickingBlocks[block]!!)
+                event.pdc.set(tickingBlockKey, RebarSerializers.TICKING_BLOCK_DATA, tickingBlocks[block] ?: return)
             }
         }
 
