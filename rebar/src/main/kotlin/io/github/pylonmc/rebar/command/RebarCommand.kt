@@ -96,7 +96,7 @@ private val give = buildCommand("give") {
                 context.source.sender.sendVanillaFeedback(
                     "give.success." + if (singular) "single" else "multiple",
                     Component.text(amount),
-                    item.getItemStack().vanillaDisplayName(),
+                    item.template.vanillaDisplayName(),
                     if (singular) players[0].name() else Component.text(players.size)
                 )
             }
