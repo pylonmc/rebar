@@ -11,7 +11,7 @@ object ElectricityManager {
     @JvmStatic
     fun addNode(node: ElectricNode) {
         nodes[node.id] = node
-        networks.add(ElectricNetwork(node))
+        networks.add(ElectricNetwork().also { it.addNode(node) })
         mergeNetworks()
     }
 
@@ -33,7 +33,7 @@ object ElectricityManager {
         for (network in networks.toSet()) {
             this.networks.remove(network)
             for (node in network.nodes) {
-                this.networks.add(ElectricNetwork(node))
+                this.networks.add(ElectricNetwork().also { it.addNode(node) })
             }
         }
         mergeNetworks()

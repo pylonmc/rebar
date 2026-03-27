@@ -1,6 +1,7 @@
 package io.github.pylonmc.rebar.electricity
 
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
+import io.github.pylonmc.rebar.util.position.BlockPosition
 import io.github.pylonmc.rebar.util.rebarKey
 import org.bukkit.Location
 import org.bukkit.persistence.PersistentDataAdapterContext
@@ -11,12 +12,17 @@ import java.util.function.BiConsumer
 
 class ElectricNode private constructor(
     val id: UUID,
+    val block: BlockPosition,
     private val actualConnectionPoint: Location,
     val type: Type,
     private val connectionSet: MutableSet<UUID>
 ) {
 
-    constructor(connectionPoint: Location, type: Type) : this(UUID.randomUUID(), connectionPoint, type, mutableSetOf())
+    constructor(
+        connectionPoint: Location,
+        block: BlockPosition,
+        type: Type
+    ) : this(UUID.randomUUID(), block, connectionPoint, type, mutableSetOf())
 
     val connections: Set<UUID> get() = connectionSet.toSet()
 
@@ -62,6 +68,7 @@ class ElectricNode private constructor(
     enum class Type {
         PRODUCER,
         CONSUMER,
+        ACCEPTOR,
         CONNECTOR
     }
 
@@ -70,6 +77,7 @@ class ElectricNode private constructor(
         internal val PDC_TYPE = object : PersistentDataType<PersistentDataContainer, ElectricNode> {
 
             private val id = rebarKey("id")
+            private val block = rebarKey("block")
             private val location = rebarKey("location")
             private val type = rebarKey("type")
             private val connections = rebarKey("connections")
@@ -86,6 +94,7 @@ class ElectricNode private constructor(
             ): PersistentDataContainer {
                 val container = context.newPersistentDataContainer()
                 container.set(id, RebarSerializers.UUID, complex.id)
+                container.set(block, RebarSerializers.BLOCK_POSITION, complex.block)
                 container.set(location, RebarSerializers.LOCATION, complex.connectionPoint)
                 container.set(type, typeType, complex.type)
                 container.set(connections, connectionsType, complex.connectionSet)
@@ -97,10 +106,11 @@ class ElectricNode private constructor(
                 context: PersistentDataAdapterContext
             ): ElectricNode {
                 val id = primitive.get(id, RebarSerializers.UUID)!!
+                val block = primitive.get(block, RebarSerializers.BLOCK_POSITION)!!
                 val location = primitive.get(location, RebarSerializers.LOCATION)!!
                 val type = primitive.get(type, typeType)!!
                 val connections = primitive.get(connections, connectionsType)!!
-                return ElectricNode(id, location, type, connections.toMutableSet())
+                return ElectricNode(id, block, location, type, connections.toMutableSet())
             }
         }
     }
