@@ -62,12 +62,19 @@ class LogisticGroup(
                 is Jukebox -> mapOf<String, LogisticGroup>(
                     "inventory" to LogisticGroup(LogisticGroupType.BOTH, JukeboxLogisticSlot(blockData.inventory, 0)),
                 )
-                is Dispenser, is Dropper, is Hopper, is Barrel, is DoubleChest, is Chest, is Shelf, is ShulkerBox, is Crafter -> {
+                is Dispenser, is Dropper, is Hopper, is Barrel, is DoubleChest, is Chest, is Shelf, is ShulkerBox -> {
                     val slots = mutableListOf<LogisticSlot>()
                     for (slot in 0..<blockData.inventory.size) {
                         slots.add(VanillaInventoryLogisticSlot(blockData.inventory, slot))
                     }
                     return mapOf<String, LogisticGroup>("inventory" to LogisticGroup(LogisticGroupType.BOTH, slots))
+                }
+                is Crafter -> {
+                    val slots = mutableListOf<LogisticSlot>()
+                    for (slot in 0..<blockData.inventory.size) {
+                        slots.add(CrafterLogisticSlot(block, blockData.inventory, slot))
+                    }
+                    return mapOf<String, LogisticGroup>("inventory" to LogisticGroup(LogisticGroupType.INPUT, slots))
                 }
                 else -> mapOf<String, LogisticGroup>()
             }

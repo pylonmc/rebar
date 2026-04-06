@@ -355,20 +355,26 @@ open class RebarBlock private constructor(val block: Block) : Keyed {
         internal fun serialize(
             block: RebarBlock,
             context: PersistentDataAdapterContext
-        ): PersistentDataContainer {
-            // See PhantomBlock docs for why we do this
-            if (block is PhantomBlock) {
-                return block.pdc
+        ): PersistentDataContainer? {
+            return try {
+                // See PhantomBlock docs for why we do this
+                if (block is PhantomBlock) {
+                    return block.pdc
+                }
+
+                val pdc = context.newPersistentDataContainer()
+                pdc.set(rebarBlockKeyKey, RebarSerializers.NAMESPACED_KEY, block.schema.key)
+                pdc.set(rebarBlockPositionKey, RebarSerializers.LONG, block.block.position.asLong)
+
+                block.write(pdc)
+                RebarBlockSerializeEvent(block.block, block, pdc, false).callEvent()
+
+                pdc
+            } catch (e: Exception) {
+                Rebar.logger.severe { "Failed to save block at ${block.block.location} of type ${block.key}" }
+                e.printStackTrace()
+                null
             }
-
-            val pdc = context.newPersistentDataContainer()
-            pdc.set(rebarBlockKeyKey, RebarSerializers.NAMESPACED_KEY, block.schema.key)
-            pdc.set(rebarBlockPositionKey, RebarSerializers.LONG, block.block.position.asLong)
-
-            block.write(pdc)
-            RebarBlockSerializeEvent(block.block, block, pdc, false).callEvent()
-
-            return pdc
         }
 
         @JvmSynthetic

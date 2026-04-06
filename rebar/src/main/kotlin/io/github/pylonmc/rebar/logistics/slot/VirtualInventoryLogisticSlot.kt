@@ -5,8 +5,8 @@ import xyz.xenondevs.invui.inventory.VirtualInventory
 import xyz.xenondevs.invui.inventory.event.UpdateReason
 
 open class VirtualInventoryLogisticSlot(
-    private val inventory: VirtualInventory,
-    private val slot: Int
+    val inventory: VirtualInventory,
+    val slot: Int
 ) : LogisticSlot {
 
     override fun getItemStack() = inventory.getUnsafeItem(slot)
@@ -19,6 +19,15 @@ open class VirtualInventoryLogisticSlot(
         inventory.setItem(LogisticUpdateReason, slot, stack?.apply {
             this.amount = amount.coerceIn(0, Int.MAX_VALUE.toLong()).toInt()
         })
+    }
+
+    override fun canSet(stack: ItemStack?, amount: Long): Boolean {
+        return !inventory.callPreUpdateEvent(
+            LogisticUpdateReason,
+            slot,
+            inventory.getItem(slot),
+            stack
+        ).isCancelled
     }
 
     object LogisticUpdateReason : UpdateReason

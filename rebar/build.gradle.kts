@@ -20,10 +20,6 @@ repositories {
     }
     maven("https://jitpack.io") {
         name = "JitPack"
-
-        content {
-            includeGroup("com.github.Tofaa2.EntityLib")
-        }
     }
 }
 
@@ -43,8 +39,8 @@ dependencies {
 
     compileOnly("io.papermc.paper:paper-api:$minecraftVersion-R0.1-SNAPSHOT")
 
-    paperLibraryApi("xyz.xenondevs.invui:invui:2.0.0-beta.1")
-    paperLibraryApi("xyz.xenondevs.invui:invui-kotlin:2.0.0-beta.1")
+    paperLibraryApi("xyz.xenondevs.invui:invui:2.0.0-beta.5")
+    paperLibraryApi("xyz.xenondevs.invui:invui-kotlin:2.0.0-beta.5")
     paperLibraryApi("com.github.Tofaa2.EntityLib:spigot:f0318e298f")
     paperLibraryApi("com.github.retrooper:packetevents-spigot:2.11.2")
     implementation("info.debatty:java-string-similarity:2.0.0")

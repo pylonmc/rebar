@@ -1,4 +1,4 @@
-package io.github.pylonmc.rebar.guide.pages.info.sub
+package io.github.pylonmc.rebar.guide.pages.help.sub
 
 import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.guide.pages.base.SimpleStaticGuidePage

@@ -17,12 +17,10 @@ import xyz.xenondevs.invui.item.AbstractItem
 @Suppress("UnstableApiUsage")
 class BackButton : AbstractItem() {
 
-    override fun getItemProvider(player: Player): ItemStackBuilder {
-        val stack = ItemStackBuilder.gui(Material.ENCHANTED_BOOK, rebarKey("guide_back"))
+    override fun getItemProvider(player: Player) =
+        ItemStackBuilder.gui(Material.ENCHANTED_BOOK, rebarKey("guide_back"))
             .set(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, false)
             .name(Component.translatable("rebar.guide.button.back.name"))
-        return stack
-    }
 
     override fun handleClick(clickType: ClickType, player: Player, click: Click) {
         val history = RebarGuide.history.getOrPut(player.uniqueId) { mutableListOf() }

@@ -173,6 +173,16 @@ interface RebarCargoBlock : RebarLogisticBlock, RebarEntityHolderBlock {
                     min(targetMaxAmount - targetAmount, sourceAmount),
                 )
 
+                val successSource: Boolean = if (sourceAmount == toTransfer) {
+                    sourceSlot.canSet(null, 0)
+                } else {
+                    sourceSlot.canSet(sourceStack, sourceAmount - toTransfer)
+                }
+                if (!successSource) continue
+
+                val successTarget = targetSlot.canSet(sourceStack, targetAmount + toTransfer)
+                if (!successTarget) continue
+
                 if (sourceAmount == toTransfer) {
                     sourceSlot.set(null, 0)
                 } else {

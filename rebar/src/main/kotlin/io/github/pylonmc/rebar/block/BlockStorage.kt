@@ -576,7 +576,7 @@ object BlockStorage : Listener {
     }
 
     private fun save(chunk: Chunk, chunkBlocks: MutableList<RebarBlock>) {
-        val serializedBlocks = chunkBlocks.map {
+        val serializedBlocks = chunkBlocks.mapNotNull {
             RebarBlock.serialize(it, chunk.persistentDataContainer.adapterContext)
         }
 
@@ -655,11 +655,9 @@ object BlockStorage : Listener {
                 null
             } else if (block.schema.key.isFromAddon(addon)) {
                 RebarBlockSchema.schemaCache[block.block.position] = PhantomBlock.schema
-                PhantomBlock(
-                    RebarBlock.serialize(block, block.block.chunk.persistentDataContainer.adapterContext),
-                    block.schema.key,
-                    block.block
-                )
+                RebarBlock.serialize(block, block.block.chunk.persistentDataContainer.adapterContext)?.let { pdc ->
+                    PhantomBlock(pdc, block.schema.key, block.block)
+                }
             } else {
                 null
             }
@@ -689,17 +687,15 @@ object BlockStorage : Listener {
     internal fun makePhantom(block: RebarBlock) = lockBlockWrite {
         BlockCullingEngine.remove(block)
         RebarBlockSchema.schemaCache[block.block.position] = PhantomBlock.schema
-        val phantomBlock = PhantomBlock(
-            RebarBlock.serialize(block, block.block.chunk.persistentDataContainer.adapterContext),
-            block.schema.key,
-            block.block
-        )
+        val pdc = RebarBlock.serialize(block, block.block.chunk.persistentDataContainer.adapterContext) ?: return
+        val phantomBlock = PhantomBlock(pdc, block.schema.key, block.block)
 
         blocks.replace(block.block.position, block, phantomBlock)
         blocksByKey[block.key]!!.remove(block)
         blocksByKey.computeIfAbsent(phantomBlock.key) { mutableListOf() }.add(phantomBlock)
         blocksByChunk[block.block.chunk.position]!!.remove(block)
         blocksByChunk[phantomBlock.block.chunk.position]!!.add(phantomBlock)
+        Unit
     }
 
     @JvmSynthetic

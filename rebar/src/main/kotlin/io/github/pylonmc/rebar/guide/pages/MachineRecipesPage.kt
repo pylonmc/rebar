@@ -1,41 +1,45 @@
-package io.github.pylonmc.rebar.guide.pages.fluid
+package io.github.pylonmc.rebar.guide.pages
 
 import io.github.pylonmc.rebar.content.guide.RebarGuide
 import io.github.pylonmc.rebar.guide.pages.base.PagedGuidePage
-import io.github.pylonmc.rebar.recipe.FluidOrItem
-import io.github.pylonmc.rebar.registry.RebarRegistry
+import io.github.pylonmc.rebar.recipe.RebarRecipe
+import io.github.pylonmc.rebar.recipe.RebarRecipe.Companion.priority
+import io.github.pylonmc.rebar.recipe.RecipeType
 import io.github.pylonmc.rebar.util.gui.GuiItems
 import io.github.pylonmc.rebar.util.rebarKey
-import org.bukkit.NamespacedKey
 import org.bukkit.entity.Player
 import xyz.xenondevs.invui.gui.Gui
 import xyz.xenondevs.invui.gui.Markers
 import xyz.xenondevs.invui.gui.PagedGui
 
 /**
- * Displays all the recipes for the given fluid.
+ * Displays all the recipes for the given [io.github.pylonmc.rebar.recipe.RecipeType].
  */
-open class FluidRecipesPage(fluidKey: NamespacedKey) : PagedGuidePage {
+open class MachineRecipesPage(recipeType: RecipeType<*>) : PagedGuidePage {
 
-    val fluid = RebarRegistry.FLUIDS[fluidKey]!!
-    val pages: MutableList<Gui>
-        get() {
-            val pages = mutableListOf<Gui>()
-            for (type in RebarRegistry.RECIPE_TYPES) {
-                for (recipe in type.recipes) {
-                    if (!recipe.isHidden && recipe.isOutput(fluid)) {
-                        recipe.display()?.let { pages.add(it) }
-                    }
-                }
+    val pages: MutableList<Gui> = mutableListOf()
+
+    init {
+        val recipes = mutableListOf<RebarRecipe>()
+        for (recipe in recipeType) {
+            if (!recipe.isHidden) {
+                recipes.add(recipe)
             }
-            return pages
         }
+        recipes.sortByDescending { it.priority }
+        for (recipe in recipes) {
+            val display = recipe.display()
+            if (display != null) {
+                pages.add(display)
+            }
+        }
+    }
 
     override fun getKey() = KEY
 
     open fun getHeader(player: Player, pages: List<Gui>) = PagedGui.guisBuilder()
         .setStructure(
-            "< b # # g # # s >",
+            "< b # # # # # s >",
             "x x x x x x x x x",
             "x x x x x x x x x",
             "x x x x x x x x x",
@@ -45,7 +49,6 @@ open class FluidRecipesPage(fluidKey: NamespacedKey) : PagedGuidePage {
         .addIngredient('#', GuiItems.background())
         .addIngredient('<', GuiItems.pagePrevious())
         .addIngredient('b', RebarGuide.backButton)
-        .addIngredient('g', RebarGuide.ingredientsButton(FluidOrItem.of(fluid, 1000.0)))
         .addIngredient('s', RebarGuide.searchItemsAndFluidsButton)
         .addIngredient('>', GuiItems.pageNext())
         .addIngredient('x', Markers.CONTENT_LIST_SLOT_HORIZONTAL)
@@ -58,6 +61,6 @@ open class FluidRecipesPage(fluidKey: NamespacedKey) : PagedGuidePage {
     }
 
     companion object {
-        val KEY = rebarKey("fluid_recipes")
+        val KEY = rebarKey("machine_recipes")
     }
 }

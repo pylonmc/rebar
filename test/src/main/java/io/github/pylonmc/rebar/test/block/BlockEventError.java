@@ -12,11 +12,12 @@ import org.jetbrains.annotations.NotNull;
 
 public class BlockEventError extends RebarBlock implements RebarBell {
     public static final NamespacedKey KEY = new NamespacedKey(RebarTest.instance(), "block_event_error");
-    public BlockEventError(Block block, BlockCreateContext context){
-        super(block);
+
+    public BlockEventError(Block block, BlockCreateContext context) {
+        super(block, context);
     }
-    public BlockEventError(Block block, PersistentDataContainer pdc){
-        super(block);
+    public BlockEventError(Block block, PersistentDataContainer pdc) {
+        super(block, pdc);
     }
 
     @Override

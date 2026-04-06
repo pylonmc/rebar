@@ -144,7 +144,7 @@ internal object BlockListener : MultiListener {
             return
         }
 
-        val blockPdc = RebarBlock.serialize(rebarBlock, block.chunk.persistentDataContainer.adapterContext)
+        val blockPdc = RebarBlock.serialize(rebarBlock, block.chunk.persistentDataContainer.adapterContext) ?: return
         val fallingEntity = RebarFallingBlock.RebarFallingBlockEntity(
             rebarBlock.schema,
             blockPdc,

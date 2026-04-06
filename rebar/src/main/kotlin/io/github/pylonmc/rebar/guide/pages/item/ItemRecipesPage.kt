@@ -19,31 +19,32 @@ import xyz.xenondevs.invui.gui.PagedGui
  */
 open class ItemRecipesPage(val stack: ItemStack) : PagedGuidePage {
 
-    val pages: MutableList<Gui> = mutableListOf()
-
-    init {
-        val recipes = mutableListOf<RebarRecipe>()
-        for (type in RebarRegistry.RECIPE_TYPES) {
-            for (recipe in type.recipes) {
-                if (!recipe.isHidden && recipe.isOutput(stack)) {
-                    recipes.add(recipe)
+    val pages: MutableList<Gui>
+        get() {
+            val pages = mutableListOf<Gui>()
+            val recipes = mutableListOf<RebarRecipe>()
+            for (type in RebarRegistry.RECIPE_TYPES) {
+                for (recipe in type.recipes) {
+                    if (!recipe.isHidden && recipe.isOutput(stack)) {
+                        recipes.add(recipe)
+                    }
                 }
             }
-        }
-        recipes.sortByDescending { it.priority }
-        for (recipe in recipes) {
-            val display = recipe.display()
-            if (display != null) {
-                pages.add(display)
+            recipes.sortByDescending { it.priority }
+            for (recipe in recipes) {
+                val display = recipe.display()
+                if (display != null) {
+                    pages.add(display)
+                }
             }
+            return pages
         }
-    }
 
     override fun getKey() = KEY
 
     open fun getHeader(player: Player, pages: List<Gui>) = PagedGui.guisBuilder()
         .setStructure(
-            "< b # # g # # s >",
+            "< b # g # i # s >",
             "x x x x x x x x x",
             "x x x x x x x x x",
             "x x x x x x x x x",
@@ -54,6 +55,7 @@ open class ItemRecipesPage(val stack: ItemStack) : PagedGuidePage {
         .addIngredient('<', GuiItems.pagePrevious())
         .addIngredient('b', RebarGuide.backButton)
         .addIngredient('g', RebarGuide.ingredientsButton(FluidOrItem.of(stack)))
+        .addIngredient('i', RebarGuide.infoButton(FluidOrItem.of(stack)))
         .addIngredient('s', RebarGuide.searchItemsAndFluidsButton)
         .addIngredient('>', GuiItems.pageNext())
         .addIngredient('x', Markers.CONTENT_LIST_SLOT_HORIZONTAL)

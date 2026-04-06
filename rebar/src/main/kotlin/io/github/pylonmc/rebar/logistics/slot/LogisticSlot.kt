@@ -28,4 +28,6 @@ interface LogisticSlot {
     fun getMaxAmount(stack: ItemStack): Long
 
     fun set(stack: ItemStack?, amount: Long)
+
+    fun canSet(stack: ItemStack?, amount: Long): Boolean = true
 }

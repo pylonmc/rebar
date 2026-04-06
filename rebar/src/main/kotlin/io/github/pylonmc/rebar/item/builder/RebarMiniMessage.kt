@@ -4,11 +4,12 @@ package io.github.pylonmc.rebar.item.builder
 
 import io.github.pylonmc.rebar.util.gui.unit.MetricPrefix
 import io.github.pylonmc.rebar.util.gui.unit.UnitFormat
+import io.papermc.paper.registry.RegistryAccess
+import io.papermc.paper.registry.RegistryKey
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.ComponentLike
 import net.kyori.adventure.text.TextReplacementConfig
 import net.kyori.adventure.text.format.NamedTextColor
-import net.kyori.adventure.text.format.Style
 import net.kyori.adventure.text.format.TextColor
 import net.kyori.adventure.text.format.TextDecoration
 import net.kyori.adventure.text.minimessage.Context
@@ -18,6 +19,11 @@ import net.kyori.adventure.text.minimessage.tag.Tag
 import net.kyori.adventure.text.minimessage.tag.resolver.ArgumentQueue
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
+import org.bukkit.Material
+import org.bukkit.NamespacedKey
+import org.bukkit.Registry
+import org.bukkit.enchantments.Enchantment
+import org.bukkit.potion.PotionEffectType
 
 /**
  * Rebar's custom MiniMessage instance with custom tags. This instance is used when translating
@@ -31,7 +37,17 @@ import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
  * - `<guideinstruction></guideinstruction>`|`<guideinsn></guideinsn>` - Applies a purple styling (0xc907f4), used for guide instructions
  * - `<attribute></attribute>`|`<attr></attr>` - Applies a cyan styling (0xa9d9e8), used for attributes
  * - `<unit:\[prefix\]:[unit name]></unit>` - Formats a **constant** number as a unit, with an optional metric prefix
- * - `<nbsp></nbsp>` - Replaces spaces with non-breaking spaces ( ), useful for preventing line breaks in lore
+ * - `<nbsp></nbsp>` - Replaces spaces with non-breaking spaces ( ), useful for preventing line breaks in lore
+ * - `<item:\[material/NamespacedKey\]>` - Renders the translated name of a vanilla/rebar item (e.g., `<item:stone>` → "Stone", `<item:pylon:loupe>` → "Loupe")
+ * - `<entity:\[entity_type/NamespacedKey\]>` - Renders the translated name of an entity type (e.g., `<entity:creeper>` → "Creeper")
+ * - `<effect:\[effect_type/NamespacedKey\]>` - Renders the translated name of a potion effect (e.g., `<effect:speed>` → "Speed")
+ * - `<enchant:\[enchantment/NamespacedKey\]>` - Renders the translated name of an enchantment (e.g., `<enchant:sharpness>` → "Sharpness")
+ * - `<biome:\[biome/NamespacedKey\]>` - Renders the translated name of a biome (e.g., `<biome:plains>` → "Plains")
+ *   
+ * For item, entity, effect, enchant, and biome tags:
+ * - If no namespace is provided (e.g., `stone`), it defaults to `minecraft:stone`
+ * - Full namespaced keys are supported (e.g., `myplugin:custom_item`)
+ * - For custom items without a minecraft translation, falls back to rebar-style key (e.g., `rebar:custom`)
  */
 val customMiniMessage = MiniMessage.builder()
     .tags(TagResolver.standard())
@@ -42,11 +58,19 @@ val customMiniMessage = MiniMessage.builder()
         it.tag("star", ::star)
         it.tag(setOf("instruction", "insn")) { _, _ -> Tag.styling(TextColor.color(0xf9d104)) }
         it.tag(setOf("guideinstruction", "guideinsn")) { _, _ -> Tag.styling(TextColor.color(0xc907f4)) }
-        it.tag("story") { _, _ -> Tag.styling { builder -> builder.color(TextColor.color(0xcc9bf2)).decorate(TextDecoration.ITALIC) } }
+        it.tag("story") { _, _ ->
+            Tag.styling { builder ->
+                builder.color(TextColor.color(0xcc9bf2)).decorate(TextDecoration.ITALIC)
+            }
+        }
         it.tag(setOf("attribute", "attr")) { _, _ -> Tag.styling(TextColor.color(0xa9d9e8)) }
         it.tag(setOf("unit", "u"), ::unit)
-        // No break space
         it.tag(setOf("nbsp", "nb"), ::nbsp)
+        it.tag("item", ::item)
+        it.tag("entity", ::entity)
+        it.tag("effect", ::effect)
+        it.tag(setOf("enchantment", "enchant"), ::enchantment)
+        it.tag("biome", ::biome)
     }
     .strict(false)
     .build()
@@ -99,11 +123,66 @@ private val nbspReplacement = TextReplacementConfig.builder()
     .replacement(Typography.nbsp.toString())
     .build()
 
+private fun item(args: ArgumentQueue, ctx: Context): Tag {
+    val nsKey = parseNamespacedKey(args, ctx)
+    val translationKey = if (nsKey.namespace == NamespacedKey.MINECRAFT) {
+        val material = Material.matchMaterial(nsKey.key)
+            ?: throw ctx.newException("Unknown material: $nsKey")
+        material.translationKey()
+    } else {
+        "${nsKey.namespace}.item.${nsKey.key}.name"
+    }
+
+    return Tag.selfClosingInserting(Component.translatable(translationKey))
+}
+
+private fun entity(args: ArgumentQueue, ctx: Context): Tag {
+    val nsKey = parseNamespacedKey(args, ctx)
+    val entityType = RegistryAccess.registryAccess().getRegistry(RegistryKey.ENTITY_TYPE).get(nsKey)
+        ?: throw ctx.newException("Unknown entity type: $nsKey")
+
+    return Tag.selfClosingInserting(Component.translatable(entityType.translationKey()))
+}
+
+private fun effect(args: ArgumentQueue, ctx: Context): Tag {
+    val nsKey = parseNamespacedKey(args, ctx)
+    val effect = RegistryAccess.registryAccess().getRegistry(RegistryKey.MOB_EFFECT).get(nsKey)
+        ?: throw ctx.newException("Unknown potion effect type: $nsKey")
+
+    return Tag.selfClosingInserting(Component.translatable(effect.translationKey()))
+}
+
+private fun enchantment(args: ArgumentQueue, ctx: Context): Tag {
+    val nsKey = parseNamespacedKey(args, ctx)
+    val enchantment = RegistryAccess.registryAccess().getRegistry(RegistryKey.ENCHANTMENT).get(nsKey)
+        ?: throw ctx.newException("Unknown enchantment: $nsKey")
+
+    return Tag.selfClosingInserting(Component.translatable(enchantment.translationKey()))
+}
+
+private fun biome(args: ArgumentQueue, ctx: Context): Tag {
+    val nsKey = parseNamespacedKey(args, ctx)
+    val biome = RegistryAccess.registryAccess().getRegistry(RegistryKey.BIOME).get(nsKey)
+        ?: throw ctx.newException("Unknown biome: $nsKey")
+
+    return Tag.selfClosingInserting(Component.translatable(biome.translationKey()))
+}
+
 private fun parseColor(color: String): TextColor {
     val theOnlyTrueWayToSpellGray = color.replace("grey", "gray")
     return TextColor.fromHexString(theOnlyTrueWayToSpellGray)
         ?: NamedTextColor.NAMES.value(theOnlyTrueWayToSpellGray)
         ?: throw IllegalArgumentException("No such color: $color")
+}
+
+private fun parseNamespacedKey(args: ArgumentQueue, ctx: Context): NamespacedKey {
+    val argsList = args.iterator().asSequence().toList()
+    val arg = when (argsList.size) {
+        2 -> "${argsList[0].value()}:${argsList[1].value()}"
+        1 -> argsList[0].value()
+        else -> throw ctx.newException("Expected 1 or 2 arguments, got ${argsList.size}")
+    }
+    return NamespacedKey.fromString(arg) ?: throw ctx.newException("Invalid NamespacedKey: $arg")
 }
 
 @Suppress("FunctionName")

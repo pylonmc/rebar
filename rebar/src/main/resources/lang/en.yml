@@ -126,6 +126,8 @@ guide:
   button:
     back:
       name: "<white>Back"
+    item-recipes: "<white>Recipe"
+    machine-recipes: "<white>Recipes made with this machine"
     search-specifiers:
       name: "Search Specifiers"
       lore: |-
@@ -411,7 +413,7 @@ guide:
 
   page:
     fluids: "Fluids"
-    info: "Info"
+    help: "Help"
     researches: "Researches"
     researches_addon: "%addon% researches"
     research-items: "Research items"
@@ -430,11 +432,13 @@ guide:
     tab:
       ingredients: "Ingredients"
       byproducts: "Byproducts"
-    info_administrators: "Administrators info"
+    help_administrators: "Administrators info"
     contributors: "Contributors"
     contributors_addon: "%addon% contributors"
-    info_rebar: "Rebar info"
-    info_researching: "Researching info"
+    help_rebar: "Rebar info"
+    help_researching: "Researching info"
+    info: "Info"
+    machine_recipes: "Machine recipes"
 
 unit:
   prefix:

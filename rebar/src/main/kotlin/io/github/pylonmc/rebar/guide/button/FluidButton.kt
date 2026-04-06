@@ -1,6 +1,5 @@
 package io.github.pylonmc.rebar.guide.button
 
-import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.fluid.RebarFluid
 import io.github.pylonmc.rebar.guide.pages.fluid.FluidRecipesPage
 import io.github.pylonmc.rebar.guide.pages.fluid.FluidUsagesPage
@@ -9,15 +8,13 @@ import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
 import io.github.pylonmc.rebar.recipe.RecipeInput
 import io.github.pylonmc.rebar.util.gui.unit.UnitFormat
 import io.papermc.paper.datacomponent.DataComponentTypes
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import net.kyori.adventure.text.Component
+import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.event.inventory.ClickType
 import xyz.xenondevs.invui.Click
 import xyz.xenondevs.invui.item.AbstractItem
-import kotlin.time.Duration.Companion.seconds
 
 /**
  * Represents a fluid in the guide.
@@ -55,23 +52,14 @@ open class FluidButton(
     constructor(input: RecipeInput.Fluid) : this(input.amountMillibuckets, *input.fluids.toTypedArray())
 
     val fluids = fluids.shuffled()
-    private var index = 0
     val currentFluid: RebarFluid
-        get() = this.fluids[index]
+        get() = this.fluids[(Bukkit.getCurrentTick() / 20) % this.fluids.size]
 
     init {
         require(fluids.isNotEmpty()) { "Fluids list cannot be empty" }
-        if (fluids.size > 1) {
-            Rebar.scope.launch {
-                while (true) {
-                    delay(1.seconds)
-                    index += 1
-                    index %= fluids.size
-                    notifyWindows()
-                }
-            }
-        }
     }
+
+    override fun getUpdatePeriod(what: Int): Int = if (fluids.size > 1) 20 else -1
 
     override fun getItemProvider(player: Player) = try {
         val stack = if (amount == null) {
