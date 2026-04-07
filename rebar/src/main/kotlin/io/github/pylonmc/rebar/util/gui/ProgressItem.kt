@@ -54,6 +54,7 @@ open class ProgressItem @JvmOverloads constructor(
 
     fun setItem(item: Item) {
         this.item = item
+        notifyWindows()
     }
 
     fun setItem(stack: ItemStack) {
