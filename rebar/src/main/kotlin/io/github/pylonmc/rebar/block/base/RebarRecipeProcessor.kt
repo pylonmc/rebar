@@ -62,15 +62,22 @@ interface RebarRecipeProcessor<T: RebarRecipe> {
         get() = currentRecipe != null
 
     var recipeProgressItem: ProgressItem
+        @ApiStatus.NonExtendable
         get() = recipeProcessorData.progressItem ?: error("No recipe progress item was set")
+        /**
+         * Set the progress item that should be updated as the recipe progresses. Optional.
+         *
+         * Call once in your place constructor. Do not call this function again after that.
+         * If you need to modify the progress item, use `getProgressItem()` and modify the
+         * itemstack returned from that instead.
+         */
+        @ApiStatus.NonExtendable
         set(progressItem) {
             recipeProcessorData.progressItem = progressItem
         }
 
     /**
-     * Set the progress item that should be updated as the recipe progresses. Optional.
-     *
-     * Set once in your place constructor.
+     * Call once in your place constructor.
      */
     @ApiStatus.NonExtendable
     fun setRecipeType(type: RecipeType<T>) {

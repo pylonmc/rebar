@@ -32,11 +32,11 @@ sealed class SmithingRecipeWrapper(recipe: SmithingRecipe) : VanillaRecipeWrappe
             "# # # # # # # # #",
         )
         .addIngredient('#', GuiItems.backgroundBlack())
-        .addIngredient('b', ItemButton.from(ItemStack(Material.SMITHING_TABLE)))
+        .addIngredient('b', ItemButton.of(ItemStack(Material.SMITHING_TABLE)))
         .addIngredient('0', ItemStack(Material.NETHERITE_UPGRADE_SMITHING_TEMPLATE))
-        .addIngredient('1', ItemButton.from(recipe.base))
-        .addIngredient('2', ItemButton.from(recipe.addition))
-        .addIngredient('r', ItemButton.from(recipe.result))
+        .addIngredient('1', ItemButton.of(recipe.base))
+        .addIngredient('2', ItemButton.of(recipe.addition))
+        .addIngredient('r', ItemButton.of(recipe.result))
         .build()
 
     override fun getKey(): NamespacedKey = recipe.key
