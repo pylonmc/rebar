@@ -627,7 +627,7 @@ object BlockStorage : Listener {
      * Turns the block into a [PhantomBlock] which represents a block which has failed for some reason
      */
     @JvmSynthetic
-    internal fun makePhantom(block: RebarBlock) = lockBlockWrite {
+    internal fun makePhantom(block: RebarBlock): Unit = lockBlockWrite {
         BlockCullingEngine.remove(block)
         RebarBlockSchema.schemaCache[block.block.position] = PhantomBlock.schema
         val pdc = RebarBlock.serialize(block, block.block.chunk.persistentDataContainer.adapterContext) ?: return
@@ -638,7 +638,6 @@ object BlockStorage : Listener {
         blocksByKey.computeIfAbsent(phantomBlock.key) { mutableListOf() }.add(phantomBlock)
         blocksByChunk[block.block.chunk.position]!!.remove(block)
         blocksByChunk[phantomBlock.block.chunk.position]!!.add(phantomBlock)
-        Unit
     }
 
     @JvmSynthetic
