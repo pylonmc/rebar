@@ -155,7 +155,7 @@ private fun enchantment(args: ArgumentQueue, ctx: Context): Tag {
     val enchantment = RegistryAccess.registryAccess().getRegistry(RegistryKey.ENCHANTMENT).get(nsKey)
         ?: throw ctx.newException("Unknown enchantment: $nsKey")
 
-    return Tag.selfClosingInserting(Component.translatable(enchantment.translationKey()))
+    return Tag.selfClosingInserting(enchantment.description())
 }
 
 private fun biome(args: ArgumentQueue, ctx: Context): Tag {
