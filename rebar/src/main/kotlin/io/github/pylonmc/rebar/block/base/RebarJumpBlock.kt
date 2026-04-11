@@ -8,10 +8,12 @@ import io.github.pylonmc.rebar.event.api.MultiListener
 import io.github.pylonmc.rebar.event.api.annotation.MultiHandlers
 import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import org.bukkit.event.EventPriority
+import org.jetbrains.annotations.ApiStatus
 
 interface RebarJumpBlock {
     fun onJumpedOn(event: PlayerJumpEvent, priority: EventPriority) {}
 
+    @ApiStatus.Internal
     companion object : MultiListener {
         @UniversalHandler
         private fun onPlayerJumpEvent(event: PlayerJumpEvent, priority: EventPriority) {

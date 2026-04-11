@@ -7,10 +7,12 @@ import io.github.pylonmc.rebar.event.api.annotation.MultiHandlers
 import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.entity.PiglinBarterEvent
+import org.jetbrains.annotations.ApiStatus
 
 interface RebarPiglin {
     fun onBarter(event: PiglinBarterEvent, priority: EventPriority) {}
 
+    @ApiStatus.Internal
     companion object : MultiListener {
         @UniversalHandler
         private fun onBarter(event: PiglinBarterEvent, priority: EventPriority) {

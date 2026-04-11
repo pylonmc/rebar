@@ -215,7 +215,7 @@ object BlockStorage : Listener {
 
     /**
      * Returns whether the block at [block] is a Rebar block.
-     * Returns false if the chunk at [blockPosition] is not loaded.
+     * Returns false if the chunk at [block] is not loaded.
      */
     @JvmStatic
     fun isRebarBlock(block: Block): Boolean =
@@ -223,7 +223,7 @@ object BlockStorage : Listener {
 
     /**
      * Returns whether the block at [location] is a Rebar block
-     * Returns false if the chunk at [blockPosition] is not loaded.
+     * Returns false if the chunk at [location] is not loaded.
      */
     @JvmStatic
     fun isRebarBlock(location: Location): Boolean =

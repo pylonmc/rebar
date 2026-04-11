@@ -9,6 +9,7 @@ import io.github.pylonmc.rebar.item.research.Research.Companion.canUse
 import org.bukkit.event.Event
 import org.bukkit.event.EventPriority
 import org.bukkit.event.player.PlayerInteractEvent
+import org.jetbrains.annotations.ApiStatus
 
 interface RebarBlockInteractor : RebarCooldownable {
     /**
@@ -16,6 +17,7 @@ interface RebarBlockInteractor : RebarCooldownable {
      */
     fun onUsedToClickBlock(event: PlayerInteractEvent, priority: EventPriority)
 
+    @ApiStatus.Internal
     companion object : MultiListener {
         @UniversalHandler
         private fun onUsedToClickBlock(event: PlayerInteractEvent, priority: EventPriority) {

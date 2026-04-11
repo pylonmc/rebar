@@ -8,11 +8,13 @@ import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.entity.EntityBreedEvent
 import org.bukkit.event.entity.EntityEnterLoveModeEvent
+import org.jetbrains.annotations.ApiStatus
 
 interface RebarBreedable {
     fun onBreed(event: EntityBreedEvent, priority: EventPriority) {}
     fun onEnterLoveMode(event: EntityEnterLoveModeEvent, priority: EventPriority) {}
 
+    @ApiStatus.Internal
     companion object : MultiListener {
         @UniversalHandler
         private fun onBreed(event: EntityBreedEvent, priority: EventPriority) {

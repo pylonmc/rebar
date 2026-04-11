@@ -8,11 +8,13 @@ import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.entity.EntityUnleashEvent
 import org.bukkit.event.entity.PlayerLeashEntityEvent
+import org.jetbrains.annotations.ApiStatus
 
 interface RebarLeashable {
     fun onLeash(event: PlayerLeashEntityEvent, priority: EventPriority) {}
     fun onUnleash(event: EntityUnleashEvent, priority: EventPriority) {}
 
+    @ApiStatus.Internal
     companion object : MultiListener {
         @UniversalHandler
         private fun onLeash(event: PlayerLeashEntityEvent, priority: EventPriority) {

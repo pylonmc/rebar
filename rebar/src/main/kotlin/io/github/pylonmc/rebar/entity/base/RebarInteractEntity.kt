@@ -7,6 +7,7 @@ import io.github.pylonmc.rebar.event.api.annotation.MultiHandlers
 import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.player.PlayerInteractEntityEvent
+import org.jetbrains.annotations.ApiStatus
 
 interface RebarInteractEntity {
 
@@ -15,6 +16,7 @@ interface RebarInteractEntity {
      */
     fun onInteract(event: PlayerInteractEntityEvent, priority: EventPriority) {}
 
+    @ApiStatus.Internal
     companion object : MultiListener {
         @UniversalHandler
         private fun onInteractEntity(event: PlayerInteractEntityEvent, priority: EventPriority) {

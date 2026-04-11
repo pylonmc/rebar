@@ -7,6 +7,7 @@ import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.item.RebarItemListener
 import org.bukkit.event.EventPriority
 import org.bukkit.event.inventory.BrewingStandFuelEvent
+import org.jetbrains.annotations.ApiStatus
 
 interface RebarBrewingStandFuel {
     /**
@@ -14,6 +15,7 @@ interface RebarBrewingStandFuel {
      */
     fun onUsedAsBrewingStandFuel(event: BrewingStandFuelEvent, priority: EventPriority)
 
+    @ApiStatus.Internal
     companion object : MultiListener {
         @UniversalHandler
         private fun onUsedAsBrewingStandFuel(event: BrewingStandFuelEvent, priority: EventPriority) {

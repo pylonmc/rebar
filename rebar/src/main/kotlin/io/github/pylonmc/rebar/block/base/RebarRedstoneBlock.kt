@@ -8,10 +8,12 @@ import io.github.pylonmc.rebar.event.api.annotation.MultiHandlers
 import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.block.BlockRedstoneEvent
+import org.jetbrains.annotations.ApiStatus
 
 interface RebarRedstoneBlock {
     fun onCurrentChange(event: BlockRedstoneEvent, priority: EventPriority)
 
+    @ApiStatus.Internal
     companion object : MultiListener {
         @UniversalHandler
         private fun onRedstoneCurrentChange(event: BlockRedstoneEvent, priority: EventPriority) {

@@ -33,10 +33,10 @@ import kotlin.math.min
 
 /**
  * Represents a block that can connect to cargo ducts and use them to interface
- * with other cargo RebarCargoBlocks.
+ * with other RebarCargoBlocks.
  *
- * Each face can have one logistic group which cargo ducts connected to that face
- * are allowed to interface with
+ * Each face can have one logistic group which cargo ducts (or other RebarCargoBlocks)
+ * connected to that face are allowed to interface with.
  *
  * In your place constructor, you will need to call [addCargoLogisticGroup] for all
  * the block faces you want to be able to connect cargo ducts to, and also
@@ -53,7 +53,7 @@ interface RebarCargoBlock : RebarLogisticBlock, RebarEntityHolderBlock {
 
     @ApiStatus.NonExtendable
     fun addCargoLogisticGroup(face: BlockFace, group: String) {
-        cargoBlockData.groups.put(face, group)
+        cargoBlockData.groups[face] = group
     }
 
     @ApiStatus.NonExtendable
@@ -84,15 +84,17 @@ interface RebarCargoBlock : RebarLogisticBlock, RebarEntityHolderBlock {
         @ApiStatus.NonExtendable
         get() = cargoBlockData.transferRate
 
+    @ApiStatus.NonExtendable
     fun onDuctConnected(event: RebarCargoConnectEvent, priority: EventPriority) {}
 
+    @ApiStatus.NonExtendable
     fun onDuctDisconnected(event: RebarCargoDisconnectEvent, priority: EventPriority) {}
 
     /**
      * Checks if the block can connect to any adjacent cargo blocks, and if so, creates
      * a duct display between this block and the adjacent cargo block in question.
      */
-    @ApiStatus.NonExtendable
+    @ApiStatus.Internal
     fun updateDirectlyConnectedFaces() {
         for (face in IMMEDIATE_FACES) {
             // We iterate IMMEDIATE_FACES instead of [cargoBlockData.groups] in case [cargoBlockData.groups] is
@@ -127,6 +129,7 @@ interface RebarCargoBlock : RebarLogisticBlock, RebarEntityHolderBlock {
         }
     }
 
+    @ApiStatus.Internal
     fun tickCargo() {
         for ((face, group) in cargoBlockData.groups) {
             val sourceGroup = getLogisticGroup(group)
@@ -149,6 +152,7 @@ interface RebarCargoBlock : RebarLogisticBlock, RebarEntityHolderBlock {
         }
     }
 
+    @ApiStatus.Internal
     fun tickCargoFace(sourceGroup: LogisticGroup, targetGroup: LogisticGroup) {
         for (sourceSlot in sourceGroup.slots) {
             val sourceStack = sourceSlot.getItemStack()

@@ -9,12 +9,14 @@ import io.github.pylonmc.rebar.event.api.MultiListener
 import io.github.pylonmc.rebar.event.api.annotation.MultiHandlers
 import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import org.bukkit.event.EventPriority
+import org.jetbrains.annotations.ApiStatus
 
 interface RebarTurtle {
     fun onStartDigging(event: TurtleStartDiggingEvent, priority: EventPriority) {}
     fun onGoHome(event: TurtleGoHomeEvent, priority: EventPriority) {}
     fun onLayEgg(event: TurtleLayEggEvent, priority: EventPriority) {}
 
+    @ApiStatus.Internal
     companion object : MultiListener {
         @UniversalHandler
         private fun onStartDigging(event: TurtleStartDiggingEvent, priority: EventPriority) {

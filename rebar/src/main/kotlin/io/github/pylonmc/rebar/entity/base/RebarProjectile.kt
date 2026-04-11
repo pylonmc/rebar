@@ -7,10 +7,12 @@ import io.github.pylonmc.rebar.event.api.annotation.MultiHandlers
 import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.entity.ProjectileHitEvent
+import org.jetbrains.annotations.ApiStatus
 
 interface RebarProjectile {
     fun onHit(event: ProjectileHitEvent, priority: EventPriority) {}
 
+    @ApiStatus.Internal
     companion object : MultiListener {
         @UniversalHandler
         private fun onProjectileHit(event: ProjectileHitEvent, priority: EventPriority) {

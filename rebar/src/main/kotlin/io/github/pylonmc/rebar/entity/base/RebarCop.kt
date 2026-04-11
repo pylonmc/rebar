@@ -7,10 +7,12 @@ import io.github.pylonmc.rebar.event.api.annotation.MultiHandlers
 import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.entity.EntityBreakDoorEvent
+import org.jetbrains.annotations.ApiStatus
 
 interface RebarCop {
     fun kickDoor(event: EntityBreakDoorEvent, priority: EventPriority) {}
 
+    @ApiStatus.Internal
     companion object : MultiListener {
         @UniversalHandler
         private fun onBreakDoor(event: EntityBreakDoorEvent, priority: EventPriority) {

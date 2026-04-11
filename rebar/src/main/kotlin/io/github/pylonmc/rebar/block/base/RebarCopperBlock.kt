@@ -12,6 +12,7 @@ import org.bukkit.Registry
 import org.bukkit.entity.Player
 import org.bukkit.event.EventPriority
 import org.bukkit.event.entity.EntityChangeBlockEvent
+import org.jetbrains.annotations.ApiStatus
 
 interface RebarCopperBlock {
 
@@ -19,6 +20,7 @@ interface RebarCopperBlock {
     fun scrapeWaxOff(event: EntityChangeBlockEvent, priority: EventPriority)
     fun scrapeOxidation(event: EntityChangeBlockEvent, priority: EventPriority)
 
+    @ApiStatus.Internal
     companion object : MultiListener {
 
         private val COPPER_TYPES = setOf(

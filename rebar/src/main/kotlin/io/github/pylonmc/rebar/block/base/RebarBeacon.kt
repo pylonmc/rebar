@@ -12,6 +12,7 @@ import io.papermc.paper.event.block.BeaconActivatedEvent
 import io.papermc.paper.event.block.BeaconDeactivatedEvent
 import io.papermc.paper.event.player.PlayerChangeBeaconEffectEvent
 import org.bukkit.event.EventPriority
+import org.jetbrains.annotations.ApiStatus
 
 @Suppress("unused")
 interface RebarBeacon {
@@ -20,6 +21,7 @@ interface RebarBeacon {
     fun onEffectChange(event: PlayerChangeBeaconEffectEvent, priority: EventPriority) {}
     fun onEffectApply(event: BeaconEffectEvent, priority: EventPriority) {}
 
+    @ApiStatus.Internal
     companion object : MultiListener {
         @UniversalHandler
         private fun onBeaconActivate(event: BeaconActivatedEvent, priority: EventPriority) {

@@ -9,11 +9,13 @@ import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.enchantment.EnchantItemEvent
 import org.bukkit.event.enchantment.PrepareItemEnchantEvent
+import org.jetbrains.annotations.ApiStatus
 
 interface RebarEnchantingTable {
     fun onPrepareEnchant(event: PrepareItemEnchantEvent, priority: EventPriority) {}
     fun onEnchant(event: EnchantItemEvent, priority: EventPriority) {}
 
+    @ApiStatus.Internal
     companion object : MultiListener {
         @UniversalHandler
         private fun onPreEnchant(event: PrepareItemEnchantEvent, priority: EventPriority) {

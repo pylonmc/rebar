@@ -25,7 +25,7 @@ import io.github.pylonmc.rebar.item.research.addResearch
 import io.github.pylonmc.rebar.item.research.hasResearch
 import io.github.pylonmc.rebar.item.research.removeResearch
 import io.github.pylonmc.rebar.metrics.RebarMetrics
-import io.github.pylonmc.rebar.particles.ConfettiParticle
+import io.github.pylonmc.rebar.util.ConfettiParticle
 import io.github.pylonmc.rebar.recipe.ConfigurableRecipeType
 import io.github.pylonmc.rebar.recipe.RecipeType
 import io.github.pylonmc.rebar.registry.RebarRegistry

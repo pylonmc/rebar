@@ -9,11 +9,13 @@ import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.block.BlockFertilizeEvent
 import org.bukkit.event.block.BlockGrowEvent
+import org.jetbrains.annotations.ApiStatus
 
 interface RebarGrowable {
     fun onGrow(event: BlockGrowEvent, priority: EventPriority) {}
     fun onFertilize(event: BlockFertilizeEvent, priority: EventPriority) {}
 
+    @ApiStatus.Internal
     companion object : MultiListener {
         @UniversalHandler
         private fun onBlockGrow(event: BlockGrowEvent, priority: EventPriority) {

@@ -8,10 +8,15 @@ import io.github.pylonmc.rebar.event.api.annotation.MultiHandlers
 import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import io.papermc.paper.event.block.PlayerShearBlockEvent
 import org.bukkit.event.EventPriority
+import org.jetbrains.annotations.ApiStatus
 
+/**
+ * Called when the player *right clicks* a block with shears - such as a pumpkin to turn it into a carved pumpkin.
+ */
 interface RebarShearable {
     fun onShear(event: PlayerShearBlockEvent, priority: EventPriority)
 
+    @ApiStatus.Internal
     companion object : MultiListener {
         @UniversalHandler
         private fun onShearBlock(event: PlayerShearBlockEvent, priority: EventPriority) {

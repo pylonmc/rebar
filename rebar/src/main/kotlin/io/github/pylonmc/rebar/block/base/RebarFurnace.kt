@@ -11,6 +11,7 @@ import org.bukkit.event.block.BlockCookEvent
 import org.bukkit.event.block.InventoryBlockStartEvent
 import org.bukkit.event.inventory.FurnaceBurnEvent
 import org.bukkit.event.inventory.FurnaceExtractEvent
+import org.jetbrains.annotations.ApiStatus
 
 interface RebarFurnace {
     fun onStartSmelting(event: InventoryBlockStartEvent, priority: EventPriority) {}
@@ -18,6 +19,7 @@ interface RebarFurnace {
     fun onExtractItem(event: FurnaceExtractEvent, priority: EventPriority) {}
     fun onFuelBurn(event: FurnaceBurnEvent, priority: EventPriority) {}
 
+    @ApiStatus.Internal
     companion object : MultiListener {
         @UniversalHandler
         private fun onStartCook(event: InventoryBlockStartEvent, priority: EventPriority) {

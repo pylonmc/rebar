@@ -8,11 +8,13 @@ import io.github.pylonmc.rebar.event.api.annotation.MultiHandlers
 import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.entity.EntityTargetEvent
+import org.jetbrains.annotations.ApiStatus
 
 interface RebarPathingEntity {
     fun onFindPath(event: EntityPathfindEvent, priority: EventPriority) {}
     fun onTarget(event: EntityTargetEvent, priority: EventPriority) {}
 
+    @ApiStatus.Internal
     companion object : MultiListener {
         @UniversalHandler
         private fun onFindPath(event: EntityPathfindEvent, priority: EventPriority) {

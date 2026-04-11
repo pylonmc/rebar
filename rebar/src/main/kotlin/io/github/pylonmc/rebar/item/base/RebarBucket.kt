@@ -9,6 +9,7 @@ import io.github.pylonmc.rebar.item.research.Research.Companion.canUse
 import org.bukkit.event.EventPriority
 import org.bukkit.event.player.PlayerBucketEmptyEvent
 import org.bukkit.event.player.PlayerBucketFillEvent
+import org.jetbrains.annotations.ApiStatus
 
 interface RebarBucket {
     /**
@@ -21,6 +22,7 @@ interface RebarBucket {
      */
     fun onBucketFilled(event: PlayerBucketFillEvent, priority: EventPriority) {}
 
+    @ApiStatus.Internal
     companion object : MultiListener {
         @UniversalHandler
         private fun onBucketEmptied(event: PlayerBucketEmptyEvent, priority: EventPriority) {

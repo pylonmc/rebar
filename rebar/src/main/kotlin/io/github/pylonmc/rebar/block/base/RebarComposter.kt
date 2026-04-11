@@ -9,11 +9,13 @@ import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import io.papermc.paper.event.block.CompostItemEvent
 import io.papermc.paper.event.entity.EntityCompostItemEvent
 import org.bukkit.event.EventPriority
+import org.jetbrains.annotations.ApiStatus
 
 interface RebarComposter {
     fun onCompostByHopper(event: CompostItemEvent, priority: EventPriority) {}
     fun onCompostByEntity(event: EntityCompostItemEvent, priority: EventPriority) {}
 
+    @ApiStatus.Internal
     companion object : MultiListener {
         @UniversalHandler
         private fun onCompostByHopper(event: CompostItemEvent, priority: EventPriority) {

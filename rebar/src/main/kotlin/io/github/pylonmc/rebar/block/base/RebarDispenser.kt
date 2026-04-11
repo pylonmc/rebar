@@ -13,6 +13,7 @@ import org.bukkit.event.block.BlockDispenseArmorEvent
 import org.bukkit.event.block.BlockDispenseEvent
 import org.bukkit.event.block.BlockDispenseLootEvent
 import org.bukkit.event.block.BlockShearEntityEvent
+import org.jetbrains.annotations.ApiStatus
 
 interface RebarDispenser {
     fun onDispenseArmor(event: BlockDispenseArmorEvent, priority: EventPriority) {}
@@ -22,6 +23,7 @@ interface RebarDispenser {
     fun onPreDispense(event: BlockPreDispenseEvent, priority: EventPriority) {}
     fun onFailDispense(event: BlockFailedDispenseEvent, priority: EventPriority) {}
 
+    @ApiStatus.Internal
     companion object : MultiListener {
         @UniversalHandler
         private fun onDispenseArmor(event: BlockDispenseArmorEvent, priority: EventPriority) {

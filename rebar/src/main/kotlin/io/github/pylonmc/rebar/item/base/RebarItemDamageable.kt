@@ -10,6 +10,7 @@ import org.bukkit.event.EventPriority
 import org.bukkit.event.player.PlayerItemBreakEvent
 import org.bukkit.event.player.PlayerItemDamageEvent
 import org.bukkit.event.player.PlayerItemMendEvent
+import org.jetbrains.annotations.ApiStatus
 
 interface RebarItemDamageable {
     /**
@@ -27,6 +28,7 @@ interface RebarItemDamageable {
      */
     fun onItemMended(event: PlayerItemMendEvent, priority: EventPriority) {}
 
+    @ApiStatus.Internal
     companion object : MultiListener {
         @UniversalHandler
         private fun onItemDamaged(event: PlayerItemDamageEvent, priority: EventPriority) {

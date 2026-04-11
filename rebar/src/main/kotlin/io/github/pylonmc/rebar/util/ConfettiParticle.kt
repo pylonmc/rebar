@@ -1,4 +1,4 @@
-package io.github.pylonmc.rebar.particles
+package io.github.pylonmc.rebar.util
 
 import io.github.pylonmc.rebar.Rebar
 import org.bukkit.Location
