@@ -649,7 +649,6 @@ interface RebarSimpleMultiblock : RebarMultiblock, RebarEntityHolderBlock, Rebar
             val block = event.rebarBlock
             if (block is RebarSimpleMultiblock) {
                 simpleMultiblocks[block] = event.pdc.get(simpleMultiblockKey, RebarSerializers.SIMPLE_MULTIBLOCK_DATA)
-                        ?: error("Simple multiblock data not found for ${block.key}")
             }
         }
 
@@ -657,7 +656,7 @@ interface RebarSimpleMultiblock : RebarMultiblock, RebarEntityHolderBlock, Rebar
         private fun onSerialize(event: RebarBlockSerializeEvent) {
             val block = event.rebarBlock
             if (block is RebarSimpleMultiblock) {
-                event.pdc.set(simpleMultiblockKey, RebarSerializers.SIMPLE_MULTIBLOCK_DATA, simpleMultiblocks[block]!!)
+                event.pdc.set(simpleMultiblockKey, RebarSerializers.SIMPLE_MULTIBLOCK_DATA, simpleMultiblocks[block] ?: return)
             }
         }
 
