@@ -5,31 +5,6 @@ import io.github.pylonmc.rebar.block.base.RebarElectricBlock
 import java.util.PriorityQueue
 import java.util.UUID
 import kotlin.collections.ArrayDeque
-import kotlin.collections.List
-import kotlin.collections.Map
-import kotlin.collections.MutableMap
-import kotlin.collections.Set
-import kotlin.collections.any
-import kotlin.collections.asReversed
-import kotlin.collections.associateWith
-import kotlin.collections.component1
-import kotlin.collections.component2
-import kotlin.collections.contains
-import kotlin.collections.getOrPut
-import kotlin.collections.isNotEmpty
-import kotlin.collections.iterator
-import kotlin.collections.last
-import kotlin.collections.listOf
-import kotlin.collections.mapOf
-import kotlin.collections.mutableListOf
-import kotlin.collections.mutableMapOf
-import kotlin.collections.mutableSetOf
-import kotlin.collections.plus
-import kotlin.collections.set
-import kotlin.collections.sum
-import kotlin.collections.toList
-import kotlin.collections.toMutableMap
-import kotlin.collections.toSet
 import kotlin.math.abs
 import kotlin.math.min
 
@@ -78,105 +53,110 @@ class ElectricNetwork {
     private val ElectricNode.maybeConnectorBlock: RebarElectricBlock.Connector? get() = getBlock()
 
     fun tick() {
-        // First, we distribute power from producers to consumers
-        val powerProduced = producers.associateWith { it.producerBlock.power }.toMutableMap()
-        var totalPowerProduced = powerProduced.values.sum()
-        val powerRequired =
-            consumers.associateWith { it.consumerBlock.requiredPower }.toMutableMap()
-        val powerSupplied = mutableMapOf<ElectricNode, Double>() // Final amount of power supplied to each consumer
-
         for (consumer in consumers) {
             RebarElectricBlock.Consumer.setPowered(consumer.consumerBlock, false)
         }
 
-        // I can barely read this loop myself after only 3 weeks but what I *think* it does is distribute power evenly from producers to consumers
-        // by evenly "filling up" the required power of each consumer. Any excess is redistributed until we either run out of power or all consumers are fully supplied.
-        while (powerRequired.isNotEmpty() && !(totalPowerProduced roughlyEquals 0.0)) {
-            val provided = totalPowerProduced / powerRequired.size
-            for ((consumer, required) in powerRequired.toList()) {
-                val supplied = min(required, provided)
-                powerSupplied.merge(consumer, supplied, Double::plus)
-                totalPowerProduced -= supplied
-                if (supplied >= required) {
-                    powerRequired.remove(consumer)
-                } else {
-                    powerRequired[consumer] = required - supplied
-                }
-            }
-        }
+        // First, we distribute power from producers to consumer
+        val powerConsumedByConsumers = roundRobinFill(
+            consumers.associateWith { it.consumerBlock.requiredPower },
+            producers.sumOf { it.producerBlock.power }
+        )
 
+        // Then we invert that, knowing how much power was consumed, we calculate how much was taken from each producer
+        val powerTakenFromProducers = roundRobinFill(
+            producers.associateWith { it.producerBlock.power },
+            powerConsumedByConsumers.values.sum()
+        ).toMutableMap()
+
+        // Now that we know what consumes and produces what, we can try routing said power
         val limits = mutableMapOf<Edge, Double>()
         var edgeLoads = mapOf<Edge, Double>()
         val disconnectedEdges = mutableSetOf<Edge>()
-        for ((consumer, power) in powerSupplied) {
-            var powerLeft = power
-            val block = consumer.consumerBlock
-            while (!(powerLeft roughlyEquals 0.0) && powerProduced.isNotEmpty()) {
-                val powerFractionToDistribute = powerLeft / powerProduced.size
+        for ((consumer, consumed) in powerConsumedByConsumers) {
+            var powerLeft = consumed
+            val consumerBlock = consumer.consumerBlock
+            while (!(powerLeft roughlyEquals 0.0)) {
                 var noPath = 0
-                val originalAvailableProducers = powerProduced.size
-                producerLoop@ for ((producer, produced) in powerProduced.toList()) {
+                for ((producer, produced) in powerTakenFromProducers) {
                     if (produced roughlyEquals 0.0) continue
-                    val powerToSupply = min(min(produced, powerFractionToDistribute), powerLeft)
-                    val producerBlock = producer.producerBlock
                     val tempDisconnectedEdges = mutableSetOf<Edge>()
                     while (true) {
                         val path = findBestPath(producer, consumer, disconnectedEdges + tempDisconnectedEdges)
                         if (path == null) {
                             noPath++
-                            continue@producerLoop
+                            break
                         }
 
-                        // Determine limits on edges in path if not already known
+                        // Determine limits on edges if not alreayd known
                         for (edge in path) {
                             if (edge in limits) continue
-                            val block = edge.from.maybeConnectorBlock ?: edge.to.maybeConnectorBlock ?: continue
-                            limits[edge] = block.getCurrentLimit(edge.to)
+                            val connectorBlock = edge.from.maybeConnectorBlock
+                            if (connectorBlock != null) {
+                                limits[edge] = connectorBlock.getCurrentLimit(edge.to)
+                            } else {
+                                val connectorBlock = edge.to.maybeConnectorBlock
+                                if (connectorBlock != null) {
+                                    limits[edge] = connectorBlock.getCurrentLimit(edge.from)
+                                }
+                            }
                         }
 
-                        val loadResult = calculateLoadOnEdges(
-                            path,
-                            edgeLoads,
-                            limits,
-                            powerToSupply,
-                            producerBlock.voltage
-                        )
-                        if (loadResult.finalVoltage > block.voltageRange.secondDouble() || loadResult.finalVoltage < block.voltageRange.firstDouble()) {
-                            // Voltage is out of range for this consumer, disconnect the last edge in this path and try again
+                        val loadResult = calculateLoadOnEdges(path, edgeLoads, limits, produced, producer.producerBlock.voltage)
+                        val powerDelivered = min(loadResult.finalPower, powerLeft)
+                        if (loadResult.finalVoltage < consumerBlock.voltageRange.firstDouble() || loadResult.finalVoltage > consumerBlock.voltageRange.secondDouble()) {
+                            // voltage out of range, disconnect last edge and try again
                             tempDisconnectedEdges.add(path.last())
                         } else {
-                            // Update loads on edges and remaining power to supply
                             edgeLoads = loadResult.currents
-                            powerLeft -= loadResult.finalPower
-
-                            for (edge in path) {
-                                if (edgeLoads[edge]!! >= limits[edge]!!) {
-                                    // This edge is saturated, disconnect it
+                            powerLeft -= powerDelivered
+                            powerTakenFromProducers[producer] = powerTakenFromProducers[producer]!! - powerDelivered
+                            for ((edge, load) in loadResult.currents) {
+                                if (load roughlyEquals limits[edge]!!) {
                                     disconnectedEdges.add(edge)
                                 }
                             }
                             break
                         }
                     }
+                }
 
-                    val remaining = produced - powerToSupply
-                    if (remaining roughlyEquals 0.0) {
-                        powerProduced.remove(producer)
-                    } else {
-                        powerProduced[producer] = produced - powerToSupply
+                for ((producer, produced) in powerTakenFromProducers.toList()) {
+                    if (produced roughlyEquals 0.0) {
+                        powerTakenFromProducers.remove(producer)
                     }
                 }
 
-                if (noPath == originalAvailableProducers) {
-                    // No producers can supply this consumer, break to avoid infinite loop
+                if (noPath == powerTakenFromProducers.size) {
+                    // no paths from any producer to this consumer, give up
                     break
                 }
             }
 
-            if (powerLeft roughlyEquals 0.0 && power roughlyEquals block.requiredPower) {
-                RebarElectricBlock.Consumer.setPowered(block, true)
+            if (powerLeft roughlyEquals 0.0 && consumed roughlyEquals consumerBlock.requiredPower) {
+                RebarElectricBlock.Consumer.setPowered(consumer.consumerBlock, true)
             }
         }
+    }
+
+    private fun <K> roundRobinFill(limits: Map<K, Double>, amount: Double): Map<K, Double> {
+        val filled = mutableMapOf<K, Double>()
+        var remaining = amount
+        val limits = limits.toMutableMap()
+        while (!(remaining roughlyEquals 0.0) && limits.isNotEmpty()) {
+            val fillAmount = remaining / limits.size
+            for ((key, limit) in limits.toList()) {
+                val toFill = min(limit, fillAmount)
+                filled.merge(key, toFill, Double::plus)
+                remaining -= toFill
+                if (toFill >= limit) {
+                    limits.remove(key)
+                } else {
+                    limits[key] = limit - toFill
+                }
+            }
+        }
+        return filled
     }
 
     /**
