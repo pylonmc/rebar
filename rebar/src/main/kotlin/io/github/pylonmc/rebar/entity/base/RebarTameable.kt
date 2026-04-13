@@ -8,11 +8,13 @@ import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import io.papermc.paper.event.entity.TameableDeathMessageEvent
 import org.bukkit.event.EventPriority
 import org.bukkit.event.entity.EntityTameEvent
+import org.jetbrains.annotations.ApiStatus
 
 interface RebarTameable {
     fun onTamed(event: EntityTameEvent, priority: EventPriority) {}
     fun onDeath(event: TameableDeathMessageEvent, priority: EventPriority) {}
 
+    @ApiStatus.Internal
     companion object : MultiListener {
         @UniversalHandler
         private fun onTamed(event: EntityTameEvent, priority: EventPriority) {

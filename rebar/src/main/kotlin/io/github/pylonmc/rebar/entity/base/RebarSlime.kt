@@ -8,6 +8,7 @@ import io.github.pylonmc.rebar.event.api.annotation.MultiHandlers
 import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.entity.SlimeSplitEvent
+import org.jetbrains.annotations.ApiStatus
 
 interface RebarSlime {
     fun onSwim(event: SlimeSwimEvent, priority: EventPriority) {}
@@ -17,6 +18,7 @@ interface RebarSlime {
     fun onChangeDirection(event: SlimeChangeDirectionEvent, priority: EventPriority) {}
     fun onTarget(event: SlimeTargetLivingEntityEvent, priority: EventPriority) {}
 
+    @ApiStatus.Internal
     companion object : MultiListener {
         @UniversalHandler
         private fun onSlimeSwim(event: SlimeSwimEvent, priority: EventPriority) {

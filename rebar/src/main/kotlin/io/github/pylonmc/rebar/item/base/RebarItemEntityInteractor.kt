@@ -8,6 +8,7 @@ import io.github.pylonmc.rebar.item.RebarItemListener
 import io.github.pylonmc.rebar.item.research.Research.Companion.canUse
 import org.bukkit.event.EventPriority
 import org.bukkit.event.player.PlayerInteractEntityEvent
+import org.jetbrains.annotations.ApiStatus
 
 interface RebarItemEntityInteractor : RebarCooldownable {
     /**
@@ -15,6 +16,7 @@ interface RebarItemEntityInteractor : RebarCooldownable {
      */
     fun onUsedToRightClickEntity(event: PlayerInteractEntityEvent, priority: EventPriority)
 
+    @ApiStatus.Internal
     companion object : MultiListener {
         @UniversalHandler
         private fun onUsedToRightClickEntity(event: PlayerInteractEntityEvent, priority: EventPriority) {

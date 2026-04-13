@@ -9,12 +9,14 @@ import io.github.pylonmc.rebar.event.api.annotation.MultiHandlers
 import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.entity.EnderDragonChangePhaseEvent
+import org.jetbrains.annotations.ApiStatus
 
 interface RebarEnderDragon {
     fun onChangePhase(event: EnderDragonChangePhaseEvent, priority: EventPriority) {}
     fun onFlame(event: EnderDragonFlameEvent, priority: EventPriority) {}
     fun onShootFireball(event: EnderDragonShootFireballEvent, priority: EventPriority) {}
 
+    @ApiStatus.Internal
     companion object : MultiListener {
         @UniversalHandler
         private fun onDragonChangePhase(event: EnderDragonChangePhaseEvent, priority: EventPriority) {

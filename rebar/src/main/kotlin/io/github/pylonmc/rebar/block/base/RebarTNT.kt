@@ -8,10 +8,12 @@ import io.github.pylonmc.rebar.event.api.annotation.MultiHandlers
 import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.block.TNTPrimeEvent
+import org.jetbrains.annotations.ApiStatus
 
 interface RebarTNT {
     fun onIgnite(event: TNTPrimeEvent, priority: EventPriority)
 
+    @ApiStatus.Internal
     companion object : MultiListener {
         @UniversalHandler
         private fun onTNTIgnite(event: TNTPrimeEvent, priority: EventPriority) {

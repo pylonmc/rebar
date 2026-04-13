@@ -20,9 +20,6 @@ allprojects {
         maven("https://repo.codemc.io/repository/maven-releases/") {
             name = "CodeMC"
         }
-        maven("https://maven.pvphub.me/tofaa") {
-            name = "EntityLib"
-        }
     }
 }
 

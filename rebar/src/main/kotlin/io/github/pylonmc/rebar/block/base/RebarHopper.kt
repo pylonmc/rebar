@@ -9,10 +9,12 @@ import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import org.bukkit.block.Hopper
 import org.bukkit.event.EventPriority
 import org.bukkit.event.inventory.InventoryPickupItemEvent
+import org.jetbrains.annotations.ApiStatus
 
 interface RebarHopper {
     fun onHopperPickUpItem(event: InventoryPickupItemEvent, priority: EventPriority)
 
+    @ApiStatus.Internal
     companion object : MultiListener {
         @UniversalHandler
         private fun onInventoryPickup(event: InventoryPickupItemEvent, priority: EventPriority) {

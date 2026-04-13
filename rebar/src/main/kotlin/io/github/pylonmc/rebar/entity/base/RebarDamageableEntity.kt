@@ -8,11 +8,13 @@ import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.entity.EntityDamageEvent
 import org.bukkit.event.entity.EntityRegainHealthEvent
+import org.jetbrains.annotations.ApiStatus
 
 interface RebarDamageableEntity {
     fun onDamage(event: EntityDamageEvent, priority: EventPriority) {}
     fun onRegainHealth(event: EntityRegainHealthEvent, priority: EventPriority) {}
 
+    @ApiStatus.Internal
     companion object : MultiListener {
         @UniversalHandler
         private fun onDamage(event: EntityDamageEvent, priority: EventPriority) {

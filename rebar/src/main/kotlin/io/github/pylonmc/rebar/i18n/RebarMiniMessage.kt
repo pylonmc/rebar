@@ -1,6 +1,6 @@
 @file:JvmName("RebarMiniMessage")
 
-package io.github.pylonmc.rebar.item.builder
+package io.github.pylonmc.rebar.i18n
 
 import io.github.pylonmc.rebar.util.gui.unit.MetricPrefix
 import io.github.pylonmc.rebar.util.gui.unit.UnitFormat
@@ -21,9 +21,6 @@ import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
-import org.bukkit.Registry
-import org.bukkit.enchantments.Enchantment
-import org.bukkit.potion.PotionEffectType
 
 /**
  * Rebar's custom MiniMessage instance with custom tags. This instance is used when translating
@@ -31,18 +28,19 @@ import org.bukkit.potion.PotionEffectType
  *
  * ### Custom Tags
  * - `<arrow>`|`<arrow:\[color\]>` - Inserts a right arrow (→) with the specified color (default: 0x666666)
+ * - `<guidearrow> - Shorthand for `<arrow:0x3a293>`
  * - `<diamond>`|`<diamond:\[color\]>` - Inserts a diamond (◆) with the specified color (default: 0x666666)
  * - `<star>`|`<star:\[color\]>` - Inserts a star (★) with the specified color (default: [NamedTextColor.BLUE])
- * - `<instruction></instruction>`|`<insn></insn>` - Applies a yellow styling (0xf9d104), used for instructions
- * - `<guideinstruction></guideinstruction>`|`<guideinsn></guideinsn>` - Applies a purple styling (0xc907f4), used for guide instructions
- * - `<attribute></attribute>`|`<attr></attr>` - Applies a cyan styling (0xa9d9e8), used for attributes
- * - `<unit:\[prefix\]:[unit name]></unit>` - Formats a **constant** number as a unit, with an optional metric prefix
+ * - `<insn></insn>` - Applies a yellow styling (0xf9d104), used for instructions
+ * - `<guideinsn></guideinsn>` - Applies a purple styling (0xc907f4), used for guide instructions
+ * - `<attr></attr>` - Applies a cyan styling (0xa9d9e8), used for attributes
+ * - `<unit:\[prefix\]:[unit]></unit>` - Formats a **constant** number as a unit, with an optional metric prefix
  * - `<nbsp></nbsp>` - Replaces spaces with non-breaking spaces ( ), useful for preventing line breaks in lore
- * - `<item:\[material/NamespacedKey\]>` - Renders the translated name of a vanilla/rebar item (e.g., `<item:stone>` → "Stone", `<item:pylon:loupe>` → "Loupe")
- * - `<entity:\[entity_type/NamespacedKey\]>` - Renders the translated name of an entity type (e.g., `<entity:creeper>` → "Creeper")
- * - `<effect:\[effect_type/NamespacedKey\]>` - Renders the translated name of a potion effect (e.g., `<effect:speed>` → "Speed")
- * - `<enchant:\[enchantment/NamespacedKey\]>` - Renders the translated name of an enchantment (e.g., `<enchant:sharpness>` → "Sharpness")
- * - `<biome:\[biome/NamespacedKey\]>` - Renders the translated name of a biome (e.g., `<biome:plains>` → "Plains")
+ * - `<item:\[item_name\]>` - Renders the translated name of a vanilla/rebar item (e.g., `<item:stone>` → "Stone", `<item:pylon:loupe>` → "Loupe")
+ * - `<entity:\[entity_type\]>` - Renders the translated name of an entity type (e.g., `<entity:creeper>` → "Creeper")
+ * - `<effect:\[effect_type\]>` - Renders the translated name of a potion effect (e.g., `<effect:speed>` → "Speed")
+ * - `<enchant:\[enchant_name\]>` - Renders the translated name of an enchantment (e.g., `<enchant:sharpness>` → "Sharpness")
+ * - `<biome:\[biome_name\]>` - Renders the translated name of a biome (e.g., `<biome:plains>` → "Plains")
  *   
  * For item, entity, effect, enchant, and biome tags:
  * - If no namespace is provided (e.g., `stone`), it defaults to `minecraft:stone`
@@ -56,20 +54,20 @@ val customMiniMessage = MiniMessage.builder()
         it.tag("guidearrow", ::guidearrow)
         it.tag("diamond", ::diamond)
         it.tag("star", ::star)
-        it.tag(setOf("instruction", "insn")) { _, _ -> Tag.styling(TextColor.color(0xf9d104)) }
-        it.tag(setOf("guideinstruction", "guideinsn")) { _, _ -> Tag.styling(TextColor.color(0xc907f4)) }
+        it.tag("insn") { _, _ -> Tag.styling(TextColor.color(0xf9d104)) }
+        it.tag("guideinsn") { _, _ -> Tag.styling(TextColor.color(0xc907f4)) }
         it.tag("story") { _, _ ->
             Tag.styling { builder ->
                 builder.color(TextColor.color(0xcc9bf2)).decorate(TextDecoration.ITALIC)
             }
         }
-        it.tag(setOf("attribute", "attr")) { _, _ -> Tag.styling(TextColor.color(0xa9d9e8)) }
-        it.tag(setOf("unit", "u"), ::unit)
-        it.tag(setOf("nbsp", "nb"), ::nbsp)
+        it.tag("attr") { _, _ -> Tag.styling(TextColor.color(0xa9d9e8)) }
+        it.tag("unit", ::unit)
+        it.tag("nbsp", ::nbsp)
         it.tag("item", ::item)
         it.tag("entity", ::entity)
         it.tag("effect", ::effect)
-        it.tag(setOf("enchantment", "enchant"), ::enchantment)
+        it.tag("enchant", ::enchantment)
         it.tag("biome", ::biome)
     }
     .strict(false)
@@ -81,7 +79,7 @@ private fun arrow(args: ArgumentQueue, @Suppress("unused") ctx: Context): Tag {
 }
 
 private fun guidearrow(args: ArgumentQueue, @Suppress("unused") ctx: Context): Tag {
-    val color = args.peek()?.value()?.let(::parseColor) ?: TextColor.color(0x3a293)
+    val color = TextColor.color(0x3a293)
     return Tag.selfClosingInserting(Component.text("\u2192").color(color))
 }
 

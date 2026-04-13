@@ -57,8 +57,8 @@ open class BlockTextureEntity(
     }
 
     open fun refreshViewer(viewer: UUID, distanceSquared: Double) {
-        val scale = entityMeta.metadata.getIndex(SCALE_INDEX.toByte(), null as Vector3f?) ?: DEFAULT_SCALE
-        val translation = entityMeta.metadata.getIndex(TRANSLATION_INDEX.toByte(), null as Vector3f?) ?: DEFAULT_TRANSLATION
+        val scale = entityMeta.getIndex(SCALE_INDEX.toByte(), null as Vector3f?) ?: DEFAULT_SCALE
+        val translation = entityMeta.getIndex(TRANSLATION_INDEX.toByte(), null as Vector3f?) ?: DEFAULT_TRANSLATION
         val metadata = arrayListOf(
             EntityData(TRANSLATION_INDEX, EntityDataTypes.VECTOR3F, translation),
             EntityData(SCALE_INDEX, EntityDataTypes.VECTOR3F, scale)

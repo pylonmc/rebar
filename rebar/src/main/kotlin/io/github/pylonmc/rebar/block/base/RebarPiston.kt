@@ -9,11 +9,13 @@ import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.block.BlockPistonExtendEvent
 import org.bukkit.event.block.BlockPistonRetractEvent
+import org.jetbrains.annotations.ApiStatus
 
 interface RebarPiston {
     fun onExtend(event: BlockPistonExtendEvent, priority: EventPriority) {}
     fun onRetract(event: BlockPistonRetractEvent, priority: EventPriority) {}
 
+    @ApiStatus.Internal
     companion object : MultiListener {
         @UniversalHandler
         private fun onPistonExtend(event: BlockPistonExtendEvent, priority: EventPriority) {

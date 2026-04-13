@@ -19,7 +19,7 @@ import xyz.xenondevs.invui.inventory.event.UpdateReason
  *
  * When the block is broken, the contents of the virtual inventories will be dropped.
  *
- * See [InvUI docs](https://docs.xenondevs.xyz/invui/) for information on how to make GUIs.
+ * See [InvUI docs](https://docs.xenondevs.xyz/invui/) for more information on virtual inventories.
  *
  * @see Gui
  * @see VirtualInventory

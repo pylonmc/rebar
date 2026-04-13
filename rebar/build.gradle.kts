@@ -41,7 +41,7 @@ dependencies {
 
     paperLibraryApi("xyz.xenondevs.invui:invui:2.0.0-beta.5")
     paperLibraryApi("xyz.xenondevs.invui:invui-kotlin:2.0.0-beta.5")
-    paperLibraryApi("com.github.Tofaa2.EntityLib:spigot:f0318e298f")
+    paperLibraryApi("com.github.Tofaa2.EntityLib:spigot:2.4.11")
     paperLibraryApi("com.github.retrooper:packetevents-spigot:2.11.2")
     implementation("info.debatty:java-string-similarity:2.0.0")
     implementation("org.bstats:bstats-bukkit:2.2.1")

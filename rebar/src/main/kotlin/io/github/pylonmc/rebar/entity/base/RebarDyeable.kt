@@ -7,10 +7,12 @@ import io.github.pylonmc.rebar.event.api.annotation.MultiHandlers
 import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import io.papermc.paper.event.entity.EntityDyeEvent
 import org.bukkit.event.EventPriority
+import org.jetbrains.annotations.ApiStatus
 
 interface RebarDyeable {
     fun onDye(event: EntityDyeEvent, priority: EventPriority) {}
 
+    @ApiStatus.Internal
     companion object : MultiListener {
         @UniversalHandler
         private fun onDye(event: EntityDyeEvent, priority: EventPriority) {

@@ -12,6 +12,7 @@ import org.bukkit.event.EventPriority
 import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.entity.EntityShootBowEvent
 import org.bukkit.event.entity.ProjectileHitEvent
+import org.jetbrains.annotations.ApiStatus
 
 interface RebarArrow {
     /**
@@ -34,6 +35,7 @@ interface RebarArrow {
      */
     fun onArrowDamage(event: EntityDamageByEntityEvent, priority: EventPriority) {}
 
+    @ApiStatus.Internal
     companion object : MultiListener {
         @UniversalHandler
         private fun onArrowReady(event: PlayerReadyArrowEvent, priority: EventPriority) {

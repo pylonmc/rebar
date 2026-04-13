@@ -14,7 +14,7 @@ import java.lang.reflect.Modifier
 /**
  * A variant of [EventHandler] that listens to all priorities specified
  * Must be used with [MultiListener] registered using [MultiListener.register] unless it's a
- * Rebar block/item/entity interface such as [RebarInteractor], those are handled internally using [MultiHandler.handleEvent]
+ * Rebar block/item/entity interface such as [RebarInteractor], those are handled internally using [MultiHandlers.handleEvent]
  *
  * All methods annotated with this should be formatted as `fun methodName(event: Event, priority: EventPriority)`
  */

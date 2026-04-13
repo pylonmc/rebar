@@ -9,10 +9,12 @@ import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import org.bukkit.entity.memory.MemoryKey
 import org.bukkit.event.EventPriority
 import org.bukkit.event.entity.VillagerCareerChangeEvent
+import org.jetbrains.annotations.ApiStatus
 
 interface RebarJobBlock {
     fun onVillagerAcquireJob(event: VillagerCareerChangeEvent, priority: EventPriority)
 
+    @ApiStatus.Internal
     companion object : MultiListener {
         @UniversalHandler
         private fun onVillagerChangeProfession(event: VillagerCareerChangeEvent, priority: EventPriority) {

@@ -7,6 +7,7 @@ import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.item.RebarItemListener
 import org.bukkit.event.EventPriority
 import org.bukkit.event.inventory.FurnaceBurnEvent
+import org.jetbrains.annotations.ApiStatus
 
 /**
  * Allows the item to act as a normal vanilla fuel.
@@ -21,6 +22,7 @@ interface VanillaCookingFuel {
      */
     fun onBurntAsFuel(event: FurnaceBurnEvent, priority: EventPriority)
 
+    @ApiStatus.Internal
     companion object : MultiListener {
         @UniversalHandler
         private fun onBurntAsFuel(event: FurnaceBurnEvent, priority: EventPriority) {

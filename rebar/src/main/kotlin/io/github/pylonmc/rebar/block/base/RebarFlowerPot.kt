@@ -8,10 +8,12 @@ import io.github.pylonmc.rebar.event.api.annotation.MultiHandlers
 import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import io.papermc.paper.event.player.PlayerFlowerPotManipulateEvent
 import org.bukkit.event.EventPriority
+import org.jetbrains.annotations.ApiStatus
 
 interface RebarFlowerPot {
     fun onFlowerPotManipulated(event: PlayerFlowerPotManipulateEvent, priority: EventPriority)
 
+    @ApiStatus.Internal
     companion object : MultiListener {
         @UniversalHandler
         private fun onFlowerpotManipulate(event: PlayerFlowerPotManipulateEvent, priority: EventPriority) {

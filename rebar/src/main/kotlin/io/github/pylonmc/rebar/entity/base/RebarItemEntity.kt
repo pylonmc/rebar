@@ -8,11 +8,13 @@ import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.entity.ItemDespawnEvent
 import org.bukkit.event.entity.ItemMergeEvent
+import org.jetbrains.annotations.ApiStatus
 
 interface RebarItemEntity {
     fun onDespawn(event: ItemDespawnEvent, priority: EventPriority) {}
     fun onMerge(event: ItemMergeEvent, priority: EventPriority) {}
 
+    @ApiStatus.Internal
     companion object : MultiListener {
         @UniversalHandler
         private fun onDespawn(event: ItemDespawnEvent, priority: EventPriority) {

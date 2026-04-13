@@ -8,11 +8,13 @@ import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.entity.EntityDismountEvent
 import org.bukkit.event.entity.EntityMountEvent
+import org.jetbrains.annotations.ApiStatus
 
 interface RebarMountableEntity {
     fun onMount(event: EntityMountEvent, priority: EventPriority) {}
     fun onDismount(event: EntityDismountEvent, priority: EventPriority) {}
 
+    @ApiStatus.Internal
     companion object : MultiListener {
         @UniversalHandler
         private fun onMount(event: EntityMountEvent, priority: EventPriority) {

@@ -9,6 +9,7 @@ import io.github.pylonmc.rebar.item.research.Research.Companion.canUse
 import org.bukkit.event.EventPriority
 import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockDamageEvent
+import org.jetbrains.annotations.ApiStatus
 
 interface RebarTool {
     /**
@@ -21,6 +22,7 @@ interface RebarTool {
      */
     fun onUsedToBreakBlock(event: BlockBreakEvent, priority: EventPriority) {}
 
+    @ApiStatus.Internal
     companion object : MultiListener {
         @UniversalHandler
         private fun onUsedToDamageBlock(event: BlockDamageEvent, priority: EventPriority) {

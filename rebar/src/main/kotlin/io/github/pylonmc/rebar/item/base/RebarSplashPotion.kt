@@ -7,6 +7,7 @@ import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.item.RebarItemListener.logEventHandleErr
 import org.bukkit.event.EventPriority
 import org.bukkit.event.entity.PotionSplashEvent
+import org.jetbrains.annotations.ApiStatus
 
 interface RebarSplashPotion {
     /**
@@ -14,6 +15,7 @@ interface RebarSplashPotion {
      */
     fun onSplash(event: PotionSplashEvent, priority: EventPriority)
 
+    @ApiStatus.Internal
     companion object : MultiListener {
         @UniversalHandler
         private fun handle(event: PotionSplashEvent, priority: EventPriority) {

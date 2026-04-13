@@ -10,12 +10,14 @@ import org.bukkit.event.EventPriority
 import org.bukkit.event.block.BlockCookEvent
 import org.bukkit.event.block.InventoryBlockStartEvent
 import org.bukkit.event.inventory.BrewingStandFuelEvent
+import org.jetbrains.annotations.ApiStatus
 
 interface RebarBrewingStand {
     fun onStartBrewing(event: InventoryBlockStartEvent, priority: EventPriority) {}
     fun onFuel(event: BrewingStandFuelEvent, priority: EventPriority) {}
     fun onEndBrewing(event: BlockCookEvent, priority: EventPriority) {}
 
+    @ApiStatus.Internal
     companion object : MultiListener {
         @UniversalHandler
         private fun onStartCook(event: InventoryBlockStartEvent, priority: EventPriority) {

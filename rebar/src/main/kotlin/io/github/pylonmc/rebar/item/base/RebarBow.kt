@@ -9,6 +9,7 @@ import io.github.pylonmc.rebar.item.RebarItemListener
 import io.github.pylonmc.rebar.item.research.Research.Companion.canUse
 import org.bukkit.event.EventPriority
 import org.bukkit.event.entity.EntityShootBowEvent
+import org.jetbrains.annotations.ApiStatus
 
 interface RebarBow {
     /**
@@ -21,6 +22,7 @@ interface RebarBow {
      */
     fun onBowFired(event: EntityShootBowEvent, priority: EventPriority) {}
 
+    @ApiStatus.Internal
     companion object : MultiListener {
         @UniversalHandler
         private fun onBowReady(event: PlayerReadyArrowEvent, priority: EventPriority) {

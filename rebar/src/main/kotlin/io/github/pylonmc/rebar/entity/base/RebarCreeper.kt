@@ -8,11 +8,13 @@ import io.github.pylonmc.rebar.event.api.annotation.MultiHandlers
 import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.entity.CreeperPowerEvent
+import org.jetbrains.annotations.ApiStatus
 
 interface RebarCreeper {
     fun onIgnite(event: CreeperIgniteEvent, priority: EventPriority) {}
     fun onPower(event: CreeperPowerEvent, priority: EventPriority) {}
 
+    @ApiStatus.Internal
     companion object : MultiListener {
         @UniversalHandler
         private fun onCreeperIgnite(event: CreeperIgniteEvent, priority: EventPriority) {

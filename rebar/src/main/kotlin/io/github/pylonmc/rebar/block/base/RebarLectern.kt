@@ -10,12 +10,14 @@ import io.papermc.paper.event.player.PlayerInsertLecternBookEvent
 import io.papermc.paper.event.player.PlayerLecternPageChangeEvent
 import org.bukkit.event.EventPriority
 import org.bukkit.event.player.PlayerTakeLecternBookEvent
+import org.jetbrains.annotations.ApiStatus
 
 interface RebarLectern {
     fun onInsertBook(event: PlayerInsertLecternBookEvent, priority: EventPriority) {}
     fun onRemoveBook(event: PlayerTakeLecternBookEvent, priority: EventPriority) {}
     fun onChangePage(event: PlayerLecternPageChangeEvent, priority: EventPriority) {}
 
+    @ApiStatus.Internal
     companion object : MultiListener {
         @UniversalHandler
         private fun onLecternInsertBook(event: PlayerInsertLecternBookEvent, priority: EventPriority) {

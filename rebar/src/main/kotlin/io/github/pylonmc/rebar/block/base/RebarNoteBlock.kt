@@ -8,10 +8,12 @@ import io.github.pylonmc.rebar.event.api.annotation.MultiHandlers
 import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.block.NotePlayEvent
+import org.jetbrains.annotations.ApiStatus
 
 interface RebarNoteBlock {
     fun onNotePlay(event: NotePlayEvent, priority: EventPriority)
 
+    @ApiStatus.Internal
     companion object : MultiListener {
         @UniversalHandler
         private fun onNotePlay(event: NotePlayEvent, priority: EventPriority) {

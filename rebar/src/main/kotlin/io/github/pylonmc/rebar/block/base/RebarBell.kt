@@ -9,11 +9,13 @@ import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.block.BellResonateEvent
 import org.bukkit.event.block.BellRingEvent
+import org.jetbrains.annotations.ApiStatus
 
 interface RebarBell {
     fun onRing(event: BellRingEvent, priority: EventPriority) {}
     fun onResonate(event: BellResonateEvent, priority: EventPriority) {}
 
+    @ApiStatus.Internal
     companion object : MultiListener {
         @UniversalHandler
         private fun onBellRing(event: BellRingEvent, priority: EventPriority) {

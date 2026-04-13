@@ -9,11 +9,13 @@ import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import io.papermc.paper.event.player.PlayerOpenSignEvent
 import org.bukkit.event.EventPriority
 import org.bukkit.event.block.SignChangeEvent
+import org.jetbrains.annotations.ApiStatus
 
 interface RebarSign {
     fun onSignChange(event: SignChangeEvent, priority: EventPriority) {}
     fun onOpen(event: PlayerOpenSignEvent, priority: EventPriority) {}
 
+    @ApiStatus.Internal
     companion object : MultiListener {
         @UniversalHandler
         private fun onSignChange(event: SignChangeEvent, priority: EventPriority) {

@@ -1,5 +1,6 @@
 package io.github.pylonmc.rebar.content.cargo
 
+import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.block.BlockStorage
 import io.github.pylonmc.rebar.block.RebarBlock
 import io.github.pylonmc.rebar.block.base.*
@@ -20,6 +21,7 @@ import io.github.pylonmc.rebar.util.position.position
 import io.github.pylonmc.rebar.util.rebarKey
 import io.github.pylonmc.rebar.util.scheduleRemove
 import io.github.pylonmc.rebar.util.setNullable
+import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.block.Block
@@ -289,7 +291,13 @@ class CargoDuct : RebarBlock, RebarBreakHandler, RebarEntityHolderBlock, RebarEn
         associatedBlocks.add(from.position)
         // (middle)
         var current = from
+        var count = 0
         while (true) {
+            if (count > 1000) {
+                throw RuntimeException("Loop in cargo duct logic update detected; please open a bug report and show this error")
+            }
+            count++
+
             current = current.getRelative(fromToFace)
             if (current == to) {
                 break

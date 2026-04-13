@@ -7,10 +7,12 @@ import io.github.pylonmc.rebar.event.api.annotation.MultiHandlers
 import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.entity.BatToggleSleepEvent
+import org.jetbrains.annotations.ApiStatus
 
 interface RebarBat {
     fun onToggleSleep(event: BatToggleSleepEvent, priority: EventPriority) {}
 
+    @ApiStatus.Internal
     companion object : MultiListener {
         @UniversalHandler
         private fun onBatToggleSleep(event: BatToggleSleepEvent, priority: EventPriority) {

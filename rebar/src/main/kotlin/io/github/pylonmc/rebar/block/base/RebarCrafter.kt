@@ -8,10 +8,12 @@ import io.github.pylonmc.rebar.event.api.annotation.MultiHandlers
 import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.block.CrafterCraftEvent
+import org.jetbrains.annotations.ApiStatus
 
 interface RebarCrafter {
     fun onCraft(event: CrafterCraftEvent, priority: EventPriority)
 
+    @ApiStatus.Internal
     companion object : MultiListener {
         @UniversalHandler
         private fun onCrafterCraft(event: CrafterCraftEvent, priority: EventPriority) {

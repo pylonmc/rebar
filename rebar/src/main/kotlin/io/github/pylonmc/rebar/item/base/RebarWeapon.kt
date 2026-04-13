@@ -10,6 +10,7 @@ import org.bukkit.entity.Player
 import org.bukkit.event.EventPriority
 import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.entity.EntityDeathEvent
+import org.jetbrains.annotations.ApiStatus
 
 interface RebarWeapon {
     /**
@@ -22,6 +23,7 @@ interface RebarWeapon {
      */
     fun onUsedToKillEntity(event: EntityDeathEvent, priority: EventPriority) {}
 
+    @ApiStatus.Internal
     companion object : MultiListener {
         @UniversalHandler
         private fun onUsedToDamageEntity(event: EntityDamageByEntityEvent, priority: EventPriority) {
