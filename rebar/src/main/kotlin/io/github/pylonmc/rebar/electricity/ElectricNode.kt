@@ -1,5 +1,6 @@
 package io.github.pylonmc.rebar.electricity
 
+import io.github.pylonmc.rebar.block.BlockStorage
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.util.position.BlockPosition
 import io.github.pylonmc.rebar.util.rebarKey
@@ -7,7 +8,7 @@ import org.bukkit.Location
 import org.bukkit.persistence.PersistentDataAdapterContext
 import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.persistence.PersistentDataType
-import java.util.UUID
+import java.util.*
 import java.util.function.BiConsumer
 
 class ElectricNode private constructor(
@@ -64,6 +65,10 @@ class ElectricNode private constructor(
 
     override fun equals(other: Any?): Boolean = other is ElectricNode && other.id == this.id
     override fun hashCode(): Int = id.hashCode()
+
+    override fun toString(): String {
+        return "Electric node of type $type at $block (${BlockStorage.get(block)!!.key})"
+    }
 
     enum class Type {
         PRODUCER,

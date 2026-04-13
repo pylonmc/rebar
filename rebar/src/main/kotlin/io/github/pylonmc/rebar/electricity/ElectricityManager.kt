@@ -1,12 +1,35 @@
 package io.github.pylonmc.rebar.electricity
 
+import io.github.pylonmc.rebar.Rebar
+import io.github.pylonmc.rebar.config.RebarConfig
+import io.github.pylonmc.rebar.util.delayTicks
+import kotlinx.coroutines.launch
 import java.util.UUID
+import kotlin.collections.ArrayDeque
+import kotlin.collections.find
+import kotlin.collections.indices
+import kotlin.collections.isNotEmpty
+import kotlin.collections.mutableMapOf
+import kotlin.collections.mutableSetOf
+import kotlin.collections.set
+import kotlin.collections.toSet
 
 object ElectricityManager {
 
     private val networks = mutableSetOf<ElectricNetwork>()
 
     private val nodes = mutableMapOf<UUID, ElectricNode>()
+
+    init {
+        Rebar.scope.launch {
+            while (true) {
+                for (network in networks) {
+                    network.tick()
+                }
+                delayTicks(RebarConfig.ELECTRICITY_TICK_INTERVAL.toLong())
+            }
+        }
+    }
 
     @JvmStatic
     fun addNode(node: ElectricNode) {

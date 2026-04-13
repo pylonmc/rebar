@@ -16,8 +16,7 @@ import org.bukkit.block.Block
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.jetbrains.annotations.ApiStatus
-import java.util.IdentityHashMap
-import java.util.UUID
+import java.util.*
 
 sealed interface RebarElectricBlock {
 
@@ -102,10 +101,9 @@ sealed interface RebarElectricBlock {
     interface Connector : RebarElectricBlock {
 
         /**
-         * A map of the current capacities of this connector to each of its connections, in amperes.
-         * The keys of this map are the IDs of the connected nodes, and the values are the current capacities to those nodes.
+         * Returns the maximum amount of current, in amperes, that can flow from this connector to the given node
          */
-        val currentCapacities: Map<UUID, Double>
+        fun getCurrentLimit(otherNode: ElectricNode): Double
     }
 
     companion object : Listener {

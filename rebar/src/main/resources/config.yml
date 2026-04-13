@@ -17,6 +17,9 @@ fluid-tick-interval: 5
 # The interval (in Minecraft ticks) between cargo ticks
 cargo-tick-interval: 20
 
+# The interval (in Minecraft ticks) between electricity network ticks
+electricity-tick-interval: 5
+
 # The global multiplier for the number of items transferred per cargo tick (must be a whole number)
 cargo-transfer-rate-multiplier: 1
 
