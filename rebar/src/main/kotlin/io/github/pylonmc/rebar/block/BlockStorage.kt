@@ -31,7 +31,7 @@ import org.bukkit.event.world.ChunkUnloadEvent
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.persistence.PersistentDataType
-import java.util.Collections
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.random.Random
@@ -250,7 +250,7 @@ object BlockStorage : Listener {
     }
 
     /**
-     * Returns all the Plyon blocks with type [key].
+     * Returns all the Pylon blocks with type [key].
      */
     @JvmStatic
     fun getByKey(key: NamespacedKey): Collection<RebarBlock> =
@@ -261,6 +261,18 @@ object BlockStorage : Listener {
         } else {
             emptySet()
         }
+
+    /**
+     * Returns all the Pylon blocks of type [T]
+     */
+    @JvmStatic
+    fun <T> getByType(clazz: Class<T>) = lockBlockRead { blocks.values.filter { clazz.isInstance(it) }.map { clazz.cast(it)!! } }
+
+    /**
+     * Returns all the Pylon blocks of type [T]
+     */
+    @JvmStatic
+    inline fun <reified T> getByType() = getByType(T::class.java)
 
     /**
      * Returns whether the block at [blockPosition] is a Rebar block.

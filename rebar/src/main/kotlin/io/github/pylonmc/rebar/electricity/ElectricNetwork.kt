@@ -137,6 +137,11 @@ class ElectricNetwork {
                 RebarElectricBlock.Consumer.setPowered(consumer.consumerBlock, true)
             }
         }
+
+        for ((edge, load) in edgeLoads) {
+            edge.from.maybeConnectorBlock?.notifyCurrentFlow(edge.to, load)
+            edge.to.maybeConnectorBlock?.notifyCurrentFlow(edge.from, load)
+        }
     }
 
     private fun <K> roundRobinFill(limits: Map<K, Double>, amount: Double): Map<K, Double> {
@@ -221,7 +226,12 @@ class ElectricNetwork {
             loads.merge(edge, current, Double::plus)
             currentPower = current * currentVoltage
         }
-        return LoadResult(loads, currentPower, currentVoltage)
+        return if (currentPower roughlyEquals initialPower) {
+            LoadResult(loads, currentPower, currentVoltage)
+        } else {
+            // some limit has been hit somewhere, recalculate based on actual power delivered
+            calculateLoadOnEdges(path, existingLoads, limits, currentPower, initialVoltage)
+        }
     }
 
     private data class LoadResult(val currents: Map<Edge, Double>, val finalPower: Double, val finalVoltage: Double)

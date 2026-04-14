@@ -104,6 +104,11 @@ sealed interface RebarElectricBlock {
          * Returns the maximum amount of current, in amperes, that can flow from this connector to the given node
          */
         fun getCurrentLimit(otherNode: ElectricNode): Double
+
+        /**
+         * Called when current flows either from this connector to [otherNode], or from [otherNode] to this connector.
+         */
+        fun notifyCurrentFlow(otherNode: ElectricNode, current: Double) {}
     }
 
     companion object : Listener {
