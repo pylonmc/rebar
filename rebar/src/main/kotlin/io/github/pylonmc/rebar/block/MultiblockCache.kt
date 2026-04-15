@@ -113,7 +113,9 @@ internal object MultiblockCache : Listener {
     }
 
     private fun onMultiblockAdded(multiblock: RebarMultiblock) {
-        for (chunk in multiblock.chunksOccupied) {
+        val chunks = multiblock.chunksOccupied
+        check(!chunks.isEmpty()) { "Your multiblock must occupy at least one chunk" }
+        for (chunk in chunks) {
             multiblocksWithComponentsInChunk.getOrPut(chunk) { mutableSetOf() }.add(multiblock.block.position)
         }
 

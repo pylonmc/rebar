@@ -166,9 +166,10 @@ interface RebarSimpleMultiblock : RebarMultiblock, RebarEntityHolderBlock, Rebar
             val display = BlockDisplayBuilder()
                 .material(materials.first())
                 .glow(Color.WHITE)
-                .transformation(TransformBuilder().scale(0.5))
-                .displayWidth(0.5f)
-                .displayHeight(0.5f)
+                // .51 instead of .5 to prevent z-fighting for half-sized blocks
+                .transformation(TransformBuilder().scale(0.51))
+                .displayWidth(0.51f)
+                .displayHeight(0.51f)
                 .build(block.location.toCenterLocation())
             EntityStorage.add(MultiblockGhostBlock(display, materials.joinToString(", ") { it.key.toString() }))
 
@@ -240,7 +241,8 @@ interface RebarSimpleMultiblock : RebarMultiblock, RebarEntityHolderBlock, Rebar
             val display = BlockDisplayBuilder()
                 .material(blockDatas.first().material)
                 .glow(Color.WHITE)
-                .transformation(TransformBuilder().scale(0.5))
+                // .51 instead of .5 to prevent z-fighting for half-sized blocks
+                .transformation(TransformBuilder().scale(0.51))
                 .build(block.location.toCenterLocation())
             EntityStorage.add(MultiblockGhostBlock(display, stringDatas.joinToString(", ")))
 
@@ -302,7 +304,8 @@ interface RebarSimpleMultiblock : RebarMultiblock, RebarEntityHolderBlock, Rebar
                         blockDisplay = BlockDisplayBuilder()
                             .material(blockDatas.first().material)
                             .glow(Color.WHITE)
-                            .transformation(TransformBuilder().scale(0.5))
+                            // .51 instead of .5 to prevent z-fighting for half-sized blocks
+                            .transformation(TransformBuilder().scale(0.51))
                             .build(block.location.toCenterLocation())
                     }
 
@@ -323,7 +326,8 @@ interface RebarSimpleMultiblock : RebarMultiblock, RebarEntityHolderBlock, Rebar
                         itemDisplay = ItemDisplayBuilder()
                             .itemStack(itemBuilder)
                             .glow(Color.WHITE)
-                            .transformation(TransformBuilder().scale(0.5))
+                            // .51 instead of .5 to prevent z-fighting for half-sized blocks
+                            .transformation(TransformBuilder().scale(0.51))
                             .build(block.location.toCenterLocation())
                     }
 
@@ -388,7 +392,8 @@ interface RebarSimpleMultiblock : RebarMultiblock, RebarEntityHolderBlock, Rebar
             val display = ItemDisplayBuilder()
                 .itemStack(ItemStackBuilder.of(schema.material).addCustomModelDataString(key.toString()))
                 .glow(Color.WHITE)
-                .transformation(TransformBuilder().scale(0.5))
+                // .51 instead of .5 to prevent z-fighting for half-sized blocks
+                .transformation(TransformBuilder().scale(0.51))
                 .build(block.location.toCenterLocation())
             EntityStorage.add(MultiblockGhostBlock(display, key.toString()))
             return display.uniqueId
