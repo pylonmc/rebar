@@ -22,6 +22,17 @@ interface RebarMovingEntity {
     fun onToggleSit(event: EntityToggleSitEvent, priority: EventPriority) {}
 
     companion object : MultiListener {
+        /**
+         * Because the EntityMoveEvent is often called hundreds if not thousands of times a tick, the overhead of checking
+         * if an entity is a RebarEntity stacks up. Every time the event is called, we process the event 6
+         * times (1 for each priority). To avoid this we have a variable that stores the last EntityMoveEvent that was not a RebarEntity
+         * and if the current event is the same as that one, we ignore it.
+         *
+         * EntityMoveEvent is a sync event so there should be no issues with concurrency.
+         *
+         * Ideally this is a temporary measure, we should try and find a better way to handle this (maybe optimize entity lookup if possible)
+         * and abstract it so other high frequency events can be handled to avoid the same issue.
+         */
         private var ignoredMoveEvent: EntityMoveEvent? = null
 
         @UniversalHandler

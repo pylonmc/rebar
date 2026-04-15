@@ -4,6 +4,7 @@ import info.debatty.java.stringsimilarity.JaroWinkler
 import io.github.pylonmc.rebar.content.guide.RebarGuide
 import io.github.pylonmc.rebar.guide.button.FluidButton
 import io.github.pylonmc.rebar.item.RebarItem
+import io.github.pylonmc.rebar.item.RebarItemSchema
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.util.gui.GuiItems
@@ -174,7 +175,7 @@ abstract class SearchPage(key: NamespacedKey) : SimpleStaticGuidePage(key) {
                 val key: NamespacedKey = if (item is FluidButton) {
                     item.currentFluid.key
                 } else {
-                    RebarItem.fromStack(item.getItemProvider(player).get())?.key ?: return null
+                    RebarItemSchema.fromStack(item.getItemProvider(player).get())?.key ?: return null
                 }
                 val addon = RebarRegistry.ADDONS[NamespacedKey(key.namespace, key.namespace)] ?: return null
                 val compactName = GlobalTranslator.render(addon.displayName, player.locale()).plainText.replace(" ", "").lowercase(player.locale())

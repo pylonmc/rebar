@@ -62,10 +62,8 @@ object EntityStorage : Listener {
      */
     @JvmStatic
     fun get(entity: Entity): RebarEntity<*>? {
-        if (entity.persistentDataContainer.has(RebarEntity.rebarEntityKeyKey)) {
-            return get(entity.uniqueId)
-        }
-        return null
+        // TODO: Re-evaluate if we should have a pdc check before locked map read
+        return get(entity.uniqueId)
     }
 
     /**

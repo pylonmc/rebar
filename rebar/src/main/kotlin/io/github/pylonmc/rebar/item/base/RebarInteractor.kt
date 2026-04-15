@@ -19,8 +19,8 @@ interface RebarInteractor : RebarCooldownable {
     companion object : MultiListener {
         @UniversalHandler
         private fun onUsedToClick(event: PlayerInteractEvent, priority: EventPriority) {
-            val rebarItem = event.item?.let { RebarItem.fromStack(it) } ?: return
-            if (rebarItem !is RebarInteractor) return
+            val rebarItem = event.item?.let { RebarItem.fromStack(it, RebarInteractor::class.java) } ?: return
+            if (rebarItem !is RebarItem) return
             if (!event.player.canUse(rebarItem, false)) {
                 event.setUseItemInHand(Event.Result.DENY)
                 return

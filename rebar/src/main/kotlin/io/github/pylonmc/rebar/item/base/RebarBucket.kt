@@ -24,8 +24,8 @@ interface RebarBucket {
     companion object : MultiListener {
         @UniversalHandler
         private fun onBucketEmptied(event: PlayerBucketEmptyEvent, priority: EventPriority) {
-            val rebarItem = event.itemStack?.let { RebarItem.fromStack(it) }
-            if (rebarItem !is RebarBucket) return
+            val rebarItem = event.itemStack?.let { RebarItem.fromStack(it, RebarBucket::class.java) }
+            if (rebarItem !is RebarItem) return
             if (!event.player.canUse(rebarItem, false)) {
                 event.isCancelled = true
                 return
@@ -41,8 +41,8 @@ interface RebarBucket {
         @UniversalHandler
         private fun onBucketFilled(event: PlayerBucketFillEvent, priority: EventPriority) {
             val stack = event.player.inventory.getItem(event.hand) // TODO: find out why this doesn't just use the fucking event's item like emptied
-            val rebarItem = RebarItem.fromStack(stack)
-            if (rebarItem !is RebarBucket) return
+            val rebarItem = RebarItem.fromStack(stack, RebarBucket::class.java)
+            if (rebarItem !is RebarItem) return
             if (!event.player.canUse(rebarItem, false)) {
                 event.isCancelled = true
                 return

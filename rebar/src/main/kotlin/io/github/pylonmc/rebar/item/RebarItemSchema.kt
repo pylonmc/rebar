@@ -27,7 +27,7 @@ import java.lang.invoke.MethodHandle
  */
 class RebarItemSchema @JvmOverloads internal constructor(
     val itemClass: Class<out RebarItem>,
-    val template: ItemStack,
+    private val template: ItemStack,
     val rebarBlockKey: NamespacedKey? = null
 ) : Keyed, RegistryHandler {
 
@@ -35,6 +35,13 @@ class RebarItemSchema @JvmOverloads internal constructor(
         ?: throw IllegalArgumentException("Provided item stack is not a Rebar item; make sure you are using ItemStackBuilder.defaultBuilder to create the item stack")
 
     val addon = getAddon(key)
+
+    /**
+     * Returns the raw [template] of the [RebarItemSchema], this is the template used
+     * for all base instances of this item. Modifying this will modify all items
+     * created from this schema. **Use with caution.**
+     */
+    fun getOriginalTemplate(): ItemStack = template
 
     /**
      * Return's a clone of the [template] [ItemStack]

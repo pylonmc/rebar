@@ -83,7 +83,7 @@ open class RebarItem(val stack: ItemStack) : Keyed {
         @Suppress("UnstableApiUsage")
         private fun checkName(schema: RebarItemSchema) {
             // Adventure is a perfect API with absolutely no problems whatsoever.
-            val name = schema.template.getData(DataComponentTypes.ITEM_NAME) as? TranslatableComponent
+            val name = schema.getOriginalTemplate().getData(DataComponentTypes.ITEM_NAME) as? TranslatableComponent
 
             var isNameValid = true
             if (name == null || name.key() != ItemStackBuilder.nameKey(schema.key)) {
@@ -128,6 +128,10 @@ open class RebarItem(val stack: ItemStack) : Keyed {
         /**
          * Gets a RebarItem from an ItemStack if the item is a Rebar item
          * Returns null if the ItemStack is not a Rebar item
+         *
+         * If you only want [RebarItem]s of a specific type, use the class specific method for better performance,
+         * it will check the underlying [RebarItemSchema.itemClass] *before* it constructs the [RebarItem]
+         * instead of constructing the [RebarItem] and then *after* checking its type.
          */
         @JvmStatic
         @Contract("null -> null")
@@ -143,10 +147,11 @@ open class RebarItem(val stack: ItemStack) : Keyed {
          */
         @JvmStatic
         @Contract("null -> null")
-        fun <T : RebarItem> fromStack(stack: ItemStack?, clazz: Class<T>): T? {
-            val rebarItem = fromStack(stack) ?: return null
-            if (!clazz.isInstance(rebarItem)) return null
-            return clazz.cast(rebarItem)
+        @Suppress("UNCHECKED_CAST")
+        fun <T> fromStack(stack: ItemStack?, clazz: Class<T>): T? {
+            val schema = RebarItemSchema.fromStack(stack) ?: return null
+            if (!clazz.isAssignableFrom(schema.itemClass)) return null
+            return schema.itemClass.cast(schema.loadConstructor.invoke(stack)) as T?
         }
 
         @JvmSynthetic

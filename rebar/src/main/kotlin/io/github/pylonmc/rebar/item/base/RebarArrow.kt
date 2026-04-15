@@ -37,8 +37,8 @@ interface RebarArrow {
     companion object : MultiListener {
         @UniversalHandler
         private fun onArrowReady(event: PlayerReadyArrowEvent, priority: EventPriority) {
-            val arrow = RebarItem.fromStack(event.arrow)
-            if (arrow !is RebarArrow) return
+            val arrow = RebarItem.fromStack(event.arrow, RebarArrow::class.java)
+            if (arrow !is RebarItem) return
             if (!event.player.canUse(arrow, false)) {
                 event.isCancelled = true
                 return
@@ -53,8 +53,8 @@ interface RebarArrow {
 
         @UniversalHandler
         private fun onArrowShotFromBow(event: EntityShootBowEvent, priority: EventPriority) {
-            val arrow = event.consumable?.let { RebarItem.fromStack(it) }
-            if (arrow !is RebarArrow) return
+            val arrow = event.consumable?.let { RebarItem.fromStack(it, RebarArrow::class.java) }
+            if (arrow !is RebarItem) return
 
             try {
                 MultiHandlers.handleEvent(arrow, "onArrowShotFromBow", event, priority)
@@ -66,8 +66,8 @@ interface RebarArrow {
         @UniversalHandler
         private fun onArrowHit(event: ProjectileHitEvent, priority: EventPriority) {
             if (event.entity is AbstractArrow) {
-                val arrow = RebarItem.fromStack((event.entity as AbstractArrow).itemStack)
-                if (arrow is RebarArrow) {
+                val arrow = RebarItem.fromStack((event.entity as AbstractArrow).itemStack, RebarArrow::class.java)
+                if (arrow is RebarItem) {
                     try {
                         MultiHandlers.handleEvent(arrow, "onArrowHit", event, priority)
                     } catch (e: Exception) {
@@ -80,8 +80,8 @@ interface RebarArrow {
         @UniversalHandler
         private fun onArrowDamage(event: EntityDamageByEntityEvent, priority: EventPriority) {
             if (event.damager is AbstractArrow) {
-                val arrow = RebarItem.fromStack((event.damager as AbstractArrow).itemStack)
-                if (arrow is RebarArrow) {
+                val arrow = RebarItem.fromStack((event.damager as AbstractArrow).itemStack, RebarArrow::class.java)
+                if (arrow is RebarItem) {
                     try {
                         MultiHandlers.handleEvent(arrow, "onArrowDamage", event, priority)
                     } catch (e: Exception) {

@@ -24,8 +24,8 @@ interface RebarBow {
     companion object : MultiListener {
         @UniversalHandler
         private fun onBowReady(event: PlayerReadyArrowEvent, priority: EventPriority) {
-            val bow = RebarItem.fromStack(event.bow)
-            if (bow !is RebarBow) return
+            val bow = RebarItem.fromStack(event.bow, RebarBow::class.java)
+            if (bow !is RebarItem) return
             if (!event.player.canUse(bow, false)) {
                 event.isCancelled = true
                 return
@@ -40,8 +40,8 @@ interface RebarBow {
 
         @UniversalHandler
         private fun onBowFired(event: EntityShootBowEvent, priority: EventPriority) {
-            val bow = event.bow?.let { RebarItem.fromStack(it) }
-            if (bow !is RebarBow) return
+            val bow = event.bow?.let { RebarItem.fromStack(it, RebarBow::class.java) }
+            if (bow !is RebarItem) return
             try {
                 MultiHandlers.handleEvent(bow, "onBowFired", event, priority)
             } catch (e: Exception) {

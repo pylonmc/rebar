@@ -10,6 +10,7 @@ import io.github.pylonmc.rebar.config.ConfigSection
 import io.github.pylonmc.rebar.config.ContributorConfig
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter
 import io.github.pylonmc.rebar.item.RebarItem
+import io.github.pylonmc.rebar.item.RebarItemSchema
 import io.github.pylonmc.rebar.item.builder.customMiniMessage
 import io.github.pylonmc.rebar.nms.NmsAccessor
 import io.github.pylonmc.rebar.registry.RebarRegistry
@@ -316,7 +317,7 @@ fun fromMiniMessage(string: String): Component = customMiniMessage.deserialize(s
 fun findRebarItemInInventory(inventory: Inventory, targetItem: RebarItem): Int? {
     for (i in 0..<inventory.size) {
         val item = inventory.getItem(i)?.let {
-            RebarItem.fromStack(it)
+            RebarItemSchema.fromStack(it)
         }
         if (item == targetItem) {
             return i
@@ -327,8 +328,8 @@ fun findRebarItemInInventory(inventory: Inventory, targetItem: RebarItem): Int? 
 
 @JvmSynthetic
 inline fun <reified T> ItemStack?.isRebarAndIsNot(): Boolean {
-    val rebarItem = RebarItem.fromStack(this)
-    return rebarItem != null && rebarItem !is T
+    val schema = RebarItemSchema.fromStack(this)
+    return schema != null && !T::class.java.isAssignableFrom(schema.itemClass)
 }
 
 @JvmSynthetic
@@ -632,10 +633,4 @@ fun CoroutineContext.createChildContext(): CoroutineContext = this + Job(this[Jo
 /**
  * @return Whether the entity has at least one tracking player, a tracking player is just a player who has & is receiving packets for the entity.
  */
-@JvmSynthetic
 fun Entity.hasTracker() = NmsAccessor.instance.hasTracker(this)
-
-/**
- * @return Whether the entity has at least one tracking player, a tracking player is just a player who has & is receiving packets for the entity.
- */
-fun hasAnyTracker(entity: Entity) = NmsAccessor.instance.hasTracker(entity)

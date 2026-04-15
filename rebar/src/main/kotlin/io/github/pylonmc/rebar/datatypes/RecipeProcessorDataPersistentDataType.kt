@@ -15,6 +15,7 @@ internal object RecipeProcessorDataPersistentDataType : PersistentDataType<Persi
     private val RECIPE_TIME_TICKS_KEY = rebarKey("recipe_time_ticks")
     private val RECIPE_TICKS_REMAINING_KEY = rebarKey("recipe_ticks_remaining")
     private val PROGRESS_ITEM_KEY = rebarKey("progress_item")
+    private val LAST_RECIPE_KEY = rebarKey("last_recipe")
 
     private val RECIPE_TYPE_TYPE = RebarSerializers.KEYED.keyedTypeFrom { key -> RebarRegistry.RECIPE_TYPES.getOrThrow(key) }
 
@@ -31,7 +32,7 @@ internal object RecipeProcessorDataPersistentDataType : PersistentDataType<Persi
             primitive.get(RECIPE_TIME_TICKS_KEY, RebarSerializers.INTEGER),
             primitive.get(RECIPE_TICKS_REMAINING_KEY, RebarSerializers.INTEGER),
             primitive.get(PROGRESS_ITEM_KEY, RebarSerializers.PROGRESS_ITEM),
-            null
+            primitive.get(LAST_RECIPE_KEY, recipePDT),
         )
     }
 
@@ -43,7 +44,7 @@ internal object RecipeProcessorDataPersistentDataType : PersistentDataType<Persi
         pdc.setNullable(RECIPE_TIME_TICKS_KEY, RebarSerializers.INTEGER, complex.recipeTimeTicks)
         pdc.setNullable(RECIPE_TICKS_REMAINING_KEY, RebarSerializers.INTEGER, complex.recipeTicksRemaining)
         pdc.setNullable(PROGRESS_ITEM_KEY, RebarSerializers.PROGRESS_ITEM, complex.progressItem)
-        pdc.setNullable(rebarKey("last_recipe"), recipePDT, complex.lastRecipe)
+        pdc.setNullable(LAST_RECIPE_KEY, recipePDT, complex.lastRecipe)
         return pdc
     }
 }

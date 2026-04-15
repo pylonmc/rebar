@@ -17,8 +17,8 @@ interface RebarSplashPotion {
     companion object : MultiListener {
         @UniversalHandler
         private fun handle(event: PotionSplashEvent, priority: EventPriority) {
-            val rebarPotion = RebarItem.fromStack(event.potion.item)
-            if (rebarPotion is RebarSplashPotion) {
+            val rebarPotion = RebarItem.fromStack(event.potion.item, RebarSplashPotion::class.java)
+            if (rebarPotion is RebarItem) {
                 try {
                     MultiHandlers.handleEvent(rebarPotion, "onSplash", event, priority)
                 } catch (e: Exception) {

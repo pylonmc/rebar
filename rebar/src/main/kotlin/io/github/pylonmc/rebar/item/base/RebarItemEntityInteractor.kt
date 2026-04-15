@@ -18,8 +18,8 @@ interface RebarItemEntityInteractor : RebarCooldownable {
     companion object : MultiListener {
         @UniversalHandler
         private fun onUsedToRightClickEntity(event: PlayerInteractEntityEvent, priority: EventPriority) {
-            val rebarItemMainHand = RebarItem.fromStack(event.player.inventory.itemInMainHand)
-            if (rebarItemMainHand is RebarItemEntityInteractor) {
+            val rebarItemMainHand = RebarItem.fromStack(event.player.inventory.itemInMainHand, RebarItemEntityInteractor::class.java)
+            if (rebarItemMainHand is RebarItem) {
                 if (!event.player.canUse(rebarItemMainHand, false)) {
                     event.isCancelled = true
                 } else if (rebarItemMainHand.respectCooldown && event.player.getCooldown(rebarItemMainHand.stack) > 0) {
@@ -33,8 +33,8 @@ interface RebarItemEntityInteractor : RebarCooldownable {
                 }
             }
 
-            val rebarItemOffHand = RebarItem.fromStack(event.player.inventory.itemInOffHand)
-            if (rebarItemOffHand is RebarItemEntityInteractor) {
+            val rebarItemOffHand = RebarItem.fromStack(event.player.inventory.itemInOffHand, RebarItemEntityInteractor::class.java)
+            if (rebarItemOffHand is RebarItem) {
                 if (!event.player.canUse(rebarItemOffHand, false)) {
                     event.isCancelled = true
                 } else if (rebarItemOffHand.respectCooldown && event.player.getCooldown(rebarItemOffHand.stack) > 0) {

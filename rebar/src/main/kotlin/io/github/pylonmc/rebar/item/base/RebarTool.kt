@@ -24,8 +24,8 @@ interface RebarTool {
     companion object : MultiListener {
         @UniversalHandler
         private fun onUsedToDamageBlock(event: BlockDamageEvent, priority: EventPriority) {
-            val rebarItem = RebarItem.fromStack(event.itemInHand)
-            if (rebarItem !is RebarTool) return
+            val rebarItem = RebarItem.fromStack(event.itemInHand, RebarTool::class.java)
+            if (rebarItem !is RebarItem) return
             if (!event.player.canUse(rebarItem, false)) {
                 event.isCancelled = true
                 return
@@ -40,8 +40,8 @@ interface RebarTool {
 
         @UniversalHandler
         private fun onUsedToBreakBlock(event: BlockBreakEvent, priority: EventPriority) {
-            val rebarItemMainHand = RebarItem.fromStack(event.player.inventory.itemInMainHand)
-            if (rebarItemMainHand is RebarTool) {
+            val rebarItemMainHand = RebarItem.fromStack(event.player.inventory.itemInMainHand, RebarTool::class.java)
+            if (rebarItemMainHand is RebarItem) {
                 if (!event.player.canUse(rebarItemMainHand, false)) {
                     event.isCancelled = true
                     return
@@ -54,8 +54,8 @@ interface RebarTool {
                 }
             }
 
-            val rebarItemOffHand = RebarItem.fromStack(event.player.inventory.itemInOffHand)
-            if (rebarItemOffHand is RebarTool) {
+            val rebarItemOffHand = RebarItem.fromStack(event.player.inventory.itemInOffHand, RebarTool::class.java)
+            if (rebarItemOffHand is RebarItem) {
                 if (!event.player.canUse(rebarItemOffHand, false)) {
                     event.isCancelled = true
                     return
