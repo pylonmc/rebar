@@ -382,6 +382,7 @@ object BlockStorage : Listener {
 
         RebarBlockPlaceEvent(blockPosition.block, block, context).callEvent()
         block.postInitialise()
+        RebarBlockInitializeEvent(blockPosition.block, block).callEvent()
         BlockCullingEngine.insert(block)
 
         return block

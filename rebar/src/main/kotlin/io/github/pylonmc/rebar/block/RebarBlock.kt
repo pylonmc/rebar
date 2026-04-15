@@ -17,6 +17,7 @@ import io.github.pylonmc.rebar.content.debug.DebugWaxedWeatheredCutCopperStairs
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.entity.packet.BlockTextureEntity
 import io.github.pylonmc.rebar.event.RebarBlockDeserializeEvent
+import io.github.pylonmc.rebar.event.RebarBlockInitializeEvent
 import io.github.pylonmc.rebar.event.RebarBlockSerializeEvent
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
 import io.github.pylonmc.rebar.nms.NmsAccessor
@@ -409,6 +410,7 @@ open class RebarBlock private constructor(val block: Block) : Keyed {
 
                 RebarBlockDeserializeEvent(block.block, block, pdc).callEvent()
                 block.postInitialise()
+                RebarBlockInitializeEvent(block.block, block).callEvent()
                 block.postLoad()
                 return block
             } catch (t: Throwable) {

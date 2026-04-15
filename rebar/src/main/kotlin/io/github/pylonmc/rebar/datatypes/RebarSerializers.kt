@@ -66,6 +66,15 @@ object RebarSerializers {
     val ENUM = EnumPersistentDataType
 
     @JvmField
+    val PAIR = PairPersistentDataType
+
+    /**
+     * @see [PolymorphicPersistentDataType]
+     */
+    @JvmField
+    val POLYMORPHIC = PolymorphicPersistentDataType
+
+    @JvmField
     val NAMESPACED_KEY = NamespacedKeyPersistentDataType
 
     @JvmField

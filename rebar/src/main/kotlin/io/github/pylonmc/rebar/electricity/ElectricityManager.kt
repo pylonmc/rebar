@@ -6,13 +6,6 @@ import io.github.pylonmc.rebar.util.delayTicks
 import kotlinx.coroutines.launch
 import java.util.UUID
 import kotlin.collections.ArrayDeque
-import kotlin.collections.find
-import kotlin.collections.indices
-import kotlin.collections.isNotEmpty
-import kotlin.collections.mutableMapOf
-import kotlin.collections.mutableSetOf
-import kotlin.collections.set
-import kotlin.collections.toSet
 
 object ElectricityManager {
 
@@ -43,7 +36,7 @@ object ElectricityManager {
         nodes.remove(node.id)
         val network = node.network
         network.removeNode(node)
-        if (node.type == ElectricNode.Type.CONNECTOR) {
+        if (node is ElectricNode.Connector) {
             refreshNetworks(network)
         }
     }

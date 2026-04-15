@@ -44,8 +44,7 @@ import org.bukkit.util.Vector
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.MustBeInvokedByOverriders
 import org.joml.Vector3i
-import java.util.IdentityHashMap
-import java.util.UUID
+import java.util.*
 import kotlin.math.abs
 import kotlin.math.min
 import kotlin.time.Duration.Companion.seconds
@@ -577,7 +576,7 @@ interface RebarSimpleMultiblock : RebarMultiblock, RebarEntityHolderBlock, Rebar
     }
 
     override fun isPartOfMultiblock(otherBlock: Block): Boolean = validStructures().any {
-        it.contains((otherBlock.position - block.position).vector3i)
+        it.contains((otherBlock.position - block.position).toVector3i())
     }
 
     override val culledEntityIds: Iterable<UUID>

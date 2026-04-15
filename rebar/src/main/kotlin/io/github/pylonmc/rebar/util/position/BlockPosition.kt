@@ -7,7 +7,7 @@ import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
 import org.bukkit.util.Vector
 import org.joml.Vector3i
-import java.util.UUID
+import java.util.*
 
 /**
  * Represents the position of a block (x, y, z, and world).
@@ -102,11 +102,9 @@ class BlockPosition(val worldId: UUID?, val x: Int, val y: Int, val z: Int) {
         return BlockPosition(worldId, x / value, y / value, z / value)
     }
 
-    val vector3i: Vector3i
-        get() = Vector3i(x, y, z)
+    fun toVector3i(): Vector3i = Vector3i(x, y, z)
 
-    val location: Location
-        get() = Location(world, x.toDouble(), y.toDouble(), z.toDouble())
+    fun toLocation(): Location = Location(world, x.toDouble(), y.toDouble(), z.toDouble())
 
     val block: Block
         get() = world?.getBlockAt(x, y, z) ?: error("World is null")
