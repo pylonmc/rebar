@@ -5,6 +5,7 @@ import io.github.pylonmc.rebar.event.RebarBlockDeserializeEvent
 import io.github.pylonmc.rebar.event.RebarBlockSerializeEvent
 import io.github.pylonmc.rebar.event.RebarBlockUnloadEvent
 import io.github.pylonmc.rebar.fluid.RebarFluid
+import io.github.pylonmc.rebar.util.FLUID_EPSILON
 import io.github.pylonmc.rebar.util.rebarKey
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
@@ -71,7 +72,7 @@ interface RebarFluidTank : RebarFluidBlock {
      * Sets the capacity of the fluid tank
      */
     fun setCapacity(capacity: Double) {
-        check(capacity > -1.0e-6)
+        check(capacity > -FLUID_EPSILON)
         fluidData.capacity = max(0.0, capacity)
     }
 
@@ -80,7 +81,7 @@ interface RebarFluidTank : RebarFluidBlock {
      * the tank.
      */
     fun canSetFluid(amount: Double): Boolean
-            = amount > -1.0e-6 && amount < fluidData.capacity + 1.0e-6
+            = amount > -FLUID_EPSILON && amount < fluidData.capacity + FLUID_EPSILON
 
     /**
      * Checks if adding a certain amount of fluid would result in a valid
@@ -107,7 +108,7 @@ interface RebarFluidTank : RebarFluidBlock {
             val original = fluidData.amount
             fluidData.amount = max(0.0, amount)
 
-            if (original > amount && amount < 1.0e-6) {
+            if (original > amount && amount < FLUID_EPSILON) {
                 setFluidType(null)
                 setFluid(0.0)
             }
@@ -144,7 +145,7 @@ interface RebarFluidTank : RebarFluidBlock {
         val fluidData = this.fluidData // local variable to save calling fluidData getter multiple times
         return if (fluidData.fluid == null) {
             fluidData.capacity
-        } else if (fluid == fluidData.fluid && fluidData.amount <= fluidData.capacity - 1.0e-6) {
+        } else if (fluid == fluidData.fluid && fluidData.amount <= fluidData.capacity - FLUID_EPSILON) {
             fluidData.capacity - fluidData.amount
         } else {
             0.0

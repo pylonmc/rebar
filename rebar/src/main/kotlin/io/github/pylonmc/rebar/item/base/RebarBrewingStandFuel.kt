@@ -19,8 +19,8 @@ interface RebarBrewingStandFuel {
     companion object : MultiListener {
         @UniversalHandler
         private fun onUsedAsBrewingStandFuel(event: BrewingStandFuelEvent, priority: EventPriority) {
-            val rebarItem = RebarItem.fromStack(event.fuel)
-            if (rebarItem !is RebarBrewingStandFuel) return
+            val rebarItem = RebarItem.fromStack(event.fuel, RebarBrewingStandFuel::class.java)
+            if (rebarItem !is RebarItem) return
 
             try {
                 MultiHandlers.handleEvent(rebarItem, "onUsedAsBrewingStandFuel", event, priority)

@@ -45,7 +45,7 @@ class IngredientCalculator private constructor() {
         do {
             recipe = when (input) {
                 is FluidOrItem.Fluid -> findRecipeFor(input.fluid)
-                is FluidOrItem.Item -> findRecipeFor(RebarItem.from(input.item)!!) // guaranteed to be a Rebar item because of the vanilla check above
+                is FluidOrItem.Item -> findRecipeFor(input.item)
             }
 
             if (recipe != null && recipe.key in calculationStack) {
@@ -95,12 +95,12 @@ class IngredientCalculator private constructor() {
         calculationStack.removeLast()
     }
 
-    private fun findRecipeFor(item: RebarItem): RebarRecipe? {
+    private fun findRecipeFor(item: ItemStack): RebarRecipe? {
         // 1. if there's a recipe which produces *only* that item, use that
         // 2. if there's multiple recipes which produce only that item, choose the highest one by priority, then the *lowest* one lexographically
         val singleOutputRecipes = RebarRegistry.RECIPE_TYPES
             .flatMap { it.recipes }
-            .filter { recipe -> recipe !in blacklistedRecipes && recipe.isOutput(item.stack) && recipe.results.size == 1 }
+            .filter { recipe -> recipe !in blacklistedRecipes && recipe.isOutput(item) && recipe.results.size == 1 }
             .sortedWith(compareByDescending<RebarRecipe> { it.priority }.thenBy { it.key })
 
         if (singleOutputRecipes.isNotEmpty()) {
@@ -111,7 +111,7 @@ class IngredientCalculator private constructor() {
         // 4. if there's multiple recipes which produce the item alongside other things, choose the highest one by priority, then the *lowest* one lexographically
         val multiOutputRecipes = RebarRegistry.RECIPE_TYPES
             .flatMap { it.recipes }
-            .filter { recipe -> recipe !in blacklistedRecipes && recipe.isOutput(item.stack) && recipe.results.size > 1 }
+            .filter { recipe -> recipe !in blacklistedRecipes && recipe.isOutput(item) && recipe.results.size > 1 }
             .sortedWith(compareByDescending<RebarRecipe> { it.priority }.thenBy { it.key })
 
         if (multiOutputRecipes.isNotEmpty()) {
@@ -196,6 +196,7 @@ class IngredientCalculator private constructor() {
 
         @JvmStatic
         fun calculateInputsAndByproducts(input: FluidOrItem): IngredientCalculation {
+            // TODO: consider caching
             val calculator = IngredientCalculator()
             calculator.calculate(input.asOne(), input.amount)
 

@@ -83,7 +83,7 @@ open class RebarItem(val stack: ItemStack) : Keyed {
         @Suppress("UnstableApiUsage")
         private fun checkName(schema: RebarItemSchema) {
             // Adventure is a perfect API with absolutely no problems whatsoever.
-            val name = schema.getItemStack().getData(DataComponentTypes.ITEM_NAME) as? TranslatableComponent
+            val name = schema.getOriginalTemplate().getData(DataComponentTypes.ITEM_NAME) as? TranslatableComponent
 
             var isNameValid = true
             if (name == null || name.key() != ItemStackBuilder.nameKey(schema.key)) {
@@ -114,7 +114,7 @@ open class RebarItem(val stack: ItemStack) : Keyed {
             RebarRegistry.ITEMS.register(schema)
 
             // pre-merge configs and check for constructor errors
-            fromStack(schema.getItemStack())
+            schema.getRebarItem()
         }
 
         @JvmStatic
@@ -128,15 +128,16 @@ open class RebarItem(val stack: ItemStack) : Keyed {
         /**
          * Gets a RebarItem from an ItemStack if the item is a Rebar item
          * Returns null if the ItemStack is not a Rebar item
+         *
+         * If you only want [RebarItem]s of a specific type, use the class specific method for better performance,
+         * it will check the underlying [RebarItemSchema.itemClass] *before* it constructs the [RebarItem]
+         * instead of constructing the [RebarItem] and then *after* checking its type.
          */
         @JvmStatic
         @Contract("null -> null")
         fun fromStack(stack: ItemStack?): RebarItem? {
             if (stack == null || stack.isEmpty) return null
-            val id = stack.persistentDataContainer.get(RebarItemSchema.rebarItemKeyKey, RebarSerializers.NAMESPACED_KEY)
-                ?: return null
-            val schema = RebarRegistry.ITEMS[id]
-                ?: return null
+            val schema = RebarItemSchema.fromStack(stack) ?: return null
             return schema.itemClass.cast(schema.loadConstructor.invoke(stack))
         }
 
@@ -146,10 +147,11 @@ open class RebarItem(val stack: ItemStack) : Keyed {
          */
         @JvmStatic
         @Contract("null -> null")
-        fun <T : RebarItem> fromStack(stack: ItemStack?, clazz: Class<T>): T? {
-            val rebarItem = fromStack(stack) ?: return null
-            if (!clazz.isInstance(rebarItem)) return null
-            return clazz.cast(rebarItem)
+        @Suppress("UNCHECKED_CAST")
+        fun <T> fromStack(stack: ItemStack?, clazz: Class<T>): T? {
+            val schema = RebarItemSchema.fromStack(stack) ?: return null
+            if (!clazz.isAssignableFrom(schema.itemClass)) return null
+            return schema.itemClass.cast(schema.loadConstructor.invoke(stack)) as T?
         }
 
         @JvmSynthetic
@@ -165,6 +167,16 @@ open class RebarItem(val stack: ItemStack) : Keyed {
         @Contract("null -> false")
         fun isRebarItem(stack: ItemStack?): Boolean {
             return stack != null && stack.persistentDataContainer.has(RebarItemSchema.rebarItemKeyKey)
+        }
+
+        /**
+         * Checks if [stack] is a Rebar item castable to [clazz].
+         */
+        @JvmStatic
+        @Contract("null, _ -> false")
+        fun isRebarItem(stack: ItemStack?, clazz: Class<*>): Boolean {
+            val schema = RebarItemSchema.fromStack(stack) ?: return false
+            return clazz.isAssignableFrom(schema.itemClass)
         }
 
         /**

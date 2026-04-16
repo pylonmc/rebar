@@ -3,6 +3,7 @@
 package io.github.pylonmc.rebar.command
 
 import com.destroystokyo.paper.profile.PlayerProfile
+import com.google.gson.internal.JavaVersion
 import com.mojang.brigadier.arguments.DoubleArgumentType
 import com.mojang.brigadier.arguments.IntegerArgumentType
 import com.mojang.brigadier.arguments.LongArgumentType
@@ -17,6 +18,7 @@ import io.github.pylonmc.rebar.content.guide.RebarGuide
 import io.github.pylonmc.rebar.entity.display.transform.Rotation
 import io.github.pylonmc.rebar.gametest.GameTestConfig
 import io.github.pylonmc.rebar.i18n.RebarArgument
+import io.github.pylonmc.rebar.i18n.customMiniMessage
 import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.item.RebarItemSchema
 import io.github.pylonmc.rebar.item.research.Research
@@ -32,6 +34,7 @@ import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.util.mergeGlobalConfig
 import io.github.pylonmc.rebar.util.position.BlockPosition
 import io.github.pylonmc.rebar.util.vanillaDisplayName
+import io.papermc.paper.ServerBuildInfo
 import io.papermc.paper.command.brigadier.CommandSourceStack
 import io.papermc.paper.command.brigadier.argument.ArgumentTypes
 import io.papermc.paper.command.brigadier.argument.resolvers.BlockPositionResolver
@@ -48,6 +51,8 @@ import net.kyori.adventure.text.ComponentLike
 import net.kyori.adventure.text.JoinConfiguration
 import net.kyori.adventure.text.event.ClickEvent
 import net.kyori.adventure.text.event.HoverEvent
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
+import org.bukkit.Bukkit
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Entity
 import org.bukkit.entity.Player
@@ -96,7 +101,7 @@ private val give = buildCommand("give") {
                 context.source.sender.sendVanillaFeedback(
                     "give.success." + if (singular) "single" else "multiple",
                     Component.text(amount),
-                    item.getItemStack().vanillaDisplayName(),
+                    item.getOriginalTemplate().vanillaDisplayName(),
                     if (singular) players[0].name() else Component.text(players.size)
                 )
             }
@@ -519,6 +524,38 @@ private val forceload = buildCommand("forceload") {
     }
 }
 
+private val versions = buildCommand("versions") {
+    executes { sender ->
+        RebarMetrics.onCommandRun("/rb versions")
+        val serverImplementation = Bukkit.getName()
+        val serverVersion = ServerBuildInfo.buildInfo().asString(ServerBuildInfo.StringRepresentation.VERSION_FULL)
+        val apiVersion = Bukkit.getBukkitVersion()
+        val rebarVersion = Rebar.pluginMeta.version
+        val javaVersion = JavaVersion.getMajorJavaVersion()
+        val addonVersions = Bukkit.getPluginManager().plugins.filter { plugin -> plugin is RebarAddon && plugin != Rebar }.map { plugin ->
+            customMiniMessage.deserialize(
+                "  <green><display_name></green> <dark_green><version></dark_green>",
+                Placeholder.component("display_name", (plugin as RebarAddon).displayName),
+                Placeholder.unparsed("version", plugin.pluginMeta.version)
+            )
+        }
+        val addonCount = addonVersions.size
+        var addonList = Component.empty()
+        for (addon in addonVersions) {
+            addonList = addonList.append(addon).appendNewline()
+        }
+        sender.sendFeedback("versions",
+            RebarArgument.of("server_implementation", serverImplementation),
+            RebarArgument.of("server_version", serverVersion),
+            RebarArgument.of("api_version", apiVersion),
+            RebarArgument.of("rebar_version", rebarVersion),
+            RebarArgument.of("java_version", javaVersion),
+            RebarArgument.of("addon_count", addonCount),
+            RebarArgument.of("addon_list", addonList)
+        )
+    }
+}
+
 @JvmSynthetic
 internal val ROOT_COMMAND = buildCommand("rebar") {
     permission("rebar.command.guide")
@@ -539,6 +576,7 @@ internal val ROOT_COMMAND = buildCommand("rebar") {
     then(confetti)
     then(finishMultiblock)
     then(forceload)
+    then(versions)
 }
 
 @JvmSynthetic

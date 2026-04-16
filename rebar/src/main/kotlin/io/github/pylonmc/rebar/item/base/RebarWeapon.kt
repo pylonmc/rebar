@@ -30,8 +30,8 @@ interface RebarWeapon {
             val damager = event.damageSource.causingEntity
             if (event.damageSource.isIndirect || damager !is Player) return
 
-            val rebarItemMainHand = RebarItem.fromStack(damager.inventory.itemInMainHand)
-            if (rebarItemMainHand is RebarWeapon) {
+            val rebarItemMainHand = RebarItem.fromStack(damager.inventory.itemInMainHand, RebarWeapon::class.java)
+            if (rebarItemMainHand is RebarItem) {
                 if (!damager.canUse(rebarItemMainHand, false)) {
                     event.isCancelled = true
                     return
@@ -44,8 +44,8 @@ interface RebarWeapon {
                 }
             }
 
-            val rebarItemOffHand = RebarItem.fromStack(damager.inventory.itemInOffHand)
-            if (rebarItemOffHand is RebarWeapon) {
+            val rebarItemOffHand = RebarItem.fromStack(damager.inventory.itemInOffHand, RebarWeapon::class.java)
+            if (rebarItemOffHand is RebarItem) {
                 if (!damager.canUse(rebarItemOffHand, false)) {
                     event.isCancelled = true
                     return
@@ -64,8 +64,8 @@ interface RebarWeapon {
             val killer = event.damageSource.causingEntity
             if (killer !is Player) return
 
-            val rebarItemMainHand = RebarItem.fromStack(killer.inventory.itemInMainHand)
-            if (rebarItemMainHand is RebarWeapon) {
+            val rebarItemMainHand = RebarItem.fromStack(killer.inventory.itemInMainHand, RebarWeapon::class.java)
+            if (rebarItemMainHand is RebarItem) {
                 if (!killer.canUse(rebarItemMainHand, false)) {
                     event.isCancelled = true
                     return
@@ -78,8 +78,8 @@ interface RebarWeapon {
                 }
             }
 
-            val rebarItemOffHand = RebarItem.fromStack(killer.inventory.itemInOffHand)
-            if (rebarItemOffHand is RebarWeapon) {
+            val rebarItemOffHand = RebarItem.fromStack(killer.inventory.itemInOffHand, RebarWeapon::class.java)
+            if (rebarItemOffHand is RebarItem) {
                 if (!killer.canUse(rebarItemOffHand, false)) {
                     event.isCancelled = true
                     return

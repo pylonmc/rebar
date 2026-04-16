@@ -9,12 +9,12 @@ import org.bukkit.entity.Player
 interface RebarInventoryTicker {
     /**
      * Called when the item is detected in the player's inventory.
-     * will be called at [tickInterval] * [RebarConfig.inventoryTickerBaseRate
+     * will be called at [baseTickInterval] * [RebarConfig.inventoryTickerBaseRate
      * @param player The player whose inventory the item was in
      */
     fun onTick(player: Player)
 
     /** Determines the rate at which the [onTick] method will be called.
-     * [onTick] will be called at [tickInterval] * [RebarConfig.INVENTORY_TICKER_BASE_RATE] */
-    val tickInterval: Long
+     * [onTick] will be called at [baseTickInterval] * [RebarConfig.INVENTORY_TICKER_BASE_RATE] */
+    val baseTickInterval: Long
 }

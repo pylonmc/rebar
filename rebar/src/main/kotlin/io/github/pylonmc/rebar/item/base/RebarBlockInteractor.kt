@@ -22,8 +22,8 @@ interface RebarBlockInteractor : RebarCooldownable {
         @UniversalHandler
         private fun onUsedToClickBlock(event: PlayerInteractEvent, priority: EventPriority) {
             if (!event.hasBlock()) return
-            val rebarItem = event.item?.let { RebarItem.fromStack(it) } ?: return
-            if (rebarItem !is RebarBlockInteractor) return
+            val rebarItem = event.item?.let { RebarItem.fromStack(it, RebarBlockInteractor::class.java) } ?: return
+            if (rebarItem !is RebarItem) return
             if (!event.player.canUse(rebarItem, false)) {
                 event.setUseItemInHand(Event.Result.DENY)
                 return

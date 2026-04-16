@@ -20,8 +20,8 @@ interface RebarConsumable {
     companion object : MultiListener {
         @UniversalHandler
         private fun onConsumed(event: PlayerItemConsumeEvent, priority: EventPriority) {
-            val rebarItem = RebarItem.fromStack(event.item)
-            if (rebarItem !is RebarConsumable) return
+            val rebarItem = RebarItem.fromStack(event.item, RebarConsumable::class.java)
+            if (rebarItem !is RebarItem) return
             if (!event.player.canUse(rebarItem, false)) {
                 event.isCancelled = true
                 return

@@ -160,7 +160,7 @@ internal object FluidPipePlacementService : Listener {
     @EventHandler
     private fun onPlayerScroll(event: PlayerItemHeldEvent) {
         val heldItem = event.getPlayer().inventory.getItem(event.previousSlot)
-        if (RebarItem.fromStack(heldItem) is FluidPipe && connectionsInProgress.containsKey(event.getPlayer())) {
+        if (RebarItem.isRebarItem(heldItem, FluidPipe::class.java) && connectionsInProgress.containsKey(event.getPlayer())) {
             cancelConnection(event.getPlayer())
         }
     }
@@ -169,14 +169,12 @@ internal object FluidPipePlacementService : Listener {
     private fun onSwap(event: PlayerSwapHandItemsEvent) {
         if (!connectionsInProgress.containsKey(event.getPlayer())) return
 
-        val mainHandRebar = RebarItem.fromStack(event.mainHandItem)
-        if (mainHandRebar is FluidPipe) {
+        if (RebarItem.isRebarItem(event.mainHandItem, FluidPipe::class.java)) {
             event.isCancelled = true
             return
         }
 
-        val otherHandRebar = RebarItem.fromStack(event.offHandItem)
-        if (otherHandRebar is FluidPipe) {
+        if (RebarItem.isRebarItem(event.offHandItem, FluidPipe::class.java)) {
             event.isCancelled = true
             return
         }

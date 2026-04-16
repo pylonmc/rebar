@@ -5,6 +5,7 @@ import io.github.pylonmc.rebar.event.api.annotation.MultiHandlers
 import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.item.RebarItemListener
+import io.github.pylonmc.rebar.item.RebarItemSchema
 import org.bukkit.event.EventPriority
 import org.bukkit.event.inventory.FurnaceBurnEvent
 import org.jetbrains.annotations.ApiStatus
@@ -26,8 +27,8 @@ interface VanillaCookingFuel {
     companion object : MultiListener {
         @UniversalHandler
         private fun onBurntAsFuel(event: FurnaceBurnEvent, priority: EventPriority) {
-            val rebarItem = RebarItem.fromStack(event.fuel) ?: return
-            if (rebarItem !is VanillaCookingFuel) return
+            val rebarItem = RebarItem.fromStack(event.fuel, VanillaCookingFuel::class.java) ?: return
+            if (rebarItem !is RebarItem) return
             try {
                 MultiHandlers.handleEvent(rebarItem, "onBurntAsFuel", event, priority)
             } catch (e: Exception) {

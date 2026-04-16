@@ -206,7 +206,9 @@ class RebarTranslator private constructor(private val addon: RebarAddon) : Trans
                         type = Material.CLAY_BALL
                         check(type == Material.CLAY_BALL) { "ItemStack.setType no longer works" }
                         copyDataFrom(oldStack) { true }
-                        editData(DataComponentTypes.ITEM_MODEL) { oldStack.type.key }
+                        if (!oldStack.isDataOverridden(DataComponentTypes.ITEM_MODEL)) {
+                            editData(DataComponentTypes.ITEM_MODEL) { oldStack.type.key }
+                        }
                     }
                 }
 

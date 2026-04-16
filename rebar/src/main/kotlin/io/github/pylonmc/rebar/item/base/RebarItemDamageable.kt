@@ -32,8 +32,8 @@ interface RebarItemDamageable {
     companion object : MultiListener {
         @UniversalHandler
         private fun onItemDamaged(event: PlayerItemDamageEvent, priority: EventPriority) {
-            val rebarItem = RebarItem.fromStack(event.item)
-            if (rebarItem !is RebarItemDamageable) return
+            val rebarItem = RebarItem.fromStack(event.item, RebarItemDamageable::class.java)
+            if (rebarItem !is RebarItem) return
             if (!event.player.canUse(rebarItem, false)) {
                 return
             }
@@ -47,8 +47,8 @@ interface RebarItemDamageable {
 
         @UniversalHandler
         private fun onItemBreaks(event: PlayerItemBreakEvent, priority: EventPriority) {
-            val rebarItem = RebarItem.fromStack(event.brokenItem)
-            if (rebarItem !is RebarItemDamageable) return
+            val rebarItem = RebarItem.fromStack(event.brokenItem, RebarItemDamageable::class.java)
+            if (rebarItem !is RebarItem) return
             if (!event.player.canUse(rebarItem, false)) {
                 return
             }
@@ -62,8 +62,8 @@ interface RebarItemDamageable {
 
         @UniversalHandler
         private fun onItemMended(event: PlayerItemMendEvent, priority: EventPriority) {
-            val rebarItem = RebarItem.fromStack(event.item)
-            if (rebarItem !is RebarItemDamageable) return
+            val rebarItem = RebarItem.fromStack(event.item, RebarItemDamageable::class.java)
+            if (rebarItem !is RebarItem) return
             if (!event.player.canUse(rebarItem, false)) {
                 event.isCancelled = true
                 return

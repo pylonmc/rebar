@@ -85,8 +85,8 @@ class Research(
 
         addResearch(player, this)
         for (recipe in RecipeType.vanillaCraftingRecipes()) {
-            val rebarItem = RebarItem.fromStack(recipe.craftingRecipe.result) ?: continue
-            if (rebarItem.key in unlocks) {
+            val schema = RebarItemSchema.fromStack(recipe.craftingRecipe.result) ?: continue
+            if (schema.key in unlocks) {
                 player.discoverRecipe(recipe.key)
             }
         }
@@ -126,8 +126,8 @@ class Research(
 
         removeResearch(player, this)
         for (recipe in RecipeType.vanillaCraftingRecipes()) {
-            val rebarItem = RebarItem.fromStack(recipe.craftingRecipe.result) ?: continue
-            if (rebarItem.key in unlocks) {
+            val schema = RebarItemSchema.fromStack(recipe.craftingRecipe.result) ?: continue
+            if (schema.key in unlocks) {
                 player.undiscoverRecipe(recipe.key)
             }
         }
@@ -228,7 +228,7 @@ class Research(
                 this.sendMessage(
                     Component.translatable(
                         "rebar.message.research.unknown",
-                        RebarArgument.of("item", schema.getItemStack().effectiveName()),
+                        RebarArgument.of("item", schema.getOriginalTemplate().effectiveName()),
                         RebarArgument.of("research", researchName)
                     )
                 )
@@ -248,6 +248,18 @@ class Research(
         @JvmOverloads
         @JvmName("canPlayerPickUp")
         fun Player.canPickUp(item: RebarItem, sendMessage: Boolean = false): Boolean = canCraft(item, sendMessage)
+
+        /**
+         * Checks whether a player can pick up an item (ie has the associated research, or
+         * has permission to bypass research.
+         *
+         * @param sendMessage Whether, if the player cannot pick up the item, a message should be sent to them
+         * to notify them of this fact
+         */
+        @JvmStatic
+        @JvmOverloads
+        @JvmName("canPlayerPickUp")
+        fun Player.canPickUp(item: RebarItemSchema, sendMessage: Boolean = false): Boolean = canCraft(item, sendMessage)
 
         @JvmStatic
         @JvmOverloads
@@ -271,7 +283,7 @@ class Research(
                     this.sendMessage(
                         Component.translatable(
                             "rebar.message.disabled.message",
-                            RebarArgument.of("item", schema.getItemStack().effectiveName()),
+                            RebarArgument.of("item", schema.getOriginalTemplate().effectiveName()),
                         )
                     )
                 }
@@ -285,10 +297,10 @@ class Research(
         private fun onPlayerPickup(event: EntityPickupItemEvent) {
             val entity = event.entity
             if (entity is Player) {
-                val rebar = RebarItem.fromStack(event.item.itemStack)
-                if (rebar == null) return
+                val schema = RebarItemSchema.fromStack(event.item.itemStack)
+                if (schema == null) return
 
-                if (!entity.canPickUp(rebar, sendMessage = true)) {
+                if (!entity.canPickUp(schema, sendMessage = true)) {
                     // See net.minecraft.world.entity.item.ItemEntity#setDefaultPickUpDelay
                     event.item.pickupDelay = 10
                     event.isCancelled = true
@@ -318,7 +330,7 @@ class Research(
                     if (recipe.key in VanillaRecipeType.nonRebarRecipes) continue
                     val researches = recipe.results
                         .filterIsInstance<FluidOrItem.Item>()
-                        .mapNotNull { RebarItem.fromStack(it.item)?.research }
+                        .mapNotNull { RebarItemSchema.fromStack(it.item)?.research }
                     if (researches.isNotEmpty()) continue
                     player.discoverRecipe(recipe.key)
                 }
@@ -348,8 +360,8 @@ class Research(
 @JvmSynthetic
 private fun Player.ejectUnknownItems() {
     val toRemove = inventory.contents.filterNotNull().filter { item ->
-        val rebarItem = RebarItem.fromStack(item)
-        rebarItem != null && !canPickUp(rebarItem, sendMessage = true)
+        val schema = RebarItemSchema.fromStack(item)
+        schema != null && !canPickUp(schema, sendMessage = true)
     }
     for (item in toRemove) {
         inventory.removeItemAnySlot(item)

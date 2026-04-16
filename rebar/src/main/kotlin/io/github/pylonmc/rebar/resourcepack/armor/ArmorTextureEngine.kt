@@ -15,6 +15,7 @@ import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSe
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerWindowItems
 import io.github.pylonmc.rebar.config.RebarConfig
 import io.github.pylonmc.rebar.item.RebarItem
+import io.github.pylonmc.rebar.item.RebarItemSchema
 import io.github.pylonmc.rebar.item.base.RebarArmor
 import io.github.pylonmc.rebar.util.rebarKey
 import io.github.retrooper.packetevents.util.SpigotConversionUtil
@@ -84,39 +85,41 @@ object ArmorTextureEngine : PacketListener {
     private fun addArmorTexture(packetStack: ItemStack?) : ItemStack? {
         if (packetStack == null) return null
         val stack = SpigotConversionUtil.toBukkitItemStack(packetStack)
-        val item = RebarItem.fromStack(stack)
-        if (item != null && item is RebarArmor) {
-            val template = item.schema.getItemStack()
-            val defaultAssetId = template.getDataOrDefault(DataComponentTypes.EQUIPPABLE, template.type.getDefaultData(DataComponentTypes.EQUIPPABLE))?.assetId()
-            val component = stack.getDataOrDefault(DataComponentTypes.EQUIPPABLE, stack.type.getDefaultData(DataComponentTypes.EQUIPPABLE))
-            if (component == null || component.assetId() != defaultAssetId) {
-                return packetStack
-            }
-
-            stack.setData(DataComponentTypes.EQUIPPABLE, Equippable.equippable(component.slot())
-                .assetId(item.equipmentType)
-                .swappable(component.swappable())
-                .allowedEntities(component.allowedEntities())
-                .cameraOverlay(component.cameraOverlay())
-                .canBeSheared(component.canBeSheared())
-                .damageOnHurt(component.damageOnHurt())
-                .dispensable(component.dispensable())
-                .equipSound(component.equipSound())
-                .shearSound(component.shearSound())
-                .canBeSheared(component.canBeSheared()))
-            return SpigotConversionUtil.fromBukkitItemStack(stack)
+        val schema = RebarItemSchema.fromStack(stack)
+        if (schema == null || !RebarArmor::class.java.isAssignableFrom(schema.itemClass)) {
+            return packetStack
         }
-        return packetStack
+
+        val template = schema.getOriginalTemplate()
+        val defaultAssetId = template.getDataOrDefault(DataComponentTypes.EQUIPPABLE, template.type.getDefaultData(DataComponentTypes.EQUIPPABLE))?.assetId()
+        val component = stack.getDataOrDefault(DataComponentTypes.EQUIPPABLE, stack.type.getDefaultData(DataComponentTypes.EQUIPPABLE))
+        if (component == null || component.assetId() != defaultAssetId) {
+            return packetStack
+        }
+
+        val armor = RebarItem.fromStack(template) as RebarArmor
+        stack.setData(DataComponentTypes.EQUIPPABLE, Equippable.equippable(component.slot())
+            .assetId(armor.equipmentType)
+            .swappable(component.swappable())
+            .allowedEntities(component.allowedEntities())
+            .cameraOverlay(component.cameraOverlay())
+            .canBeSheared(component.canBeSheared())
+            .damageOnHurt(component.damageOnHurt())
+            .dispensable(component.dispensable())
+            .equipSound(component.equipSound())
+            .shearSound(component.shearSound())
+            .canBeSheared(component.canBeSheared()))
+        return SpigotConversionUtil.fromBukkitItemStack(stack)
     }
 
     private fun handleCreativeAction(packet: WrapperPlayClientCreativeInventoryAction) {
         if (packet.itemStack == null) return
         val stack = SpigotConversionUtil.toBukkitItemStack(packet.itemStack)
-        val item = RebarItem.fromStack(stack)
-        if (item is RebarArmor) {
+        val item = RebarItem.fromStack(stack, RebarArmor::class.java)
+        if (item is RebarItem) {
             val component = stack.getData(DataComponentTypes.EQUIPPABLE) ?: return
             if (component.assetId() == item.equipmentType) {
-                val template = item.schema.getItemStack()
+                val template = item.schema.getOriginalTemplate()
                 val defaultComponent = template.getData(DataComponentTypes.EQUIPPABLE)
                 if (defaultComponent == null) {
                     stack.resetData(DataComponentTypes.EQUIPPABLE)

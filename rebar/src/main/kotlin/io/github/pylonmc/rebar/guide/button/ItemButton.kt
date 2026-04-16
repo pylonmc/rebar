@@ -199,12 +199,12 @@ class ItemButton @JvmOverloads constructor(
 
     companion object {
         private fun getCheatItemStack(currentStack: ItemStack, click: Click): ItemStack {
-            val clonedUnkown = currentStack.clone()
-            val rebarItem = RebarItem.fromStack(clonedUnkown)
+            val clonedUnknown = currentStack.clone()
+            val rebarItem = RebarItem.fromStack(clonedUnknown)
 
             if (rebarItem == null) {
                 // Item is not Rebar
-                val type = Registry.MATERIAL.get(clonedUnkown.type.key)!!
+                val type = Registry.MATERIAL.get(clonedUnknown.type.key)!!
                 val amount = if (click.clickType.isShiftClick) { type.maxStackSize } else { 1 }
                 val clonedNotRebar = ItemStack(type, amount)
                 return clonedNotRebar
