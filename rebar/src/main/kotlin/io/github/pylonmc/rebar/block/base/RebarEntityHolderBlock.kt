@@ -149,12 +149,9 @@ interface RebarEntityHolderBlock {
                 val debugMap = mutableMapOf<String, PersistentDataContainer>()
                 holders[block]?.forEach { (name, uuid) ->
                     val entityPdc = event.pdc.adapterContext.newPersistentDataContainer()
-                    val entity = EntityStorage.get(uuid)
-                    if (entity != null) {
-                        entity.writeDebugInfo(entityPdc)
-                    } else {
-                        entityPdc.set(rebarKey("rebar_entity_not_found"), RebarSerializers.BOOLEAN, true)
-                    }
+                    val rebarEntity = EntityStorage.get(uuid)
+                    entityPdc.set(rebarKey("uuid"), RebarSerializers.UUID, uuid)
+                    rebarEntity?.writeDebugInfo(entityPdc)
                     debugMap[name] = entityPdc
                 }
                 event.pdc.set(entityKey, debugEntityType, debugMap)
