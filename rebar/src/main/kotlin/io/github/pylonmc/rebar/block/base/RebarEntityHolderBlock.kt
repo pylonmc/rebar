@@ -83,6 +83,11 @@ interface RebarEntityHolderBlock {
     }
 
     @ApiStatus.NonExtendable
+    fun getHeldRebarEntity(name: String): RebarEntity<*>?
+            = getHeldEntityUuid(name)?.let { EntityStorage.get(it) }
+
+
+    @ApiStatus.NonExtendable
     fun <T: Entity> getHeldEntityOrThrow(clazz: Class<T>, name: String): T
             = getHeldEntity(clazz, name)
         ?: throw IllegalArgumentException("Entity $name does not exist or is not of type ${clazz.simpleName}")
@@ -186,7 +191,8 @@ interface RebarEntityHolderBlock {
 
         @EventHandler
         private fun onEntityRemove(event: EntityRemoveEvent) {
-            if (event.cause == EntityRemoveEvent.Cause.UNLOAD || event.cause == EntityRemoveEvent.Cause.PLAYER_QUIT) return
+            if (event.cause == EntityRemoveEvent.Cause.UNLOAD && event.entity.isPersistent) return
+            if (event.cause == EntityRemoveEvent.Cause.PLAYER_QUIT) return
             val blockPos = event.entity.persistentDataContainer.get(blockKey, RebarSerializers.BLOCK_POSITION) ?: return
             val block = BlockStorage.get(blockPos) as? RebarEntityHolderBlock ?: return
             holders[block]?.entries?.removeIf { it.value == event.entity.uniqueId }

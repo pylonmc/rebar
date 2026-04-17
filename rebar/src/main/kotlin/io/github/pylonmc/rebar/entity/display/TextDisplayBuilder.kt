@@ -24,6 +24,7 @@ open class TextDisplayBuilder() {
     protected var backgroundColor: Color? = null
     protected var interpolationDelay: Int? = null
     protected var interpolationDuration: Int? = null
+    protected var persistent: Boolean? = null
 
     constructor(other: TextDisplayBuilder) : this() {
         this.text = other.text
@@ -36,6 +37,7 @@ open class TextDisplayBuilder() {
         this.backgroundColor = other.backgroundColor
         this.interpolationDelay = other.interpolationDelay
         this.interpolationDuration = other.interpolationDuration
+        this.persistent = other.persistent
     }
 
     fun text(text: String): TextDisplayBuilder = apply { this.text = Component.text(text) }
@@ -51,6 +53,7 @@ open class TextDisplayBuilder() {
     fun backgroundColor(backgroundColor: Color?): TextDisplayBuilder = apply { this.backgroundColor = backgroundColor }
     fun interpolationDelay(interpolationDelay: Int): TextDisplayBuilder = apply { this.interpolationDelay = interpolationDelay }
     fun interpolationDuration(interpolationDuration: Int): TextDisplayBuilder = apply { this.interpolationDuration = interpolationDuration }
+    fun persistent(persistent: Boolean): TextDisplayBuilder = apply { this.persistent = persistent }
 
     open fun build(location: Location): TextDisplay {
         val finalLocation = location.clone()
@@ -91,6 +94,9 @@ open class TextDisplayBuilder() {
         }
         if (interpolationDuration != null) {
             display.interpolationDuration = interpolationDuration!!
+        }
+        if (persistent != null) {
+            display.isPersistent = persistent!!
         }
     }
 }

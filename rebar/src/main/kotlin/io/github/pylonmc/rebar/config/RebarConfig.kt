@@ -60,6 +60,9 @@ object RebarConfig {
     @JvmField
     val CARGO_TRANSFER_RATE_MULTIPLIER = config.getOrThrow("cargo-transfer-rate-multiplier", ConfigAdapter.INTEGER)
 
+    @JvmField
+    val GHOST_BLOCK_TICK_INTERVAL = config.getOrThrow("ghost-block-tick-interval", ConfigAdapter.INTEGER)
+
     object ResearchConfig {
 
         @JvmField

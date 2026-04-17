@@ -27,6 +27,9 @@ entity-data-autosave-interval-seconds: 60
 # The lowest tick interval at which Rebar inventory ticker items may tick
 inventory-ticker-base-rate: 10
 
+# The number of ticks between ghost blocks with multiple states changing to the next state
+ghost-block-tick-interval: 20
+
 waila:
   # The interval (in Minecraft ticks), between WAILA checks
   # Set to 0 to disable WAILA globally

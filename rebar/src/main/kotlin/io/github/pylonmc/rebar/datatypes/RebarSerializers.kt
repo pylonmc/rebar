@@ -75,6 +75,15 @@ object RebarSerializers {
     val VECTOR = VectorPersistentDataType
 
     @JvmField
+    val VECTOR3I = Vector3iPersistentDataType
+
+    @JvmField
+    val VECTOR3F = Vector3fPersistentDataType
+
+    @JvmField
+    val VECTOR3D = Vector3dPersistentDataType
+
+    @JvmField
     val WORLD = WorldPersistentDataType
 
     @JvmField
@@ -110,6 +119,9 @@ object RebarSerializers {
 
     @JvmField
     val MATERIAL = KEYED.keyedTypeFrom<Material>(Registry.MATERIAL::getOrThrow)
+
+    @JvmField
+    val BLOCK_DATA = BlockDataPersistentDataType
 
     @JvmField
     val REBAR_FLUID = KEYED.keyedTypeFrom<RebarFluid>(RebarRegistry.FLUIDS::getOrThrow)
