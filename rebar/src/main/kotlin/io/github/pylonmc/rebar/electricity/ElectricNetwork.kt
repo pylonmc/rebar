@@ -57,7 +57,7 @@ class ElectricNetwork {
             producers.sumOf { it.power }
         )
 
-        // Then we invert that, knowing how much power was consumed, we calculate how much was taken from each producer
+        // Then we invert that: knowing how much power was consumed, we calculate how much was taken from each producer
         val powerTakenFromProducers = roundRobinFill(
             producers.associateWith { it.power },
             powerConsumedByConsumers.values.sum()
@@ -221,6 +221,12 @@ class ElectricNetwork {
         var currentPower = initialPower
         var currentVoltage = initialVoltage
         for (edge in path) {
+            if (edge.from is ElectricNode.Connector && edge.to is ElectricNode.Connector) {
+                val transformerVoltage = ElectricityManager.getTransformerVoltage(edge.from, edge.to)
+                if (transformerVoltage != null) {
+                    currentVoltage = transformerVoltage
+                }
+            }
             val remainingCapacity = limits[edge]!! - (loads[edge] ?: 0.0)
             val current = min(currentPower / currentVoltage, remainingCapacity)
             loads.merge(edge, current, Double::plus)
@@ -294,4 +300,4 @@ class ElectricNetwork {
     }
 }
 
-infix fun Double.roughlyEquals(other: Double): Boolean = abs(this - other) < 1e-6
+private infix fun Double.roughlyEquals(other: Double): Boolean = abs(this - other) < 1e-6

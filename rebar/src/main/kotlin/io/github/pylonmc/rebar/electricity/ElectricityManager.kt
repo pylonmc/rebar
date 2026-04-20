@@ -13,6 +13,8 @@ object ElectricityManager {
 
     private val nodes = mutableMapOf<UUID, ElectricNode>()
 
+    private val transformers = mutableMapOf<Pair<ElectricNode.Connector, ElectricNode.Connector>, Double>()
+
     init {
         Rebar.scope.launch {
             while (true) {
@@ -43,6 +45,20 @@ object ElectricityManager {
 
     @JvmStatic
     fun getNodeById(id: UUID): ElectricNode? = nodes[id]
+
+    @JvmStatic
+    fun addTransformer(from: ElectricNode.Connector, to: ElectricNode.Connector, final: Double) {
+        transformers[from to to] = final
+        from.onDisconnect { connector, other ->
+            if (other == to) {
+                transformers.remove(connector to other)
+            }
+        }
+    }
+
+    @JvmStatic
+    fun getTransformerVoltage(from: ElectricNode.Connector, to: ElectricNode.Connector): Double? =
+        transformers[from to to]
 
     @JvmSynthetic
     internal fun refreshNetworks(vararg networks: ElectricNetwork) {

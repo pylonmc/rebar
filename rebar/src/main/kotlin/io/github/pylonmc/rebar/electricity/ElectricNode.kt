@@ -87,17 +87,25 @@ sealed class ElectricNode(
         }
 
         @JvmSynthetic
-        internal var onConnect: BiConsumer<Connector, ElectricNode> = BiConsumer { _, _ -> }
+        internal var onConnect: BiConsumer<Connector, ElectricNode> = { _, _ -> }
 
         @JvmSynthetic
-        internal var onDisconnect: BiConsumer<Connector, ElectricNode> = BiConsumer { _, _ -> }
+        internal var onDisconnect: BiConsumer<Connector, ElectricNode> = { _, _ -> }
 
         fun onConnect(listener: BiConsumer<Connector, ElectricNode>) {
-            onConnect = listener
+            val oldOnConnect = onConnect
+            onConnect = { c, n ->
+                oldOnConnect.accept(c, n)
+                listener.accept(c, n)
+            }
         }
 
         fun onDisconnect(listener: BiConsumer<Connector, ElectricNode>) {
-            onDisconnect = listener
+            val oldOnDisconnect = onDisconnect
+            onDisconnect = { c, n ->
+                oldOnDisconnect.accept(c, n)
+                listener.accept(c, n)
+            }
         }
 
         fun setCurrentLimit(other: ElectricNode, limit: Double) {
@@ -193,11 +201,19 @@ sealed class ElectricNode(
         private var onDisconnect: BiConsumer<S, Connector> = BiConsumer { _, _ -> }
 
         fun onConnect(listener: BiConsumer<S, Connector>) {
-            onConnect = listener
+            val oldOnConnect = onConnect
+            onConnect = { s, c ->
+                oldOnConnect.accept(s, c)
+                listener.accept(s, c)
+            }
         }
 
         fun onDisconnect(listener: BiConsumer<S, Connector>) {
-            onDisconnect = listener
+            val oldOnDisconnect = onDisconnect
+            onDisconnect = { s, c ->
+                oldOnDisconnect.accept(s, c)
+                listener.accept(s, c)
+            }
         }
 
         companion object {
