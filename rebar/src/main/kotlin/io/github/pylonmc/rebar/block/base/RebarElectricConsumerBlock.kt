@@ -11,11 +11,11 @@ import org.jetbrains.annotations.ApiStatus
 /**
  * Convenience interface for electric blocks that only have a single consumer node
  */
-interface RebarElectricConsumerBlock : RebarElectricBlock {
+interface RebarElectricConsumerBlock : RebarElectricBlock, RebarDirectionalBlock {
 
     @get:ApiStatus.NonExtendable
     val node: ElectricNode.Consumer
-        get() = getElectricNodes().single() as ElectricNode.Consumer
+        get() = electricNodes.single() as ElectricNode.Consumer
 
     @get:ApiStatus.NonExtendable
     val isPowered: Boolean
@@ -31,10 +31,10 @@ interface RebarElectricConsumerBlock : RebarElectricBlock {
         private fun onPlace(event: RebarBlockPlaceEvent) {
             val block = event.rebarBlock as? RebarElectricConsumerBlock ?: return
             val blockPos = event.block.position
-            block.addElectricNode(
+            block.addElectricPort(
+                block.facing,
                 ElectricNode.Consumer(
                     block = blockPos,
-                    connectionPoint = blockPos.toLocation().toCenterLocation(),
                     voltageRange = block.voltageRange,
                     requiredPower = block.requiredPower
                 )

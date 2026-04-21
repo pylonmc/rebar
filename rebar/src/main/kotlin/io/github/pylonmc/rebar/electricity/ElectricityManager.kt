@@ -14,6 +14,7 @@ object ElectricityManager {
     private val nodes = mutableMapOf<UUID, ElectricNode>()
 
     private val transformers = mutableMapOf<Pair<ElectricNode.Connector, ElectricNode.Connector>, Double>()
+    private val currentLimits = mutableMapOf<Pair<ElectricNode, ElectricNode>, Double>()
 
     init {
         Rebar.scope.launch {
@@ -59,6 +60,20 @@ object ElectricityManager {
     @JvmStatic
     fun getTransformerVoltage(from: ElectricNode.Connector, to: ElectricNode.Connector): Double? =
         transformers[from to to]
+
+    @JvmStatic
+    fun setCurrentLimit(from: ElectricNode, to: ElectricNode, limit: Double) {
+        currentLimits[from to to] = limit
+        from.onDisconnect { node, other ->
+            if (other == to) {
+                currentLimits.remove(node to other)
+            }
+        }
+    }
+
+    @JvmStatic
+    fun getCurrentLimit(from: ElectricNode, to: ElectricNode): Double =
+        currentLimits[from to to] ?: currentLimits[to to from] ?: Double.MAX_VALUE
 
     @JvmSynthetic
     internal fun refreshNetworks(vararg networks: ElectricNetwork) {

@@ -84,15 +84,7 @@ class ElectricNetwork {
                         // Determine limits on edges if not alreayd known
                         for (edge in path) {
                             if (edge in limits) continue
-                            val connectorBlock = edge.from
-                            if (connectorBlock is ElectricNode.Connector) {
-                                limits[edge] = connectorBlock.getCurrentLimit(edge.to)
-                            } else {
-                                val connectorBlock = edge.to
-                                if (connectorBlock is ElectricNode.Connector) {
-                                    limits[edge] = connectorBlock.getCurrentLimit(edge.from)
-                                }
-                            }
+                            limits[edge] = ElectricityManager.getCurrentLimit(edge.from, edge.to)
                         }
 
                         val loadResult =
@@ -204,7 +196,7 @@ class ElectricNetwork {
                     }
                 }
 
-                is ElectricNode.Leaf<*> -> current.connection?.let { queueNeighbor(current, it) }
+                is ElectricNode.Leaf -> current.connection?.let { queueNeighbor(current, it) }
             }
         }
         return null
@@ -267,7 +259,7 @@ class ElectricNetwork {
                         }
                     }
 
-                    is ElectricNode.Leaf<*> -> current.connection?.let { queueNeighbor(current, it) }
+                    is ElectricNode.Leaf -> current.connection?.let { queueNeighbor(current, it) }
                 }
             }
             heuristics[consumer] = distanceMap

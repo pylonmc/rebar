@@ -10,11 +10,11 @@ import org.jetbrains.annotations.ApiStatus
 /**
  * Convenience interface for electric blocks that only have a single producer node
  */
-interface RebarElectricProducerBlock : RebarElectricBlock {
+interface RebarElectricProducerBlock : RebarElectricBlock, RebarDirectionalBlock {
 
     @get:ApiStatus.NonExtendable
     val node: ElectricNode.Producer
-        get() = getElectricNodes().single() as ElectricNode.Producer
+        get() = electricNodes.single() as ElectricNode.Producer
 
     @get:ApiStatus.NonExtendable
     @set:ApiStatus.NonExtendable
@@ -39,10 +39,10 @@ interface RebarElectricProducerBlock : RebarElectricBlock {
         private fun onPlace(event: RebarBlockPlaceEvent) {
             val block = event.rebarBlock as? RebarElectricProducerBlock ?: return
             val blockPos = event.block.position
-            block.addElectricNode(
+            block.addElectricPort(
+                block.facing,
                 ElectricNode.Producer(
                     block = blockPos,
-                    connectionPoint = blockPos.toLocation().toCenterLocation(),
                     voltage = 0.0,
                     power = 0.0
                 )

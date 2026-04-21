@@ -45,7 +45,7 @@ class IngredientCalculator private constructor() {
         do {
             recipe = when (input) {
                 is FluidOrItem.Fluid -> findRecipeFor(input.fluid)
-                is FluidOrItem.Item -> findRecipeFor(RebarItem.from(input.item)!!) // guaranteed to be a Rebar item because of the vanilla check above
+                is FluidOrItem.Item -> findRecipeFor(RebarItem.fromStack(input.item)!!) // guaranteed to be a Rebar item because of the vanilla check above
             }
 
             if (recipe != null && recipe.key in calculationStack) {
