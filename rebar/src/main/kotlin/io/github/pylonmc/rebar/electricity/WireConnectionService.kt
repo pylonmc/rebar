@@ -61,6 +61,11 @@ internal object WireConnectionService : Listener {
 
         val connectingEntity = player.connectingEntity
         if (connectingEntity == null) {
+            if (RebarItem.fromStack(playerInv.getItem(event.hand)) !is RebarWire) {
+                player.sendMessage(Component.translatable("rebar.message.electricity.need_wire"))
+                return
+            }
+
             val existingConnection = when (thisNode) {
                 is ElectricNode.Leaf -> thisNode.connection
                 is ElectricNode.Connector -> thisNode.connections.firstOrNull {

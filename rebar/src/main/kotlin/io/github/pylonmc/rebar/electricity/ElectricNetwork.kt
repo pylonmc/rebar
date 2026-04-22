@@ -1,7 +1,5 @@
 package io.github.pylonmc.rebar.electricity
 
-import io.github.pylonmc.rebar.block.BlockStorage
-import io.github.pylonmc.rebar.block.base.RebarElectricBlock
 import java.util.PriorityQueue
 import java.util.UUID
 import kotlin.collections.ArrayDeque
@@ -15,6 +13,7 @@ class ElectricNetwork {
 
     private val producers = mutableSetOf<ElectricNode.Producer>()
     private val consumers = mutableSetOf<ElectricNode.Consumer>()
+    private val acceptors = mutableSetOf<ElectricNode.Acceptor>()
 
     /**
      * A map of heuristics based on distance to consumers.
@@ -23,10 +22,11 @@ class ElectricNetwork {
 
     fun addNode(node: ElectricNode) {
         nodeMap[node.id] = node
-        if (node is ElectricNode.Producer) {
-            producers.add(node)
-        } else if (node is ElectricNode.Consumer) {
-            consumers.add(node)
+        when (node) {
+            is ElectricNode.Producer -> producers.add(node)
+            is ElectricNode.Consumer -> consumers.add(node)
+            is ElectricNode.Acceptor -> acceptors.add(node)
+            is ElectricNode.Connector -> {}
         }
         heuristics.clear()
     }
@@ -35,23 +35,20 @@ class ElectricNetwork {
         nodeMap.remove(node.id)
         producers.remove(node)
         consumers.remove(node)
-        blocks.remove(node)
+        acceptors.remove(node)
         heuristics.clear()
     }
 
     fun isPartOfNetwork(node: ElectricNode): Boolean = node.id in nodeMap
-
-    private val blocks = mutableMapOf<ElectricNode, RebarElectricBlock>()
-
-    private inline fun <reified T : RebarElectricBlock> ElectricNode.getBlock(): T? =
-        blocks.getOrPut(this) { BlockStorage.getAsOrThrow(block) } as? T
 
     fun tick() {
         for (consumer in consumers) {
             consumer.isPowered = false
         }
 
-        // First, we distribute power from producers to consumer
+        val surplusPower = producers.associateWith { it.power }.toMutableMap()
+
+        // First, we distribute power from producers to consumers
         val powerConsumedByConsumers = roundRobinFill(
             consumers.associateWith { it.requiredPower },
             producers.sumOf { it.power }
@@ -62,6 +59,10 @@ class ElectricNetwork {
             producers.associateWith { it.power },
             powerConsumedByConsumers.values.sum()
         ).toMutableMap()
+
+        for ((producer, taken) in powerTakenFromProducers) {
+            surplusPower[producer] = surplusPower[producer]!! - taken
+        }
 
         // Now that we know what consumes and produces what, we can try routing said power
         val limits = mutableMapOf<Edge, Double>()
@@ -123,6 +124,68 @@ class ElectricNetwork {
                 consumer.isPowered = true
             }
         }
+
+        for ((producer, taken) in powerTakenFromProducers) {
+            surplusPower[producer] = surplusPower[producer]!! + taken
+        }
+
+        do {
+            var notAccepted = 0
+            acceptorLoop@ for (acceptor in acceptors) {
+                var remaining = surplusPower.values.sum() / acceptors.size
+                if (remaining roughlyEquals 0.0) {
+                    notAccepted++
+                    continue
+                }
+                var noPath = 0
+                for ((producer, surplus) in surplusPower) {
+                    if (surplus roughlyEquals 0.0) continue
+                    val path = findBestPath(producer, acceptor, disconnectedEdges)
+                    if (path == null) {
+                        noPath++
+                    } else {
+                        // Determine limits on edges if not already known
+                        for (edge in path) {
+                            if (edge in limits) continue
+                            limits[edge] = ElectricityManager.getMaxCurrent(edge.from, edge.to)
+                        }
+
+                        val loadResult =
+                            calculateLoadOnEdges(path, edgeLoads, limits, surplus, producer.voltage)
+                        val accepted = acceptor.handler.onAccept(loadResult.finalPower)
+                        if (accepted roughlyEquals 0.0) {
+                            notAccepted++
+                            continue@acceptorLoop
+                        } else {
+                            edgeLoads = loadResult.currents
+                            remaining -= accepted
+                            surplusPower[producer] = surplusPower[producer]!! - accepted
+                            for ((edge, load) in loadResult.currents) {
+                                if (load roughlyEquals limits[edge]!!) {
+                                    disconnectedEdges.add(edge)
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (noPath == surplusPower.size) {
+                    // no paths from any producer to this acceptor, give up
+                    notAccepted++
+                }
+
+                for ((producer, surplus) in surplusPower.toList()) {
+                    if (surplus roughlyEquals 0.0) {
+                        surplusPower.remove(producer)
+                    }
+                }
+            }
+        } while (notAccepted != acceptors.size)
+
+        for (producer in producers) {
+            val taken = producer.power - (surplusPower[producer] ?: 0.0)
+            producer.powerTakeHandler.accept(taken)
+        }
     }
 
     private fun <K> roundRobinFill(limits: Map<K, Double>, amount: Double): Map<K, Double> {
@@ -148,7 +211,7 @@ class ElectricNetwork {
     /**
      * Calculates the load for edges based on a greedy best first search from the producer to the consumer, using the graph distance to consumers as the heuristic.
      */
-    // I would've used A*, but in this case, since the heuristic is perfect, greedy best first search is more efficient.
+// I would've used A*, but in this case, since the heuristic is perfect, greedy best first search is more efficient.
     private fun findBestPath(
         producer: ElectricNode,
         consumer: ElectricNode,
@@ -239,7 +302,7 @@ class ElectricNetwork {
 
     private fun recalculateDistanceHeuristics() {
         heuristics.clear()
-        for (consumer in consumers) {
+        for (consumer in consumers + acceptors) {
             val queue = ArrayDeque<Pair<ElectricNode, Int>>(listOf(consumer to 0))
             val visited = mutableSetOf<ElectricNode>()
             val distanceMap = mutableMapOf<ElectricNode, Int>()
@@ -285,8 +348,8 @@ class ElectricNetwork {
                 merged.producers.addAll(network2.producers)
                 merged.consumers.addAll(network1.consumers)
                 merged.consumers.addAll(network2.consumers)
-                merged.blocks.putAll(network1.blocks)
-                merged.blocks.putAll(network2.blocks)
+                merged.acceptors.addAll(network1.acceptors)
+                merged.acceptors.addAll(network2.acceptors)
                 return merged
             } else {
                 return null

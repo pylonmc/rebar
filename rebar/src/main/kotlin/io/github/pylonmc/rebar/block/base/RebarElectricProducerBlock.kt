@@ -42,6 +42,7 @@ interface RebarElectricProducerBlock : RebarElectricBlock, RebarDirectionalBlock
             block.addElectricPort(
                 block.facing,
                 ElectricNode.Producer(
+                    name = "main",
                     block = blockPos,
                     voltage = 0.0,
                     power = 0.0

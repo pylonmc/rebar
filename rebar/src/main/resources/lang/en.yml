@@ -110,6 +110,7 @@ message:
     default: "<insn>Right click a port</insn> to connect, or <insn>stop holding a wire</insn> to cancel (requires %wires%/%total% wires)"
     already_connected: "<red>This node is already connected to another node"
     blocking: "<red>There is a block in the way of this connection"
+    need_wire: "<red>You need to be holding a wire"
 
 gui:
   scroll:

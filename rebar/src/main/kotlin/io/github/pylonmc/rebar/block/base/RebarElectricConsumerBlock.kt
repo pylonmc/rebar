@@ -34,6 +34,7 @@ interface RebarElectricConsumerBlock : RebarElectricBlock, RebarDirectionalBlock
             block.addElectricPort(
                 block.facing,
                 ElectricNode.Consumer(
+                    name = "main",
                     block = blockPos,
                     voltageRange = block.voltageRange,
                     requiredPower = block.requiredPower

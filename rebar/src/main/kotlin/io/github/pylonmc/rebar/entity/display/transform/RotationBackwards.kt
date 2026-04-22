@@ -2,30 +2,20 @@ package io.github.pylonmc.rebar.entity.display.transform
 
 import org.joml.*
 
-open class RotationBackwards private constructor(
-    protected val vector: Vector3f?,
-    protected val quaternion: Quaternionf?
-) : TransformComponent {
+open class RotationBackwards(quaternion: Quaternionf) : Rotation(quaternion.invert()) {
+    constructor(rotation: Vector3f) : this(Quaternionf().rotateXYZ(rotation.x, rotation.y, rotation.z))
+    constructor(rotation: Vector3d) : this(Vector3f(rotation))
 
-    constructor(rotation: Vector3f): this(rotation, null)
+    constructor(x: Float, y: Float, z: Float) : this(Vector3f(x, y, z))
+    constructor(x: Double, y: Double, z: Double) : this(Vector3d(x, y, z))
 
-    constructor(rotation: Vector3d): this(Vector3f(rotation), null)
+    constructor(axisAngle: AxisAngle4f) : this(Quaternionf().rotationAxis(axisAngle))
+    constructor(axis: Vector3f, angle: Float) : this(Quaternionf().rotationAxis(angle, axis))
+    constructor(x: Float, y: Float, z: Float, angle: Float) : this(Quaternionf().rotationAxis(angle, x, y, z))
 
-    constructor(x: Float, y: Float, z: Float): this(Vector3f(x, y, z))
+    constructor(axisAngle: AxisAngle4d) : this(axisAngle.x, axisAngle.y, axisAngle.z, axisAngle.angle)
+    constructor(axis: Vector3d, angle: Double) : this(axis.x, axis.y, axis.z, angle)
+    constructor(x: Double, y: Double, z: Double, angle: Double) : this(x.toFloat(), y.toFloat(), z.toFloat(), angle.toFloat())
 
-    constructor(x: Double, y: Double, z: Double): this(Vector3d(x, y, z))
-
-    constructor(rotation: Quaterniond): this(null, Quaternionf(rotation))
-
-    constructor(rotation: Quaternionf): this(null, rotation)
-
-    override fun apply(matrix: Matrix4f) {
-        if (vector != null) {
-            matrix.mul(Matrix4f().rotateXYZ(Vector3f(vector).mul(-1.0F)))
-        } else if (quaternion != null) {
-            matrix.mul(Matrix4f().rotate(Quaternionf(quaternion).invert()))
-        } else {
-            throw IllegalStateException()
-        }
-    }
+    constructor(rotation: Quaterniond) : this(Quaternionf(rotation))
 }

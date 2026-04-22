@@ -36,6 +36,12 @@ interface RebarElectricBlock : RebarEntityHolderBlock {
     val electricNodes: List<ElectricNode>
         get() = electricBlocks[this].orEmpty()
 
+    @ApiStatus.NonExtendable
+    fun getElectricNode(name: String) = electricNodes.find { it.name == name }
+
+    @ApiStatus.NonExtendable
+    fun getElectricNodeOrThrow(name: String) = getElectricNode(name) ?: throw NoSuchElementException("No electric node with name '$name' found in block at ${block.location}")
+
     /**
      * Adds an electric node to this block that has a physical presence in the form of several display entities.
      * [RebarDirectionalBlock.facing] must be set before calling this method.
@@ -47,6 +53,7 @@ interface RebarElectricBlock : RebarEntityHolderBlock {
         val material = overrideMaterial ?: when (node) {
             is ElectricNode.Connector -> Material.GRAY_CONCRETE
             is ElectricNode.Consumer -> Material.GREEN_CONCRETE
+            is ElectricNode.Acceptor -> Material.GREEN_CONCRETE
             is ElectricNode.Producer -> Material.RED_CONCRETE
         }
         val expandedRadius = radius - PORT_OUTER_SCALE / 2 + 0.001

@@ -10,36 +10,58 @@ import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.persistence.PersistentDataType
 import org.jetbrains.annotations.ApiStatus
 import java.util.*
-import java.util.function.BiConsumer
+import java.util.function.Consumer as ConsumerFn
 
 sealed class ElectricNode(
     val id: UUID,
+    val name: String,
     val block: BlockPosition
 ) {
 
     val network: ElectricNetwork get() = ElectricityManager.getNodeNetwork(this)
 
-    protected var onConnect: BiConsumer<ElectricNode, ElectricNode> = { _, _ -> }
-    protected var onDisconnect: BiConsumer<ElectricNode, ElectricNode> = { _, _ -> }
+    protected var onConnect = ConnectDisconnectHandler { _, _ -> }
+    protected var onDisconnect = ConnectDisconnectHandler { _, _ -> }
 
     abstract fun connect(other: ElectricNode)
     abstract fun isConnectedTo(other: ElectricNode): Boolean
     abstract fun disconnectFrom(other: ElectricNode)
 
-    fun onConnect(listener: BiConsumer<ElectricNode, ElectricNode>) {
+    /**
+     * Registers a handler to be called when a connection is made between this node and another node.
+     *
+     * Passing a new handler will not replace the old one, but will cause both the old and new handlers to be called when a connection is made.
+     */
+    fun onConnect(handler: ConnectDisconnectHandler) {
         val oldOnConnect = onConnect
         onConnect = { n1, n2 ->
-            oldOnConnect.accept(n1, n2)
-            listener.accept(n1, n2)
+            oldOnConnect.handle(n1, n2)
+            handler.handle(n1, n2)
         }
     }
 
-    fun onDisconnect(listener: BiConsumer<ElectricNode, ElectricNode>) {
+    /**
+     * Registers a handler to be called when a connection is broken between this node and another node.
+     *
+     * Passing a new handler will not replace the old one, but will cause both the old and new handlers to be called when a connection is broken.
+     */
+    fun onDisconnect(handler: ConnectDisconnectHandler) {
         val oldOnDisconnect = onDisconnect
         onDisconnect = { n1, n2 ->
-            oldOnDisconnect.accept(n1, n2)
-            listener.accept(n1, n2)
+            oldOnDisconnect.handle(n1, n2)
+            handler.handle(n1, n2)
         }
+    }
+
+    @FunctionalInterface
+    fun interface ConnectDisconnectHandler {
+        /**
+         * Called when a connection is made or broken between two nodes, depending on what it was registered.
+         *
+         * @param node the node that this handler is registered on
+         * @param other the other node that is being connected to or disconnected from
+         */
+        fun handle(node: ElectricNode, other: ElectricNode)
     }
 
     override fun equals(other: Any?) = other is ElectricNode && id == other.id
@@ -47,18 +69,20 @@ sealed class ElectricNode(
     override fun hashCode() = id.hashCode()
 
     override fun toString(): String {
-        return "Electric node of type ${this::class.simpleName} at $block with ID $id"
+        return "Electric node \"$name\" of type ${this::class.simpleName} at $block with ID $id"
     }
 
     class Connector private constructor(
         id: UUID,
+        name: String,
         block: BlockPosition,
-        @JvmSynthetic internal val connectionSet: MutableSet<UUID>,
-    ) : ElectricNode(id, block) {
+        @get:JvmSynthetic internal val connectionSet: MutableSet<UUID>,
+    ) : ElectricNode(id, name, block) {
 
         constructor(
+            name: String,
             block: BlockPosition
-        ) : this(UUID.randomUUID(), block, mutableSetOf())
+        ) : this(UUID.randomUUID(), name, block, mutableSetOf())
 
         val connections get() = connectionSet.toSet()
 
@@ -69,11 +93,12 @@ sealed class ElectricNode(
                     connectionSet.add(other.id)
                     other.connectionSet.add(this.id)
 
-                    onConnect.accept(this, other)
-                    other.onConnect.accept(other, this)
+                    onConnect.handle(this, other)
+                    other.onConnect.handle(other, this)
+
+                    ElectricityManager.mergeNetworks()
                 }
             }
-            ElectricityManager.mergeNetworks()
         }
 
         override fun isConnectedTo(other: ElectricNode) = other.id in connectionSet
@@ -88,8 +113,8 @@ sealed class ElectricNode(
                     connectionSet.remove(other.id)
                     other.connectionSet.remove(this.id)
 
-                    onDisconnect.accept(this, other)
-                    other.onDisconnect.accept(other, this)
+                    onDisconnect.handle(this, other)
+                    other.onDisconnect.handle(other, this)
                 }
             }
             ElectricityManager.refreshNetworks(network, other.network)
@@ -100,7 +125,7 @@ sealed class ElectricNode(
             private val CONNECTIONS_KEY = rebarKey("connections")
             private val CONNECTIONS_TYPE = RebarSerializers.SET.setTypeFrom(RebarSerializers.UUID)
 
-            @JvmSynthetic
+            @get:JvmSynthetic
             internal val PDC_TYPE = object : PersistentDataType<PersistentDataContainer, Connector> {
                 override fun getPrimitiveType() = PersistentDataContainer::class.java
                 override fun getComplexType() = Connector::class.java
@@ -111,6 +136,7 @@ sealed class ElectricNode(
                 ): PersistentDataContainer {
                     val pdc = context.newPersistentDataContainer()
                     pdc.set(ID_KEY, RebarSerializers.UUID, complex.id)
+                    pdc.set(NAME_KEY, RebarSerializers.STRING, complex.name)
                     pdc.set(BLOCK_KEY, RebarSerializers.BLOCK_POSITION, complex.block)
                     pdc.set(CONNECTIONS_KEY, CONNECTIONS_TYPE, complex.connectionSet)
                     return pdc
@@ -121,9 +147,10 @@ sealed class ElectricNode(
                     context: PersistentDataAdapterContext
                 ): Connector {
                     val id = primitive.get(ID_KEY, RebarSerializers.UUID)!!
+                    val name = primitive.get(NAME_KEY, RebarSerializers.STRING)!!
                     val block = primitive.get(BLOCK_KEY, RebarSerializers.BLOCK_POSITION)!!
                     val connectionSet = primitive.get(CONNECTIONS_KEY, CONNECTIONS_TYPE)!!.toMutableSet()
-                    return Connector(id, block, connectionSet)
+                    return Connector(id, name, block, connectionSet)
                 }
             }
         }
@@ -135,9 +162,10 @@ sealed class ElectricNode(
     @ApiStatus.Internal
     sealed class Leaf(
         id: UUID,
+        name: String,
         block: BlockPosition,
         connection: UUID?
-    ) : ElectricNode(id, block) {
+    ) : ElectricNode(id, name, block) {
 
         var connection = connection
             private set
@@ -151,8 +179,10 @@ sealed class ElectricNode(
                 is Connector -> other.connectionSet.add(this.id)
             }
 
-            onConnect.accept(this, other)
-            other.onConnect.accept(other, this)
+            onConnect.handle(this, other)
+            other.onConnect.handle(other, this)
+
+            ElectricityManager.mergeNetworks()
         }
 
         override fun isConnectedTo(other: ElectricNode) = connection == other.id
@@ -163,7 +193,7 @@ sealed class ElectricNode(
         }
 
         fun disconnect() {
-            val otherId = connection ?: throw IllegalStateException("${this::class.simpleName} node is not connected")
+            val otherId = connection ?: return
             connection = null
             val other = ElectricityManager.getNodeById(otherId) ?: throw IllegalStateException("Connected node with ID $otherId not found")
             when (other) {
@@ -171,35 +201,45 @@ sealed class ElectricNode(
                 is Connector -> other.connectionSet.remove(this.id)
             }
 
-            onDisconnect.accept(this, other)
-            other.onDisconnect.accept(other, this)
+            onDisconnect.handle(this, other)
+            other.onDisconnect.handle(other, this)
         }
 
         companion object {
-            @JvmSynthetic
+            @get:JvmSynthetic
             internal val CONNECTION_KEY = rebarKey("connection")
         }
     }
 
     class Producer private constructor(
         id: UUID,
+        name: String,
         block: BlockPosition,
         connection: UUID?,
         var voltage: Double,
         var power: Double
-    ) : Leaf(id, block, connection) {
+    ) : Leaf(id, name, block, connection) {
         constructor(
+            name: String,
             block: BlockPosition,
             voltage: Double,
             power: Double
-        ) : this(UUID.randomUUID(), block, null, voltage, power)
+        ) : this(UUID.randomUUID(), name, block, null, voltage, power)
+
+        @get:JvmSynthetic
+        @set:JvmSynthetic
+        internal var powerTakeHandler = ConsumerFn<Double> { }
+
+        fun onPowerTake(handler: ConsumerFn<Double>) {
+            powerTakeHandler = handler
+        }
 
         companion object {
 
             private val VOLTAGE_KEY = rebarKey("voltage")
             private val POWER_KEY = rebarKey("power")
 
-            @JvmSynthetic
+            @get:JvmSynthetic
             internal val PDC_TYPE = object : PersistentDataType<PersistentDataContainer, Producer> {
                 override fun getPrimitiveType() = PersistentDataContainer::class.java
                 override fun getComplexType() = Producer::class.java
@@ -210,6 +250,7 @@ sealed class ElectricNode(
                 ): PersistentDataContainer {
                     val pdc = context.newPersistentDataContainer()
                     pdc.set(ID_KEY, RebarSerializers.UUID, complex.id)
+                    pdc.set(NAME_KEY, RebarSerializers.STRING, complex.name)
                     pdc.set(BLOCK_KEY, RebarSerializers.BLOCK_POSITION, complex.block)
                     pdc.setNullable(CONNECTION_KEY, RebarSerializers.UUID, complex.connection)
                     pdc.set(VOLTAGE_KEY, RebarSerializers.DOUBLE, complex.voltage)
@@ -222,11 +263,12 @@ sealed class ElectricNode(
                     context: PersistentDataAdapterContext
                 ): Producer {
                     val id = primitive.get(ID_KEY, RebarSerializers.UUID)!!
+                    val name = primitive.get(NAME_KEY, RebarSerializers.STRING)!!
                     val block = primitive.get(BLOCK_KEY, RebarSerializers.BLOCK_POSITION)!!
                     val connection = primitive.get(CONNECTION_KEY, RebarSerializers.UUID)
                     val voltage = primitive.get(VOLTAGE_KEY, RebarSerializers.DOUBLE)!!
                     val power = primitive.get(POWER_KEY, RebarSerializers.DOUBLE)!!
-                    return Producer(id, block, connection, voltage, power)
+                    return Producer(id, name, block, connection, voltage, power)
                 }
             }
         }
@@ -234,17 +276,19 @@ sealed class ElectricNode(
 
     class Consumer private constructor(
         id: UUID,
+        name: String,
         block: BlockPosition,
         connection: UUID?,
         var voltageRange: VoltageRange,
         var requiredPower: Double
-    ) : Leaf(id, block, connection) {
+    ) : Leaf(id, name, block, connection) {
 
         constructor(
+            name: String,
             block: BlockPosition,
             voltageRange: VoltageRange,
             requiredPower: Double
-        ) : this(UUID.randomUUID(), block, null, voltageRange, requiredPower)
+        ) : this(UUID.randomUUID(), name, block, null, voltageRange, requiredPower)
 
         var isPowered: Boolean = false
             @JvmSynthetic
@@ -261,7 +305,7 @@ sealed class ElectricNode(
                     )
             private val REQUIRED_POWER_KEY = rebarKey("required_power")
 
-            @JvmSynthetic
+            @get:JvmSynthetic
             internal val PDC_TYPE = object : PersistentDataType<PersistentDataContainer, Consumer> {
                 override fun getPrimitiveType() = PersistentDataContainer::class.java
                 override fun getComplexType() = Consumer::class.java
@@ -272,6 +316,7 @@ sealed class ElectricNode(
                 ): PersistentDataContainer {
                     val pdc = context.newPersistentDataContainer()
                     pdc.set(ID_KEY, RebarSerializers.UUID, complex.id)
+                    pdc.set(NAME_KEY, RebarSerializers.STRING, complex.name)
                     pdc.set(BLOCK_KEY, RebarSerializers.BLOCK_POSITION, complex.block)
                     pdc.setNullable(CONNECTION_KEY, RebarSerializers.UUID, complex.connection)
                     pdc.set(VOLTAGE_RANGE_KEY, VOLTAGE_RANGE_TYPE, complex.voltageRange)
@@ -284,11 +329,75 @@ sealed class ElectricNode(
                     context: PersistentDataAdapterContext
                 ): Consumer {
                     val id = primitive.get(ID_KEY, RebarSerializers.UUID)!!
+                    val name = primitive.get(NAME_KEY, RebarSerializers.STRING)!!
                     val block = primitive.get(BLOCK_KEY, RebarSerializers.BLOCK_POSITION)!!
                     val connection = primitive.get(CONNECTION_KEY, RebarSerializers.UUID)
                     val voltageRange = primitive.get(VOLTAGE_RANGE_KEY, VOLTAGE_RANGE_TYPE)!!
                     val requiredPower = primitive.get(REQUIRED_POWER_KEY, RebarSerializers.DOUBLE)!!
-                    return Consumer(id, block, connection, voltageRange, requiredPower)
+                    return Consumer(id, name, block, connection, voltageRange, requiredPower)
+                }
+            }
+        }
+    }
+
+    class Acceptor private constructor(
+        id: UUID,
+        name: String,
+        block: BlockPosition,
+        connection: UUID?
+    ) : Leaf(id, name, block, connection) {
+
+        constructor(
+            name: String,
+            block: BlockPosition
+        ) : this(UUID.randomUUID(), name, block, null)
+
+        @get:JvmSynthetic
+        @set:JvmSynthetic
+        internal var handler = AcceptorHandler { 0.0 }
+
+        fun onAccept(handler: AcceptorHandler) {
+            this.handler = handler
+        }
+
+        @FunctionalInterface
+        fun interface AcceptorHandler {
+
+            /**
+             * Called when the acceptor is accepting power. The returned value is the amount of power that was accepted,
+             * which may be less than the required power if the acceptor cannot accept all of it.
+             */
+            fun onAccept(power: Double): Double
+        }
+
+        companion object {
+
+            @get:JvmSynthetic
+            internal val PDC_TYPE = object : PersistentDataType<PersistentDataContainer, Acceptor> {
+                override fun getPrimitiveType() = PersistentDataContainer::class.java
+                override fun getComplexType() = Acceptor::class.java
+
+                override fun toPrimitive(
+                    complex: Acceptor,
+                    context: PersistentDataAdapterContext
+                ): PersistentDataContainer {
+                    val pdc = context.newPersistentDataContainer()
+                    pdc.set(ID_KEY, RebarSerializers.UUID, complex.id)
+                    pdc.set(NAME_KEY, RebarSerializers.STRING, complex.name)
+                    pdc.set(BLOCK_KEY, RebarSerializers.BLOCK_POSITION, complex.block)
+                    pdc.setNullable(CONNECTION_KEY, RebarSerializers.UUID, complex.connection)
+                    return pdc
+                }
+
+                override fun fromPrimitive(
+                    primitive: PersistentDataContainer,
+                    context: PersistentDataAdapterContext
+                ): Acceptor {
+                    val id = primitive.get(ID_KEY, RebarSerializers.UUID)!!
+                    val name = primitive.get(NAME_KEY, RebarSerializers.STRING)!!
+                    val block = primitive.get(BLOCK_KEY, RebarSerializers.BLOCK_POSITION)!!
+                    val connection = primitive.get(CONNECTION_KEY, RebarSerializers.UUID)
+                    return Acceptor(id, name, block, connection)
                 }
             }
         }
@@ -296,13 +405,16 @@ sealed class ElectricNode(
 
     companion object {
 
-        @JvmSynthetic
+        @get:JvmSynthetic
         internal val ID_KEY = rebarKey("id")
 
-        @JvmSynthetic
+        @get:JvmSynthetic
+        internal val NAME_KEY = rebarKey("name")
+
+        @get:JvmSynthetic
         internal val BLOCK_KEY = rebarKey("block")
 
-        @JvmSynthetic
-        internal val PDC_TYPE = RebarSerializers.POLYMORPHIC.of(Producer.PDC_TYPE, Consumer.PDC_TYPE, Connector.PDC_TYPE)
+        @get:JvmSynthetic
+        internal val PDC_TYPE = RebarSerializers.POLYMORPHIC.of(Producer.PDC_TYPE, Consumer.PDC_TYPE, Connector.PDC_TYPE, Acceptor.PDC_TYPE)
     }
 }
