@@ -9,11 +9,11 @@ import io.github.pylonmc.rebar.i18n.RebarArgument
 import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.item.RebarItemSchema
 import io.github.pylonmc.rebar.item.research.Research.Companion.canPickUp
-import io.github.pylonmc.rebar.util.ConfettiParticle
 import io.github.pylonmc.rebar.recipe.FluidOrItem
 import io.github.pylonmc.rebar.recipe.RecipeType
 import io.github.pylonmc.rebar.recipe.vanilla.VanillaRecipeType
 import io.github.pylonmc.rebar.registry.RebarRegistry
+import io.github.pylonmc.rebar.util.ConfettiParticle
 import io.github.pylonmc.rebar.util.persistentData
 import io.github.pylonmc.rebar.util.rebarKey
 import net.kyori.adventure.sound.Sound
@@ -228,7 +228,7 @@ class Research(
                 this.sendMessage(
                     Component.translatable(
                         "rebar.message.research.unknown",
-                        RebarArgument.of("item", schema.getItemStack().effectiveName()),
+                        RebarArgument.of("item", schema.createNewItem().effectiveName()),
                         RebarArgument.of("research", researchName)
                     )
                 )
@@ -271,7 +271,7 @@ class Research(
                     this.sendMessage(
                         Component.translatable(
                             "rebar.message.disabled.message",
-                            RebarArgument.of("item", schema.getItemStack().effectiveName()),
+                            RebarArgument.of("item", schema.createNewItem().effectiveName()),
                         )
                     )
                 }

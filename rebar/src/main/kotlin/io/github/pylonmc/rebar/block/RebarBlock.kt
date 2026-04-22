@@ -241,7 +241,7 @@ open class RebarBlock private constructor(val block: Block) : Keyed {
      *
      * @return the item that should be used to display the block's texture
      */
-    open fun getBlockTextureItem() = defaultItem?.getItemStack()?.let { ItemStackBuilder(it) }?.apply {
+    open fun getBlockTextureItem() = defaultItem?.createNewItem()?.let { ItemStackBuilder(it) }?.apply {
         editPdc { it.set(rebarBlockTextureEntityKey, RebarSerializers.BOOLEAN, true) }
         val properties = NmsAccessor.instance.getStateProperties(block, getBlockTextureProperties())
         for ((property, value) in properties) {
@@ -270,7 +270,7 @@ open class RebarBlock private constructor(val block: Block) : Keyed {
      */
     open fun getDropItem(context: BlockBreakContext): ItemStack? {
         return if (context.normallyDrops) {
-            defaultItem?.getItemStack()
+            defaultItem?.createNewItem()
         } else {
             null
         }
@@ -284,7 +284,7 @@ open class RebarBlock private constructor(val block: Block) : Keyed {
      *
      * @return the item the block should give when middle clicked, or null if none
      */
-    open fun getPickItem() = defaultItem?.getItemStack()
+    open fun getPickItem() = defaultItem?.createNewItem()
 
     /**
      * Called when debug info is requested for the block by someone

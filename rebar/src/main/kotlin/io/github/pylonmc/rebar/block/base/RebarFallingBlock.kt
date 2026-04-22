@@ -48,7 +48,7 @@ interface RebarFallingBlock {
     /**
      * When called the block doesn't exist in the world and in [BlockStorage]
      */
-    fun onItemDrop(event: EntityDropItemEvent, entity: RebarFallingBlockEntity) = RebarRegistry.ITEMS[(this as RebarBlock).key]?.getItemStack()
+    fun onItemDrop(event: EntityDropItemEvent, entity: RebarFallingBlockEntity) = RebarRegistry.ITEMS[(this as RebarBlock).key]?.createNewItem()
 
     class RebarFallingBlockEntity : RebarEntity<FallingBlock> {
         val fallStartPosition: BlockPosition
@@ -77,7 +77,7 @@ interface RebarFallingBlock {
         }
 
         fun fallbackItem() : ItemStack? {
-            return this.entity.persistentDataContainer.get(FALLBACK_ITEM, RebarSerializers.ITEM_STACK) ?: RebarRegistry.ITEMS[blockSchema.key]?.getItemStack()
+            return this.entity.persistentDataContainer.get(FALLBACK_ITEM, RebarSerializers.ITEM_STACK) ?: RebarRegistry.ITEMS[blockSchema.key]?.createNewItem()
         }
     }
 

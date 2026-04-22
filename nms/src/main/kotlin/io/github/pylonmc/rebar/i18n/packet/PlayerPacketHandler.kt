@@ -246,7 +246,7 @@ class PlayerPacketHandler(private val player: ServerPlayer, val handler: PlayerT
         if (stack.isEmpty) return stack
         val bukkitStack = CraftItemStack.asCraftMirror(stack)
         val item = RebarItem.fromStack(bukkitStack) ?: return stack
-        val prototype = item.schema.getItemStack()
+        val prototype = item.schema.createNewItem()
         prototype.copyDataFrom(bukkitStack) { it != DataComponentTypes.ITEM_NAME && it != DataComponentTypes.LORE }
         prototype.editPersistentDataContainer { it.remove(PlayerTranslationHandler.FOOTER_APPENDED) }
         prototype.amount = bukkitStack.amount

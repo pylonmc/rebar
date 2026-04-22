@@ -83,7 +83,7 @@ open class RebarItem(val stack: ItemStack) : Keyed {
         @Suppress("UnstableApiUsage")
         private fun checkName(schema: RebarItemSchema) {
             // Adventure is a perfect API with absolutely no problems whatsoever.
-            val name = schema.getItemStack().getData(DataComponentTypes.ITEM_NAME) as? TranslatableComponent
+            val name = schema.createNewItem().getData(DataComponentTypes.ITEM_NAME) as? TranslatableComponent
 
             var isNameValid = true
             if (name == null || name.key() != ItemStackBuilder.nameKey(schema.key)) {
@@ -114,7 +114,7 @@ open class RebarItem(val stack: ItemStack) : Keyed {
             RebarRegistry.ITEMS.register(schema)
 
             // pre-merge configs and check for constructor errors
-            fromStack(schema.getItemStack())
+            fromStack(schema.createNewItem())
         }
 
         @JvmStatic
