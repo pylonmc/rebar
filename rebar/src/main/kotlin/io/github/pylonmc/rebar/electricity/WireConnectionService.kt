@@ -36,8 +36,7 @@ internal object WireConnectionService : Listener {
         interactions[interaction] = node
         locations[node] = interaction.location.add(0.0, interaction.height / 2, 0.0)
         node.onDisconnect { thisNode, otherNode ->
-            val thisLocation = locations[thisNode] ?: return@onDisconnect
-            val block = BlockStorage.getAs<RebarElectricBlock>(thisLocation.toBlockLocation()) ?: return@onDisconnect
+            val block = BlockStorage.getAs<RebarElectricBlock>(thisNode.block) ?: return@onDisconnect
             val connectionName = getConnectionName(thisNode, otherNode)
             block.tryRemoveEntity(connectionName)
         }
@@ -47,7 +46,7 @@ internal object WireConnectionService : Listener {
     private fun onInteract(event: PlayerInteractEntityEvent) {
         val thisNode = interactions[event.rightClicked] ?: return
         val thisLocation = locations[thisNode] ?: return
-        val thisBlock = BlockStorage.getAsOrThrow<RebarElectricBlock>(thisLocation.toBlockLocation())
+        val thisBlock = BlockStorage.getAsOrThrow<RebarElectricBlock>(thisNode.block)
         val player = event.player
         val playerPdc = player.persistentDataContainer
 
@@ -81,8 +80,11 @@ internal object WireConnectionService : Listener {
             display.persistentDataContainer.set(CONNECTING_NODE_KEY, RebarSerializers.UUID, node.id)
             playerPdc.set(CONNECTING_KEY, RebarSerializers.UUID, display.uniqueId)
             checkCanRunWire(player, node, playerLocation)
+            event.isCancelled = true
             return
         }
+
+        event.isCancelled = true
 
         val connectingNodeId =
             connectingEntity.persistentDataContainer.get(CONNECTING_NODE_KEY, RebarSerializers.UUID) ?: return
@@ -108,12 +110,12 @@ internal object WireConnectionService : Listener {
 
         val wire = RebarItem.from<RebarWire>(player.inventory.getItem(event.hand)) ?: return
         connectingNode.connect(thisNode)
-        ElectricityManager.setCurrentLimit(thisNode, connectingNode, wire.currentLimit)
+        ElectricityManager.setMaxCurrent(thisNode, connectingNode, wire.maxCurrent)
         val connectingLocation = locations[connectingNode] ?: return
         connectingEntity.setTransformationMatrix(getDisplayTransform(connectingLocation, thisLocation))
         connectingEntity.teleportAsync(getMidpoint(connectingLocation, thisLocation))
 
-        val connectingBlock = BlockStorage.getAsOrThrow<RebarElectricBlock>(connectingLocation.toBlockLocation())
+        val connectingBlock = BlockStorage.getAsOrThrow<RebarElectricBlock>(connectingNode.block)
         thisBlock.addEntity(getConnectionName(thisNode, connectingNode), connectingEntity)
         connectingBlock.addEntity(getConnectionName(connectingNode, thisNode), connectingEntity)
 

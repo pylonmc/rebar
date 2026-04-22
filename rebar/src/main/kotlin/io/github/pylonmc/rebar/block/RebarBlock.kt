@@ -128,8 +128,10 @@ open class RebarBlock private constructor(val block: Block) : Keyed {
      * If you need to use data from these interfaces (such as the amount of fluid stored in
      * a [io.github.pylonmc.rebar.block.base.RebarFluidBufferBlock], you must use this
      * instead of using the data in the load constructor.
+     *
+     * @param pdc the persistent data container used to load the block, in case you need to read any additional data from it
      */
-    protected open fun postLoad() {}
+    protected open fun postLoad(pdc: PersistentDataContainer) {}
 
     /**
      * Called after both the create constructor and the load constructor.
@@ -411,7 +413,7 @@ open class RebarBlock private constructor(val block: Block) : Keyed {
                 RebarBlockDeserializeEvent(block.block, block, pdc).callEvent()
                 block.postInitialise()
                 RebarBlockInitializeEvent(block.block, block).callEvent()
-                block.postLoad()
+                block.postLoad(pdc)
                 return block
             } catch (t: Throwable) {
                 Rebar.logger.severe("Error while loading block $key at $position")

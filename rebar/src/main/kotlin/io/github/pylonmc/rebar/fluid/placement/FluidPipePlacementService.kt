@@ -6,7 +6,6 @@ import io.github.pylonmc.rebar.content.fluid.*
 import io.github.pylonmc.rebar.entity.EntityStorage
 import io.github.pylonmc.rebar.fluid.FluidManager
 import io.github.pylonmc.rebar.fluid.placement.FluidPipePlacementTask.Companion.pipesUsed
-import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.util.blocksOnPath
 import io.github.pylonmc.rebar.util.position.ChunkPosition
 import org.bukkit.Bukkit
@@ -14,12 +13,10 @@ import org.bukkit.GameMode
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
-import org.bukkit.event.player.PlayerItemHeldEvent
 import org.bukkit.event.player.PlayerQuitEvent
-import org.bukkit.event.player.PlayerSwapHandItemsEvent
 import org.bukkit.event.world.ChunkUnloadEvent
 import org.bukkit.inventory.EquipmentSlot
-import java.util.UUID
+import java.util.*
 
 internal object FluidPipePlacementService : Listener {
     /**
@@ -157,30 +154,7 @@ internal object FluidPipePlacementService : Listener {
         }
     }
 
-    @EventHandler
-    private fun onPlayerScroll(event: PlayerItemHeldEvent) {
-        val heldItem = event.getPlayer().inventory.getItem(event.previousSlot)
-        if (RebarItem.fromStack(heldItem) is FluidPipe && connectionsInProgress.containsKey(event.getPlayer())) {
-            cancelConnection(event.getPlayer())
-        }
-    }
 
-    @EventHandler
-    private fun onSwap(event: PlayerSwapHandItemsEvent) {
-        if (!connectionsInProgress.containsKey(event.getPlayer())) return
-
-        val mainHandRebar = RebarItem.fromStack(event.mainHandItem)
-        if (mainHandRebar is FluidPipe) {
-            event.isCancelled = true
-            return
-        }
-
-        val otherHandRebar = RebarItem.fromStack(event.offHandItem)
-        if (otherHandRebar is FluidPipe) {
-            event.isCancelled = true
-            return
-        }
-    }
 
     /**
      * Intended to prevent issues if players teleport away while placing a pipe

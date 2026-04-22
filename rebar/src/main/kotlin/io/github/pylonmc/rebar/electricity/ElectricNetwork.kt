@@ -81,10 +81,10 @@ class ElectricNetwork {
                             break
                         }
 
-                        // Determine limits on edges if not alreayd known
+                        // Determine limits on edges if not already known
                         for (edge in path) {
                             if (edge in limits) continue
-                            limits[edge] = ElectricityManager.getCurrentLimit(edge.from, edge.to)
+                            limits[edge] = ElectricityManager.getMaxCurrent(edge.from, edge.to)
                         }
 
                         val loadResult =
@@ -209,6 +209,9 @@ class ElectricNetwork {
         initialPower: Double,
         initialVoltage: Double
     ): LoadResult {
+        if (initialPower roughlyEquals 0.0 || initialVoltage roughlyEquals 0.0) {
+            return LoadResult(existingLoads, 0.0, initialVoltage)
+        }
         val loads = existingLoads.toMutableMap()
         var currentPower = initialPower
         var currentVoltage = initialVoltage

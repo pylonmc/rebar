@@ -1,6 +1,5 @@
 package io.github.pylonmc.rebar.content.cargo
 
-import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.block.BlockStorage
 import io.github.pylonmc.rebar.block.RebarBlock
 import io.github.pylonmc.rebar.block.base.*
@@ -21,7 +20,6 @@ import io.github.pylonmc.rebar.util.position.position
 import io.github.pylonmc.rebar.util.rebarKey
 import io.github.pylonmc.rebar.util.scheduleRemove
 import io.github.pylonmc.rebar.util.setNullable
-import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.block.Block
@@ -51,7 +49,7 @@ class CargoDuct : RebarBlock, RebarBreakHandler, RebarEntityHolderBlock, RebarEn
         connectedFaces = pdc.get(connectedFacesKey, connectedFacesType)!!.toMutableList()
     }
 
-    override fun postLoad() {
+    override fun postLoad(pdc: PersistentDataContainer) {
         for (face in connectedFaces) {
             val displayId = getHeldEntityUuid(ductDisplayName(face)) ?: continue
             EntityStorage.whenEntityLoads(displayId) { display: ItemDisplay ->
