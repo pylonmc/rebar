@@ -46,13 +46,25 @@ class ElectricNetwork {
             consumer.isPowered = false
         }
 
-        val surplusPower = producers.associateWith { it.power }.toMutableMap()
+        val surplusPower = producers.associateWithTo(mutableMapOf()) { it.power }
 
         // First, we distribute power from producers to consumers
-        val powerConsumedByConsumers = roundRobinFill(
-            consumers.associateWith { it.requiredPower },
-            producers.sumOf { it.power }
+        val totalPowerProduced = producers.sumOf { it.power }
+        val validConsumers = consumers.associateWithTo(mutableMapOf()) { it.requiredPower }
+        var powerConsumedByConsumers = roundRobinFill(
+            validConsumers,
+            totalPowerProduced
         )
+
+        // If any consumer isn't getting enough power, we remove the one with the lowest requirement and try again,
+        // until all remaining consumers are getting enough power, or we run out of consumers.
+        while (powerConsumedByConsumers.any { (consumer, power) -> power < consumer.requiredPower }) {
+            validConsumers.remove(validConsumers.minBy { it.value }.key)
+            powerConsumedByConsumers = roundRobinFill(
+                validConsumers,
+                totalPowerProduced
+            )
+        }
 
         // Then we invert that: knowing how much power was consumed, we calculate how much was taken from each producer
         val powerTakenFromProducers = roundRobinFill(
@@ -359,3 +371,11 @@ class ElectricNetwork {
 }
 
 private infix fun Double.roughlyEquals(other: Double): Boolean = abs(this - other) < 1e-6
+
+private infix fun <K> Map<K, Double>.roughlyEquals(other: Map<K, Double>): Boolean {
+    if (this.keys != other.keys) return false
+    for (key in this.keys) {
+        if (!(this[key]!! roughlyEquals other[key]!!)) return false
+    }
+    return true
+}
