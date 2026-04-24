@@ -210,7 +210,7 @@ class ItemButton @JvmOverloads constructor(
                 return clonedNotRebar
             } else {
                 // Rebar item handling
-                val clonedRebar = rebarItem.schema.getItemStack()
+                val clonedRebar = rebarItem.schema.createNewItem()
                 clonedRebar.amount = if (click.clickType.isShiftClick) { clonedRebar.maxStackSize } else { 1 }
                 return clonedRebar
             }

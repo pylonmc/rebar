@@ -17,6 +17,7 @@ import io.github.pylonmc.rebar.content.debug.DebugWaxedWeatheredCutCopperStairs
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.entity.packet.BlockTextureEntity
 import io.github.pylonmc.rebar.event.RebarBlockDeserializeEvent
+import io.github.pylonmc.rebar.event.RebarBlockInitializeEvent
 import io.github.pylonmc.rebar.event.RebarBlockSerializeEvent
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
 import io.github.pylonmc.rebar.nms.NmsAccessor
@@ -37,6 +38,7 @@ import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataAdapterContext
 import org.bukkit.persistence.PersistentDataContainer
+import org.jetbrains.annotations.MustBeInvokedByOverriders
 
 /**
  * Represents a Rebar block in the world.
@@ -127,8 +129,10 @@ open class RebarBlock private constructor(val block: Block) : Keyed {
      * If you need to use data from these interfaces (such as the amount of fluid stored in
      * a [io.github.pylonmc.rebar.block.base.RebarFluidBufferBlock], you must use this
      * instead of using the data in the load constructor.
+     *
+     * @param pdc the persistent data container used to load the block, in case you need to read any additional data from it
      */
-    protected open fun postLoad() {}
+    protected open fun postLoad(pdc: PersistentDataContainer) {}
 
     /**
      * Called after both the create constructor and the load constructor.
@@ -215,6 +219,7 @@ open class RebarBlock private constructor(val block: Block) : Keyed {
      * instead of returning a new map entirely, to ensure that any properties provided by superclasses
      * are preserved. (e.g. [RebarDirectionalBlock])
      */
+    @MustBeInvokedByOverriders
     open fun getBlockTextureProperties(): MutableMap<String, Pair<String, Int>> {
         val properties = mutableMapOf<String, Pair<String, Int>>()
         if (this is RebarDirectionalBlock) {
@@ -238,7 +243,7 @@ open class RebarBlock private constructor(val block: Block) : Keyed {
      *
      * @return the item that should be used to display the block's texture
      */
-    open fun getBlockTextureItem() = defaultItem?.getItemStack()?.let { ItemStackBuilder(it) }?.apply {
+    open fun getBlockTextureItem() = defaultItem?.createNewItem()?.let { ItemStackBuilder(it) }?.apply {
         editPdc { it.set(rebarBlockTextureEntityKey, RebarSerializers.BOOLEAN, true) }
         val properties = NmsAccessor.instance.getStateProperties(block, getBlockTextureProperties())
         for ((property, value) in properties) {
@@ -267,7 +272,7 @@ open class RebarBlock private constructor(val block: Block) : Keyed {
      */
     open fun getDropItem(context: BlockBreakContext): ItemStack? {
         return if (context.normallyDrops) {
-            defaultItem?.getItemStack()
+            defaultItem?.createNewItem()
         } else {
             null
         }
@@ -281,7 +286,7 @@ open class RebarBlock private constructor(val block: Block) : Keyed {
      *
      * @return the item the block should give when middle clicked, or null if none
      */
-    open fun getPickItem() = defaultItem?.getItemStack()
+    open fun getPickItem() = defaultItem?.createNewItem()
 
     /**
      * Called when debug info is requested for the block by someone
@@ -409,7 +414,8 @@ open class RebarBlock private constructor(val block: Block) : Keyed {
 
                 RebarBlockDeserializeEvent(block.block, block, pdc).callEvent()
                 block.postInitialise()
-                block.postLoad()
+                RebarBlockInitializeEvent(block.block, block).callEvent()
+                block.postLoad(pdc)
                 return block
             } catch (t: Throwable) {
                 Rebar.logger.severe("Error while loading block $key at $position")

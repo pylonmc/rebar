@@ -106,6 +106,12 @@ message:
   waila:
     type-disabled: "<red>This server no longer permits the your previously set %type% WAILA display type, it has been reset to default"
 
+  electricity:
+    default: "<insn>Right click a port</insn> to connect, or <insn>stop holding a wire</insn> to cancel (requires %wires%/%total% wires)"
+    already_connected: "<red>This node is already connected to another node"
+    blocking: "<red>There is a block in the way of this connection"
+    need_wire: "<red>You need to be holding a wire"
+
 gui:
   scroll:
     up: "Scroll up"
@@ -567,14 +573,6 @@ unit:
     singular: "second"
     plural: "seconds"
     abbr: "s"
-  joules:
-    singular: "joule"
-    plural: "joules"
-    abbr: "J"
-  watts:
-    singular: "watt"
-    plural: "watts"
-    abbr: "W"
   experience:
     singular: "experience point"
     plural: "experience points"
@@ -597,3 +595,19 @@ unit:
     singular: "cycle per second"
     plural: "cycles per second"
     abbr: "cycles/s"
+  joules:
+    singular: "joule"
+    plural: "joules"
+    abbr: "J"
+  watts:
+    singular: "watt"
+    plural: "watts"
+    abbr: "W"
+  volts:
+    singular: "volt"
+    plural: "volts"
+    abbr: "V"
+  amperes:
+    singular: "ampere"
+    plural: "amperes"
+    abbr: "A"

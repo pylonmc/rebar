@@ -31,7 +31,7 @@ import org.bukkit.event.world.ChunkUnloadEvent
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.persistence.PersistentDataType
-import java.util.Collections
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.random.Random
@@ -182,6 +182,63 @@ object BlockStorage : Listener {
     inline fun <reified T> getAs(location: Location): T? = getAs(T::class.java, location)
 
     /**
+     * Returns the Rebar block (of type [T]) at the given [blockPosition].
+     *
+     * @throws IllegalArgumentException if the chunk containing the block is not loaded or the block is not a Rebar block
+     * @throws ClassCastException if the block is not of the expected class
+     */
+    @JvmStatic
+    fun <T> getAsOrThrow(clazz: Class<T>, blockPosition: BlockPosition): T {
+        val block = get(blockPosition) ?: throw IllegalArgumentException("No Rebar block found at $blockPosition")
+        if (!clazz.isInstance(block)) {
+            throw ClassCastException("Block at $blockPosition is not of type ${clazz.simpleName}")
+        }
+        return clazz.cast(block)
+    }
+
+    /**
+     * Returns the Rebar block (of type [T]) at the given [block].
+     *
+     * @throws IllegalArgumentException if the chunk containing the block is not loaded or the block is not a Rebar block
+     * @throws ClassCastException if the block is not of the expected class
+     */
+    @JvmStatic
+    fun <T> getAsOrThrow(clazz: Class<T>, block: Block): T = getAsOrThrow(clazz, block.position)
+
+    /**
+     * Returns the Rebar block (of type [T]) at the given [location].
+     *
+     * @throws IllegalArgumentException if the chunk containing the block is not loaded or the block is not a Rebar block
+     * @throws ClassCastException if the block is not of the expected class
+     */
+    @JvmStatic
+    fun <T> getAsOrThrow(clazz: Class<T>, location: Location): T = getAsOrThrow(clazz, BlockPosition(location))
+
+    /**
+     * Returns the Rebar block (of type [T]) at the given [blockPosition].
+     *
+     * @throws IllegalArgumentException if the chunk containing the block is not loaded or the block is not a Rebar block
+     * @throws ClassCastException if the block is not of the expected class
+     */
+    inline fun <reified T> getAsOrThrow(blockPosition: BlockPosition): T = getAsOrThrow(T::class.java, blockPosition)
+
+    /**
+     * Returns the Rebar block (of type [T]) at the given [block].
+     *
+     * @throws IllegalArgumentException if the chunk containing the block is not loaded or the block is not a Rebar block
+     * @throws ClassCastException if the block is not of the expected class
+     */
+    inline fun <reified T> getAsOrThrow(block: Block): T = getAsOrThrow(T::class.java, block)
+
+    /**
+     * Returns the Rebar block (of type [T]) at the given [location].
+     *
+     * @throws IllegalArgumentException if the chunk containing the block is not loaded or the block is not a Rebar block
+     * @throws ClassCastException if the block is not of the expected class
+     */
+    inline fun <reified T> getAsOrThrow(location: Location): T = getAsOrThrow(T::class.java, location)
+
+    /**
      * Returns all the Plyon blocks in the chunk at [chunkPosition].
      *
      * @throws IllegalArgumentException if the chunk is not loaded
@@ -193,7 +250,7 @@ object BlockStorage : Listener {
     }
 
     /**
-     * Returns all the Plyon blocks with type [key].
+     * Returns all the Pylon blocks with type [key].
      */
     @JvmStatic
     fun getByKey(key: NamespacedKey): Collection<RebarBlock> =
@@ -204,6 +261,18 @@ object BlockStorage : Listener {
         } else {
             emptySet()
         }
+
+    /**
+     * Returns all the Pylon blocks of type [T]
+     */
+    @JvmStatic
+    fun <T> getByType(clazz: Class<T>) = lockBlockRead { blocks.values.filter { clazz.isInstance(it) }.map { clazz.cast(it)!! } }
+
+    /**
+     * Returns all the Pylon blocks of type [T]
+     */
+    @JvmStatic
+    inline fun <reified T> getByType() = getByType(T::class.java)
 
     /**
      * Returns whether the block at [blockPosition] is a Rebar block.
@@ -313,6 +382,7 @@ object BlockStorage : Listener {
 
         RebarBlockPlaceEvent(blockPosition.block, block, context).callEvent()
         block.postInitialise()
+        RebarBlockInitializeEvent(blockPosition.block, block).callEvent()
         BlockCullingEngine.insert(block)
 
         return block

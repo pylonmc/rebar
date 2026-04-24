@@ -61,7 +61,7 @@ internal object RebarRecipeListener : Listener {
             if (firstItem.isSimilar(secondItem)) {
                 val rebarItem = RebarItem.fromStack(firstItem)!!
                 if (rebarItem !is RebarUnmergeable) {
-                    val result = rebarItem.schema.getItemStack()
+                    val result = rebarItem.schema.createNewItem()
                     val resultDamage = inventory.result!!.getData(DataComponentTypes.DAMAGE)!!
                     result.setData(DataComponentTypes.DAMAGE, resultDamage)
                     inventory.result = result

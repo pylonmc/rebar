@@ -25,10 +25,10 @@ import io.github.pylonmc.rebar.item.research.addResearch
 import io.github.pylonmc.rebar.item.research.hasResearch
 import io.github.pylonmc.rebar.item.research.removeResearch
 import io.github.pylonmc.rebar.metrics.RebarMetrics
-import io.github.pylonmc.rebar.util.ConfettiParticle
 import io.github.pylonmc.rebar.recipe.ConfigurableRecipeType
 import io.github.pylonmc.rebar.recipe.RecipeType
 import io.github.pylonmc.rebar.registry.RebarRegistry
+import io.github.pylonmc.rebar.util.ConfettiParticle
 import io.github.pylonmc.rebar.util.mergeGlobalConfig
 import io.github.pylonmc.rebar.util.position.BlockPosition
 import io.github.pylonmc.rebar.util.vanillaDisplayName
@@ -91,12 +91,12 @@ private val give = buildCommand("give") {
                 val players = context.getArgument<List<Player>>("players")
                 val singular = players.size == 1
                 for (player in players) {
-                    player.inventory.addItem(item.getItemStack().asQuantity(amount))
+                    player.inventory.addItem(item.createNewItem().asQuantity(amount))
                 }
                 context.source.sender.sendVanillaFeedback(
                     "give.success." + if (singular) "single" else "multiple",
                     Component.text(amount),
-                    item.getItemStack().vanillaDisplayName(),
+                    item.createNewItem().vanillaDisplayName(),
                     if (singular) players[0].name() else Component.text(players.size)
                 )
             }

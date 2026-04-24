@@ -35,7 +35,7 @@ internal class FluidPipePlacementTask(
         .material(Material.WHITE_CONCRETE)
         .brightness(15) // transformation will be set later, make the block invisible now to prevent flash of white on place
         .transformation(TransformBuilder().scale(0f))
-        .build(origin.position.location.toCenterLocation())
+        .build(origin.position.toLocation().toCenterLocation())
 
     var target = origin
         private set
@@ -68,7 +68,7 @@ internal class FluidPipePlacementTask(
         }
 
         // Check if player has moved too far away
-        if (player.location.distance(origin.position.location) > RebarConfig.PIPE_PLACEMENT_CANCEL_DISTANCE) {
+        if (player.location.distance(origin.position.toLocation()) > RebarConfig.PIPE_PLACEMENT_CANCEL_DISTANCE) {
             FluidPipePlacementService.cancelConnection(player)
             return
         }
@@ -113,9 +113,9 @@ internal class FluidPipePlacementTask(
 
         // Update transformation
         if (origin.position != target.position) {
-            val targetOffset = target.position.location.toVector().toVector3f()
+            val targetOffset = target.position.toLocation().toVector().toVector3f()
                 .add(target.offset)
-                .sub(origin.position.location.toVector().toVector3f())
+                .sub(origin.position.toLocation().toVector().toVector3f())
             display.setTransformationMatrix(
                 LineBuilder()
                     .from(origin.offset)
@@ -126,7 +126,7 @@ internal class FluidPipePlacementTask(
         }
 
         // Interpolate only if changing on the same axis
-        val difference = target.position.vector3i.sub(previousTargetPosition.vector3i)
+        val difference = target.position.toVector3i().sub(previousTargetPosition.toVector3i())
         if (isCardinalDirection(difference)) {
             display.interpolationDelay = 0
             display.interpolationDuration = RebarConfig.PIPE_PLACEMENT_TASK_INTERVAL_TICKS.toInt()
@@ -201,7 +201,7 @@ internal class FluidPipePlacementTask(
         }
 
         val newTargetDistance = findClosestDistanceBetweenLineAndPoint(
-            Vector3f(origin.position.plus(newTargetOffset).vector3i),
+            Vector3f(origin.position.plus(newTargetOffset).toVector3i()),
             playerLookPosition,
             playerLookDirection
         )
@@ -251,8 +251,8 @@ internal class FluidPipePlacementTask(
      * 2) if the origin has a specific face, the target is in the direction of that face
      */
     private fun isTargetInCorrectDirection(newTarget: FluidPipePlacementPoint): Boolean {
-        val originToTarget = newTarget.position.vector3i.sub(origin.position.vector3i)
-        val targetToOrigin = origin.position.vector3i.sub(newTarget.position.vector3i)
+        val originToTarget = newTarget.position.toVector3i().sub(origin.position.toVector3i())
+        val targetToOrigin = origin.position.toVector3i().sub(newTarget.position.toVector3i())
         return isCardinalDirection(originToTarget)
                 && (origin.allowedFace == null || vectorToBlockFace(originToTarget) == origin.allowedFace!!)
                 && (newTarget.allowedFace == null || vectorToBlockFace(targetToOrigin) == newTarget.allowedFace!!)
@@ -266,7 +266,7 @@ internal class FluidPipePlacementTask(
         playerLookDirection: Vector3f,
         axis: Vector3i
     ): Vector3i {
-        val originPosition = origin.position.location.toCenterLocation().toVector().toVector3f()
+        val originPosition = origin.position.toLocation().toCenterLocation().toVector().toVector3f()
         val solution = findClosestPointBetweenSkewLines(playerLookPosition, playerLookDirection, originPosition, Vector3f(axis))
         val lambda = Math.clamp(
             solution.roundToLong(),

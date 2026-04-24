@@ -16,7 +16,7 @@ import org.bukkit.entity.ItemDisplay
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataContainer
-import java.util.UUID
+import java.util.*
 
 /**
  * A display that visually represents a pipe.
@@ -46,7 +46,7 @@ class FluidPipeDisplay : RebarEntity<ItemDisplay> {
 
         // will fail to load if schema not found; no way around this
         val pipeSchema = pdc.get(PIPE_KEY, PIPE_TYPE)!!
-        pipe = RebarItem.fromStack(pipeSchema.getItemStack()) as FluidPipe
+        pipe = RebarItem.fromStack(pipeSchema.createNewItem()) as FluidPipe
 
         this.pipeAmount = pdc.get(PIPE_AMOUNT_KEY, RebarSerializers.INTEGER)!!
 
@@ -101,7 +101,7 @@ class FluidPipeDisplay : RebarEntity<ItemDisplay> {
         } else if (drops != null) {
             drops.add(itemToGive)
         } else {
-            val location = to.point.position.plus(from.point.position).location.multiply(0.5)
+            val location = to.point.position.plus(from.point.position).toLocation().multiply(0.5)
             location.getWorld().dropItemNaturally(location, itemToGive)
         }
 

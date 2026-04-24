@@ -1,16 +1,14 @@
 package io.github.pylonmc.rebar.event.api
 
 import com.destroystokyo.paper.util.SneakyThrow
-import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.event.api.annotation.MultiHandler
 import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
+import org.bukkit.Bukkit
 import org.bukkit.event.Event
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.plugin.Plugin
-import org.bukkit.plugin.PluginManager
 import java.lang.invoke.MethodHandles
-import kotlin.jvm.java
 
 /**
  * A custom type of [Listener] that allows methods annotated with [MultiHandler] or [UniversalHandler] to be registered for multiple event priorities at once.
@@ -20,8 +18,8 @@ import kotlin.jvm.java
  * All methods should be formatted as `fun methodName(event: Event, priority: EventPriority)`
  */
 interface MultiListener : Listener {
-    fun register(plugin: Plugin, pluginManager: PluginManager) {
-        pluginManager.registerEvents(this, plugin)
+    fun register(plugin: Plugin) {
+        Bukkit.getPluginManager().registerEvents(this, plugin)
 
         val methods = this::class.java.declaredMethods
         for (method in methods) {
@@ -53,7 +51,7 @@ interface MultiListener : Listener {
                 @Suppress("UNCHECKED_CAST")
                 val eventClass = method.parameterTypes[0] as Class<out Event>
                 priorities.forEach { priority ->
-                    pluginManager.registerEvent(
+                    Bukkit.getPluginManager().registerEvent(
                         eventClass,
                         this,
                         priority,

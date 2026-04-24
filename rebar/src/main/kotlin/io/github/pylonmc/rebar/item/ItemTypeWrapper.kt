@@ -25,7 +25,7 @@ sealed interface ItemTypeWrapper : Keyed {
      */
     @JvmRecord
     data class Rebar(val item: RebarItemSchema) : ItemTypeWrapper {
-        override fun createItemStack() = item.getItemStack()
+        override fun createItemStack() = item.createNewItem()
         override fun getKey() = item.key
     }
 
