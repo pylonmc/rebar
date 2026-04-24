@@ -38,6 +38,7 @@ import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataAdapterContext
 import org.bukkit.persistence.PersistentDataContainer
+import org.jetbrains.annotations.MustBeInvokedByOverriders
 
 /**
  * Represents a Rebar block in the world.
@@ -218,6 +219,7 @@ open class RebarBlock private constructor(val block: Block) : Keyed {
      * instead of returning a new map entirely, to ensure that any properties provided by superclasses
      * are preserved. (e.g. [RebarDirectionalBlock])
      */
+    @MustBeInvokedByOverriders
     open fun getBlockTextureProperties(): MutableMap<String, Pair<String, Int>> {
         val properties = mutableMapOf<String, Pair<String, Int>>()
         if (this is RebarDirectionalBlock) {
