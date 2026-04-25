@@ -67,6 +67,7 @@ interface BlockBreakContext {
             get() = event.block
         override val normallyDrops
             get() = event.player.gameMode != GameMode.CREATIVE
+        // Fixes Rebar #713 - Breaks rebar blocks doesn't damage the tool in hand
         override val shouldSetToAir
             get() = false
     }
