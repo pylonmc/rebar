@@ -49,7 +49,7 @@ interface RebarElectricBlock : RebarEntityHolderBlock {
      * @return [node]
      */
     @ApiStatus.NonExtendable
-    fun <T : ElectricNode> addElectricPort(face: BlockFace, radius: Double, overrideMaterial: Material?, node: T): T {
+    fun <T : ElectricNode> addElectricPort(face: BlockFace, node: T, radius: Double, overrideMaterial: Material?): T {
         val material = overrideMaterial ?: when (node) {
             is ElectricNode.Connector -> Material.GRAY_CONCRETE
             is ElectricNode.Consumer -> Material.LIME_CONCRETE
@@ -87,7 +87,7 @@ interface RebarElectricBlock : RebarEntityHolderBlock {
      * @return [node]
      */
     @ApiStatus.NonExtendable
-    fun <T : ElectricNode> addElectricPort(face: BlockFace, node: T): T = addElectricPort(face, 0.5, null, node)
+    fun <T : ElectricNode> addElectricPort(face: BlockFace, node: T): T = addElectricPort(face, node, 0.5, null)
 
     @ApiStatus.Internal
     companion object : Listener {
