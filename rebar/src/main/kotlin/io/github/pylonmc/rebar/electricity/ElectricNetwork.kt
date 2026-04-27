@@ -1,5 +1,6 @@
 package io.github.pylonmc.rebar.electricity
 
+import io.github.pylonmc.rebar.config.RebarConfig
 import java.util.PriorityQueue
 import java.util.UUID
 import kotlin.collections.ArrayDeque
@@ -46,11 +47,11 @@ class ElectricNetwork {
             consumer.isPowered = false
         }
 
-        val surplusPower = producers.associateWithTo(mutableMapOf()) { it.power }
+        val surplusPower = producers.associateWithTo(mutableMapOf()) { it.power * POWER_ADJUSTMENT }
 
         // First, we distribute power from producers to consumers
-        val totalPowerProduced = producers.sumOf { it.power }
-        val validConsumers = consumers.associateWithTo(mutableMapOf()) { it.requiredPower }
+        val totalPowerProduced = producers.sumOf { it.power * POWER_ADJUSTMENT }
+        val validConsumers = consumers.associateWithTo(mutableMapOf()) { it.requiredPower * POWER_ADJUSTMENT }
         var powerConsumedByConsumers = roundRobinFill(
             validConsumers,
             totalPowerProduced
@@ -58,7 +59,7 @@ class ElectricNetwork {
 
         // If any consumer isn't getting enough power, we remove the one with the lowest requirement and try again,
         // until all remaining consumers are getting enough power, or we run out of consumers.
-        while (powerConsumedByConsumers.any { (consumer, power) -> power < consumer.requiredPower }) {
+        while (powerConsumedByConsumers.any { (consumer, power) -> power < consumer.requiredPower * POWER_ADJUSTMENT }) {
             validConsumers.remove(validConsumers.minBy { it.value }.key)
             powerConsumedByConsumers = roundRobinFill(
                 validConsumers,
@@ -68,7 +69,7 @@ class ElectricNetwork {
 
         // Then we invert that: knowing how much power was consumed, we calculate how much was taken from each producer
         val powerTakenFromProducers = roundRobinFill(
-            producers.associateWith { it.power },
+            producers.associateWith { it.power * POWER_ADJUSTMENT },
             powerConsumedByConsumers.values.sum()
         ).toMutableMap()
 
@@ -97,7 +98,7 @@ class ElectricNetwork {
                         // Determine limits on edges if not already known
                         for (edge in path) {
                             if (edge in limits) continue
-                            limits[edge] = ElectricityManager.getMaxCurrent(edge.from, edge.to)
+                            limits[edge] = ElectricityManager.getMaxCurrent(edge.from, edge.to) * POWER_ADJUSTMENT
                         }
 
                         val loadResult =
@@ -132,7 +133,7 @@ class ElectricNetwork {
                 }
             }
 
-            if (powerLeft roughlyEquals 0.0 && consumed roughlyEquals consumer.requiredPower) {
+            if (powerLeft roughlyEquals 0.0 && consumed roughlyEquals consumer.requiredPower * POWER_ADJUSTMENT) {
                 consumer.isPowered = true
             }
         }
@@ -159,7 +160,7 @@ class ElectricNetwork {
                         // Determine limits on edges if not already known
                         for (edge in path) {
                             if (edge in limits) continue
-                            limits[edge] = ElectricityManager.getMaxCurrent(edge.from, edge.to)
+                            limits[edge] = ElectricityManager.getMaxCurrent(edge.from, edge.to) * POWER_ADJUSTMENT
                         }
 
                         val loadResult =
@@ -195,7 +196,7 @@ class ElectricNetwork {
         } while (notAccepted != acceptors.size)
 
         for (producer in producers) {
-            val taken = producer.power - (surplusPower[producer] ?: 0.0)
+            val taken = producer.power * POWER_ADJUSTMENT - (surplusPower[producer] ?: 0.0)
             producer.powerTakeHandler.accept(taken)
         }
     }
@@ -347,6 +348,9 @@ class ElectricNetwork {
     private data class Edge(val from: ElectricNode, val to: ElectricNode)
 
     companion object {
+
+        private val POWER_ADJUSTMENT = RebarConfig.ELECTRICITY_TICK_INTERVAL / 20.0
+
         fun tryMerge(network1: ElectricNetwork, network2: ElectricNetwork): ElectricNetwork? {
             if (network1.nodeMap.size > network2.nodeMap.size) {
                 return tryMerge(network2, network1)
