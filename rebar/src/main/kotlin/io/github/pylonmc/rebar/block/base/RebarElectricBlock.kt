@@ -52,8 +52,8 @@ interface RebarElectricBlock : RebarEntityHolderBlock {
     fun <T : ElectricNode> addElectricPort(face: BlockFace, radius: Double, overrideMaterial: Material?, node: T): T {
         val material = overrideMaterial ?: when (node) {
             is ElectricNode.Connector -> Material.GRAY_CONCRETE
-            is ElectricNode.Consumer -> Material.GREEN_CONCRETE
-            is ElectricNode.Acceptor -> Material.GREEN_CONCRETE
+            is ElectricNode.Consumer -> Material.LIME_CONCRETE
+            is ElectricNode.Acceptor -> Material.LIME_CONCRETE
             is ElectricNode.Producer -> Material.RED_CONCRETE
         }
         val expandedRadius = radius - PORT_OUTER_SCALE / 2 + 0.001
