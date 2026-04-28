@@ -1,5 +1,6 @@
 package io.github.pylonmc.rebar.recipe
 
+import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.item.base.*
 import io.github.pylonmc.rebar.item.research.Research.Companion.canCraft
@@ -17,12 +18,14 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.block.BlockCookEvent
+import org.bukkit.event.block.CampfireStartEvent
 import org.bukkit.event.block.CrafterCraftEvent
 import org.bukkit.event.inventory.*
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.ShapedRecipe
 import org.bukkit.inventory.ShapelessRecipe
 import org.bukkit.inventory.StonecutterInventory
+import java.util.function.Predicate
 
 internal object RebarRecipeListener : Listener {
 
@@ -95,7 +98,6 @@ internal object RebarRecipeListener : Listener {
     private fun onCrafterCraft(e: CrafterCraftEvent) {
         val crafterState = e.block.state as? Crafter ?: return
         val inventory = crafterState.inventory
-
         val hasRebarItems = inventory.any { it.isRebarAndIsNot<VanillaCraftingItem>() }
         if (!hasRebarItems) {
             return
@@ -163,19 +165,68 @@ internal object RebarRecipeListener : Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.LOWEST)
-    private fun onCook(e: BlockCookEvent) {
-        if (RebarItem.fromStack(e.source) == null) return
-
-        var rebarRecipe: CookingRecipeWrapper? = null
+    private fun getCookingRecipe(input: ItemStack, pred: Predicate<CookingRecipeWrapper>? = null): CookingRecipeWrapper? {
         for (recipe in RecipeType.vanillaCookingRecipes()) {
-            if (recipe.key !in VanillaRecipeType.nonRebarRecipes && recipe.recipe.inputChoice.test(e.source)) {
-                e.result = recipe.recipe.result.clone()
-                rebarRecipe = recipe
-                break
+            if (pred != null && pred.test(recipe)) {
+                Rebar.logger.info("TESTING ${recipe.key}")
+                Rebar.logger.info("$input")
+                Rebar.logger.info("${recipe.recipeInput.items}")
+                Rebar.logger.info(recipe.matches(input).toString())
+            }
+            if ((pred == null || pred.test(recipe)) && recipe.matches(input)) {
+                Rebar.logger.info("MATCHES")
+                Rebar.logger.info(input.toString())
+                Rebar.logger.info(recipe.toString())
+                return recipe
             }
         }
+        Rebar.logger.info("NOTHING")
+        return null
     }
+
+    @EventHandler(priority = EventPriority.LOWEST)
+    private fun onCook(e: BlockCookEvent) {
+        // If a vanilla item matches a vanilla recipe, we leave it
+        if (!e.source.isRebarAndIsNot<VanillaCookingItem>() && e.recipe?.key in VanillaRecipeType.nonRebarRecipes) {
+            return
+        }
+        val rebarRecipe = getCookingRecipe(e.source) { it.key !in VanillaRecipeType.nonRebarRecipes }
+        if (rebarRecipe != null) {
+            e.result = rebarRecipe.recipe.result.clone()
+        } else {
+            e.isCancelled = true
+        }
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST)
+    private fun onStartCook(e: FurnaceStartSmeltEvent) {
+        // If a vanilla item matches a vanilla recipe, we leave it
+        if (!e.source.isRebarAndIsNot<VanillaCookingItem>() && e.recipe.key in VanillaRecipeType.nonRebarRecipes) {
+            Rebar.logger.info("WAS VANILLA + VANILLA (start cook)")
+            return
+        }
+        Rebar.logger.info("TRYING REBAR (start cook)")
+        val rebarRecipe = getCookingRecipe(e.source) { it.key !in VanillaRecipeType.nonRebarRecipes }
+        if (rebarRecipe == null) {
+            Rebar.logger.info("NO REBAR RECIPE FOUND (start cook)")
+            e.totalCookTime = Int.MAX_VALUE
+        }
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST)
+    private fun onStartCook(e: CampfireStartEvent) {
+        // If a vanilla item matches a vanilla recipe, we leave it
+        if (!e.source.isRebarAndIsNot<VanillaCookingItem>() && e.recipe.key in VanillaRecipeType.nonRebarRecipes) {
+            return
+        }
+        val rebarRecipe = getCookingRecipe(e.source) { it.key !in VanillaRecipeType.nonRebarRecipes }
+        if (rebarRecipe != null) {
+            // will be caught by cook event
+        } else {
+            e.totalCookTime = Int.MAX_VALUE
+        }
+    }
+
 
     @EventHandler(priority = EventPriority.LOWEST)
     private fun onFuelBurn(e: FurnaceBurnEvent) {
@@ -186,19 +237,27 @@ internal object RebarRecipeListener : Listener {
 
         val furnace = (e.block.state as Furnace)
         val input = furnace.inventory.smelting
-        if (input != null && input.isRebarAndIsNot<VanillaCookingItem>()) {
-            var rebarRecipe: CookingRecipeWrapper? = null
-            for (recipe in RecipeType.vanillaCookingRecipes()) {
-                if (recipe.key !in VanillaRecipeType.nonRebarRecipes && recipe.recipe.inputChoice.test(input)) {
-                    rebarRecipe = recipe
-                    break
-                }
-            }
-            val isFurnaceOutputValidToPutRecipeResultIn = rebarRecipe != null
-                    && (furnace.inventory.result == null || rebarRecipe.isOutput(furnace.inventory.result!!))
-            if (rebarRecipe == null || !isFurnaceOutputValidToPutRecipeResultIn) {
-                e.isCancelled = true
-            }
+        if (input == null) {
+            e.isCancelled = true
+            return
+        }
+        val recipe = getCookingRecipe(input)
+        if (recipe == null) {
+            e.isCancelled = true
+            return
+        }
+
+        // If a vanilla item matches a vanilla recipe, or if the rebar recipe matches, we allow it
+        if ((input.isRebarAndIsNot<VanillaCookingItem>() || recipe.key !in VanillaRecipeType.nonRebarRecipes) && !recipe.matches(input)) {
+            e.isCancelled = true
+            return
+        }
+
+        // recipe output is valid, check if there is room in the output slot
+        val resultSlotItem = furnace.inventory.result
+        val canPlaceInOutput = resultSlotItem == null || (recipe.isOutput(resultSlotItem) && resultSlotItem.amount < resultSlotItem.maxStackSize)
+        if (!canPlaceInOutput) {
+            e.isCancelled = true
         }
     }
 

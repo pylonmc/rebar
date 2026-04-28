@@ -48,7 +48,7 @@ sealed class VanillaRecipeType<T : VanillaRecipeWrapper>(key: String) :
 }
 
 @JvmSynthetic
-internal fun RecipeChoice.asRecipeInput(): RecipeInput {
+internal fun RecipeChoice.asRecipeInput(): RecipeInput.Item {
     return when (this) {
         is RecipeChoice.ExactChoice -> RecipeInput.Item(
             this.choices.mapTo(mutableSetOf()) { ItemTypeWrapper(it) },
@@ -66,5 +66,8 @@ internal fun RecipeChoice.asRecipeInput(): RecipeInput {
 
 @JvmSynthetic
 internal fun RecipeInput.Item.asRecipeChoice(): RecipeChoice {
+    if (ignoreComponents.isNotEmpty()) {
+        return RecipeChoice.MaterialChoice(items.map { it.createItemStack().type })
+    }
     return RecipeChoice.ExactChoice(items.map { it.createItemStack().asQuantity(amount) })
 }

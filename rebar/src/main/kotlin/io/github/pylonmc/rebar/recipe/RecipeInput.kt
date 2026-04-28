@@ -2,11 +2,13 @@ package io.github.pylonmc.rebar.recipe
 
 import io.github.pylonmc.rebar.fluid.RebarFluid
 import io.github.pylonmc.rebar.item.ItemTypeWrapper
+import io.papermc.paper.datacomponent.DataComponentType
 import org.bukkit.Tag
 import org.bukkit.inventory.ItemStack
 
 sealed interface RecipeInput {
-    data class Item(val items: MutableSet<ItemTypeWrapper>, val amount: Int) : RecipeInput {
+    data class Item(val items: MutableSet<ItemTypeWrapper>, val amount: Int, val ignoreComponents: MutableSet<DataComponentType>) : RecipeInput {
+        constructor(items: MutableSet<ItemTypeWrapper>, amount: Int) : this(items, amount, mutableSetOf())
         constructor(amount: Int, vararg items: ItemStack) : this(items.mapTo(mutableSetOf()) { ItemTypeWrapper(it) }, amount)
         constructor(tag: Tag<ItemTypeWrapper>, amount: Int) : this(tag.values, amount)
 
@@ -28,7 +30,14 @@ sealed interface RecipeInput {
             return contains(itemStack)
         }
 
-        operator fun contains(itemStack: ItemStack): Boolean = ItemTypeWrapper(itemStack) in items
+        operator fun contains(itemStack: ItemStack): Boolean {
+            for (item in items) {
+                if (item.createItemStack().matchesWithoutData(itemStack, ignoreComponents, true)) {
+                    return true
+                }
+            }
+            return false
+        }
     }
 
     @JvmRecord
