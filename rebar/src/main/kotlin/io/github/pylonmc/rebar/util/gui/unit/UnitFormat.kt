@@ -8,7 +8,7 @@ import java.math.BigDecimal
 import java.math.MathContext
 import java.math.RoundingMode
 import java.time.Duration
-import java.util.EnumSet
+import java.util.*
 
 /**
  * Handles formatting of a specific unit. Call [format] to format a value using this unit.
@@ -330,6 +330,13 @@ class UnitFormat @JvmOverloads constructor(
         @JvmField
         val AMPRERES = UnitFormat(
             "amperes",
+            TextColor.color(0xF2A900),
+            abbreviate = true
+        )
+
+        @JvmField
+        val WATTS_PER_MILLIBUCKET = UnitFormat(
+            "watts_per_millibucket",
             TextColor.color(0xF2A900),
             abbreviate = true
         )
