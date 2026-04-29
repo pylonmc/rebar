@@ -21,8 +21,21 @@ interface RebarElectricConsumerBlock : RebarElectricBlock, RebarDirectionalBlock
     val isPowered: Boolean
         get() = node.isPowered
 
-    val voltageRange: VoltageRange
-    val requiredPower: Double
+    @get:ApiStatus.NonExtendable
+    @set:ApiStatus.NonExtendable
+    var voltageRange: VoltageRange
+        get() = node.voltageRange
+        set(value) {
+            node.voltageRange = value
+        }
+
+    @get:ApiStatus.NonExtendable
+    @set:ApiStatus.NonExtendable
+    var requiredPower: Double
+        get() = node.requiredPower
+        set(value) {
+            node.requiredPower = value
+        }
 
     @ApiStatus.Internal
     companion object : Listener {
@@ -36,8 +49,8 @@ interface RebarElectricConsumerBlock : RebarElectricBlock, RebarDirectionalBlock
                 ElectricNode.Consumer(
                     name = "main",
                     block = blockPos,
-                    voltageRange = block.voltageRange,
-                    requiredPower = block.requiredPower
+                    voltageRange = VoltageRange(0.0, 0.0),
+                    requiredPower = 0.0
                 )
             )
         }
