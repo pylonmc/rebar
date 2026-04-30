@@ -163,9 +163,6 @@ object RebarSerializers {
     internal val RECIPE_PROCESSOR_DATA = RecipeProcessorDataPersistentDataType
 
     @JvmSynthetic
-    internal val SIMPLE_MULTIBLOCK_DATA = SimpleMultiblockDataPersistentDataType
-
-    @JvmSynthetic
     internal val TICKING_BLOCK_DATA = TickingBlockPersistentDataType
 
     @JvmSynthetic
