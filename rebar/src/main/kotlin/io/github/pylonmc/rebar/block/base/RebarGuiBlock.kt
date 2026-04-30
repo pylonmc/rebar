@@ -7,6 +7,7 @@ import io.github.pylonmc.rebar.event.RebarBlockLoadEvent
 import io.github.pylonmc.rebar.event.RebarBlockPlaceEvent
 import io.github.pylonmc.rebar.event.RebarBlockUnloadEvent
 import net.kyori.adventure.text.Component
+import org.bukkit.Material
 import org.bukkit.event.Event
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
@@ -64,14 +65,27 @@ interface RebarGuiBlock : RebarBreakHandler, RebarNoVanillaContainerBlock {
         private fun onInteract(event: PlayerInteractEvent) {
             val guiBlock = BlockStorage.getAs(RebarGuiBlock::class.java, event.clickedBlock ?: return) ?: return
 
-            event.setUseInteractedBlock(Event.Result.DENY)
-            if (!event.action.isRightClick
-                || event.player.isSneaking
-                || event.hand != EquipmentSlot.HAND
-            ) {
+            val mainHand = event.player.inventory.itemInMainHand.type
+            if (event.player.isSneaking && event.action.isRightClick) {
+                if (mainHand != Material.AIR && !mainHand.isBlock) {
+                    event.setUseInteractedBlock(Event.Result.DENY)
+                }
+                if (mainHand == Material.AIR) {
+                    openGui(guiBlock, event)
+                }
                 return
             }
 
+            if (event.player.isSneaking || !event.action.isRightClick || event.hand != EquipmentSlot.HAND) {
+                return
+            }
+
+            openGui(guiBlock, event)
+        }
+
+        private fun openGui(guiBlock: RebarGuiBlock, event: PlayerInteractEvent) {
+            // Deny interactions and display the GUI
+            event.setUseInteractedBlock(Event.Result.DENY)
             event.setUseItemInHand(Event.Result.DENY)
 
             Window.builder()
