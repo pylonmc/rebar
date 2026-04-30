@@ -1,7 +1,6 @@
 package io.github.pylonmc.rebar.electricity
 
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
-import io.github.pylonmc.rebar.datatypes.map
 import io.github.pylonmc.rebar.util.position.BlockPosition
 import io.github.pylonmc.rebar.util.rebarKey
 import io.github.pylonmc.rebar.util.setNullable
@@ -216,15 +215,13 @@ sealed class ElectricNode(
         name: String,
         block: BlockPosition,
         connection: UUID?,
-        var voltage: Double,
         var power: Double
     ) : Leaf(id, name, block, connection) {
         constructor(
             name: String,
             block: BlockPosition,
-            voltage: Double,
             power: Double
-        ) : this(UUID.randomUUID(), name, block, null, voltage, power)
+        ) : this(UUID.randomUUID(), name, block, null, power)
 
         @get:JvmSynthetic
         @set:JvmSynthetic
@@ -236,7 +233,6 @@ sealed class ElectricNode(
 
         companion object {
 
-            private val VOLTAGE_KEY = rebarKey("voltage")
             private val POWER_KEY = rebarKey("power")
 
             @get:JvmSynthetic
@@ -253,7 +249,6 @@ sealed class ElectricNode(
                     pdc.set(NAME_KEY, RebarSerializers.STRING, complex.name)
                     pdc.set(BLOCK_KEY, RebarSerializers.BLOCK_POSITION, complex.block)
                     pdc.setNullable(CONNECTION_KEY, RebarSerializers.UUID, complex.connection)
-                    pdc.set(VOLTAGE_KEY, RebarSerializers.DOUBLE, complex.voltage)
                     pdc.set(POWER_KEY, RebarSerializers.DOUBLE, complex.power)
                     return pdc
                 }
@@ -266,9 +261,8 @@ sealed class ElectricNode(
                     val name = primitive.get(NAME_KEY, RebarSerializers.STRING)!!
                     val block = primitive.get(BLOCK_KEY, RebarSerializers.BLOCK_POSITION)!!
                     val connection = primitive.get(CONNECTION_KEY, RebarSerializers.UUID)
-                    val voltage = primitive.get(VOLTAGE_KEY, RebarSerializers.DOUBLE)!!
                     val power = primitive.get(POWER_KEY, RebarSerializers.DOUBLE)!!
-                    return Producer(id, name, block, connection, voltage, power)
+                    return Producer(id, name, block, connection, power)
                 }
             }
         }
@@ -279,16 +273,14 @@ sealed class ElectricNode(
         name: String,
         block: BlockPosition,
         connection: UUID?,
-        var voltageRange: VoltageRange,
         var requiredPower: Double
     ) : Leaf(id, name, block, connection) {
 
         constructor(
             name: String,
             block: BlockPosition,
-            voltageRange: VoltageRange,
             requiredPower: Double
-        ) : this(UUID.randomUUID(), name, block, null, voltageRange, requiredPower)
+        ) : this(UUID.randomUUID(), name, block, null, requiredPower)
 
         var isPowered: Boolean = false
             @JvmSynthetic
@@ -296,13 +288,6 @@ sealed class ElectricNode(
 
         companion object {
 
-            private val VOLTAGE_RANGE_KEY = rebarKey("voltage_range")
-            private val VOLTAGE_RANGE_TYPE =
-                RebarSerializers.PAIR.pairTypeFrom(RebarSerializers.DOUBLE, RebarSerializers.DOUBLE)
-                    .map(
-                        from = { VoltageRange(it.first, it.second) },
-                        to = { Pair(it.min, it.max) }
-                    )
             private val REQUIRED_POWER_KEY = rebarKey("required_power")
 
             @get:JvmSynthetic
@@ -319,7 +304,6 @@ sealed class ElectricNode(
                     pdc.set(NAME_KEY, RebarSerializers.STRING, complex.name)
                     pdc.set(BLOCK_KEY, RebarSerializers.BLOCK_POSITION, complex.block)
                     pdc.setNullable(CONNECTION_KEY, RebarSerializers.UUID, complex.connection)
-                    pdc.set(VOLTAGE_RANGE_KEY, VOLTAGE_RANGE_TYPE, complex.voltageRange)
                     pdc.set(REQUIRED_POWER_KEY, RebarSerializers.DOUBLE, complex.requiredPower)
                     return pdc
                 }
@@ -332,9 +316,8 @@ sealed class ElectricNode(
                     val name = primitive.get(NAME_KEY, RebarSerializers.STRING)!!
                     val block = primitive.get(BLOCK_KEY, RebarSerializers.BLOCK_POSITION)!!
                     val connection = primitive.get(CONNECTION_KEY, RebarSerializers.UUID)
-                    val voltageRange = primitive.get(VOLTAGE_RANGE_KEY, VOLTAGE_RANGE_TYPE)!!
                     val requiredPower = primitive.get(REQUIRED_POWER_KEY, RebarSerializers.DOUBLE)!!
-                    return Consumer(id, name, block, connection, voltageRange, requiredPower)
+                    return Consumer(id, name, block, connection, requiredPower)
                 }
             }
         }

@@ -87,36 +87,26 @@ class ElectricNetwork {
                 var noPath = 0
                 for ((producer, produced) in powerTakenFromProducers) {
                     if (produced roughlyEquals 0.0) continue
-                    val tempDisconnectedEdges = mutableSetOf<Edge>()
-                    while (true) {
-                        val path = findBestPath(producer, consumer, disconnectedEdges + tempDisconnectedEdges)
-                        if (path == null) {
-                            noPath++
-                            break
-                        }
+                    val path = findBestPath(producer, consumer, disconnectedEdges)
+                    if (path == null) {
+                        noPath++
+                        break
+                    }
 
-                        // Determine limits on edges if not already known
-                        for (edge in path) {
-                            if (edge in limits) continue
-                            limits[edge] = ElectricityManager.getMaxCurrent(edge.from, edge.to) * POWER_ADJUSTMENT
-                        }
+                    // Determine limits on edges if not already known
+                    for (edge in path) {
+                        if (edge in limits) continue
+                        limits[edge] = ElectricityManager.getMaxCurrent(edge.from, edge.to) * POWER_ADJUSTMENT
+                    }
 
-                        val loadResult =
-                            calculateLoadOnEdges(path, edgeLoads, limits, produced, producer.voltage)
-                        val powerDelivered = min(loadResult.finalPower, powerLeft)
-                        if (loadResult.finalVoltage !in consumer.voltageRange) {
-                            // voltage out of range, disconnect last edge and try again
-                            tempDisconnectedEdges.add(path.last())
-                        } else {
-                            edgeLoads = loadResult.currents
-                            powerLeft -= powerDelivered
-                            powerTakenFromProducers[producer] = powerTakenFromProducers[producer]!! - powerDelivered
-                            for ((edge, load) in loadResult.currents) {
-                                if (load roughlyEquals limits[edge]!!) {
-                                    disconnectedEdges.add(edge)
-                                }
-                            }
-                            break
+                    val loadResult = calculateLoadOnEdges(path, edgeLoads, limits, produced)
+                    val powerDelivered = min(loadResult.finalPower, powerLeft)
+                    edgeLoads = loadResult.currents
+                    powerLeft -= powerDelivered
+                    powerTakenFromProducers[producer] = powerTakenFromProducers[producer]!! - powerDelivered
+                    for ((edge, load) in loadResult.currents) {
+                        if (load roughlyEquals limits[edge]!!) {
+                            disconnectedEdges.add(edge)
                         }
                     }
                 }
@@ -163,8 +153,7 @@ class ElectricNetwork {
                             limits[edge] = ElectricityManager.getMaxCurrent(edge.from, edge.to) * POWER_ADJUSTMENT
                         }
 
-                        val loadResult =
-                            calculateLoadOnEdges(path, edgeLoads, limits, surplus, producer.voltage)
+                        val loadResult = calculateLoadOnEdges(path, edgeLoads, limits, surplus)
                         val accepted = acceptor.handler.onAccept(loadResult.finalPower)
                         if (accepted roughlyEquals 0.0) {
                             notAccepted++
@@ -282,36 +271,27 @@ class ElectricNetwork {
         path: List<Edge>,
         existingLoads: Map<Edge, Double>,
         limits: Map<Edge, Double>,
-        initialPower: Double,
-        initialVoltage: Double
+        initialPower: Double
     ): LoadResult {
-        if (initialPower roughlyEquals 0.0 || initialVoltage roughlyEquals 0.0) {
-            return LoadResult(existingLoads, 0.0, initialVoltage)
+        if (initialPower roughlyEquals 0.0) {
+            return LoadResult(existingLoads, 0.0)
         }
         val loads = existingLoads.toMutableMap()
         var currentPower = initialPower
-        var currentVoltage = initialVoltage
         for (edge in path) {
-            if (edge.from is ElectricNode.Connector && edge.to is ElectricNode.Connector) {
-                val transformerVoltage = ElectricityManager.getTransformerVoltage(edge.from, edge.to)
-                if (transformerVoltage != null) {
-                    currentVoltage = transformerVoltage
-                }
-            }
             val remainingCapacity = limits[edge]!! - (loads[edge] ?: 0.0)
-            val current = min(currentPower / currentVoltage, remainingCapacity)
-            loads.merge(edge, current, Double::plus)
-            currentPower = current * currentVoltage
+            currentPower = min(currentPower, remainingCapacity)
+            loads.merge(edge, currentPower, Double::plus)
         }
         return if (currentPower roughlyEquals initialPower) {
-            LoadResult(loads, currentPower, currentVoltage)
+            LoadResult(loads, currentPower)
         } else {
             // some limit has been hit somewhere, recalculate based on actual power delivered
-            calculateLoadOnEdges(path, existingLoads, limits, currentPower, initialVoltage)
+            calculateLoadOnEdges(path, existingLoads, limits, currentPower)
         }
     }
 
-    private data class LoadResult(val currents: Map<Edge, Double>, val finalPower: Double, val finalVoltage: Double)
+    private data class LoadResult(val currents: Map<Edge, Double>, val finalPower: Double)
 
     private fun recalculateDistanceHeuristics() {
         heuristics.clear()

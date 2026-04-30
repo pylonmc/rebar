@@ -18,15 +18,7 @@ interface RebarElectricProducerBlock : RebarElectricBlock, RebarDirectionalBlock
 
     @get:ApiStatus.NonExtendable
     @set:ApiStatus.NonExtendable
-    var voltageProducing: Double
-        get() = node.voltage
-        set(value) {
-            node.voltage = value
-        }
-
-    @get:ApiStatus.NonExtendable
-    @set:ApiStatus.NonExtendable
-    var powerProducing: Double
+    var power: Double
         get() = node.power
         set(value) {
             node.power = value
@@ -44,7 +36,6 @@ interface RebarElectricProducerBlock : RebarElectricBlock, RebarDirectionalBlock
                 ElectricNode.Producer(
                     name = "main",
                     block = blockPos,
-                    voltage = 0.0,
                     power = 0.0
                 )
             )

@@ -48,20 +48,6 @@ object ElectricityManager {
     fun getNodeById(id: UUID): ElectricNode? = nodes[id]
 
     @JvmStatic
-    fun setTransformerEdge(from: ElectricNode.Connector, to: ElectricNode.Connector, final: Double) {
-        transformers[from to to] = final
-        from.onDisconnect { connector, other ->
-            if (other == to) {
-                transformers.remove(connector to other)
-            }
-        }
-    }
-
-    @JvmStatic
-    fun getTransformerVoltage(from: ElectricNode.Connector, to: ElectricNode.Connector): Double? =
-        transformers[from to to] ?: transformers[to to from]
-
-    @JvmStatic
     fun setMaxCurrent(from: ElectricNode, to: ElectricNode, max: Double) {
         maxCurrents[from to to] = max
         from.onDisconnect { node, other ->

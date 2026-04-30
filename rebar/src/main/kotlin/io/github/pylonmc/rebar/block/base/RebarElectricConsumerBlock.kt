@@ -1,7 +1,6 @@
 package io.github.pylonmc.rebar.block.base
 
 import io.github.pylonmc.rebar.electricity.ElectricNode
-import io.github.pylonmc.rebar.electricity.VoltageRange
 import io.github.pylonmc.rebar.event.RebarBlockPlaceEvent
 import io.github.pylonmc.rebar.util.position.position
 import org.bukkit.event.EventHandler
@@ -23,14 +22,6 @@ interface RebarElectricConsumerBlock : RebarElectricBlock, RebarDirectionalBlock
 
     @get:ApiStatus.NonExtendable
     @set:ApiStatus.NonExtendable
-    var voltageRange: VoltageRange
-        get() = node.voltageRange
-        set(value) {
-            node.voltageRange = value
-        }
-
-    @get:ApiStatus.NonExtendable
-    @set:ApiStatus.NonExtendable
     var requiredPower: Double
         get() = node.requiredPower
         set(value) {
@@ -49,7 +40,6 @@ interface RebarElectricConsumerBlock : RebarElectricBlock, RebarDirectionalBlock
                 ElectricNode.Consumer(
                     name = "main",
                     block = blockPos,
-                    voltageRange = VoltageRange(0.0, 0.0),
                     requiredPower = 0.0
                 )
             )
