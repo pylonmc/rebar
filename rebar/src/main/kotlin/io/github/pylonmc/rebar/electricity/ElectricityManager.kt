@@ -48,7 +48,7 @@ object ElectricityManager {
     fun getNodeById(id: UUID): ElectricNode? = nodes[id]
 
     @JvmStatic
-    fun setMaxCurrent(from: ElectricNode, to: ElectricNode, max: Double) {
+    fun setMaxPower(from: ElectricNode, to: ElectricNode, max: Double) {
         maxCurrents[from to to] = max
         from.onDisconnect { node, other ->
             if (other == to) {
@@ -58,7 +58,7 @@ object ElectricityManager {
     }
 
     @JvmStatic
-    fun getMaxCurrent(from: ElectricNode, to: ElectricNode): Double =
+    fun getMaxPower(from: ElectricNode, to: ElectricNode): Double =
         maxCurrents[from to to] ?: maxCurrents[to to from] ?: Double.MAX_VALUE
 
     @JvmSynthetic

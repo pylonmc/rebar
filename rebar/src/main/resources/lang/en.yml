@@ -603,14 +603,6 @@ unit:
     singular: "watt"
     plural: "watts"
     abbr: "W"
-  volts:
-    singular: "volt"
-    plural: "volts"
-    abbr: "V"
-  amperes:
-    singular: "ampere"
-    plural: "amperes"
-    abbr: "A"
   watts_per_millibucket:
     singular: "watt per millibucket"
     plural: "watts per millibucket"

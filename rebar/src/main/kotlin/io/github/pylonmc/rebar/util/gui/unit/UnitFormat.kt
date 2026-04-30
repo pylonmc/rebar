@@ -321,20 +321,6 @@ class UnitFormat @JvmOverloads constructor(
         )
 
         @JvmField
-        val VOLTS = UnitFormat(
-            "volts",
-            TextColor.color(0xF2A900),
-            abbreviate = true
-        )
-
-        @JvmField
-        val AMPRERES = UnitFormat(
-            "amperes",
-            TextColor.color(0xF2A900),
-            abbreviate = true
-        )
-
-        @JvmField
         val WATTS_PER_MILLIBUCKET = UnitFormat(
             "watts_per_millibucket",
             TextColor.color(0xF2A900),

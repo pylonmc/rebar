@@ -47,11 +47,11 @@ class ElectricNetwork {
             consumer.isPowered = false
         }
 
-        val surplusPower = producers.associateWithTo(mutableMapOf()) { it.power * POWER_ADJUSTMENT }
+        val surplusPower = producers.associateWithTo(mutableMapOf()) { it.power }
 
         // First, we distribute power from producers to consumers
-        val totalPowerProduced = producers.sumOf { it.power * POWER_ADJUSTMENT }
-        val validConsumers = consumers.associateWithTo(mutableMapOf()) { it.requiredPower * POWER_ADJUSTMENT }
+        val totalPowerProduced = producers.sumOf { it.power }
+        val validConsumers = consumers.associateWithTo(mutableMapOf()) { it.requiredPower }
         var powerConsumedByConsumers = roundRobinFill(
             validConsumers,
             totalPowerProduced
@@ -59,7 +59,7 @@ class ElectricNetwork {
 
         // If any consumer isn't getting enough power, we remove the one with the lowest requirement and try again,
         // until all remaining consumers are getting enough power, or we run out of consumers.
-        while (powerConsumedByConsumers.any { (consumer, power) -> power < consumer.requiredPower * POWER_ADJUSTMENT }) {
+        while (powerConsumedByConsumers.any { (consumer, power) -> power < consumer.requiredPower }) {
             validConsumers.remove(validConsumers.minBy { it.value }.key)
             powerConsumedByConsumers = roundRobinFill(
                 validConsumers,
@@ -69,7 +69,7 @@ class ElectricNetwork {
 
         // Then we invert that: knowing how much power was consumed, we calculate how much was taken from each producer
         val powerTakenFromProducers = roundRobinFill(
-            producers.associateWith { it.power * POWER_ADJUSTMENT },
+            producers.associateWith { it.power },
             powerConsumedByConsumers.values.sum()
         ).toMutableMap()
 
@@ -96,7 +96,7 @@ class ElectricNetwork {
                     // Determine limits on edges if not already known
                     for (edge in path) {
                         if (edge in limits) continue
-                        limits[edge] = ElectricityManager.getMaxCurrent(edge.from, edge.to) * POWER_ADJUSTMENT
+                        limits[edge] = ElectricityManager.getMaxPower(edge.from, edge.to)
                     }
 
                     val loadResult = calculateLoadOnEdges(path, edgeLoads, limits, produced)
@@ -123,7 +123,7 @@ class ElectricNetwork {
                 }
             }
 
-            if (powerLeft roughlyEquals 0.0 && consumed roughlyEquals consumer.requiredPower * POWER_ADJUSTMENT) {
+            if (powerLeft roughlyEquals 0.0 && consumed roughlyEquals consumer.requiredPower) {
                 consumer.isPowered = true
             }
         }
@@ -150,11 +150,11 @@ class ElectricNetwork {
                         // Determine limits on edges if not already known
                         for (edge in path) {
                             if (edge in limits) continue
-                            limits[edge] = ElectricityManager.getMaxCurrent(edge.from, edge.to) * POWER_ADJUSTMENT
+                            limits[edge] = ElectricityManager.getMaxPower(edge.from, edge.to)
                         }
 
                         val loadResult = calculateLoadOnEdges(path, edgeLoads, limits, surplus)
-                        val accepted = acceptor.handler.onAccept(loadResult.finalPower)
+                        val accepted = acceptor.handler.onAccept(loadResult.finalPower * POWER_ADJUSTMENT)
                         if (accepted roughlyEquals 0.0) {
                             notAccepted++
                             continue@acceptorLoop
