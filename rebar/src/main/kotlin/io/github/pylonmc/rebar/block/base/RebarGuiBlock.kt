@@ -64,15 +64,14 @@ interface RebarGuiBlock : RebarBreakHandler, RebarNoVanillaContainerBlock {
         private fun onInteract(event: PlayerInteractEvent) {
             val guiBlock = BlockStorage.getAs(RebarGuiBlock::class.java, event.clickedBlock ?: return) ?: return
 
+            event.setUseInteractedBlock(Event.Result.DENY)
             if (!event.action.isRightClick
                 || event.player.isSneaking
                 || event.hand != EquipmentSlot.HAND
-                || event.useInteractedBlock() == Event.Result.DENY
             ) {
                 return
             }
 
-            event.setUseInteractedBlock(Event.Result.DENY)
             event.setUseItemInHand(Event.Result.DENY)
 
             Window.builder()
