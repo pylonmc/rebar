@@ -53,5 +53,14 @@ abstract class KeyedPersistentDataType<T : Keyed>(val type: Class<T>) : Persiste
                 override fun retrieve(key: NamespacedKey): T = retrievalFunction(key)
             }
         }
+
+        @JvmSynthetic
+        inline fun <reified T : Keyed> keyedTypeFromOrNull(
+            crossinline retrievalFunction: (NamespacedKey) -> T?
+        ): PersistentDataType<String, T> {
+            return object : KeyedPersistentDataType<T>(T::class.java) {
+                override fun retrieve(key: NamespacedKey): T = T::class.java.cast(retrievalFunction(key))
+            }
+        }
     }
 }

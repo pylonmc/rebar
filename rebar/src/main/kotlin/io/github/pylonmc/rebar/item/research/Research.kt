@@ -153,7 +153,8 @@ class Research(
         private val researchSoundsKey = rebarKey("research_sounds")
         private val guideHintsKey = rebarKey("guide_hints")
         private val researchesType =
-            RebarSerializers.SET.setTypeFrom(RebarSerializers.KEYED.keyedTypeFrom(RebarRegistry.RESEARCHES::getOrThrow))
+            RebarSerializers.SET.setTypeFrom(RebarSerializers.KEYED.keyedTypeFromOrNull(RebarRegistry.RESEARCHES::get))
+                .removeNull()
 
         @JvmStatic
         var Player.researchPoints: Long by persistentData(researchPointsKey, RebarSerializers.LONG, 0)
