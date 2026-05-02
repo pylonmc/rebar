@@ -19,18 +19,14 @@ class ListNullablePersistentDataType<P, C>(
     }
 
     override fun fromPrimitive(primitive: List<P>, context: PersistentDataAdapterContext): List<C> {
-        val result = mutableListOf<C>()
-        primitive.forEach { it -> {
-            @Suppress("UNCHECKED_CAST")
-            val nullable = innerType as? NullablePersistentDataType<P, C>
-            if (nullable != null) {
-                val r = innerType.fromPrimitiveNullable(it!!, context)
-                if (r != null) result.add(r)
-            } else {
-                result.add(innerType.fromPrimitive(it!!, context))
-            }
-        }}
-        return result
+        @Suppress("UNCHECKED_CAST")
+        val nullable = innerType as? NullablePersistentDataType<P, C>
+        return primitive.mapNotNull {
+            if (nullable != null)
+                nullable.fromPrimitiveNullable(it!!, context)
+            else 
+                innerType.fromPrimitive(it!!, context)
+        }
     }
 
     override fun elementType(): PersistentDataType<P, C> = innerType
