@@ -1,10 +1,17 @@
 package io.github.pylonmc.rebar.datatypes
 
 import io.github.pylonmc.rebar.util.rebarKey
+import org.bukkit.persistence.ListPersistentDataType
 import org.bukkit.persistence.PersistentDataAdapterContext
 import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.persistence.PersistentDataType
 
+/**
+ * A [SetPersistentDataType] that allows null values to be inputted,
+ * but eventually null values will be filtered out rather than being preserved
+ *
+ * @see NullablePersistentDataType
+ */
 class SetNullablePersistentDataType<P, C>(
     val elementType: NullablePersistentDataType<P, C>
 ) : PersistentDataType<PersistentDataContainer, Set<C>> {
