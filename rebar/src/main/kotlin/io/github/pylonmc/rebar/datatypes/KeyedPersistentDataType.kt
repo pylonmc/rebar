@@ -61,6 +61,9 @@ abstract class KeyedPersistentDataType<T : Keyed>(val type: Class<T>) : Persiste
             return KeyedPersistentDataTypeNullable(T::class.java, retrievalFunction)
         }
 
+        /**
+         * @see NullablePersistentDataType
+         */
         class KeyedPersistentDataTypeNullable<T : Keyed>(type: Class<T>, val retrievalFunction: (NamespacedKey) -> T?) : KeyedPersistentDataType<T>(type), NullablePersistentDataType<String, T> {
             override fun fromPrimitiveNullable(
                 primitive: String,
