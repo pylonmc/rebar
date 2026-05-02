@@ -57,7 +57,7 @@ abstract class KeyedPersistentDataType<T : Keyed>(val type: Class<T>) : Persiste
         @JvmSynthetic
         inline fun <reified T : Keyed> keyedTypeFromNullable(
             noinline retrievalFunction: (NamespacedKey) -> T?
-        ): PersistentDataType<String, T> {
+        ): NullablePersistentDataType<String, T> {
             return KeyedPersistentDataTypeNullable(T::class.java, retrievalFunction)
         }
 

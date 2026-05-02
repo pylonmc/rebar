@@ -6,7 +6,7 @@ import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.persistence.PersistentDataType
 
 class SetNullablePersistentDataType<P, C>(
-    val elementType: PersistentDataType<P, C>
+    val elementType: NullablePersistentDataType<P, C>
 ) : PersistentDataType<PersistentDataContainer, Set<C>> {
 
     private val setValues = rebarKey("values")
@@ -26,7 +26,7 @@ class SetNullablePersistentDataType<P, C>(
         primitive.get(setValues, RebarSerializers.LIST_NULLABLE.listTypeFrom(elementType))!!.toMutableSet()
 
     companion object {
-        fun <P, C> setTypeFrom(elementType: PersistentDataType<P, C>): PersistentDataType<PersistentDataContainer, Set<C>> =
+        fun <P, C> setTypeFrom(elementType: NullablePersistentDataType<P, C>): PersistentDataType<PersistentDataContainer, Set<C>> =
             SetNullablePersistentDataType(elementType)
     }
 }
