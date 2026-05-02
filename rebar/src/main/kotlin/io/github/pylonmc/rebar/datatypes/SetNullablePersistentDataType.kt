@@ -5,9 +5,7 @@ import org.bukkit.persistence.PersistentDataAdapterContext
 import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.persistence.PersistentDataType
 
-// 'Hold on, why the hell are we returning an entire PDC instead of a list of primitives???'
-// Well for some reason, lists are only counted as primitives if accompanied by a ListPersistentDataType (wtf)
-class SetPersistentDataType<P, C>(
+class SetNullablePersistentDataType<P, C>(
     val elementType: PersistentDataType<P, C>
 ) : PersistentDataType<PersistentDataContainer, Set<C>> {
 
@@ -20,15 +18,15 @@ class SetPersistentDataType<P, C>(
 
     override fun toPrimitive(complex: Set<C>, context: PersistentDataAdapterContext): PersistentDataContainer {
         val pdc = context.newPersistentDataContainer()
-        pdc.set(setValues, PersistentDataType.LIST.listTypeFrom(elementType), ArrayList(complex))
+        pdc.set(setValues, RebarSerializers.LIST_NULLABLE.listTypeFrom(elementType), ArrayList(complex))
         return pdc
     }
 
     override fun fromPrimitive(primitive: PersistentDataContainer, context: PersistentDataAdapterContext): Set<C> =
-        primitive.get(setValues, PersistentDataType.LIST.listTypeFrom(elementType))!!.toMutableSet()
+        primitive.get(setValues, RebarSerializers.LIST_NULLABLE.listTypeFrom(elementType))!!.toMutableSet()
 
     companion object {
         fun <P, C> setTypeFrom(elementType: PersistentDataType<P, C>): PersistentDataType<PersistentDataContainer, Set<C>> =
-            SetPersistentDataType(elementType)
+            SetNullablePersistentDataType(elementType)
     }
 }

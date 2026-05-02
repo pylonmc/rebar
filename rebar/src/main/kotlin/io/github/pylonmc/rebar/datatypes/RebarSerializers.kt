@@ -57,7 +57,13 @@ object RebarSerializers {
     val LIST = PersistentDataType.LIST!!
 
     @JvmField
+    val LIST_NULLABLE = ListNullablePersistentDataType
+
+    @JvmField
     val SET = SetPersistentDataType
+
+    @JvmField
+    val SET_NULLABLE = SetNullablePersistentDataType
 
     @JvmField
     val MAP = MapPersistentDataType

@@ -55,12 +55,23 @@ abstract class KeyedPersistentDataType<T : Keyed>(val type: Class<T>) : Persiste
         }
 
         @JvmSynthetic
-        inline fun <reified T : Keyed> keyedTypeFromOrNull(
-            crossinline retrievalFunction: (NamespacedKey) -> T?
+        inline fun <reified T : Keyed> keyedTypeFromNullable(
+            noinline retrievalFunction: (NamespacedKey) -> T?
         ): PersistentDataType<String, T> {
-            return object : KeyedPersistentDataType<T>(T::class.java) {
-                override fun retrieve(key: NamespacedKey): T = T::class.java.cast(retrievalFunction(key))
+            return KeyedPersistentDataTypeNullable(T::class.java, retrievalFunction)
+        }
+
+        class KeyedPersistentDataTypeNullable<T : Keyed>(type: Class<T>, val retrievalFunction: (NamespacedKey) -> T?) : KeyedPersistentDataType<T>(type), NullablePersistentDataType<String, T> {
+            override fun fromPrimitiveNullable(
+                primitive: String,
+                context: PersistentDataAdapterContext
+            ): T? {
+                val key = RebarSerializers.NAMESPACED_KEY.fromPrimitive(primitive, context)
+                return retrievalFunction(key)
             }
+
+            override fun retrieve(key: NamespacedKey): T =
+                throw UnsupportedOperationException("This method should not be called. Use fromPrimitiveNullable instead.")
         }
     }
 }
