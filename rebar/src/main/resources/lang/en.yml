@@ -201,6 +201,56 @@ guide:
           <guidearrow> Whether your WAILA is displayed as an actionbar or bossbar
           <guidearrow> <green>Bossbar <dark_gray>- <gray>at the top of your screen
           <guidearrow> <aqua>Actionbar <dark_gray>- <gray>at the bottom of your screen
+    cycle-waila-boss-bar-color:
+      pink:
+        name: "<white>Boss bar color: <red>Pink <dark_gray>(Click to cycle)"
+        lore: |-
+          <guidearrow> The color of your boss bar WAILA
+      blue:
+        name: "<white>Boss bar color: <blue>Blue <dark_gray>(Click to cycle)"
+        lore: |-
+          <guidearrow> The color of your boss bar WAILA
+      red:
+        name: "<white>Boss bar color: <red>Red <dark_gray>(Click to cycle)"
+        lore: |-
+          <guidearrow> The color of your boss bar WAILA
+      green:
+        name: "<white>Boss bar color: <green>Green <dark_gray>(Click to cycle)"
+        lore: |-
+          <guidearrow> The color of your boss bar WAILA
+      yellow:
+        name: "<white>Boss bar color: <yellow>Yellow <dark_gray>(Click to cycle)"
+        lore: |-
+          <guidearrow> The color of your boss bar WAILA
+      purple:
+        name: "<white>Boss bar color: <light_purple>Purple <dark_gray>(Click to cycle)"
+        lore: |-
+          <guidearrow> The color of your boss bar WAILA
+      white:
+        name: "<white>Boss bar color: <white>White <dark_gray>(Click to cycle)"
+        lore: |-
+          <guidearrow> The color of your boss bar WAILA
+    cycle-waila-boss-bar-overlay:
+      progress:
+        name: "<white>Boss bar overlay: <green>Progress <dark_gray>(Click to cycle)"
+        lore: |-
+          <guidearrow> The overlay of your boss bar WAILA
+      notched_6:
+        name: "<white>Boss bar overlay: <green>Notched 6 <dark_gray>(Click to cycle)"
+        lore: |-
+          <guidearrow> The overlay of your boss bar WAILA
+      notched_10:
+        name: "<white>Boss bar overlay: <green>Notched 10 <dark_gray>(Click to cycle)"
+        lore: |-
+          <guidearrow> The overlay of your boss bar WAILA
+      notched_12:
+        name: "<white>Boss bar overlay: <green>Notched 12 <dark_gray>(Click to cycle)"
+        lore: |-
+          <guidearrow> The overlay of your boss bar WAILA
+      notched_20:
+        name: "<white>Boss bar overlay: <green>Notched 20 <dark_gray>(Click to cycle)"
+        lore: |-
+          <guidearrow> The overlay of your boss bar WAILA
     toggle-block-culling:
       enabled:
         name: "<white>Block culling: <green>Enabled <dark_gray>(Click to toggle)"

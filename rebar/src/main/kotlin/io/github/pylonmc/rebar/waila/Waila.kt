@@ -54,21 +54,21 @@ class Waila private constructor(private val player: Player, playerConfig: Player
     private val bossBar = BossBar.bossBar(
         Component.empty(),
         RebarConfig.WailaConfig.DEFAULT_DISPLAY.progress,
-        RebarConfig.WailaConfig.DEFAULT_DISPLAY.color,
-        RebarConfig.WailaConfig.DEFAULT_DISPLAY.overlay
+        playerConfig.bossbarColor,
+        playerConfig.bossbarOverlay
     )
 
     private fun send(display: WailaDisplay) {
         when (config.type) {
             Type.BOSSBAR -> {
                 player.hideBossBar(bossBar)
-                val color = if (display.color in RebarConfig.WailaConfig.ALLOWED_BOSS_BAR_COLORS) {
-                    display.color
+                val color = if (config.bossbarColor in RebarConfig.WailaConfig.ALLOWED_BOSS_BAR_COLORS) {
+                    config.bossbarColor
                 } else {
                     RebarConfig.WailaConfig.DEFAULT_DISPLAY.color
                 }
-                val overlay = if (display.overlay in RebarConfig.WailaConfig.ALLOWED_BOSS_BAR_OVERLAYS) {
-                    display.overlay
+                val overlay = if (config.bossbarOverlay in RebarConfig.WailaConfig.ALLOWED_BOSS_BAR_OVERLAYS) {
+                    config.bossbarOverlay
                 } else {
                     RebarConfig.WailaConfig.DEFAULT_DISPLAY.overlay
                 }

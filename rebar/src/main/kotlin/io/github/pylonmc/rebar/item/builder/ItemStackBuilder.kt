@@ -29,6 +29,7 @@ import org.bukkit.attribute.AttributeModifier
 import org.bukkit.block.BlockType
 import org.bukkit.inventory.EquipmentSlotGroup
 import org.bukkit.inventory.ItemStack
+import org.bukkit.inventory.ItemType
 import org.bukkit.inventory.meta.ItemMeta
 import org.bukkit.persistence.PersistentDataContainer
 import org.jetbrains.annotations.ApiStatus
@@ -386,6 +387,11 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
         @JvmStatic
         fun of(material: Material): ItemStackBuilder {
             return of(ItemStack(material))
+        }
+
+        @JvmStatic
+        fun of(itemType: ItemType): ItemStackBuilder {
+            return of(itemType.createItemStack())
         }
 
         /**
