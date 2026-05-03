@@ -19,6 +19,7 @@ import org.bukkit.event.Listener
 import org.bukkit.event.block.BlockCookEvent
 import org.bukkit.event.block.CrafterCraftEvent
 import org.bukkit.event.inventory.*
+import org.bukkit.inventory.CraftingInventory
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.ShapedRecipe
 import org.bukkit.inventory.ShapelessRecipe
@@ -59,15 +60,19 @@ internal object RebarRecipeListener : Listener {
             check(firstItem != null)
             check(secondItem != null)
             if (firstItem.isSimilar(secondItem)) {
-                val rebarItem = RebarItem.fromStack(firstItem)!!
-                if (rebarItem !is RebarUnmergeable) {
-                    val result = rebarItem.schema.getItemStack()
-                    val resultDamage = inventory.result!!.getData(DataComponentTypes.DAMAGE)!!
-                    result.setData(DataComponentTypes.DAMAGE, resultDamage)
-                    inventory.result = result
-                }
+                setRepairedResult(inventory, firstItem)
             } else {
-                inventory.result = null
+                if (firstItem.hasData(DataComponentTypes.DAMAGE) && secondItem.hasData(DataComponentTypes.DAMAGE)) {
+                    val cloneFirst = firstItem.clone()
+                    val cloneSecond = secondItem.clone()
+                    cloneFirst.unsetData(DataComponentTypes.DAMAGE)
+                    cloneSecond.unsetData(DataComponentTypes.DAMAGE)
+                    if (cloneFirst.isSimilar(cloneSecond)) {
+                        setRepairedResult(inventory, firstItem)
+                    }
+                } else {
+                    inventory.result = null
+                }
             }
         }
 
@@ -78,6 +83,16 @@ internal object RebarRecipeListener : Listener {
         }
         if (anyViewerDoesNotHaveResearch) {
             inventory.result = null
+        }
+    }
+
+    private fun setRepairedResult(inventory: CraftingInventory, firstItem: ItemStack) {
+        val rebarItem = RebarItem.fromStack(firstItem)!!
+        if (rebarItem !is RebarUnmergeable) {
+            val result = rebarItem.schema.getItemStack()
+            val resultDamage = inventory.result!!.getData(DataComponentTypes.DAMAGE)!!
+            result.setData(DataComponentTypes.DAMAGE, resultDamage)
+            inventory.result = result
         }
     }
 
