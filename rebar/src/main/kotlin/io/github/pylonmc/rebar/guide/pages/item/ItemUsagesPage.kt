@@ -43,7 +43,7 @@ open class ItemUsagesPage(val stack: ItemStack) : PagedGuidePage {
         .addIngredient('#', GuiItems.background())
         .addIngredient('<', GuiItems.pagePrevious())
         .addIngredient('b', RebarGuide.backButton)
-        .addIngredient('s', RebarGuide.searchItemsAndFluidsButton)
+        .addIngredient('s', RebarGuide.getSearchButton(player))
         .addIngredient('>', GuiItems.pageNext())
         .addIngredient('x', Markers.CONTENT_LIST_SLOT_HORIZONTAL)
         .addPageChangeHandler { _, newPage -> saveCurrentPage(player, newPage) }
