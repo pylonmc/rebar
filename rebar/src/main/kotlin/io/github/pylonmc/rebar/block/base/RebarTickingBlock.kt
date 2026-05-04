@@ -18,7 +18,7 @@ import kotlinx.coroutines.*
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.jetbrains.annotations.ApiStatus
-import java.util.IdentityHashMap
+import java.util.*
 
 /**
  * Represents a block that 'ticks' (does something at a fixed time interval).
@@ -40,6 +40,13 @@ interface RebarTickingBlock {
      */
     val tickInterval
         get() = tickingData.tickInterval
+
+    /**
+     * How many times the block ticks per second
+     */
+    @get:ApiStatus.NonExtendable
+    val ticksPerSecond: Double
+        get() = 20.0 / tickInterval
 
     /**
      * Whether the [tick] function should be called asynchronously. You should generally use
