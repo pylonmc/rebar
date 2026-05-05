@@ -4,11 +4,13 @@ import io.github.pylonmc.rebar.config.ConfigSection
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter
 import io.github.pylonmc.rebar.guide.button.ItemButton
 import io.github.pylonmc.rebar.i18n.RebarArgument
+import io.github.pylonmc.rebar.item.base.VanillaCookingItem
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
 import io.github.pylonmc.rebar.recipe.FluidOrItem
 import io.github.pylonmc.rebar.recipe.RecipeInput
 import io.github.pylonmc.rebar.util.gui.GuiItems
 import io.github.pylonmc.rebar.util.gui.unit.UnitFormat
+import io.github.pylonmc.rebar.util.isRebarAndIsNot
 import io.papermc.paper.datacomponent.DataComponentTypes
 import net.kyori.adventure.text.Component
 import org.bukkit.Material
@@ -21,7 +23,9 @@ sealed class CookingRecipeWrapper(final override val recipe: CookingRecipe<*>, v
     override val inputs: List<RecipeInput> = listOf(recipeInput)
     override val results: List<FluidOrItem> = listOf(FluidOrItem.of(recipe.result))
     override fun getKey(): NamespacedKey = recipe.key
-    fun matches(item: ItemStack) = item in recipeInput
+    fun matches(item: ItemStack) =
+        if (item.isRebarAndIsNot<VanillaCookingItem>() || key !in VanillaRecipeType.nonRebarRecipes) item in recipeInput
+        else recipe.inputChoice.test(item)
 
     protected abstract val displayBlock: Material
 

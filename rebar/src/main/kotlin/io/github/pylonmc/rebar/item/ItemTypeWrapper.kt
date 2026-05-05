@@ -13,6 +13,7 @@ sealed interface ItemTypeWrapper : Keyed {
     fun createItemStack(): ItemStack
     fun matchesWithoutData(item: ItemStack, excludeTypes: Set<DataComponentType>, ignoreCount: Boolean = false): Boolean
     fun matchesWithoutData(item: ItemStack, excludeTypes: Set<DataComponentType>): Boolean = matchesWithoutData(item, excludeTypes, false)
+    fun isEmpty(): Boolean
 
     /**
      * The vanilla variant of [ItemTypeWrapper].
@@ -22,6 +23,8 @@ sealed interface ItemTypeWrapper : Keyed {
         override fun createItemStack() = ItemStack(material)
         override fun matchesWithoutData(item: ItemStack, excludeTypes: Set<DataComponentType>, ignoreCount: Boolean) = createItemStack().matchesWithoutData(item, excludeTypes, ignoreCount)
         override fun getKey() = material.key
+        override fun isEmpty() = material.isAir()
+        override fun toString() = "ItemTypeWrapper.Vanilla(${material.key})"
     }
 
     /**
@@ -32,6 +35,8 @@ sealed interface ItemTypeWrapper : Keyed {
         override fun createItemStack() = item.getItemStack()
         override fun matchesWithoutData(item: ItemStack, excludeTypes: Set<DataComponentType>, ignoreCount: Boolean) = this.item.matchesWithoutData(item, excludeTypes, ignoreCount)
         override fun getKey() = item.key
+        override fun isEmpty() = false
+        override fun toString() = "ItemTypeWrapper.Rebar(${item.key})"
     }
 
     companion object {

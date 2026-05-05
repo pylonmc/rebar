@@ -3,6 +3,7 @@ package io.github.pylonmc.rebar.recipe
 import io.github.pylonmc.rebar.fluid.RebarFluid
 import io.github.pylonmc.rebar.item.ItemTypeWrapper
 import io.papermc.paper.datacomponent.DataComponentType
+import org.bukkit.Material
 import org.bukkit.Tag
 import org.bukkit.inventory.ItemStack
 
@@ -25,8 +26,9 @@ sealed interface RecipeInput {
             representativeItems.first()
         }
 
-        fun matches(itemStack: ItemStack): Boolean {
-            if (itemStack.amount < amount) return false
+        fun matches(itemStack: ItemStack?): Boolean {
+            if (itemStack?.isEmpty ?: true) return isEmpty()
+            if (isEmpty() || itemStack.amount < amount) return false
             return contains(itemStack)
         }
 
@@ -37,6 +39,10 @@ sealed interface RecipeInput {
                 }
             }
             return false
+        }
+
+        fun isEmpty(): Boolean {
+            return items.none{ !it.isEmpty() }
         }
     }
 
@@ -59,6 +65,9 @@ sealed interface RecipeInput {
     }
 
     companion object {
+        @JvmStatic
+        val EMPTY_ITEM = Item(mutableSetOf(ItemTypeWrapper.Vanilla(Material.AIR)), 1)
+
         @JvmStatic
         @JvmOverloads
         fun of(item: ItemStack, amount: Int = item.amount) = Item(amount, item)
