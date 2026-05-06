@@ -2,11 +2,14 @@ package io.github.pylonmc.rebar.recipe
 
 import io.github.pylonmc.rebar.fluid.RebarFluid
 import io.github.pylonmc.rebar.item.ItemTypeWrapper
+import io.papermc.paper.datacomponent.DataComponentType
+import org.bukkit.Material
 import org.bukkit.Tag
 import org.bukkit.inventory.ItemStack
 
 sealed interface RecipeInput {
-    data class Item(val items: MutableSet<ItemTypeWrapper>, val amount: Int) : RecipeInput {
+    data class Item(val items: MutableSet<ItemTypeWrapper>, val amount: Int, val ignoreComponents: MutableSet<DataComponentType>) : RecipeInput {
+        constructor(items: MutableSet<ItemTypeWrapper>, amount: Int) : this(items, amount, mutableSetOf())
         constructor(amount: Int, vararg items: ItemStack) : this(items.mapTo(mutableSetOf()) { ItemTypeWrapper(it) }, amount)
         constructor(tag: Tag<ItemTypeWrapper>, amount: Int) : this(tag.values, amount)
 
@@ -23,12 +26,24 @@ sealed interface RecipeInput {
             representativeItems.first()
         }
 
-        fun matches(itemStack: ItemStack): Boolean {
-            if (itemStack.amount < amount) return false
+        fun matches(itemStack: ItemStack?): Boolean {
+            if (itemStack?.isEmpty ?: true) return isEmpty()
+            if (isEmpty() || itemStack.amount < amount) return false
             return contains(itemStack)
         }
 
-        operator fun contains(itemStack: ItemStack): Boolean = ItemTypeWrapper(itemStack) in items
+        operator fun contains(itemStack: ItemStack): Boolean {
+            for (item in items) {
+                if (item.createItemStack().matchesWithoutData(itemStack, ignoreComponents, true)) {
+                    return true
+                }
+            }
+            return false
+        }
+
+        fun isEmpty(): Boolean {
+            return items.none{ !it.isEmpty() }
+        }
     }
 
     @JvmRecord
@@ -50,6 +65,9 @@ sealed interface RecipeInput {
     }
 
     companion object {
+        @JvmStatic
+        val EMPTY_ITEM = Item(mutableSetOf(ItemTypeWrapper.Vanilla(Material.AIR)), 1)
+
         @JvmStatic
         @JvmOverloads
         fun of(item: ItemStack, amount: Int = item.amount) = Item(amount, item)

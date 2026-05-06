@@ -4,6 +4,7 @@ import io.github.pylonmc.rebar.recipe.vanilla.*
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import org.bukkit.Bukkit
 import org.bukkit.Keyed
+import org.bukkit.Material
 import org.bukkit.NamespacedKey
 import org.bukkit.inventory.*
 import java.util.concurrent.ConcurrentHashMap
@@ -28,10 +29,12 @@ open class RecipeType<T : RebarRecipe>(private val key: NamespacedKey) : Keyed, 
 
     open fun addRecipe(recipe: T) {
         registeredRecipes[recipe.key] = recipe
+        RebarRecipe.clearCache()
     }
 
     open fun removeRecipe(recipe: NamespacedKey) {
         registeredRecipes.remove(recipe)
+        RebarRecipe.clearCache()
     }
 
     fun register() {
@@ -43,6 +46,16 @@ open class RecipeType<T : RebarRecipe>(private val key: NamespacedKey) : Keyed, 
     override fun iterator(): Iterator<T> = registeredRecipes.values.iterator()
 
     override fun getKey(): NamespacedKey = key
+
+    override fun hashCode(): Int {
+        return key.hashCode()
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+        return key == (other as RecipeType<*>).key
+    }
 
     companion object {
         /**
@@ -138,6 +151,15 @@ open class RecipeType<T : RebarRecipe>(private val key: NamespacedKey) : Keyed, 
                 }
                 // @formatter:on
             }
+        }
+
+        @JvmStatic
+        fun getCookingRecipeTypeByMaterial(m: Material): VanillaRecipeType<out CookingRecipeWrapper>? = when (m) {
+            Material.FURNACE -> VANILLA_FURNACE
+            Material.BLAST_FURNACE -> VANILLA_BLASTING
+            Material.SMOKER -> VANILLA_SMOKING
+            Material.CAMPFIRE, Material.SOUL_CAMPFIRE -> VANILLA_CAMPFIRE
+            else -> null
         }
     }
 }

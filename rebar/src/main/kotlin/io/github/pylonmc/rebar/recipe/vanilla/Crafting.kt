@@ -4,6 +4,7 @@ import io.github.pylonmc.rebar.config.ConfigSection
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter
 import io.github.pylonmc.rebar.guide.button.ItemButton
 import io.github.pylonmc.rebar.recipe.FluidOrItem
+import io.github.pylonmc.rebar.recipe.RebarRecipe
 import io.github.pylonmc.rebar.recipe.RecipeInput
 import io.github.pylonmc.rebar.util.gui.GuiItems
 import org.bukkit.Material
@@ -12,20 +13,24 @@ import org.bukkit.inventory.*
 import org.bukkit.inventory.recipe.CraftingBookCategory
 import xyz.xenondevs.invui.gui.Gui
 import xyz.xenondevs.invui.item.Item
+import kotlin.text.asIterable
 
 
-sealed class CraftingRecipeWrapper(val craftingRecipe: CraftingRecipe) : VanillaRecipeWrapper {
+sealed class CraftingRecipeWrapper(val craftingRecipe: CraftingRecipe, val recipeInput: List<RecipeInput.Item>) : VanillaRecipeWrapper {
     override fun getKey(): NamespacedKey = craftingRecipe.key
     override val results: List<FluidOrItem> = listOf(FluidOrItem.of(craftingRecipe.result))
 }
 
-class ShapedRecipeWrapper(override val recipe: ShapedRecipe) : CraftingRecipeWrapper(recipe) {
-    override val inputs: List<RecipeInput> =
-        recipe.shape
-            .flatMap { it.asIterable() }
-            .mapNotNull {
-                recipe.choiceMap[it]?.asRecipeInput()
-            }
+class ShapedRecipeWrapper(
+    override val recipe: ShapedRecipe,
+    recipeInput: List<RecipeInput.Item> = recipe.shape
+        .flatMap { it.asIterable() }
+        .map {
+            recipe.choiceMap[it]?.asRecipeInput() ?: RecipeInput.EMPTY_ITEM
+        }
+) : CraftingRecipeWrapper(recipe, recipeInput) {
+    override val inputs: List<RecipeInput> = recipeInput
+
 
     override fun display(): Gui {
         val gui = Gui.builder()
@@ -56,13 +61,24 @@ class ShapedRecipeWrapper(override val recipe: ShapedRecipe) : CraftingRecipeWra
         val character = recipe.shape[y][x]
         return ItemButton.from(recipe.choiceMap[character])
     }
+
+    fun matches(items: List<ItemStack?>): Boolean {
+        if (RebarRecipe.matchesShaped(items, recipeInput, 3, 3)) return true
+        val mirror = items.toMutableList()
+        while (mirror.size < 9) mirror.add(null)
+        mirror[2] = mirror[0].also{ mirror[0] = mirror[2] }
+        mirror[5] = mirror[3].also{ mirror[3] = mirror[5] }
+        mirror[8] = mirror[6].also{ mirror[6] = mirror[8] }
+        return RebarRecipe.matchesShaped(mirror, recipeInput, 3, 3)
+    }
 }
 
-sealed class AShapelessRecipeWrapper(recipe: CraftingRecipe) : CraftingRecipeWrapper(recipe) {
+sealed class AShapelessRecipeWrapper(
+    recipe: CraftingRecipe,
+    recipeInput: List<RecipeInput.Item>
+) : CraftingRecipeWrapper(recipe, recipeInput) {
 
-    protected abstract val choiceList: List<RecipeChoice?>
-
-    override val inputs: List<RecipeInput> by lazy { choiceList.filterNotNull().map(RecipeChoice::asRecipeInput) }
+    override val inputs: List<RecipeInput> = recipeInput
 
     override fun display() = Gui.builder()
         .setStructure(
@@ -87,17 +103,23 @@ sealed class AShapelessRecipeWrapper(recipe: CraftingRecipe) : CraftingRecipeWra
         .build()
 
     private fun getDisplaySlot(index: Int): Item {
-        return ItemButton.from(choiceList.getOrNull(index))
+        return ItemButton.from(recipeInput.getOrNull(index))
+    }
+
+    fun matches(items: List<ItemStack?>): Boolean {
+        return RebarRecipe.matchesShapeless(items, recipeInput)
     }
 }
 
-class ShapelessRecipeWrapper(override val recipe: ShapelessRecipe) : AShapelessRecipeWrapper(recipe) {
-    override val choiceList = recipe.choiceList
-}
+class ShapelessRecipeWrapper(
+    override val recipe: ShapelessRecipe,
+    recipeInput: List<RecipeInput.Item> = recipe.choiceList.filterNotNull().map(RecipeChoice::asRecipeInput)
+) : AShapelessRecipeWrapper(recipe, recipeInput)
 
-class TransmuteRecipeWrapper(override val recipe: TransmuteRecipe) : AShapelessRecipeWrapper(recipe) {
-    override val choiceList = listOf(recipe.input, recipe.material)
-}
+class TransmuteRecipeWrapper(
+    override val recipe: TransmuteRecipe,
+    recipeInput: List<RecipeInput.Item> = listOf(recipe.input.asRecipeInput(), recipe.material.asRecipeInput())
+) : AShapelessRecipeWrapper(recipe, recipeInput)
 
 private val CRAFTING_BOOK_CATEGORY_ADAPTER = ConfigAdapter.ENUM.from<CraftingBookCategory>()
 

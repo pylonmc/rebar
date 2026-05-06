@@ -9,8 +9,8 @@ import io.github.pylonmc.rebar.config.Config
 import io.github.pylonmc.rebar.config.ConfigSection
 import io.github.pylonmc.rebar.config.ContributorConfig
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter
-import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.i18n.customMiniMessage
+import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.nms.NmsAccessor
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.util.position.BlockPosition
@@ -628,3 +628,11 @@ suspend fun delayTicks(ticks: Long) = delay(ticks * 50)
  */
 @JvmSynthetic
 fun CoroutineContext.createChildContext(): CoroutineContext = this + Job(this[Job])
+
+fun ItemStack.hashIgnoreAmount(): Int {
+    var hash = 1
+    hash = hash * 31 + type.hashCode()
+    hash = hash * 31 + (durability.toInt() and 0xffff)
+    hash = hash * 31 + (if (hasItemMeta()) itemMeta.hashCode() else 0)
+    return hash
+}
