@@ -71,7 +71,7 @@ kotlin {
     compilerOptions {
         javaParameters = true
         jvmDefault = JvmDefaultMode.NO_COMPATIBILITY
-        freeCompilerArgs = listOf("-Xwhen-guards")
+        freeCompilerArgs = listOf("-Xwhen-guards", "-Xexplicit-backing-fields")
     }
 }
 

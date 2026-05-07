@@ -3,8 +3,7 @@ package io.github.pylonmc.rebar.async
 import org.bukkit.plugin.Plugin
 import java.util.*
 
-// TODO better name
-class BukkitDispatcherWrapperDispatcher(private val plugin: Plugin, val async: Boolean) : Runnable {
+class BukkitDispatcherWrapperDispatcher(private val plugin: Plugin, val async: Boolean) : Runnable, ScopedFutureDispatcher {
 
     private val taskQueue = PriorityQueue<Task>()
 
@@ -27,14 +26,9 @@ class BukkitDispatcherWrapperDispatcher(private val plugin: Plugin, val async: B
         }
     }
 
-    @JvmOverloads
-    fun dispatch(delayTicks: Long = 0L, runnable: Runnable) {
+    override fun dispatch(delayTicks: Long, runnable: Runnable) {
         val executeAt = tick + delayTicks
         taskQueue.add(Task(executeAt, runnable))
-    }
-
-    fun cancel(runnable: Runnable) {
-        taskQueue.removeIf { it.runnable === runnable }
     }
 
     private data class Task(val executeAt: Long, val runnable: Runnable) : Comparable<Task> {
