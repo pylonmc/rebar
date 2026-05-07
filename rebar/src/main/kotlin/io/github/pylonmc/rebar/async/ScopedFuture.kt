@@ -388,6 +388,9 @@ class ScopedFuture<R> private constructor(scope: Scope) : Future<R>, CompletionS
         completeWithResult(Result.failure(ex))
     }
 
+    /**
+     * Calling this method *will* start the future chain
+     */
     override fun toCompletableFuture(): CompletableFuture<R> {
         val future = CompletableFuture<R>()
         thenRun = {
@@ -396,6 +399,7 @@ class ScopedFuture<R> private constructor(scope: Scope) : Future<R>, CompletionS
                 onFailure = { future.completeExceptionally(it) }
             )
         }
+        start()
         return future
     }
 
