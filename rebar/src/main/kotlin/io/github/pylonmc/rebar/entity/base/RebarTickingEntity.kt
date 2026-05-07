@@ -1,7 +1,6 @@
 package io.github.pylonmc.rebar.entity.base
 
 import io.github.pylonmc.rebar.Rebar
-import io.github.pylonmc.rebar.async.BukkitMainThreadDispatcher
 import io.github.pylonmc.rebar.config.RebarConfig
 import io.github.pylonmc.rebar.entity.EntityListener
 import io.github.pylonmc.rebar.entity.RebarEntity
@@ -15,7 +14,7 @@ import kotlinx.coroutines.*
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.jetbrains.annotations.ApiStatus
-import java.util.IdentityHashMap
+import java.util.*
 
 /**
  * Represents an entity that 'ticks' (does something at a fixed time interval).

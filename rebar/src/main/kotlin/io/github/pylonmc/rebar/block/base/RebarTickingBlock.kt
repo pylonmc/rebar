@@ -1,8 +1,6 @@
 package io.github.pylonmc.rebar.block.base
 
 import io.github.pylonmc.rebar.Rebar
-import io.github.pylonmc.rebar.async.BukkitMainThreadDispatcher
-import io.github.pylonmc.rebar.async.ChunkScope
 import io.github.pylonmc.rebar.block.BlockListener
 import io.github.pylonmc.rebar.block.BlockListener.logEventHandleErr
 import io.github.pylonmc.rebar.block.RebarBlock
@@ -18,7 +16,7 @@ import kotlinx.coroutines.*
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.jetbrains.annotations.ApiStatus
-import java.util.IdentityHashMap
+import java.util.*
 
 /**
  * Represents a block that 'ticks' (does something at a fixed time interval).
