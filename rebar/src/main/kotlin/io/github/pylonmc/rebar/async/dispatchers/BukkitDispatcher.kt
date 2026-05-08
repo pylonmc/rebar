@@ -1,9 +1,9 @@
-package io.github.pylonmc.rebar.async
+package io.github.pylonmc.rebar.async.dispatchers
 
 import org.bukkit.plugin.Plugin
 import java.util.*
 
-class BukkitDispatcherWrapperDispatcher(private val plugin: Plugin, val async: Boolean) : Runnable, ScopedFutureDispatcher {
+class BukkitDispatcher(private val plugin: Plugin, val async: Boolean) : Runnable, ScopedFutureDispatcher {
 
     private val taskQueue = PriorityQueue<Task>()
 

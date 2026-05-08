@@ -1,5 +1,6 @@
 package io.github.pylonmc.rebar.async
 
+import io.github.pylonmc.rebar.async.dispatchers.ScopedFutureDispatcher
 import org.jetbrains.annotations.MustBeInvokedByOverriders
 import java.util.concurrent.*
 import java.util.concurrent.locks.ReentrantLock
@@ -20,15 +21,22 @@ class ScopedFuture<R> private constructor(scope: Scope) : Future<R>, CompletionS
     @Volatile
     private var thenRun: () -> Unit = {}
 
+    private val resultLock = ReentrantLock()
     @Volatile
     private var result: Result<R>? = null
+        get() = resultLock.withLock { field }
+        set(value) = resultLock.withLock { field = value }
 
     @Volatile
     private var isCancelled = false
 
+    @Volatile
+    private var isStarted = false
+
     override fun cancel(mayInterruptIfRunning: Boolean): Boolean {
         if (isDone) return false
         isCancelled = true
+        isStarted = false
         result = null
         thenRun = {}
         return true
@@ -38,10 +46,19 @@ class ScopedFuture<R> private constructor(scope: Scope) : Future<R>, CompletionS
 
     override fun isDone(): Boolean = result != null || isCancelled
 
+    fun join(): R {
+        if (!isStarted) start()
+        return get()
+    }
+
+    @Throws(InterruptedException::class, ExecutionException::class)
     override fun get(): R = get(Long.MAX_VALUE, TimeUnit.NANOSECONDS)
 
+    @Throws(InterruptedException::class, ExecutionException::class, TimeoutException::class)
     override fun get(timeout: Long, unit: TimeUnit): R {
         if (isCancelled) throw CancellationException()
+
+        resultLock.lock()
         if (result != null) return result!!.getOrElse { throw ExecutionException(it) }
 
         val latch = CountDownLatch(1)
@@ -50,6 +67,8 @@ class ScopedFuture<R> private constructor(scope: Scope) : Future<R>, CompletionS
             oldThenRun()
             latch.countDown()
         }
+        resultLock.unlock()
+
         if (!latch.await(timeout, unit)) {
             throw TimeoutException()
         }
@@ -62,10 +81,22 @@ class ScopedFuture<R> private constructor(scope: Scope) : Future<R>, CompletionS
         var rootScope = this.scope
         while (rootScope.parent is FutureScope) {
             rootScope = rootScope.parent
+            rootScope.future.isStarted = true
         }
         @Suppress("UNCHECKED_CAST") // only way to create a root future is with new(), which always is Unit
         val rootFuture = (rootScope as FutureScope).future as ScopedFuture<Unit>
         rootFuture.complete(Unit)
+        isStarted = true
+    }
+
+    fun delay(delayTicks: Long): ScopedFuture<R> {
+        val nextFuture = ScopedFuture<R>(scope)
+        thenRun = {
+            scope.syncDispatcher.dispatch(delayTicks) {
+                nextFuture.completeWithResult(result!!)
+            }
+        }
+        return nextFuture
     }
 
     private inline fun <U> thenApply(

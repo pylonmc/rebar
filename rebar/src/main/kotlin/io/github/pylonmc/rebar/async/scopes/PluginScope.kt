@@ -1,5 +1,9 @@
-package io.github.pylonmc.rebar.async
+package io.github.pylonmc.rebar.async.scopes
 
+import io.github.pylonmc.rebar.async.ScopedFuture
+import io.github.pylonmc.rebar.async.dispatchers.BukkitDispatcher
+import io.github.pylonmc.rebar.async.dispatchers.CoroutineBackedDispatcher
+import kotlinx.coroutines.Dispatchers
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.server.PluginDisableEvent
@@ -11,8 +15,8 @@ class PluginScope(val plugin: Plugin) : ScopedFuture.Scope(null), Listener {
         plugin.server.pluginManager.registerEvents(this, plugin)
     }
 
-    override val syncDispatcher = BukkitDispatcherWrapperDispatcher(plugin, false)
-    override val asyncDispatcher = BukkitDispatcherWrapperDispatcher(plugin, true)
+    override val syncDispatcher = BukkitDispatcher(plugin, false)
+    override val asyncDispatcher = CoroutineBackedDispatcher(Dispatchers.Default)
 
     @EventHandler
     private fun onPluginDisable(event: PluginDisableEvent) {
