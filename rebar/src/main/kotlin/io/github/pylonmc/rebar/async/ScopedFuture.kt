@@ -22,6 +22,7 @@ class ScopedFuture<R> private constructor(scope: Scope) : Future<R>, CompletionS
     private var thenRun: () -> Unit = {}
 
     private val resultLock = ReentrantLock()
+
     @Volatile
     private var result: Result<R>? = null
         get() = resultLock.withLock { field }
@@ -46,14 +47,40 @@ class ScopedFuture<R> private constructor(scope: Scope) : Future<R>, CompletionS
 
     override fun isDone(): Boolean = result != null || isCancelled
 
+    /**
+     * Automatically calls [start] and then blocks until the future is complete, returning the result or throwing an exception if it failed.
+     *
+     * @throws InterruptedException if the current thread was interrupted while waiting
+     * @throws ExecutionException if the computation threw an exception
+     * @throws CancellationException if the future was cancelled
+     */
     fun join(): R {
         if (!isStarted) start()
         return get()
     }
 
+    /**
+     * Blocks until the future is complete, returning the result or throwing an exception if it failed.
+     * **This will *not* automatically call [start].**
+     *
+     * @throws InterruptedException if the current thread was interrupted while waiting
+     * @throws ExecutionException if the computation threw an exception
+     * @throws CancellationException if the future was cancelled
+     */
     @Throws(InterruptedException::class, ExecutionException::class)
     override fun get(): R = get(Long.MAX_VALUE, TimeUnit.NANOSECONDS)
 
+    /**
+     * Blocks until the future is complete or the timeout expires, returning the result or throwing an exception if it failed or if the timeout expired.
+     * **This will *not* automatically call [start].**
+     *
+     * @param timeout the maximum time to wait
+     * @param unit the time unit of the timeout argument
+     * @throws InterruptedException if the current thread was interrupted while waiting
+     * @throws ExecutionException if the computation threw an exception
+     * @throws TimeoutException if the wait timed out
+     * @throws CancellationException if the future was cancelled
+     */
     @Throws(InterruptedException::class, ExecutionException::class, TimeoutException::class)
     override fun get(timeout: Long, unit: TimeUnit): R {
         if (isCancelled) throw CancellationException()
@@ -77,6 +104,9 @@ class ScopedFuture<R> private constructor(scope: Scope) : Future<R>, CompletionS
         return result!!.getOrElse { throw ExecutionException(it) }
     }
 
+    /**
+     * Starts the future chain by completing the root future with a successful result of `Unit`. This will trigger all subsequent stages in the chain to execute.
+     */
     fun start() {
         var rootScope = this.scope
         while (rootScope.parent is FutureScope) {
@@ -89,10 +119,15 @@ class ScopedFuture<R> private constructor(scope: Scope) : Future<R>, CompletionS
         isStarted = true
     }
 
+    /**
+     * Delays the execution of the next stage in the chain by the specified number of ticks.
+     *
+     * @param delayTicks the number of ticks to delay the next stage
+     */
     fun delay(delayTicks: Long): ScopedFuture<R> {
         val nextFuture = ScopedFuture<R>(scope)
         thenRun = {
-            scope.syncDispatcher.dispatch(delayTicks) {
+            scope.asyncDispatcher.dispatch(delayTicks) {
                 nextFuture.completeWithResult(result!!)
             }
         }
