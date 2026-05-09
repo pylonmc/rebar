@@ -82,15 +82,15 @@ object BlockStorage : Listener {
 
     @JvmStatic
     val loadedBlockPositions: Set<BlockPosition>
-        get() = lockBlockRead { blocks.keys }
+        get() = lockBlockRead { blocks.keys.toSet() }
 
     @JvmStatic
     val loadedChunks: Set<ChunkPosition>
-        get() = lockBlockRead { blocksByChunk.keys }
+        get() = lockBlockRead { blocksByChunk.keys.toSet() }
 
     @JvmStatic
     val loadedRebarBlocks: Collection<RebarBlock>
-        get() = lockBlockRead { blocks.values }
+        get() = lockBlockRead { blocks.values.toSet() }
 
     /**
      * Returns the Rebar block at the given [blockPosition], or null if the block does not exist
@@ -189,7 +189,7 @@ object BlockStorage : Listener {
     @JvmStatic
     fun getByChunk(chunkPosition: ChunkPosition): Collection<RebarBlock> {
         require(chunkPosition.isLoaded) { "You can only get Rebar blocks in loaded chunks" }
-        return lockBlockRead { blocksByChunk[chunkPosition].orEmpty() }
+        return lockBlockRead { blocksByChunk[chunkPosition].orEmpty().toSet() }
     }
 
     /**
@@ -199,7 +199,7 @@ object BlockStorage : Listener {
     fun getByKey(key: NamespacedKey): Collection<RebarBlock> =
         if (RebarRegistry.BLOCKS.contains(key)) {
             lockBlockRead {
-                blocksByKey[key].orEmpty()
+                blocksByKey[key].orEmpty().toSet()
             }
         } else {
             emptySet()

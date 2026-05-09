@@ -82,7 +82,7 @@ abstract class RebarEntity<out E: Entity>(val entity: E) {
 
     companion object {
 
-        private val rebarEntityKeyKey = rebarKey("rebar_entity_key")
+        val rebarEntityKeyKey = rebarKey("rebar_entity_key")
 
         @JvmOverloads
         @JvmStatic
