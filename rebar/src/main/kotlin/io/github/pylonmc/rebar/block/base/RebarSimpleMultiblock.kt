@@ -127,13 +127,13 @@ interface RebarSimpleMultiblock : RebarMultiblock, RebarGhostBlockHolder, RebarE
             )
 
             /**
-             * Accepts vanilla keys (`minecraft:grass`) or Rebar keys (`pylon:copper_sheet`)
+             * Accepts vanilla keys (`minecraft:grass`) or Rebar keys (`pylon:copper_block`)
              */
             @JvmStatic
             fun of(vararg keys: NamespacedKey): MultiblockComponent {
-                val vanilla = keys.filter { it.asString().startsWith("minecraft") }
+                val vanilla = keys.filter { it.namespace == "minecraft" }
                     .map { Registry.MATERIAL.getOrThrow(it).createBlockData() }
-                val rebar = keys.filter { !it.asString().startsWith("minecraft") }
+                val rebar = keys.filter { it.namespace != "minecraft" }
                 return MultiblockComponent(vanilla, rebar)
             }
         }

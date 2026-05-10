@@ -26,6 +26,7 @@ import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.util.Vector
+import org.jetbrains.annotations.MustBeInvokedByOverriders
 import org.joml.Vector3i
 import java.time.Duration
 import kotlin.time.Duration.Companion.seconds
@@ -58,6 +59,7 @@ interface RebarGhostBlockHolder : RebarEntityHolderBlock {
             this.position = position
         }
 
+        @MustBeInvokedByOverriders
         override fun write(pdc: PersistentDataContainer) {
             pdc.set(POSITION_KEY, RebarSerializers.VECTOR3I, position)
         }
@@ -88,6 +90,7 @@ interface RebarGhostBlockHolder : RebarEntityHolderBlock {
         }
 
         override fun write(pdc: PersistentDataContainer) {
+            super.write(pdc)
             pdc.set(VANILLA_BLOCKS_KEY, VANILLA_BLOCKS_TYPE, vanillaBlocks)
         }
 
@@ -127,6 +130,7 @@ interface RebarGhostBlockHolder : RebarEntityHolderBlock {
         }
 
         override fun write(pdc: PersistentDataContainer) {
+            super.write(pdc)
             pdc.set(REBAR_BLOCKS_KEY, VANILLA_BLOCKS_TYPE, rebarBlocks)
         }
 
