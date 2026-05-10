@@ -329,7 +329,7 @@ fun findRebarItemInInventory(inventory: Inventory, targetItem: RebarItem): Int? 
 @JvmSynthetic
 inline fun <reified T> ItemStack?.isRebarAndIsNot(): Boolean {
     val schema = RebarItemSchema.fromStack(this)
-    return schema != null && !T::class.java.isAssignableFrom(schema.itemClass)
+    return schema != null && !schema.isType(T::class.java)
 }
 
 @JvmSynthetic

@@ -8,8 +8,12 @@ import io.github.pylonmc.rebar.item.RebarItemListener
 import org.bukkit.event.EventPriority
 import org.bukkit.event.inventory.PrepareAnvilEvent
 
+/**
+ * Enables the use of a RebarItem as if it's its vanilla counterpart in an anvil
+ * For example: If you have a rebar item that's an enchantment book, and you want it to be usable in an anvil
+ */
 interface VanillaAnvilItem {
-    fun onPrepareAnvilCraft(event: PrepareAnvilEvent)
+    fun onPrepareAnvilCraft(event: PrepareAnvilEvent) {}
 
     companion object : MultiListener {
         @UniversalHandler

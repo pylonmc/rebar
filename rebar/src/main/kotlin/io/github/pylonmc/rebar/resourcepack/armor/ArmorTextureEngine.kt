@@ -86,7 +86,7 @@ object ArmorTextureEngine : PacketListener {
         if (packetStack == null) return null
         val stack = SpigotConversionUtil.toBukkitItemStack(packetStack)
         val schema = RebarItemSchema.fromStack(stack)
-        if (schema == null || !RebarArmor::class.java.isAssignableFrom(schema.itemClass)) {
+        if (schema == null || !schema.isType(RebarArmor::class.java)) {
             return packetStack
         }
 
