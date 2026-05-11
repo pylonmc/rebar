@@ -23,6 +23,7 @@ open class BlockDisplayBuilder() {
     protected var interpolationDuration: Int? = null
     protected var displayWidth: Float? = null
     protected var displayHeight: Float? = null
+    protected var persistent: Boolean? = null
 
     constructor(other: BlockDisplayBuilder): this() {
         this.material = other.material
@@ -35,6 +36,7 @@ open class BlockDisplayBuilder() {
         this.interpolationDuration = other.interpolationDuration
         this.displayWidth = other.displayWidth
         this.displayHeight = other.displayHeight
+        this.persistent = other.persistent
     }
 
     fun material(material: Material?): BlockDisplayBuilder {
@@ -53,6 +55,7 @@ open class BlockDisplayBuilder() {
     fun interpolationDuration(interpolationDuration: Int): BlockDisplayBuilder = apply { this.interpolationDuration = interpolationDuration }
     fun displayWidth(displayWidth: Float): BlockDisplayBuilder = apply { this.displayWidth = displayWidth }
     fun displayHeight(displayHeight: Float): BlockDisplayBuilder = apply { this.displayHeight = displayHeight }
+    fun persistent(persistent: Boolean): BlockDisplayBuilder = apply { this.persistent = persistent }
 
     open fun build(location: Location): BlockDisplay {
         val finalLocation = location.clone()
@@ -92,6 +95,9 @@ open class BlockDisplayBuilder() {
         }
         if (displayHeight != null) {
             display.displayHeight = displayHeight!!
+        }
+        if (persistent != null) {
+            display.isPersistent = persistent!!
         }
     }
 }

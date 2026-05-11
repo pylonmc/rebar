@@ -33,8 +33,8 @@ sealed interface ItemTypeWrapper : Keyed {
         @JvmStatic
         @JvmName("of")
         operator fun invoke(stack: ItemStack): ItemTypeWrapper {
-            val item = RebarItem.fromStack(stack)
-            return if (item != null) Rebar(item.schema) else Vanilla(stack.type)
+            val schema = RebarItemSchema.fromStack(stack)
+            return if (schema != null) Rebar(schema) else Vanilla(stack.type)
         }
 
         @JvmStatic

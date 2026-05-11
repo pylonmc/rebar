@@ -55,8 +55,7 @@ internal class FluidPipePlacementTask(
         // This is specifically to see if the player has thrown the pipes out of their hotbar
         // (scrolling off is handled in FluidPipePlacementService)
         val hand = player.inventory.getItem(EquipmentSlot.HAND)
-        val rebarItem = RebarItem.fromStack(hand)
-        if (rebarItem !is FluidPipe) {
+        if (!RebarItem.isRebarItem(hand, FluidPipe::class.java)) {
             FluidPipePlacementService.cancelConnection(player)
             return
         }

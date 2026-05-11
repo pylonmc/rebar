@@ -58,6 +58,8 @@ class Waila private constructor(private val player: Player, playerConfig: Player
         RebarConfig.WailaConfig.DEFAULT_DISPLAY.overlay
     )
 
+    private var wasVisible = false;
+
     private fun send(display: WailaDisplay) {
         when (config.type) {
             Type.BOSSBAR -> {
@@ -81,17 +83,19 @@ class Waila private constructor(private val player: Player, playerConfig: Player
             }
             Type.ACTIONBAR -> player.sendActionBar(display.text)
         }
+        wasVisible = true
     }
 
     private fun hide() {
+        if (!wasVisible) {
+            return
+        }
+
         when (config.type) {
-            Type.BOSSBAR -> {
-                if (player.activeBossBars().contains(bossBar)) {
-                    player.hideBossBar(bossBar)
-                }
-            }
+            Type.BOSSBAR -> player.hideBossBar(bossBar)
             Type.ACTIONBAR -> player.sendActionBar(Component.empty())
         }
+        wasVisible = false
     }
 
     private fun destroy() {

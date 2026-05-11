@@ -5,6 +5,7 @@ import io.github.pylonmc.rebar.block.context.BlockCreateContext
 import io.github.pylonmc.rebar.content.fluid.FluidEndpointDisplay
 import io.github.pylonmc.rebar.fluid.FluidPointType
 import io.github.pylonmc.rebar.fluid.RebarFluid
+import io.github.pylonmc.rebar.util.IMMEDIATE_FACES
 import io.github.pylonmc.rebar.util.rotateFaceToReference
 import org.bukkit.block.BlockFace
 import org.bukkit.inventory.ItemStack
@@ -30,18 +31,18 @@ import org.jetbrains.annotations.MustBeInvokedByOverriders
  */
 interface RebarFluidBlock : RebarEntityHolderBlock, RebarBreakHandler {
 
-    fun getFluidPointDisplay(type: FluidPointType) =
-        getHeldRebarEntity(FluidEndpointDisplay::class.java, getFluidPointName(type))
+    fun getFluidPointDisplay(type: FluidPointType, face: BlockFace) =
+        getHeldRebarEntity(FluidEndpointDisplay::class.java, getFluidPointName(type, face))
 
-    fun getFluidPointDisplayOrThrow(type: FluidPointType) =
-        getHeldRebarEntityOrThrow(FluidEndpointDisplay::class.java, getFluidPointName(type))
+    fun getFluidPointDisplayOrThrow(type: FluidPointType, face: BlockFace) =
+        getHeldRebarEntityOrThrow(FluidEndpointDisplay::class.java, getFluidPointName(type, face))
 
     /**
      * Creates a fluid input point. Call in your place constructor. Should be called at most once per block.
      */
     fun createFluidPoint(type: FluidPointType, face: BlockFace, radius: Float) {
-        check(getFluidPointDisplay(type) == null) { "A fluid point of type $type already exists on this block" }
-        addEntity(getFluidPointName(type), FluidEndpointDisplay(block, type, face, radius))
+        check(getFluidPointDisplay(type, face) == null) { "A fluid point of type $type already exists on this block" }
+        addEntity(getFluidPointName(type, face), FluidEndpointDisplay(block, type, face, radius))
     }
 
     /**
@@ -82,7 +83,11 @@ interface RebarFluidBlock : RebarEntityHolderBlock, RebarBreakHandler {
     @MustBeInvokedByOverriders
     override fun onBreak(drops: MutableList<ItemStack>, context: BlockBreakContext) {
         val player = (context as? BlockBreakContext.PlayerBreak)?.event?.player
-        getFluidPointDisplay(FluidPointType.INPUT)?.pipeDisplay?.delete(player, drops)
+
+        for (face in IMMEDIATE_FACES) {
+            getFluidPointDisplay(FluidPointType.INPUT, face)?.pipeDisplay?.delete(player, drops)
+            getFluidPointDisplay(FluidPointType.OUTPUT, face)?.pipeDisplay?.delete(player, drops)
+        }
     }
 
     /**
@@ -135,9 +140,9 @@ interface RebarFluidBlock : RebarEntityHolderBlock, RebarBreakHandler {
     companion object {
 
         @JvmSynthetic
-        internal fun getFluidPointName(type: FluidPointType) = when (type) {
-            FluidPointType.INPUT -> "fluid_point_input"
-            FluidPointType.OUTPUT -> "fluid_point_output"
+        internal fun getFluidPointName(type: FluidPointType, face: BlockFace) = when (type) {
+            FluidPointType.INPUT -> "fluid_point_input_" + face.name.lowercase()
+            FluidPointType.OUTPUT -> "fluid_point_output_" + face.name.lowercase()
             FluidPointType.INTERSECTION -> throw IllegalStateException("You cannot create an intersection point from a fluid block")
         }
     }

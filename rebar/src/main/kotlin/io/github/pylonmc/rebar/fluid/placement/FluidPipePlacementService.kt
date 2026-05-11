@@ -154,7 +154,28 @@ internal object FluidPipePlacementService : Listener {
         }
     }
 
+    @EventHandler
+    private fun onPlayerScroll(event: PlayerItemHeldEvent) {
+        val heldItem = event.getPlayer().inventory.getItem(event.previousSlot)
+        if (RebarItem.isRebarItem(heldItem, FluidPipe::class.java) && connectionsInProgress.containsKey(event.getPlayer())) {
+            cancelConnection(event.getPlayer())
+        }
+    }
 
+    @EventHandler
+    private fun onSwap(event: PlayerSwapHandItemsEvent) {
+        if (!connectionsInProgress.containsKey(event.getPlayer())) return
+
+        if (RebarItem.isRebarItem(event.mainHandItem, FluidPipe::class.java)) {
+            event.isCancelled = true
+            return
+        }
+
+        if (RebarItem.isRebarItem(event.offHandItem, FluidPipe::class.java)) {
+            event.isCancelled = true
+            return
+        }
+    }
 
     /**
      * Intended to prevent issues if players teleport away while placing a pipe

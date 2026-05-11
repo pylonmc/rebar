@@ -26,24 +26,25 @@ import java.util.IdentityHashMap
 interface RebarRecipeProcessor<T: RebarRecipe> {
 
     @ApiStatus.Internal
-    data class RecipeProcessorData(
+    data class RecipeProcessorData<T: RebarRecipe>(
         var recipeType: RecipeType<*>?,
-        var currentRecipe: RebarRecipe?,
+        var currentRecipe: T?,
         var recipeTimeTicks: Int?,
         var recipeTicksRemaining: Int?,
         var progressItem: ProgressItem?,
+        var lastRecipe: T?
     )
 
-    private val recipeProcessorData: RecipeProcessorData
-        @ApiStatus.NonExtendable
-        get() = recipeProcessorBlocks.getOrPut(this) { RecipeProcessorData(null, null, null, null, null)}
-
-    @Suppress("UNCHECKED_CAST")
-    val currentRecipe: T?
+    private val recipeProcessorData: RecipeProcessorData<T>
         @Suppress("UNCHECKED_CAST")
+        get() = recipeProcessorBlocks.getOrPut(this) {
+            RecipeProcessorData(null, null, null, null, null, null)
+        } as RecipeProcessorData<T>
+
+    val currentRecipe: T?
         @ApiStatus.NonExtendable
         // cast should always be safe due to type restriction when starting recipe
-        get() = recipeProcessorData.currentRecipe as T?
+        get() = recipeProcessorData.currentRecipe
 
     val recipeTicksRemaining: Int?
         @ApiStatus.NonExtendable
@@ -58,6 +59,10 @@ interface RebarRecipeProcessor<T: RebarRecipe> {
         set(progressItem) {
             recipeProcessorData.progressItem = progressItem
         }
+
+    val lastRecipe: T?
+        @ApiStatus.NonExtendable
+        get() = recipeProcessorData.lastRecipe
 
     /**
      * Set the progress item that should be updated as the recipe progresses. Optional.
@@ -79,6 +84,7 @@ interface RebarRecipeProcessor<T: RebarRecipe> {
         recipeProcessorData.recipeTicksRemaining = ticks
         recipeProcessorData.progressItem?.setTotalTimeTicks(ticks)
         recipeProcessorData.progressItem?.setRemainingTimeTicks(ticks)
+        recipeProcessorData.lastRecipe = recipe
     }
 
     fun stopRecipe() {
@@ -117,7 +123,7 @@ interface RebarRecipeProcessor<T: RebarRecipe> {
 
         private val recipeProcessorKey = rebarKey("recipe_processor_data")
 
-        private val recipeProcessorBlocks = IdentityHashMap<RebarRecipeProcessor<*>, RecipeProcessorData>()
+        private val recipeProcessorBlocks = IdentityHashMap<RebarRecipeProcessor<*>, RecipeProcessorData<*>>()
 
         @EventHandler
         private fun onDeserialize(event: RebarBlockDeserializeEvent) {

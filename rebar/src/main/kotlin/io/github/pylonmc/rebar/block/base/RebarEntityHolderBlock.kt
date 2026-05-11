@@ -85,6 +85,11 @@ interface RebarEntityHolderBlock {
     }
 
     @ApiStatus.NonExtendable
+    fun getHeldRebarEntity(name: String): RebarEntity<*>?
+            = getHeldEntityUuid(name)?.let { EntityStorage.get(it) }
+
+
+    @ApiStatus.NonExtendable
     fun <T: Entity> getHeldEntityOrThrow(clazz: Class<T>, name: String): T
             = getHeldEntity(clazz, name)
         ?: throw IllegalArgumentException("Entity $name does not exist or is not of type ${clazz.simpleName}")
@@ -151,12 +156,9 @@ interface RebarEntityHolderBlock {
                 val debugMap = mutableMapOf<String, PersistentDataContainer>()
                 holders[block]?.forEach { (name, uuid) ->
                     val entityPdc = event.pdc.adapterContext.newPersistentDataContainer()
-                    val entity = EntityStorage.get(uuid)
-                    if (entity != null) {
-                        entity.writeDebugInfo(entityPdc)
-                    } else {
-                        entityPdc.set(rebarKey("rebar_entity_not_found"), RebarSerializers.BOOLEAN, true)
-                    }
+                    val rebarEntity = EntityStorage.get(uuid)
+                    entityPdc.set(rebarKey("uuid"), RebarSerializers.UUID, uuid)
+                    rebarEntity?.writeDebugInfo(entityPdc)
                     debugMap[name] = entityPdc
                 }
                 event.pdc.set(entityKey, debugEntityType, debugMap)
@@ -188,7 +190,8 @@ interface RebarEntityHolderBlock {
 
         @EventHandler
         private fun onEntityRemove(event: EntityRemoveEvent) {
-            if (event.cause == EntityRemoveEvent.Cause.UNLOAD || event.cause == EntityRemoveEvent.Cause.PLAYER_QUIT) return
+            if (event.cause == EntityRemoveEvent.Cause.UNLOAD && event.entity.isPersistent) return
+            if (event.cause == EntityRemoveEvent.Cause.PLAYER_QUIT) return
             val blockPos = event.entity.persistentDataContainer.get(blockKey, RebarSerializers.BLOCK_POSITION) ?: return
             val block = BlockStorage.get(blockPos) as? RebarEntityHolderBlock ?: return
             holders[block]?.entries?.removeIf { it.value == event.entity.uniqueId }

@@ -3,6 +3,7 @@
 package io.github.pylonmc.rebar.command
 
 import com.destroystokyo.paper.profile.PlayerProfile
+import com.google.gson.internal.JavaVersion
 import com.mojang.brigadier.arguments.DoubleArgumentType
 import com.mojang.brigadier.arguments.IntegerArgumentType
 import com.mojang.brigadier.arguments.LongArgumentType
@@ -17,8 +18,8 @@ import io.github.pylonmc.rebar.content.guide.RebarGuide
 import io.github.pylonmc.rebar.entity.display.transform.Rotation
 import io.github.pylonmc.rebar.gametest.GameTestConfig
 import io.github.pylonmc.rebar.i18n.RebarArgument
+import io.github.pylonmc.rebar.i18n.customMiniMessage
 import io.github.pylonmc.rebar.item.RebarItem
-import io.github.pylonmc.rebar.item.RebarItemSchema
 import io.github.pylonmc.rebar.item.research.Research
 import io.github.pylonmc.rebar.item.research.Research.Companion.researchPoints
 import io.github.pylonmc.rebar.item.research.addResearch
@@ -32,6 +33,7 @@ import io.github.pylonmc.rebar.util.ConfettiParticle
 import io.github.pylonmc.rebar.util.mergeGlobalConfig
 import io.github.pylonmc.rebar.util.position.BlockPosition
 import io.github.pylonmc.rebar.util.vanillaDisplayName
+import io.papermc.paper.ServerBuildInfo
 import io.papermc.paper.command.brigadier.CommandSourceStack
 import io.papermc.paper.command.brigadier.argument.ArgumentTypes
 import io.papermc.paper.command.brigadier.argument.resolvers.BlockPositionResolver
@@ -48,10 +50,15 @@ import net.kyori.adventure.text.ComponentLike
 import net.kyori.adventure.text.JoinConfiguration
 import net.kyori.adventure.text.event.ClickEvent
 import net.kyori.adventure.text.event.HoverEvent
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
+import org.bukkit.Bukkit
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Entity
 import org.bukkit.entity.Player
 import org.bukkit.inventory.EquipmentSlot
+import org.bukkit.inventory.ItemStack
+import kotlin.math.min
+import org.bukkit.util.Vector
 import kotlin.reflect.typeOf
 import io.papermc.paper.math.BlockPosition as PaperBlockPosition
 
@@ -82,21 +89,26 @@ private val guide = buildCommand("guide") {
 
 private val give = buildCommand("give") {
     argument("players", ArgumentTypes.players()) {
-        argument("item", RegistryCommandArgument(RebarRegistry.ITEMS)) {
+        argument("item", DualItemRegistryCommandArgument) {
             // Why does Brigadier not support default values for arguments?
             // https://github.com/Mojang/brigadier/issues/110
 
             fun givePlayers(context: CommandContext<CommandSourceStack>, amount: Int) {
-                val item = context.getArgument<RebarItemSchema>("item")
+                val item = context.getArgument<ItemStack>("item")
                 val players = context.getArgument<List<Player>>("players")
                 val singular = players.size == 1
                 for (player in players) {
-                    player.inventory.addItem(item.createNewItem().asQuantity(amount))
+                    var remaining = amount
+                    while (remaining > 0) {
+                        val giving = item.asQuantity(min(remaining, item.maxStackSize))
+                        remaining -= giving.amount
+                        player.give(giving)
+                    }
                 }
                 context.source.sender.sendVanillaFeedback(
                     "give.success." + if (singular) "single" else "multiple",
                     Component.text(amount),
-                    item.createNewItem().vanillaDisplayName(),
+                    item.vanillaDisplayName(),
                     if (singular) players[0].name() else Component.text(players.size)
                 )
             }
@@ -415,26 +427,65 @@ private val exposeRecipeConfig = buildCommand("exposerecipeconfig") {
 private val confetti = buildCommand("confetti") {
     argument("amount", IntegerArgumentType.integer(1)) {
         permission("rebar.command.confetti")
-        executesWithPlayer { player ->
+        executes { _ ->
             RebarMetrics.onCommandRun("/rb confetti")
-            ConfettiParticle.spawnMany(player.location, IntegerArgumentType.getInteger(this, "amount")).run()
+            ConfettiParticle.spawnMany(source.location, IntegerArgumentType.getInteger(this, "amount")).get()
         }
         argument("speed", DoubleArgumentType.doubleArg(0.0)) {
             permission("rebar.command.confetti")
-            executesWithPlayer { player ->
+            executes { _ ->
                 RebarMetrics.onCommandRun("/rb confetti")
-                ConfettiParticle.spawnMany(player.location, IntegerArgumentType.getInteger(this, "amount"), DoubleArgumentType.getDouble(this, "speed")).run()
+                ConfettiParticle.spawnMany(source.location, IntegerArgumentType.getInteger(this, "amount"), DoubleArgumentType.getDouble(this, "speed")).get()
             }
             argument("lifetime", IntegerArgumentType.integer(1)) {
                 permission("rebar.command.confetti")
-                executesWithPlayer { player ->
+                executes { _ ->
                     RebarMetrics.onCommandRun("/rb confetti")
                     ConfettiParticle.spawnMany(
-                        player.location,
+                        source.location,
                         IntegerArgumentType.getInteger(this, "amount"),
                         DoubleArgumentType.getDouble(this, "speed"),
                         IntegerArgumentType.getInteger(this, "lifetime")
-                    ).run()
+                    ).get()
+                }
+                argument("direction", ArgumentTypes.finePosition()) {
+                    permission("rebar.command.confetti")
+                    executes { _ ->
+                        RebarMetrics.onCommandRun("/rb confetti")
+                        val velocity = getArgument("direction", FinePositionResolver::class.java).resolve(source).toVector()
+                            .normalize().multiply(DoubleArgumentType.getDouble(this, "speed"))
+                        for (i in 1..IntegerArgumentType.getInteger(this, "amount")) {
+                            ConfettiParticle(
+                                source.location,
+                                velocity,
+                                IntegerArgumentType.getInteger(this, "lifetime"),
+                                ConfettiParticle.randomMaterial()
+                            )
+                        }
+                    }
+                    argument("spread", DoubleArgumentType.doubleArg(0.0)) {
+                        permission("rebar.command.confetti")
+                        executes { _ ->
+                            RebarMetrics.onCommandRun("/rb confetti")
+                            val direction = getArgument("direction", FinePositionResolver::class.java).resolve(source).toVector()
+                            val speed = DoubleArgumentType.getDouble(this, "speed")
+                            val spread = DoubleArgumentType.getDouble(this, "spread")
+                            for (i in 1..IntegerArgumentType.getInteger(this, "amount")) {
+                                ConfettiParticle(
+                                    source.location,
+                                    direction.clone().add(
+                                        Vector(
+                                            (Math.random() - 0.5) * spread,
+                                            (Math.random() - 0.5) * spread,
+                                            (Math.random() - 0.5) * spread
+                                        )
+                                    ).normalize().multiply(speed),
+                                    IntegerArgumentType.getInteger(this, "lifetime"),
+                                    ConfettiParticle.randomMaterial()
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -519,6 +570,38 @@ private val forceload = buildCommand("forceload") {
     }
 }
 
+private val versions = buildCommand("versions") {
+    executes { sender ->
+        RebarMetrics.onCommandRun("/rb versions")
+        val serverImplementation = Bukkit.getName()
+        val serverVersion = ServerBuildInfo.buildInfo().asString(ServerBuildInfo.StringRepresentation.VERSION_FULL)
+        val apiVersion = Bukkit.getBukkitVersion()
+        val rebarVersion = Rebar.pluginMeta.version
+        val javaVersion = JavaVersion.getMajorJavaVersion()
+        val addonVersions = Bukkit.getPluginManager().plugins.filter { plugin -> plugin is RebarAddon && plugin != Rebar }.map { plugin ->
+            customMiniMessage.deserialize(
+                "  <green><display_name></green> <dark_green><version></dark_green>",
+                Placeholder.component("display_name", (plugin as RebarAddon).displayName),
+                Placeholder.unparsed("version", plugin.pluginMeta.version)
+            )
+        }
+        val addonCount = addonVersions.size
+        var addonList = Component.empty()
+        for (addon in addonVersions) {
+            addonList = addonList.append(addon).appendNewline()
+        }
+        sender.sendFeedback("versions",
+            RebarArgument.of("server_implementation", serverImplementation),
+            RebarArgument.of("server_version", serverVersion),
+            RebarArgument.of("api_version", apiVersion),
+            RebarArgument.of("rebar_version", rebarVersion),
+            RebarArgument.of("java_version", javaVersion),
+            RebarArgument.of("addon_count", addonCount),
+            RebarArgument.of("addon_list", addonList)
+        )
+    }
+}
+
 @JvmSynthetic
 internal val ROOT_COMMAND = buildCommand("rebar") {
     permission("rebar.command.guide")
@@ -539,6 +622,7 @@ internal val ROOT_COMMAND = buildCommand("rebar") {
     then(confetti)
     then(finishMultiblock)
     then(forceload)
+    then(versions)
 }
 
 @JvmSynthetic

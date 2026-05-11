@@ -25,7 +25,7 @@ interface RebarVanillaContainerBlock {
     companion object : MultiListener {
         @UniversalHandler
         private fun onInventoryOpen(event: InventoryOpenEvent, priority: EventPriority) {
-            val holder = event.inventory.holder
+            val holder = event.inventory.getHolder(false)
             if (holder is Container) {
                 val rebarBlock = BlockStorage.get(holder.block)
                 if (rebarBlock is RebarVanillaContainerBlock) {
