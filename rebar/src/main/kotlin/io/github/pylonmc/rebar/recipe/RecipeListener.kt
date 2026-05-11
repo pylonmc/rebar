@@ -1,6 +1,5 @@
 package io.github.pylonmc.rebar.recipe
 
-import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.item.RebarItemSchema
 import io.github.pylonmc.rebar.item.base.*
 import io.github.pylonmc.rebar.item.research.Research.Companion.canCraft
@@ -74,7 +73,7 @@ internal object RebarRecipeListener : Listener {
                 return
             }
 
-            val resultItem = firstSchema.getItemStack()
+            val resultItem = firstSchema.createNewItemStack()
             val durability = max(firstItem.getData(DataComponentTypes.MAX_DAMAGE)!!, secondItem.getData(DataComponentTypes.MAX_DAMAGE)!!)
             val firstRemaining = firstItem.getData(DataComponentTypes.MAX_DAMAGE)!! - firstItem.getData(DataComponentTypes.DAMAGE)!!
             val secondRemaining = secondItem.getData(DataComponentTypes.MAX_DAMAGE)!! - secondItem.getData(DataComponentTypes.DAMAGE)!!

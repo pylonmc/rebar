@@ -79,7 +79,7 @@ internal object WireConnectionService : Listener {
                 val wireEntity =
                     thisBlock.getHeldEntityOrThrow(getConnectionName(thisNode, existingConnection)) as ItemDisplay
                 val wireType = RebarRegistry.ITEMS.getOrThrow(wireEntity.persistentDataContainer.get(WIRE_TYPE_KEY, RebarSerializers.NAMESPACED_KEY)!!)
-                val wireItem = wireType.createNewItem()
+                val wireItem = wireType.createNewItemStack()
 
                 if (player.gameMode != GameMode.CREATIVE) {
                     // Give the player the wire items back, dropping any excess on the ground

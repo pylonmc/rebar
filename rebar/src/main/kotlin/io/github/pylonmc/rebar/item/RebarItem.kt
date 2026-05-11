@@ -114,7 +114,7 @@ open class RebarItem(val stack: ItemStack) : Keyed {
             RebarRegistry.ITEMS.register(schema)
 
             // pre-merge configs and check for constructor errors
-            schema.getRebarItem()
+            schema.createNewRebarItem()
         }
 
         @JvmStatic

@@ -107,11 +107,9 @@ class BlockPosition(val worldId: UUID?, val x: Int, val y: Int, val z: Int) {
 
     fun toLocation(): Location = Location(world, x.toDouble(), y.toDouble(), z.toDouble())
 
-    val vector: Vector
-        get() = Vector(x.toDouble(), y.toDouble(), z.toDouble())
+    fun toVector(): Vector = Vector(x.toDouble(), y.toDouble(), z.toDouble())
 
-    val boundingBox: BoundingBox
-        get() = BoundingBox(x.toDouble(), y.toDouble(), z.toDouble(), x + 1.0, y + 1.0, z + 1.0)
+    fun toBoundingBox(): BoundingBox = BoundingBox(x.toDouble(), y.toDouble(), z.toDouble(), x + 1.0, y + 1.0, z + 1.0)
 
     val block: Block
         get() = world?.getBlockAt(x, y, z) ?: error("World is null")

@@ -45,12 +45,12 @@ class RebarItemSchema @JvmOverloads internal constructor(
     /**
      * Return's a clone of the [template] [ItemStack]
      */
-    fun createNewItem(): ItemStack = template.clone()
+    fun createNewItemStack(): ItemStack = template.clone()
 
     /**
      * Return's a new instance of the [RebarItem] from the [itemClass] using a copy of the [template] [ItemStack]
      */
-    fun getRebarItem(): RebarItem = itemClass.cast(loadConstructor.invoke(getItemStack()))
+    fun createNewRebarItem(): RebarItem = itemClass.cast(loadConstructor.invoke(createNewItemStack()))
 
     val research: Research?
         get() = RebarRegistry.RESEARCHES.find { key in it.unlocks }

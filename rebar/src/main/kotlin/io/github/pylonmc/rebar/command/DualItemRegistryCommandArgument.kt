@@ -38,7 +38,7 @@ object DualItemRegistryCommandArgument : CustomArgumentType.Converted<ItemStack,
                 }
 
                 if (found != null) {
-                    return found.getItemStack()
+                    return found.createNewItemStack()
                 }
             }
             throw ERROR_UNKNOWN.create(nativeType)

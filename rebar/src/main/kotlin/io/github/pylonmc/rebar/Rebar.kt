@@ -21,8 +21,8 @@ import io.github.pylonmc.rebar.content.debug.DebugWaxedWeatheredCutCopperStairs
 import io.github.pylonmc.rebar.content.fluid.*
 import io.github.pylonmc.rebar.content.guide.RebarGuide
 import io.github.pylonmc.rebar.culling.BlockCullingEngine
-import io.github.pylonmc.rebar.entity.ConfettiCreeperListener
 import io.github.pylonmc.rebar.electricity.WireConnectionService
+import io.github.pylonmc.rebar.entity.ConfettiCreeperListener
 import io.github.pylonmc.rebar.entity.EntityListener
 import io.github.pylonmc.rebar.entity.EntityStorage
 import io.github.pylonmc.rebar.entity.RebarEntity
@@ -65,7 +65,6 @@ import org.bukkit.Material
 import org.bukkit.NamespacedKey
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.BlockDisplay
-import org.bukkit.entity.Display
 import org.bukkit.entity.FallingBlock
 import org.bukkit.entity.ItemDisplay
 import org.bukkit.permissions.Permission
@@ -173,7 +172,7 @@ object Rebar : JavaPlugin(), RebarAddon {
         pm.registerEvents(WireConnectionService, this)
         pm.registerEvents(PlayerInput, this)
         pm.registerEvents(RebarJoinHandler, this)
-        ConfettiCreeperListener.register(this, pm)
+        ConfettiCreeperListener.register(this)
 
         // Rebar Blocks
         BlockListener.register(this)

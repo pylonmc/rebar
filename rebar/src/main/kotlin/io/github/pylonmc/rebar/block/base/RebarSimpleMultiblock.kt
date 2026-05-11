@@ -1,22 +1,10 @@
 package io.github.pylonmc.rebar.block.base
 
 import io.github.pylonmc.rebar.block.BlockStorage
-import io.github.pylonmc.rebar.datatypes.RebarSerializers
-import io.github.pylonmc.rebar.event.RebarBlockDeserializeEvent
-import io.github.pylonmc.rebar.entity.EntityStorage
-import io.github.pylonmc.rebar.entity.RebarEntity
-import io.github.pylonmc.rebar.entity.display.BlockDisplayBuilder
-import io.github.pylonmc.rebar.entity.display.ItemDisplayBuilder
-import io.github.pylonmc.rebar.entity.display.transform.TransformBuilder
 import io.github.pylonmc.rebar.event.RebarBlockPlaceEvent
-import io.github.pylonmc.rebar.event.RebarBlockSerializeEvent
-import io.github.pylonmc.rebar.event.RebarBlockUnloadEvent
-import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
-import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.util.getRelative
 import io.github.pylonmc.rebar.util.position.ChunkPosition
 import io.github.pylonmc.rebar.util.position.position
-import io.github.pylonmc.rebar.util.rebarKey
 import io.github.pylonmc.rebar.util.rotateVectorToFace
 import io.github.pylonmc.rebar.waila.Waila
 import io.github.pylonmc.rebar.waila.WailaDisplay
@@ -187,7 +175,9 @@ interface RebarSimpleMultiblock : RebarMultiblock, RebarGhostBlockHolder, RebarE
     val maxCorner: Vector3i
         get() = Vector3i(horizontalRadius, components.keys.maxOf { it.y }, horizontalRadius)
 
-    fun getMultiblockBlock(position: Vector3i) = block.getRelative(rotateVectorToFace(position, facing))
+    fun getRotatedPosition(position: Vector3i) = rotateVectorToFace(position, facing)
+
+    fun getMultiblockBlock(position: Vector3i) = block.getRelative(getRotatedPosition(position))
 
     fun getMultiblockComponent(position: Vector3i) =
         BlockStorage.get(getMultiblockBlock(position))

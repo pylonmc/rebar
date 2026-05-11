@@ -6,6 +6,7 @@ import io.github.pylonmc.rebar.content.fluid.*
 import io.github.pylonmc.rebar.entity.EntityStorage
 import io.github.pylonmc.rebar.fluid.FluidManager
 import io.github.pylonmc.rebar.fluid.placement.FluidPipePlacementTask.Companion.pipesUsed
+import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.util.blocksOnPath
 import io.github.pylonmc.rebar.util.position.ChunkPosition
 import org.bukkit.Bukkit
@@ -13,7 +14,9 @@ import org.bukkit.GameMode
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
+import org.bukkit.event.player.PlayerItemHeldEvent
 import org.bukkit.event.player.PlayerQuitEvent
+import org.bukkit.event.player.PlayerSwapHandItemsEvent
 import org.bukkit.event.world.ChunkUnloadEvent
 import org.bukkit.inventory.EquipmentSlot
 import java.util.*

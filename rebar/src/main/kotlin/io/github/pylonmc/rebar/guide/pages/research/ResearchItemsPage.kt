@@ -15,7 +15,7 @@ import xyz.xenondevs.invui.item.Item
 class ResearchItemsPage(research: Research) : SimpleStaticGuidePage(
     KEY,
     research.unlocks.map {
-        ItemButton(RebarRegistry.ITEMS[it]!!.createNewItem())
+        ItemButton(RebarRegistry.ITEMS[it]!!.createNewItemStack())
     }.toMutableList()
 ) {
 

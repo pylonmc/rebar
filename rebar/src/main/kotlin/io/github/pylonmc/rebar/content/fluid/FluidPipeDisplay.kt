@@ -7,7 +7,6 @@ import io.github.pylonmc.rebar.entity.display.ItemDisplayBuilder
 import io.github.pylonmc.rebar.entity.display.transform.LineBuilder
 import io.github.pylonmc.rebar.fluid.FluidManager
 import io.github.pylonmc.rebar.fluid.placement.FluidPipePlacementService
-import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.util.rebarKey
@@ -46,7 +45,7 @@ class FluidPipeDisplay : RebarEntity<ItemDisplay> {
 
         // will fail to load if schema not found; no way around this
         val pipeSchema = pdc.get(PIPE_KEY, PIPE_TYPE)!!
-        this.pipe = pipeSchema.getRebarItem() as FluidPipe
+        this.pipe = pipeSchema.createNewRebarItem() as FluidPipe
 
         this.pipeAmount = pdc.get(PIPE_AMOUNT_KEY, RebarSerializers.INTEGER)!!
 
