@@ -10,7 +10,7 @@ import java.util.function.Consumer
 import java.util.function.Function
 import kotlin.concurrent.withLock
 
-class ScopedFuture<R> private constructor(scope: Scope) : Future<R>, CompletionStage<R> {
+class RebarFuture<R> private constructor(scope: Scope) : Future<R>, CompletionStage<R> {
 
     val scope: Scope = FutureScope(scope, this)
 
@@ -31,13 +31,9 @@ class ScopedFuture<R> private constructor(scope: Scope) : Future<R>, CompletionS
     @Volatile
     private var isCancelled = false
 
-    @Volatile
-    private var isStarted = false
-
     override fun cancel(mayInterruptIfRunning: Boolean): Boolean {
         if (isDone) return false
         isCancelled = true
-        isStarted = false
         result = null
         thenRun = {}
         return true
@@ -48,16 +44,13 @@ class ScopedFuture<R> private constructor(scope: Scope) : Future<R>, CompletionS
     override fun isDone(): Boolean = result != null || isCancelled
 
     /**
-     * Automatically calls [start] and then blocks until the future is complete, returning the result or throwing an exception if it failed.
+     * Blocks until the future is complete, returning the result or throwing an exception if it failed.
      *
      * @throws InterruptedException if the current thread was interrupted while waiting
      * @throws ExecutionException if the computation threw an exception
      * @throws CancellationException if the future was cancelled
      */
-    fun join(): R {
-        if (!isStarted) start()
-        return get()
-    }
+    fun join(): R = get()
 
     /**
      * Blocks until the future is complete, returning the result or throwing an exception if it failed.
@@ -105,27 +98,12 @@ class ScopedFuture<R> private constructor(scope: Scope) : Future<R>, CompletionS
     }
 
     /**
-     * Starts the future chain by completing the root future with a successful result of `Unit`. This will trigger all subsequent stages in the chain to execute.
-     */
-    fun start() {
-        var rootScope = this.scope
-        while (rootScope.parent is FutureScope) {
-            rootScope = rootScope.parent
-            rootScope.future.isStarted = true
-        }
-        @Suppress("UNCHECKED_CAST") // only way to create a root future is with new(), which always is Unit
-        val rootFuture = (rootScope as FutureScope).future as ScopedFuture<Unit>
-        rootFuture.complete(Unit)
-        isStarted = true
-    }
-
-    /**
      * Delays the execution of the next stage in the chain by the specified number of ticks.
      *
      * @param delayTicks the number of ticks to delay the next stage
      */
-    fun delay(delayTicks: Long): ScopedFuture<R> {
-        val nextFuture = ScopedFuture<R>(scope)
+    fun delay(delayTicks: Long): RebarFuture<R> {
+        val nextFuture = RebarFuture<R>(scope)
         thenRun = {
             scope.asyncDispatcher.dispatch(delayTicks) {
                 nextFuture.completeWithResult(result!!)
@@ -134,16 +112,23 @@ class ScopedFuture<R> private constructor(scope: Scope) : Future<R>, CompletionS
         return nextFuture
     }
 
+    private fun doResultIfReady() {
+        if (result != null) {
+            thenRun()
+        }
+    }
+
     private inline fun <U> thenApply(
         dispatcher: ScopedFutureDispatcher,
         crossinline fn: (R) -> U
-    ): ScopedFuture<U> {
-        val nextFuture = ScopedFuture<U>(scope)
+    ): RebarFuture<U> {
+        val nextFuture = RebarFuture<U>(scope)
         thenRun = {
             dispatcher.dispatch {
                 nextFuture.completeWithResult(result!!.mapCatching(fn))
             }
         }
+        doResultIfReady()
         return nextFuture
     }
 
@@ -156,19 +141,19 @@ class ScopedFuture<R> private constructor(scope: Scope) : Future<R>, CompletionS
     override fun <U> thenApplyAsync(fn: Function<in R, out U>, executor: Executor): CompletionStage<U> =
         toCompletableFuture().thenApplyAsync(fn, executor)
 
-    override fun thenAccept(action: Consumer<in R>): ScopedFuture<Void?> =
+    override fun thenAccept(action: Consumer<in R>): RebarFuture<Void?> =
         thenApply(scope.syncDispatcher) { action.accept(it); null }
 
-    override fun thenAcceptAsync(action: Consumer<in R>): ScopedFuture<Void?> =
+    override fun thenAcceptAsync(action: Consumer<in R>): RebarFuture<Void?> =
         thenApply(scope.asyncDispatcher) { action.accept(it); null }
 
     override fun thenAcceptAsync(action: Consumer<in R>, executor: Executor): CompletionStage<Void?> =
         toCompletableFuture().thenAcceptAsync(action, executor)
 
-    override fun thenRun(action: Runnable): ScopedFuture<Void?> =
+    override fun thenRun(action: Runnable): RebarFuture<Void?> =
         thenApply(scope.syncDispatcher) { action.run(); null }
 
-    override fun thenRunAsync(action: Runnable): ScopedFuture<Void?> =
+    override fun thenRunAsync(action: Runnable): RebarFuture<Void?> =
         thenApply(scope.asyncDispatcher) { action.run(); null }
 
     override fun thenRunAsync(action: Runnable, executor: Executor): CompletionStage<Void?> =
@@ -178,8 +163,8 @@ class ScopedFuture<R> private constructor(scope: Scope) : Future<R>, CompletionS
         other: CompletionStage<out U>,
         dispatcher: ScopedFutureDispatcher,
         crossinline fn: (R, U) -> V
-    ): ScopedFuture<V> {
-        val nextFuture = ScopedFuture<V>(scope)
+    ): RebarFuture<V> {
+        val nextFuture = RebarFuture<V>(scope)
         thenRun = {
             other.whenComplete { u, ex ->
                 dispatcher.dispatch {
@@ -191,6 +176,7 @@ class ScopedFuture<R> private constructor(scope: Scope) : Future<R>, CompletionS
                 }
             }
         }
+        doResultIfReady()
         return nextFuture
     }
 
@@ -210,13 +196,13 @@ class ScopedFuture<R> private constructor(scope: Scope) : Future<R>, CompletionS
     override fun <U> thenAcceptBoth(
         other: CompletionStage<out U>,
         action: BiConsumer<in R, in U>
-    ): ScopedFuture<Void?> =
+    ): RebarFuture<Void?> =
         thenCombine(other, scope.syncDispatcher) { r, u -> action.accept(r, u); null }
 
     override fun <U> thenAcceptBothAsync(
         other: CompletionStage<out U>,
         action: BiConsumer<in R, in U>
-    ): ScopedFuture<Void?> =
+    ): RebarFuture<Void?> =
         thenCombine(other, scope.asyncDispatcher) { r, u -> action.accept(r, u); null }
 
     override fun <U> thenAcceptBothAsync(
@@ -226,10 +212,10 @@ class ScopedFuture<R> private constructor(scope: Scope) : Future<R>, CompletionS
     ): CompletionStage<Void?> =
         toCompletableFuture().thenAcceptBothAsync(other, action, executor)
 
-    override fun runAfterBoth(other: CompletionStage<*>, action: Runnable): ScopedFuture<Void?> =
+    override fun runAfterBoth(other: CompletionStage<*>, action: Runnable): RebarFuture<Void?> =
         thenCombine(other, scope.syncDispatcher) { _, _ -> action.run(); null }
 
-    override fun runAfterBothAsync(other: CompletionStage<*>, action: Runnable): ScopedFuture<Void?> =
+    override fun runAfterBothAsync(other: CompletionStage<*>, action: Runnable): RebarFuture<Void?> =
         thenCombine(other, scope.asyncDispatcher) { _, _ -> action.run(); null }
 
     override fun runAfterBothAsync(
@@ -243,8 +229,8 @@ class ScopedFuture<R> private constructor(scope: Scope) : Future<R>, CompletionS
         other: CompletionStage<out R>,
         dispatcher: ScopedFutureDispatcher,
         crossinline fn: (R) -> U
-    ): ScopedFuture<U> {
-        val nextFuture = ScopedFuture<U>(scope)
+    ): RebarFuture<U> {
+        val nextFuture = RebarFuture<U>(scope)
         val resultLock = ReentrantLock()
         other.whenComplete { r, throwable ->
             dispatcher.dispatch {
@@ -268,6 +254,7 @@ class ScopedFuture<R> private constructor(scope: Scope) : Future<R>, CompletionS
                 }
             }
         }
+        doResultIfReady()
         return nextFuture
     }
 
@@ -284,7 +271,7 @@ class ScopedFuture<R> private constructor(scope: Scope) : Future<R>, CompletionS
     ): CompletionStage<U> =
         toCompletableFuture().applyToEitherAsync(other, fn, executor)
 
-    override fun acceptEither(other: CompletionStage<out R>, action: Consumer<in R>): ScopedFuture<Void?> =
+    override fun acceptEither(other: CompletionStage<out R>, action: Consumer<in R>): RebarFuture<Void?> =
         applyToEither(other, scope.syncDispatcher) { r -> action.accept(r); null }
 
     override fun acceptEitherAsync(other: CompletionStage<out R>, action: Consumer<in R>): CompletionStage<Void?> =
@@ -301,8 +288,8 @@ class ScopedFuture<R> private constructor(scope: Scope) : Future<R>, CompletionS
         other: CompletionStage<*>,
         dispatcher: ScopedFutureDispatcher,
         crossinline action: () -> Unit
-    ): ScopedFuture<Void?> {
-        val nextFuture = ScopedFuture<Void?>(scope)
+    ): RebarFuture<Void?> {
+        val nextFuture = RebarFuture<Void?>(scope)
         val resultLock = ReentrantLock()
         other.whenComplete { _, _ ->
             dispatcher.dispatch {
@@ -324,13 +311,14 @@ class ScopedFuture<R> private constructor(scope: Scope) : Future<R>, CompletionS
                 }
             }
         }
+        doResultIfReady()
         return nextFuture
     }
 
-    override fun runAfterEither(other: CompletionStage<*>, action: Runnable): ScopedFuture<Void?> =
+    override fun runAfterEither(other: CompletionStage<*>, action: Runnable): RebarFuture<Void?> =
         runAfterEither(other, scope.syncDispatcher, action::run)
 
-    override fun runAfterEitherAsync(other: CompletionStage<*>, action: Runnable): ScopedFuture<Void?> =
+    override fun runAfterEitherAsync(other: CompletionStage<*>, action: Runnable): RebarFuture<Void?> =
         runAfterEither(other, scope.asyncDispatcher, action::run)
 
     override fun runAfterEitherAsync(
@@ -343,8 +331,8 @@ class ScopedFuture<R> private constructor(scope: Scope) : Future<R>, CompletionS
     private inline fun <U> thenCompose(
         dispatcher: ScopedFutureDispatcher,
         crossinline fn: (R) -> CompletionStage<U>
-    ): ScopedFuture<U> {
-        val nextFuture = ScopedFuture<U>(scope)
+    ): RebarFuture<U> {
+        val nextFuture = RebarFuture<U>(scope)
         thenRun = {
             dispatcher.dispatch {
                 val value = result!!.getOrNull()
@@ -364,13 +352,14 @@ class ScopedFuture<R> private constructor(scope: Scope) : Future<R>, CompletionS
                 }
             }
         }
+        doResultIfReady()
         return nextFuture
     }
 
-    override fun <U> thenCompose(fn: Function<in R, out CompletionStage<U>>): ScopedFuture<U> =
+    override fun <U> thenCompose(fn: Function<in R, out CompletionStage<U>>): RebarFuture<U> =
         thenCompose(scope.syncDispatcher, fn::apply)
 
-    override fun <U> thenComposeAsync(fn: Function<in R, out CompletionStage<U>>): ScopedFuture<U> =
+    override fun <U> thenComposeAsync(fn: Function<in R, out CompletionStage<U>>): RebarFuture<U> =
         thenCompose(scope.asyncDispatcher, fn::apply)
 
     override fun <U> thenComposeAsync(
@@ -382,8 +371,8 @@ class ScopedFuture<R> private constructor(scope: Scope) : Future<R>, CompletionS
     private inline fun <U> handle(
         dispatcher: ScopedFutureDispatcher,
         crossinline fn: (R?, Throwable?) -> U
-    ): ScopedFuture<U> {
-        val nextFuture = ScopedFuture<U>(scope)
+    ): RebarFuture<U> {
+        val nextFuture = RebarFuture<U>(scope)
         thenRun = {
             dispatcher.dispatch {
                 val r = result!!.getOrNull()
@@ -391,13 +380,14 @@ class ScopedFuture<R> private constructor(scope: Scope) : Future<R>, CompletionS
                 nextFuture.completeWithResult(runCatching { fn(r, ex) })
             }
         }
+        doResultIfReady()
         return nextFuture
     }
 
-    override fun <U> handle(fn: BiFunction<in R?, Throwable?, out U>): ScopedFuture<U> =
+    override fun <U> handle(fn: BiFunction<in R?, Throwable?, out U>): RebarFuture<U> =
         handle(scope.syncDispatcher, fn::apply)
 
-    override fun <U> handleAsync(fn: BiFunction<in R?, Throwable?, out U>): ScopedFuture<U> =
+    override fun <U> handleAsync(fn: BiFunction<in R?, Throwable?, out U>): RebarFuture<U> =
         handle(scope.asyncDispatcher, fn::apply)
 
     override fun <U> handleAsync(fn: BiFunction<in R?, Throwable?, out U>, executor: Executor): CompletionStage<U> =
@@ -406,8 +396,8 @@ class ScopedFuture<R> private constructor(scope: Scope) : Future<R>, CompletionS
     private inline fun whenComplete(
         dispatcher: ScopedFutureDispatcher,
         crossinline action: (R?, Throwable?) -> Unit
-    ): ScopedFuture<R> {
-        val nextFuture = ScopedFuture<R>(scope)
+    ): RebarFuture<R> {
+        val nextFuture = RebarFuture<R>(scope)
         thenRun = {
             dispatcher.dispatch {
                 val r = result!!.getOrNull()
@@ -416,20 +406,21 @@ class ScopedFuture<R> private constructor(scope: Scope) : Future<R>, CompletionS
                 nextFuture.completeWithResult(result!!)
             }
         }
+        doResultIfReady()
         return nextFuture
     }
 
-    override fun whenComplete(action: BiConsumer<in R?, in Throwable?>): ScopedFuture<R> =
+    override fun whenComplete(action: BiConsumer<in R?, in Throwable?>): RebarFuture<R> =
         whenComplete(scope.syncDispatcher, action::accept)
 
-    override fun whenCompleteAsync(action: BiConsumer<in R?, in Throwable?>): ScopedFuture<R> =
+    override fun whenCompleteAsync(action: BiConsumer<in R?, in Throwable?>): RebarFuture<R> =
         whenComplete(scope.asyncDispatcher, action::accept)
 
     override fun whenCompleteAsync(action: BiConsumer<in R?, in Throwable?>, executor: Executor): CompletionStage<R> =
         toCompletableFuture().whenCompleteAsync(action, executor)
 
     override fun exceptionally(fn: Function<Throwable, out R>): CompletionStage<R> {
-        val nextFuture = ScopedFuture<R>(scope)
+        val nextFuture = RebarFuture<R>(scope)
         thenRun = {
             val ex = result!!.exceptionOrNull()
             if (ex != null) {
@@ -438,6 +429,7 @@ class ScopedFuture<R> private constructor(scope: Scope) : Future<R>, CompletionS
                 nextFuture.completeWithResult(result!!)
             }
         }
+        doResultIfReady()
         return nextFuture
     }
 
@@ -465,7 +457,7 @@ class ScopedFuture<R> private constructor(scope: Scope) : Future<R>, CompletionS
                 onFailure = { future.completeExceptionally(it) }
             )
         }
-        start()
+        doResultIfReady()
         return future
     }
 
@@ -489,7 +481,7 @@ class ScopedFuture<R> private constructor(scope: Scope) : Future<R>, CompletionS
         }
     }
 
-    private class FutureScope(parent: Scope, val future: ScopedFuture<*>) : Scope(parent) {
+    private class FutureScope(parent: Scope, val future: RebarFuture<*>) : Scope(parent) {
 
         override val syncDispatcher = parent.syncDispatcher
         override val asyncDispatcher = parent.asyncDispatcher
@@ -502,9 +494,9 @@ class ScopedFuture<R> private constructor(scope: Scope) : Future<R>, CompletionS
 
     companion object {
 
-        @JvmStatic
-        fun new(scope: Scope): ScopedFuture<Unit> {
-            return ScopedFuture(scope)
+        @JvmSynthetic
+        internal fun new(scope: Scope): RebarFuture<Unit> {
+            return RebarFuture(scope)
         }
     }
 }
