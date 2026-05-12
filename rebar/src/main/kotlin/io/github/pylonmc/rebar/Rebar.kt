@@ -47,6 +47,7 @@ import io.github.pylonmc.rebar.resourcepack.armor.ArmorTextureEngine
 import io.github.pylonmc.rebar.util.delayTicks
 import io.github.pylonmc.rebar.util.mergeGlobalConfig
 import io.github.pylonmc.rebar.waila.Waila
+import io.github.pylonmc.rebar.waila.WailaPlaceholders
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder
 import io.papermc.paper.ServerBuildInfo
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents
@@ -258,6 +259,9 @@ object Rebar : JavaPlugin(), RebarAddon {
 
         if (RebarConfig.WailaConfig.ENABLED) {
             pm.registerEvents(Waila, this)
+            if (pm.getPlugin("PlaceholderAPI") != null) {
+                WailaPlaceholders.register()
+            }
         }
 
         if (RebarConfig.ArmorTextureConfig.ENABLED) {

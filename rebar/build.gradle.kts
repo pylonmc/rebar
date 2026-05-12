@@ -1,4 +1,5 @@
 import net.minecrell.pluginyml.bukkit.BukkitPluginDescription
+import net.minecrell.pluginyml.paper.PaperPluginDescription
 import org.jetbrains.kotlin.gradle.dsl.JvmDefaultMode
 
 plugins {
@@ -41,6 +42,7 @@ dependencies {
 
     paperLibraryApi("xyz.xenondevs.invui:invui:2.0.0-beta.5")
     paperLibraryApi("xyz.xenondevs.invui:invui-kotlin:2.0.0-beta.5")
+    compileOnly("me.clip:placeholderapi:2.12.2")
     implementation("com.github.Tofaa2.EntityLib:spigot:2.4.11")
     implementation("com.github.retrooper:packetevents-spigot:2.11.2")
     implementation("info.debatty:java-string-similarity:2.0.0")
@@ -163,6 +165,13 @@ paper {
     authors = listOf("Rebar team")
     apiVersion = minecraftVersion
     load = BukkitPluginDescription.PluginLoadOrder.STARTUP
+
+    serverDependencies {
+        register("PlaceholderAPI") {
+            load = PaperPluginDescription.RelativeLoadOrder.BEFORE
+            required = false
+        }
+    }
 }
 
 tasks.withType<Jar> {

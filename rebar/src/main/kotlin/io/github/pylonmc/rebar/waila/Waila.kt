@@ -20,6 +20,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import net.kyori.adventure.bossbar.BossBar
 import net.kyori.adventure.text.Component
+import org.apache.commons.lang3.StringUtils.overlay
 import org.bukkit.attribute.Attribute
 import org.bukkit.block.Block
 import org.bukkit.entity.Entity
@@ -58,23 +59,32 @@ class Waila private constructor(private val player: Player, playerConfig: Player
         RebarConfig.WailaConfig.DEFAULT_DISPLAY.overlay
     )
 
+    var lastText: Component? = null
+        private set
+    var lastColor: BossBar.Color? = null
+        private set
+    var lastOverlay: BossBar.Overlay? = null
+        private set
+    var lastProgress: Float? = null
+        private set
+
     private var wasVisible = false;
 
     private fun send(display: WailaDisplay) {
+        val color = if (display.color in RebarConfig.WailaConfig.ALLOWED_BOSS_BAR_COLORS) {
+            display.color
+        } else {
+            RebarConfig.WailaConfig.DEFAULT_DISPLAY.color
+        }
+        val overlay = if (display.overlay in RebarConfig.WailaConfig.ALLOWED_BOSS_BAR_OVERLAYS) {
+            display.overlay
+        } else {
+            RebarConfig.WailaConfig.DEFAULT_DISPLAY.overlay
+        }
+
         when (config.type) {
             Type.BOSSBAR -> {
                 player.hideBossBar(bossBar)
-                val color = if (display.color in RebarConfig.WailaConfig.ALLOWED_BOSS_BAR_COLORS) {
-                    display.color
-                } else {
-                    RebarConfig.WailaConfig.DEFAULT_DISPLAY.color
-                }
-                val overlay = if (display.overlay in RebarConfig.WailaConfig.ALLOWED_BOSS_BAR_OVERLAYS) {
-                    display.overlay
-                } else {
-                    RebarConfig.WailaConfig.DEFAULT_DISPLAY.overlay
-                }
-
                 bossBar.name(display.text)
                 bossBar.color(color)
                 bossBar.overlay(overlay)
@@ -83,6 +93,11 @@ class Waila private constructor(private val player: Player, playerConfig: Player
             }
             Type.ACTIONBAR -> player.sendActionBar(display.text)
         }
+
+        lastText = display.text
+        lastColor = color
+        lastOverlay = overlay
+        lastProgress = display.progress
         wasVisible = true
     }
 
@@ -95,6 +110,10 @@ class Waila private constructor(private val player: Player, playerConfig: Player
             Type.BOSSBAR -> player.hideBossBar(bossBar)
             Type.ACTIONBAR -> player.sendActionBar(Component.empty())
         }
+        lastText = null
+        lastColor = null
+        lastOverlay = null
+        wasVisible = false
         wasVisible = false
     }
 
@@ -194,6 +213,11 @@ class Waila private constructor(private val player: Player, playerConfig: Player
 
         private val blockOverrides = mutableMapOf<BlockPosition, (Player) -> WailaDisplay?>()
         private val entityOverrides = mutableMapOf<UUID, (Player) -> WailaDisplay?>()
+
+        @JvmStatic
+        fun getWaila(player: Player): Waila? {
+            return wailas[player.uniqueId]
+        }
 
         /**
          * Forcibly adds a WAILA display for the given player.
