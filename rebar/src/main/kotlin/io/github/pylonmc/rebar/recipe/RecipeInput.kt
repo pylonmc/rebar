@@ -29,7 +29,7 @@ sealed interface RecipeInput {
             return contains(itemStack)
         }
 
-        operator fun contains(itemStack: ItemStack): Boolean = ItemTypeWrapper(itemStack) in items
+        operator fun contains(itemStack: ItemStack?): Boolean = itemStack != null && ItemTypeWrapper(itemStack) in items
     }
 
     @JvmRecord
@@ -49,7 +49,7 @@ sealed interface RecipeInput {
 
         fun matches(fluidWithAmount: FluidWithAmount) = matches(fluidWithAmount.fluid, fluidWithAmount.amount)
 
-        operator fun contains(fluid: RebarFluid): Boolean = fluid in fluids
+        operator fun contains(fluid: RebarFluid?): Boolean = fluid != null && fluid in fluids
     }
 
     companion object {

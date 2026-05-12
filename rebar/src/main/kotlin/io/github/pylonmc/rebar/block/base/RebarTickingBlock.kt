@@ -37,7 +37,7 @@ interface RebarTickingBlock {
      * The interval at which the [tick] function is called. You should generally use [setTickInterval]
      * in your place constructor instead of overriding this.
      */
-    val tickInterval
+    val tickInterval: Int
         get() = tickingData.tickInterval
 
     /**
@@ -51,7 +51,7 @@ interface RebarTickingBlock {
      * Whether the [tick] function should be called asynchronously. You should generally use
      * [setAsync] in your place constructor instead of overriding this.
      */
-    val isAsync
+    val isAsync: Boolean
         get() = tickingData.isAsync
 
     /**
@@ -110,7 +110,7 @@ interface RebarTickingBlock {
         private fun onSerialize(event: RebarBlockSerializeEvent) {
             val block = event.rebarBlock
             if (block is RebarTickingBlock) {
-                event.pdc.set(tickingBlockKey, RebarSerializers.TICKING_BLOCK_DATA, tickingBlocks[block]!!)
+                event.pdc.set(tickingBlockKey, RebarSerializers.TICKING_BLOCK_DATA, block.tickingData)
             }
         }
 
