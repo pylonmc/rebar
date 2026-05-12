@@ -66,6 +66,7 @@ import kotlin.random.Random
 object BlockStorage : Listener {
 
     val rebarBlocksKey = rebarKey("blocks")
+    val rebarBlocksType = RebarSerializers.LIST.listTypeFrom(RebarSerializers.TAG_CONTAINER)
 
     // Access to blocks, blocksByChunk, blocksById fields must be synchronized
     // to prevent them briefly going out of sync
@@ -510,8 +511,7 @@ object BlockStorage : Listener {
     }
 
     private fun load(world: World, chunk: Chunk): List<RebarBlock> {
-        val type = RebarSerializers.LIST.listTypeFrom(RebarSerializers.TAG_CONTAINER)
-        val chunkBlocks = chunk.persistentDataContainer.get(rebarBlocksKey, type)?.mapNotNull { element ->
+        val chunkBlocks = chunk.persistentDataContainer.get(rebarBlocksKey, rebarBlocksType)?.mapNotNull { element ->
             RebarBlock.deserialize(world, element)
         }?.toMutableList() ?: mutableListOf()
 
@@ -522,9 +522,7 @@ object BlockStorage : Listener {
         val serializedBlocks = chunkBlocks.mapNotNull {
             RebarBlock.serialize(it, chunk.persistentDataContainer.adapterContext)
         }
-
-        val type = RebarSerializers.LIST.listTypeFrom(RebarSerializers.TAG_CONTAINER)
-        chunk.persistentDataContainer.set(rebarBlocksKey, type, serializedBlocks)
+        chunk.persistentDataContainer.set(rebarBlocksKey, rebarBlocksType, serializedBlocks)
     }
 
     @EventHandler
