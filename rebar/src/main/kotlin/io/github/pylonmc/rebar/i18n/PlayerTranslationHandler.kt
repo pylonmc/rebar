@@ -32,6 +32,9 @@ class PlayerTranslationHandler internal constructor(private val player: Player) 
         if (rebarItem != null && !stack.persistentDataContainer.has(FOOTER_APPENDED)) {
             stack.editData(DataComponentTypes.LORE) { lore ->
                 val newLore = lore.lines().toMutableList()
+                if (!stack.enchantments.isEmpty()) {
+                    newLore.addFirst(Component.empty())
+                }
                 newLore.add(GlobalTranslator.render(rebarItem.addon.footerName, player.locale()))
                 if (rebarItem.isDisabled) {
                     newLore.add(

@@ -23,7 +23,7 @@ interface RebarInventoryEffectItem : RebarInventoryTicker {
         tasks[itemKey]!![player.uniqueId] = Bukkit.getScheduler().runTaskLater(Rebar.javaPlugin, Runnable {
             player.persistentDataContainer.remove(itemKey)
             onRemovedFromInventory(player)
-        }, tickInterval * RebarConfig.INVENTORY_TICKER_BASE_RATE + 1)
+        }, baseTickInterval * RebarConfig.INVENTORY_TICKER_BASE_RATE + 1)
     }
 
     /**

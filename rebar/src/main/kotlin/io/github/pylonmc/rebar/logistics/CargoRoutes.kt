@@ -7,6 +7,8 @@ import io.github.pylonmc.rebar.event.RebarBlockBreakEvent
 import io.github.pylonmc.rebar.event.RebarBlockLoadEvent
 import io.github.pylonmc.rebar.event.RebarBlockPlaceEvent
 import io.github.pylonmc.rebar.event.RebarBlockUnloadEvent
+import io.github.pylonmc.rebar.event.RebarCargoConnectEvent
+import io.github.pylonmc.rebar.event.RebarCargoDisconnectEvent
 import io.github.pylonmc.rebar.logistics.CargoRoutes.blockRoutesCache
 import io.github.pylonmc.rebar.util.IMMEDIATE_FACES
 import io.github.pylonmc.rebar.util.position.BlockPosition
@@ -67,10 +69,13 @@ object CargoRoutes : Listener {
         val previous = source.block.block.position
         var current = previous.getRelative(source.face)
         val routeBlocks = mutableListOf<BlockPosition>(source.block.block.position)
-        var endpoint: CargoRouteEndpoint? = null // 42 70 -37
+        var endpoint: CargoRouteEndpoint? = null
 
         while (current.chunk.isLoaded) {
             routeBlocks.add(current)
+            for (face in IMMEDIATE_FACES) {
+                routeBlocks.add(current.getRelative(face))
+            }
             val currentBlock = BlockStorage.get(current.block)
 
             if (currentBlock is CargoDuct) {
@@ -117,19 +122,16 @@ object CargoRoutes : Listener {
         val blocks = routeBlocksCache.remove(source)
         if (blocks != null) {
             for (block in blocks) {
-                blockRoutesCache.remove(block)
+                blockRoutesCache[block]!!.remove(source)
             }
         }
         routeCache.remove(source)
     }
 
-    private fun invalidateRouteCachesForBlock(block: Block) {
-        val routes = blockRoutesCache[block.position]
-        if (routes == null) {
-            return
-        }
+    internal fun invalidateRouteCachesForBlock(block: Block) {
+        val routes = blockRoutesCache[block.position] ?: return
 
-        for (routeSource in routes) {
+        for (routeSource in routes.toList()) {
             invalidateRouteCache(routeSource)
         }
     }
@@ -152,5 +154,18 @@ object CargoRoutes : Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     private fun onBlockUnloaded(event: RebarBlockUnloadEvent) {
         invalidateRouteCachesForBlock(event.block)
+    }
+
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    private fun onBlockLoaded(event: RebarCargoConnectEvent) {
+        invalidateRouteCachesForBlock(event.block1.block)
+        invalidateRouteCachesForBlock(event.block2.block)
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    private fun onBlockUnloaded(event: RebarCargoDisconnectEvent) {
+        invalidateRouteCachesForBlock(event.block1.block)
+        invalidateRouteCachesForBlock(event.block2.block)
     }
 }

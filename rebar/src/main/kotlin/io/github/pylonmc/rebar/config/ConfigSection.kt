@@ -1,6 +1,7 @@
 package io.github.pylonmc.rebar.config
 
 import com.google.common.base.Defaults.defaultValue
+import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter
 import org.bukkit.configuration.ConfigurationSection
 import java.lang.reflect.ParameterizedType
@@ -77,29 +78,42 @@ open class ConfigSection(val internalSection: ConfigurationSection) {
      * Throws an error if the key does not exist or if the value cannot be converted to the desired type.
      */
     fun <T> getOrThrow(key: String, adapter: ConfigAdapter<T>): T {
-        val value = cache.getOrPut(key) {
-            val value = internalSection.get(key) ?: throw modifyException(KeyNotFoundException(getKeyPath(key)))
-            try {
-                adapter.convert(value)
-            } catch (e: KeyNotFoundException) {
-                val exception = modifyException(KeyNotFoundException("$key.${e.key.removePrefix("$key.")}"))
-                exception.stackTrace = e.stackTrace
-                throw exception
-            } catch (e: Exception) {
-                throw modifyException(
-                    IllegalArgumentException(
-                        "Failed to convert value '$value' to type ${adapter.type} for key '${getKeyPath(key)}'",
-                        e
-                    )
-                )
-            }
-        }
-
         fun getClass(type: Type): Class<*> = when (type) {
             is Class<*> -> type
             is ParameterizedType -> getClass(type.rawType)
             else -> throw modifyException(IllegalArgumentException("Unsupported type: $type"))
         }
+
+        val cached = cache[key]
+        if (cached != null) {
+            @Suppress("UNCHECKED_CAST")
+            val clazz = getClass(adapter.type) as Class<T>
+            try {
+                return clazz.cast(cached)
+            } catch (e: Exception) {
+                throw modifyException(
+                    IllegalArgumentException("You have attempted to access $key with two different config adapters. Ensure you are only using one.", e)
+                )
+            }
+        }
+
+        val rawValue = internalSection.get(key) ?: throw modifyException(KeyNotFoundException(getKeyPath(key)))
+        val value = try {
+            adapter.convert(rawValue)
+        } catch (e: KeyNotFoundException) {
+            val exception = modifyException(KeyNotFoundException("$key.${e.key.removePrefix("$key.")}"))
+            exception.stackTrace = e.stackTrace
+            throw exception
+        } catch (e: Exception) {
+            throw modifyException(
+                IllegalArgumentException(
+                    "Failed to convert value '$rawValue' to type ${adapter.type} for key '${getKeyPath(key)}'",
+                    e
+                )
+            )
+        }
+
+        cache[key] = value
 
         @Suppress("UNCHECKED_CAST")
         val clazz = getClass(adapter.type) as Class<T>
