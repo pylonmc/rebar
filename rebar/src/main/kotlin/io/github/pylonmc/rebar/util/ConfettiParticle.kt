@@ -1,11 +1,14 @@
 package io.github.pylonmc.rebar.util
 
 import io.github.pylonmc.rebar.Rebar
+import io.github.pylonmc.rebar.async.BukkitMainThreadDispatcher
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.block.Block
 import org.bukkit.entity.BlockDisplay
-import org.bukkit.scheduler.BukkitRunnable
+import org.bukkit.entity.Display
 import org.bukkit.util.BoundingBox
 import org.bukkit.util.Transformation
 import org.bukkit.util.Vector
@@ -14,25 +17,29 @@ import org.joml.Quaternionf
 import org.joml.Vector3f
 import java.util.Random
 import java.util.function.Consumer
+import java.util.function.Supplier
 
 class ConfettiParticle {
-    private val display: BlockDisplay
-    private var age = 0
-    private val lifetime: Int
+    val display: BlockDisplay
+    var age = 0
+        private set
+    val lifetime: Int
+    val job: Job
 
-    private val velocity: Vector
-    private val angularVelocity: Vector
+    val velocity: Vector
+    val angularVelocity: Vector
 
-    private var rotationX = 0.0
-    private var rotationY = 0.0
-    private var rotationZ = 0.0
+    var rotationX = 0.0
+    var rotationY = 0.0
+    var rotationZ = 0.0
 
-    private var block: Block? = null
+    var block: Block? = null
+        private set
 
     constructor(location: Location, velocity: Vector, lifetime: Int, material: Material) {
         val world = location.getWorld()
 
-        this.display = world.spawn<BlockDisplay>(location, BlockDisplay::class.java, Consumer { d: BlockDisplay ->
+        this.display = world.spawn(location, BlockDisplay::class.java, Consumer { d: BlockDisplay ->
             d.block = material.createBlockData()
             d.transformation = Transformation(
                 Vector3f(0f, 0f, 0f),
@@ -40,13 +47,13 @@ class ConfettiParticle {
                 Vector3f(0.2f, 0.01f, 0.2f),
                 AxisAngle4f()
             )
-            d.teleportDuration = TICK_AMOUNT.toInt()
+            d.teleportDuration = TICK_AMOUNT
             d.isPersistent = false
         })
-        this.lifetime = lifetime
+        this.lifetime = Math.ceilDiv(lifetime, TICK_AMOUNT)
 
         // Random initial velocity
-        this.velocity = velocity
+        this.velocity = velocity.clone()
 
         // Random angular velocity (degrees per tick)
         this.angularVelocity = Vector(
@@ -56,26 +63,24 @@ class ConfettiParticle {
         )
 
         this.block = location.block
-
-        startTickLoop()
+        this.job = startTickLoop()
     }
 
-     constructor(location: Location, speed: Double, lifetime: Int, material: Material) : this(
-         location, Vector(
+    constructor(location: Location, speed: Double, lifetime: Int, material: Material) : this(
+        location, Vector(
             (RANDOM.nextDouble() - 0.5) * 0.2,
             RANDOM.nextDouble() * 0.2,
             (RANDOM.nextDouble() - 0.5) * 0.2
-         ).normalize().multiply(speed), lifetime, material
-     )
+        ).normalize().multiply(speed), lifetime, material
+    )
 
-    private fun startTickLoop() {
-        object : BukkitRunnable() {
-            override fun run() {
+    private fun startTickLoop() : Job {
+        return Rebar.scope.launch(Rebar.mainThreadDispatcher) {
+            while (true) {
                 try {
                     if (age++ > lifetime || display.isDead) {
-                        display.remove()
-                        cancel()
-                        return
+                        remove()
+                        break
                     }
 
                     val currentBlock = display.location.block
@@ -84,9 +89,8 @@ class ConfettiParticle {
                                 BoundingBox.of(display.location.toVector(), 0.1, 0.005, 0.1)
                             )
                         }) {
-                        display.remove()
-                        cancel()
-                        return
+                        remove()
+                        break
                     }
                     block = currentBlock
 
@@ -112,21 +116,30 @@ class ConfettiParticle {
                         Math.toRadians(rotationZ).toFloat()
                     )
 
+                    val despawning = age == lifetime
                     val t = display.transformation
                     display.interpolationDelay = 0
-                    display.interpolationDuration = TICK_AMOUNT.toInt()
+                    display.interpolationDuration = if (despawning) 10 else TICK_AMOUNT
                     display.transformation = Transformation(
                         t.translation,
                         leftRotation,
-                        if (age == lifetime) Vector3f(0f) else t.scale,
-                        Quaternionf()
+                        if (despawning) Vector3f(0f) else t.scale,
+                        t.rightRotation
                     )
-                } catch (e: Exception) {
-                    display.remove()
-                    cancel()
+                    delayTicks(if (despawning) 10 else TICK_AMOUNT.toLong())
+                } catch (_: Exception) {
+                    remove()
+                    break
                 }
             }
-        }.runTaskTimer(Rebar, 1L, TICK_AMOUNT)
+        }
+    }
+
+    fun remove() {
+        this.job.cancel()
+        try {
+            this.display.remove()
+        } catch (_: Exception) {}
     }
 
     companion object {
@@ -138,11 +151,11 @@ class ConfettiParticle {
          * There are a few cases where particles would all immediately die when spawning
          * this is to ensure they last at least 1 second.
          */
-        private const val IMMORTAL_AGE = 10
-        private const val TICK_AMOUNT = 2L
+        private const val IMMORTAL_AGE = 7
+        private const val TICK_AMOUNT = 3
 
         const val DEFAULT_SPEED = 1.0
-        const val DEFAULT_LIFETIME = 300
+        const val DEFAULT_LIFETIME = 600
 
         @JvmField
         val CONCRETES: List<Material> = Material.entries
@@ -151,20 +164,30 @@ class ConfettiParticle {
 
         @JvmStatic
         @JvmOverloads
-        fun spawnOne(loc: Location, speed: Double = DEFAULT_SPEED, lifetime: Int = DEFAULT_LIFETIME, mat: Material = CONCRETES.random()): Runnable {
-            return Runnable { ConfettiParticle(loc, speed, lifetime, mat) }
+        fun spawnOne(loc: Location, speed: Double = DEFAULT_SPEED, lifetime: Int = DEFAULT_LIFETIME, mat: Material = CONCRETES.random()): Supplier<ConfettiParticle> {
+            return Supplier { ConfettiParticle(loc, speed, lifetime, mat) }
         }
 
         @JvmStatic
         @JvmOverloads
-        fun spawnMany(loc: Location, amount: Int, speed: Double = DEFAULT_SPEED, lifetime: Int = DEFAULT_LIFETIME, materials: Collection<Material> = CONCRETES): Runnable {
-            val output: MutableList<Runnable> = ArrayList<Runnable>()
+        fun spawnMany(loc: Location, amount: Int, speed: Double = DEFAULT_SPEED, lifetime: Int = DEFAULT_LIFETIME, materials: Collection<Material> = CONCRETES): Supplier<List<ConfettiParticle>> {
+            return spawnMany(loc, amount, speed, speed, lifetime, materials)
+        }
+
+        @JvmStatic
+        fun spawnMany(loc: Location, amount: Int, minSpeed: Double = DEFAULT_SPEED, maxSpeed: Double = DEFAULT_SPEED, lifetime: Int = DEFAULT_LIFETIME, materials: Collection<Material> = CONCRETES): Supplier<List<ConfettiParticle>> {
+            val output: MutableList<Supplier<ConfettiParticle>> = ArrayList()
 
             repeat(amount) { _ ->
-                output.add(spawnOne(loc, speed, lifetime, materials.random()))
+                output.add(spawnOne(loc, minSpeed + (Math.random() * (maxSpeed - minSpeed)), lifetime, materials.random()))
             }
 
-            return Runnable { output.forEach(Runnable::run) }
+            return Supplier { output.map(Supplier<ConfettiParticle>::get) }
+        }
+
+        @JvmStatic
+        fun randomMaterial() : Material {
+            return CONCRETES.random()
         }
     }
 }

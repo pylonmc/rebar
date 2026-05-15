@@ -28,13 +28,13 @@ interface ConfigAdapter<T> {
     @Suppress("unused")
     companion object {
         // @formatter:off
-        @JvmField val BYTE = ConfigAdapter { if (it is String) it.toByte() else (it as Number).toByte() }
-        @JvmField val SHORT = ConfigAdapter { if (it is String) it.toShort() else (it as Number).toShort() }
-        @JvmField val INTEGER = ConfigAdapter { if (it is String) it.toInt() else (it as Number).toInt() }
+        @JvmField val BYTE = numberAdapter(Byte.MIN_VALUE, Byte.MAX_VALUE, Number::toByte)
+        @JvmField val SHORT = numberAdapter(Short.MIN_VALUE, Short.MAX_VALUE, Number::toShort)
+        @JvmField val INTEGER = numberAdapter(Int.MIN_VALUE, Int.MAX_VALUE, Number::toInt)
+        @JvmField val LONG = numberAdapter(Long.MIN_VALUE, Long.MAX_VALUE, Number::toLong)
+        @JvmField val FLOAT = numberAdapter(Float.MIN_VALUE, Float.MAX_VALUE, Number::toFloat)
+        @JvmField val DOUBLE = numberAdapter(Double.MIN_VALUE, Double.MAX_VALUE, Number::toDouble)
         @JvmField val INT_RANGE = IntRangeAdapter
-        @JvmField val LONG = ConfigAdapter { if (it is String) it.toLong() else (it as Number).toLong() }
-        @JvmField val FLOAT = ConfigAdapter { if (it is String) it.toFloat() else (it as Number).toFloat() }
-        @JvmField val DOUBLE = ConfigAdapter { if (it is String) it.toDouble() else (it as Number).toDouble() }
         @JvmField val CHAR = ConfigAdapter { (it as String).single() }
         @JvmField val BOOLEAN = ConfigAdapter { it as Boolean }
         @JvmField val ANY = ConfigAdapter { it }
@@ -141,6 +141,24 @@ interface ConfigAdapter<T> {
         @JvmField val CONTRIBUTOR = ContributorConfigAdapter
         @JvmField val TEXT_COLOR = TextColorConfigAdapter
         // @formatter:on
+
+        private inline fun <reified T : Number> numberAdapter(
+            min: T,
+            max: T,
+            crossinline toType: Number.() -> T
+        ): ConfigAdapter<T> = ConfigAdapter { value ->
+            if (value is String) return@ConfigAdapter value.toDouble().toType()
+
+            check (value is Number) { "Expected ${Number::class.java}, got ${value::class.java}" }
+            if (value is Float || value is Double) {
+                check(min is Float || min is Double) { "Expected ${T::class.java.canonicalName}, got ${value::class.java.canonicalName}" }
+            }
+
+            if (min !is Double) {
+                check(value.toDouble() in (min.toDouble())..(max.toDouble())) { "Expected value between $min and $max, got $value" }
+            }
+            return@ConfigAdapter value.toDouble().toType()
+        }
     }
 }
 

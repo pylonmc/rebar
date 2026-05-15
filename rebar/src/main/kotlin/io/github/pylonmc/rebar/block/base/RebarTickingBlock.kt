@@ -1,7 +1,6 @@
 package io.github.pylonmc.rebar.block.base
 
 import io.github.pylonmc.rebar.Rebar
-import io.github.pylonmc.rebar.async.BukkitMainThreadDispatcher
 import io.github.pylonmc.rebar.async.ChunkScope
 import io.github.pylonmc.rebar.block.BlockListener
 import io.github.pylonmc.rebar.block.BlockListener.logEventHandleErr
@@ -161,7 +160,7 @@ interface RebarTickingBlock {
             val rebarBlock = tickingBlock as RebarBlock
             val dispatcher = dispatchers.getOrPut(rebarBlock.schema) {
                 if (tickingBlock.isAsync) Dispatchers.Default
-                else BukkitMainThreadDispatcher(Rebar, 1)
+                else Rebar.mainThreadDispatcher
             }
             val scope = ChunkScope(Rebar.scope.coroutineContext.createChildContext(), rebarBlock.block.chunk.position)
             tickingBlocks[tickingBlock]?.job = scope.launch(dispatcher) {

@@ -20,6 +20,7 @@ import org.jetbrains.annotations.ApiStatus
  * are loaded).
  *
  * @see RebarSimpleMultiblock
+ * @see RebarGhostBlockHolder
  */
 interface RebarMultiblock {
     // This is automatically implemented by RebarBlock (lol)

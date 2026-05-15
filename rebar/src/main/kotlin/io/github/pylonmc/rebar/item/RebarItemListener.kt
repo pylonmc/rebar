@@ -29,13 +29,13 @@ import kotlin.math.ceil
 internal object RebarItemListener : Listener {
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     private fun handle(event: PlayerReadyArrowEvent) {
-        val bow = RebarItem.fromStack(event.bow)
+        val bow = RebarItemSchema.fromStack(event.bow)
         if (bow != null && !event.player.canUse(bow, true)) {
             event.isCancelled = true
             return
         }
 
-        val arrow = RebarItem.fromStack(event.arrow)
+        val arrow = RebarItemSchema.fromStack(event.arrow)
         if (arrow != null && !event.player.canUse(arrow, true)) {
             event.isCancelled = true
         }
@@ -43,7 +43,7 @@ internal object RebarItemListener : Listener {
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     private fun handle(event: PlayerInteractEvent) {
-        val rebarItem = event.item?.let { RebarItem.fromStack(it) } ?: return
+        val rebarItem = event.item?.let { RebarItemSchema.fromStack(it) } ?: return
         if (!event.player.canUse(rebarItem, true)) {
             event.isCancelled = true
         }
@@ -51,7 +51,7 @@ internal object RebarItemListener : Listener {
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     private fun handle(event: PlayerBucketEmptyEvent) {
-        val rebarItem = event.itemStack?.let { RebarItem.fromStack(it) }
+        val rebarItem = event.itemStack?.let { RebarItemSchema.fromStack(it) }
         if (rebarItem != null && !event.player.canUse(rebarItem, true)) {
             event.isCancelled = true
         }
@@ -60,7 +60,7 @@ internal object RebarItemListener : Listener {
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     private fun handle(event: PlayerBucketFillEvent) {
         val stack = event.player.inventory.getItem(event.hand)
-        val rebarItem = RebarItem.fromStack(stack)
+        val rebarItem = RebarItemSchema.fromStack(stack)
         if (rebarItem != null && !event.player.canUse(rebarItem, true)) {
             event.isCancelled = true
         }
@@ -68,7 +68,7 @@ internal object RebarItemListener : Listener {
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     private fun handle(event: PlayerItemConsumeEvent) {
-        val rebarItem = RebarItem.fromStack(event.item)
+        val rebarItem = RebarItemSchema.fromStack(event.item)
         if (rebarItem != null && !event.player.canUse(rebarItem, true)) {
             event.isCancelled = true
         }
@@ -76,7 +76,7 @@ internal object RebarItemListener : Listener {
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     private fun handle(event: PlayerItemDamageEvent) {
-        val rebarItem = RebarItem.fromStack(event.item)
+        val rebarItem = RebarItemSchema.fromStack(event.item)
         if (rebarItem != null) {
             event.player.canUse(rebarItem, true)
         }
@@ -84,7 +84,7 @@ internal object RebarItemListener : Listener {
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     private fun handle(event: PlayerItemBreakEvent) {
-        val rebarItem = RebarItem.fromStack(event.brokenItem)
+        val rebarItem = RebarItemSchema.fromStack(event.brokenItem)
         if (rebarItem != null) {
             event.player.canUse(rebarItem, true)
         }
@@ -92,7 +92,7 @@ internal object RebarItemListener : Listener {
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     private fun handle(event: PlayerItemMendEvent) {
-        val rebarItem = RebarItem.fromStack(event.item)
+        val rebarItem = RebarItemSchema.fromStack(event.item)
         if (rebarItem != null && !event.player.canUse(rebarItem, true)) {
             event.isCancelled = true
         }
@@ -100,13 +100,13 @@ internal object RebarItemListener : Listener {
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     private fun handle(event: PlayerInteractEntityEvent) {
-        val rebarItemMainHand = RebarItem.fromStack(event.player.inventory.itemInMainHand)
+        val rebarItemMainHand = RebarItemSchema.fromStack(event.player.inventory.itemInMainHand)
         if (rebarItemMainHand != null && !event.player.canUse(rebarItemMainHand, true)) {
             event.isCancelled = true
             return
         }
 
-        val rebarItemOffHand = RebarItem.fromStack(event.player.inventory.itemInOffHand)
+        val rebarItemOffHand = RebarItemSchema.fromStack(event.player.inventory.itemInOffHand)
         if (rebarItemOffHand != null && !event.player.canUse(rebarItemOffHand, true)) {
             event.isCancelled = true
         }
@@ -114,7 +114,7 @@ internal object RebarItemListener : Listener {
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     private fun handle(event: BlockDamageEvent) {
-        val rebarItem = RebarItem.fromStack(event.itemInHand)
+        val rebarItem = RebarItemSchema.fromStack(event.itemInHand)
         if (rebarItem != null && !event.player.canUse(rebarItem, true)) {
             event.isCancelled = true
         }
@@ -122,13 +122,13 @@ internal object RebarItemListener : Listener {
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     private fun handle(event: BlockBreakEvent) {
-        val rebarItemMainHand = RebarItem.fromStack(event.player.inventory.itemInMainHand)
+        val rebarItemMainHand = RebarItemSchema.fromStack(event.player.inventory.itemInMainHand)
         if (rebarItemMainHand != null && !event.player.canUse(rebarItemMainHand, true)) {
             event.isCancelled = true
             return
         }
 
-        val rebarItemOffHand = RebarItem.fromStack(event.player.inventory.itemInOffHand)
+        val rebarItemOffHand = RebarItemSchema.fromStack(event.player.inventory.itemInOffHand)
         if (rebarItemOffHand != null && !event.player.canUse(rebarItemOffHand, true)) {
             event.isCancelled = true
         }
@@ -139,13 +139,13 @@ internal object RebarItemListener : Listener {
         val damager = event.damageSource.causingEntity
         if (event.damageSource.isIndirect || damager !is Player) return
 
-        val rebarItemMainHand = RebarItem.fromStack(damager.inventory.itemInMainHand)
+        val rebarItemMainHand = RebarItemSchema.fromStack(damager.inventory.itemInMainHand)
         if (rebarItemMainHand != null && !damager.canUse(rebarItemMainHand, true)) {
             event.isCancelled = true
             return
         }
 
-        val rebarItemOffHand = RebarItem.fromStack(damager.inventory.itemInOffHand)
+        val rebarItemOffHand = RebarItemSchema.fromStack(damager.inventory.itemInOffHand)
         if (rebarItemOffHand != null && !damager.canUse(rebarItemOffHand, true)) {
             event.isCancelled = true
         }
@@ -155,13 +155,13 @@ internal object RebarItemListener : Listener {
     private fun handle(event: EntityDeathEvent) {
         val killer = event.damageSource.causingEntity
         if (killer !is Player) return
-        val rebarItemMainHand = RebarItem.fromStack(killer.inventory.itemInMainHand)
+        val rebarItemMainHand = RebarItemSchema.fromStack(killer.inventory.itemInMainHand)
         if (rebarItemMainHand != null && !killer.canUse(rebarItemMainHand, true)) {
             event.isCancelled = true
             return
         }
 
-        val rebarItemOffHand = RebarItem.fromStack(killer.inventory.itemInOffHand)
+        val rebarItemOffHand = RebarItemSchema.fromStack(killer.inventory.itemInOffHand)
         if (rebarItemOffHand != null && !killer.canUse(rebarItemOffHand, true)) {
             event.isCancelled = true
         }

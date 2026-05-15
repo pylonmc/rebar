@@ -1,6 +1,5 @@
 package io.github.pylonmc.rebar.content.cargo
 
-import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.block.BlockStorage
 import io.github.pylonmc.rebar.block.RebarBlock
 import io.github.pylonmc.rebar.block.base.*
@@ -19,9 +18,7 @@ import io.github.pylonmc.rebar.util.IMMEDIATE_FACES
 import io.github.pylonmc.rebar.util.position.BlockPosition
 import io.github.pylonmc.rebar.util.position.position
 import io.github.pylonmc.rebar.util.rebarKey
-import io.github.pylonmc.rebar.util.scheduleRemove
 import io.github.pylonmc.rebar.util.setNullable
-import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.block.Block
@@ -142,14 +139,14 @@ class CargoDuct : RebarBlock, RebarBreakHandler, RebarEntityHolderBlock, RebarEn
         // display that continues the same direction as any of the connected faces)
         for (face in connectedFaces) {
             (connectedBlock(face) as? CargoDuct)?.let {
-                it.getHeldEntity(ductDisplayName(face))?.scheduleRemove()
-                it.getHeldEntity(NOT_CONNECTED_DUCT_DISPLAY_NAME)?.scheduleRemove()
+                it.getHeldEntity(ductDisplayName(face))?.remove()
+                it.getHeldEntity(NOT_CONNECTED_DUCT_DISPLAY_NAME)?.remove()
                 it.faceGroups.remove(face)
                 it.faceGroups.remove(BlockFace.SELF)
             }
         }
         for (entity in heldEntities.keys.toList()) { // clone to prevent concurrent modification exception
-            getHeldEntity(entity)?.scheduleRemove()
+            getHeldEntity(entity)?.remove()
             heldEntities.remove(entity)
         }
         faceGroups.clear()

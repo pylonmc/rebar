@@ -13,7 +13,6 @@ import org.bukkit.Keyed
 import org.bukkit.NamespacedKey
 import java.util.concurrent.CompletableFuture
 
-@Suppress("UnstableApiUsage")
 class RegistryCommandArgument<T : Keyed>(private val registry: RebarRegistry<T>) :
     CustomArgumentType.Converted<T, NamespacedKey> {
 
