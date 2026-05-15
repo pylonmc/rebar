@@ -65,12 +65,10 @@ interface RebarGuiBlock : RebarBreakHandler, RebarNoVanillaContainerBlock {
         private fun onInteract(event: PlayerInteractEvent) {
             val guiBlock = BlockStorage.getAs(RebarGuiBlock::class.java, event.clickedBlock ?: return) ?: return
 
-            val mainHand = event.player.inventory.itemInMainHand.type
             if (event.player.isSneaking && event.action.isRightClick) {
-                if (mainHand != Material.AIR && !mainHand.isBlock) {
+                if (event.isBlockInHand) {
                     event.setUseInteractedBlock(Event.Result.DENY)
-                }
-                if (mainHand == Material.AIR) {
+                } else if (event.hasItem()) {
                     openGui(guiBlock, event)
                 }
                 return
