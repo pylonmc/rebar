@@ -113,7 +113,6 @@ class Waila private constructor(private val player: Player, playerConfig: Player
         lastColor = null
         lastOverlay = null
         wasVisible = false
-        wasVisible = false
     }
 
     private fun destroy() {
