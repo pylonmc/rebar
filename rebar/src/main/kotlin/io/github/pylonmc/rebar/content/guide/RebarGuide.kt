@@ -150,6 +150,10 @@ class RebarGuide(stack: ItemStack) : RebarItem(stack), RebarInteractor {
         @JvmStatic
         val latinSearchItemsAndFluidsButton = PageButton(Material.OAK_SIGN, latinSearchItemsAndFluidsPage)
 
+        /**
+         * Maps locales to their corresponding search page buttons.
+         * This allows different locales to use adapted search pages with appropriate text indexers.
+         */
         @JvmStatic
         val localSearchPages: MutableMap<Locale, PageButton> = mutableMapOf()
 
