@@ -1,6 +1,7 @@
 package io.github.pylonmc.rebar.recipe
 
 import io.github.pylonmc.rebar.item.RebarItem
+import io.github.pylonmc.rebar.item.RebarItemSchema
 import io.github.pylonmc.rebar.item.base.*
 import io.github.pylonmc.rebar.item.research.Research.Companion.canCraft
 import io.github.pylonmc.rebar.recipe.vanilla.CraftingRecipeWrapper
@@ -22,6 +23,7 @@ import org.bukkit.event.block.CrafterCraftEvent
 import org.bukkit.event.inventory.*
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.StonecutterInventory
+import kotlin.math.max
 
 internal object RebarRecipeListener : Listener {
 
@@ -55,20 +57,37 @@ internal object RebarRecipeListener : Listener {
                     }
                 }
             }
+
             check(firstItem != null)
             check(secondItem != null)
-            if (firstItem.isSimilar(secondItem)) {
-                val rebarItem = RebarItem.fromStack(firstItem)!!
-                if (rebarItem !is RebarUnmergeable) {
-                    val result = rebarItem.schema.getItemStack()
-                    val resultDamage = inventory.result!!.getData(DataComponentTypes.DAMAGE)!!
-                    result.setData(DataComponentTypes.DAMAGE, resultDamage)
-                    inventory.result = result
-                    return
-                }
-            } else {
+
+            val firstSchema = RebarItemSchema.fromStack(firstItem)
+            val secondSchema = RebarItemSchema.fromStack(secondItem)
+            if (firstSchema == null || secondSchema == null || firstSchema != secondSchema
+                || RebarUnmergeable::class.java.isAssignableFrom(firstSchema.itemClass)
+                || firstItem.amount != 1 || secondItem.amount != 1
+                || !firstItem.hasData(DataComponentTypes.MAX_DAMAGE) || !secondItem.hasData(DataComponentTypes.MAX_DAMAGE)
+                || !firstItem.hasData(DataComponentTypes.DAMAGE) || !secondItem.hasData(DataComponentTypes.DAMAGE)) {
                 inventory.result = null
+                return
             }
+
+            val resultItem = firstSchema.getItemStack()
+            val durability = max(firstItem.getData(DataComponentTypes.MAX_DAMAGE)!!, secondItem.getData(DataComponentTypes.MAX_DAMAGE)!!)
+            val firstRemaining = firstItem.getData(DataComponentTypes.MAX_DAMAGE)!! - firstItem.getData(DataComponentTypes.DAMAGE)!!
+            val secondRemaining = secondItem.getData(DataComponentTypes.MAX_DAMAGE)!! - secondItem.getData(DataComponentTypes.DAMAGE)!!
+            val remaining = firstRemaining + secondRemaining + (durability * 5 / 100) // Based off of NMS
+
+            resultItem.setData(DataComponentTypes.MAX_DAMAGE, durability)
+            resultItem.setData(DataComponentTypes.DAMAGE, max(durability - remaining, 0))
+
+            for (enchantment in firstItem.enchantments.keys.union(secondItem.enchantments.keys)) {
+                if (enchantment.isCursed) {
+                    resultItem.addUnsafeEnchantment(enchantment, max(firstItem.getEnchantmentLevel(enchantment), secondItem.getEnchantmentLevel(enchantment)))
+                }
+            }
+
+            inventory.result = resultItem
         }
         // Due to rebar ingredients possibly needing to ignore components (and thus using MaterialChoice)
         // we can't fully trust that the recipe returned by MC is correct
@@ -90,9 +109,9 @@ internal object RebarRecipeListener : Listener {
             return
         }
         // Prevent crafting of unresearched items
-        val rebarItemResult = RebarItem.fromStack(recipe.result)
-        val anyViewerDoesNotHaveResearch = rebarItemResult != null && e.viewers.none {
-            it is Player && it.canCraft(rebarItemResult, true)
+        val resultSchema = RebarItemSchema.fromStack(recipe.result)
+        val anyViewerDoesNotHaveResearch = resultSchema != null && e.viewers.none {
+            it is Player && it.canCraft(resultSchema, true)
         }
         if (anyViewerDoesNotHaveResearch) {
             inventory.result = null
@@ -249,9 +268,9 @@ internal object RebarRecipeListener : Listener {
         }
 
         // Prevent crafting of unresearched items
-        val rebarItemResult = RebarItem.fromStack(recipe.result)
-        val anyViewerDoesNotHaveResearch = rebarItemResult != null && e.viewers.none {
-            it is Player && it.canCraft(rebarItemResult, true)
+        val schemaResult = RebarItemSchema.fromStack(recipe.result)
+        val anyViewerDoesNotHaveResearch = schemaResult != null && e.viewers.none {
+            it is Player && it.canCraft(schemaResult, true)
         }
         if (anyViewerDoesNotHaveResearch) {
             inv.result = null
@@ -263,14 +282,14 @@ internal object RebarRecipeListener : Listener {
         val inventory = e.inventory
         val firstItem = inventory.firstItem
         val secondItem = inventory.secondItem
-        val firstRebarItem = RebarItem.fromStack(firstItem)
-        val secondRebarItem = RebarItem.fromStack(secondItem)
+        val firstRebarSchema = RebarItemSchema.fromStack(firstItem)
+        val secondRebarSchema = RebarItemSchema.fromStack(secondItem)
 
         // Disallow using Rebar items but allow renaming them
         // Have tried to support this. It's really hard because you end up effectively
         // having to do the repair manually for items that can't usually be repaired.
         // Gave up after 2 hours or so
-        if ((firstRebarItem != null && (secondItem != null && !secondItem.isEmpty)) || secondRebarItem != null) {
+        if ((firstRebarSchema != null && (secondItem != null && !secondItem.isEmpty)) || secondRebarSchema != null) {
             e.result = null
             return
         }

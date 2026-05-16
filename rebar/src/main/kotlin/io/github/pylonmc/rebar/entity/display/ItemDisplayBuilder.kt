@@ -16,17 +16,18 @@ import org.joml.Matrix4f
 @Suppress("unused")
 open class ItemDisplayBuilder() {
 
-    var itemStack: ItemStack? = null
-    var itemDisplayTransform : ItemDisplay.ItemDisplayTransform? = null
-    var transformation: Matrix4f? = null
-    var brightness: Brightness? = null
-    var glowColor: Color? = null
-    var billboard: Billboard? = null
-    var viewRange: Float? = null
-    var interpolationDelay: Int? = null
-    var interpolationDuration: Int? = null
-    var displayWidth: Float? = null
-    var displayHeight: Float? = null
+    protected var itemStack: ItemStack? = null
+    protected var itemDisplayTransform : ItemDisplay.ItemDisplayTransform? = null
+    protected var transformation: Matrix4f? = null
+    protected var brightness: Brightness? = null
+    protected var glowColor: Color? = null
+    protected var billboard: Billboard? = null
+    protected var viewRange: Float? = null
+    protected var interpolationDelay: Int? = null
+    protected var interpolationDuration: Int? = null
+    protected var displayWidth: Float? = null
+    protected var displayHeight: Float? = null
+    protected var persistent: Boolean? = null
 
     constructor(other: ItemDisplayBuilder): this() {
         this.itemStack = other.itemStack
@@ -40,6 +41,7 @@ open class ItemDisplayBuilder() {
         this.interpolationDuration = other.interpolationDuration
         this.displayWidth = other.displayWidth
         this.displayHeight = other.displayHeight
+        this.persistent = other.persistent
     }
 
     fun material(material: Material) = apply { this.itemStack = ItemStack(material) }
@@ -57,6 +59,7 @@ open class ItemDisplayBuilder() {
     fun interpolationDuration(interpolationDuration: Int) = apply { this.interpolationDuration = interpolationDuration }
     fun displayWidth(displayWidth: Float): ItemDisplayBuilder = apply { this.displayWidth = displayWidth }
     fun displayHeight(displayHeight: Float): ItemDisplayBuilder = apply { this.displayHeight = displayHeight }
+    fun persistent(persistent: Boolean): ItemDisplayBuilder = apply { this.persistent = persistent }
 
     open fun build(location: Location): ItemDisplay {
         val finalLocation = location.clone()
@@ -102,6 +105,9 @@ open class ItemDisplayBuilder() {
         }
         if (displayHeight != null) {
             display.displayWidth = displayHeight!!
+        }
+        if (persistent != null) {
+            display.isPersistent = persistent!!
         }
     }
 }

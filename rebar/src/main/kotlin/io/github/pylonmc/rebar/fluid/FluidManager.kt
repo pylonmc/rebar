@@ -9,6 +9,7 @@ import io.github.pylonmc.rebar.event.PreRebarFluidPointDisconnectEvent
 import io.github.pylonmc.rebar.event.RebarFluidPointConnectEvent
 import io.github.pylonmc.rebar.event.RebarFluidPointDisconnectEvent
 import io.github.pylonmc.rebar.fluid.FluidManager.unload
+import io.github.pylonmc.rebar.util.FLUID_EPSILON
 import io.github.pylonmc.rebar.util.delayTicks
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -284,7 +285,7 @@ internal object FluidManager {
         for (block in blocks) {
             try {
                 for ((fluid, amount) in block.getSuppliedFluids()) {
-                    if (amount < 1.0e-6) {
+                    if (amount < FLUID_EPSILON) {
                         // prevent floating point issues supplying tiny amounts of liquid
                         continue
                     }
@@ -312,7 +313,7 @@ internal object FluidManager {
         for (block in blocks) {
             try {
                 val fluidAmountRequested = block.fluidAmountRequested(fluid)
-                if (fluidAmountRequested < 1.0e-9) {
+                if (fluidAmountRequested < FLUID_EPSILON) {
                     continue
                 }
                 requesters[block] = fluidAmountRequested

@@ -7,7 +7,6 @@ import org.bukkit.Keyed
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
 import org.bukkit.inventory.*
-import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Serves as a registry and container for recipes of a specific type.
@@ -17,7 +16,7 @@ import java.util.concurrent.ConcurrentHashMap
  */
 open class RecipeType<T : RebarRecipe>(private val key: NamespacedKey) : Keyed, Iterable<T> {
 
-    protected open val registeredRecipes = ConcurrentHashMap<NamespacedKey, T>()
+    protected open val registeredRecipes = LinkedHashMap<NamespacedKey, T>()
     val recipes: Collection<T>
         get() = registeredRecipes.values
 
