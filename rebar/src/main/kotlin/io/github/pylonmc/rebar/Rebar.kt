@@ -259,7 +259,7 @@ object Rebar : JavaPlugin(), RebarAddon {
 
         if (RebarConfig.WailaConfig.ENABLED) {
             pm.registerEvents(Waila, this)
-            if (pm.getPlugin("PlaceholderAPI") != null) {
+            if (pm.isPluginEnabled("PlaceholderAPI")) {
                 WailaPlaceholders.register()
             }
         }
