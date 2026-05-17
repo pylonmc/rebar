@@ -56,8 +56,17 @@ class BlockTextureEntityImpl : BlockTextureEntity, SyncedDataHolder {
     override var isSpawned: Boolean = false
 
     private val entityData: SynchedEntityData
+
+    /**
+     * The data to sync when the entity is spawned in
+     */
     private val trackedDataValues: List<SynchedEntityData.DataValue<*>>
+
+    /**
+     * The data to sync on player refresh
+     */
     private val refreshDataValues: List<SynchedEntityData.DataValue<*>>
+
     private val lastScaleIncreases: MutableMap<UUID, Float> = mutableMapOf()
 
     /**
@@ -80,6 +89,7 @@ class BlockTextureEntityImpl : BlockTextureEntity, SyncedDataHolder {
         this.id = Bukkit.getUnsafe().nextEntityId()
         this.uuid = Mth.createInsecureUUID(Entity.SHARED_RANDOM)
         this.entityData = EntityDataAccess.fakedDataBuilder(this, NmsDisplay.ItemDisplay::class.java).apply {
+            // An ItemDisplay's class hierarchy is Entity -> Display -> ItemDisplay, so to fake it we need to define all the data parameters for all 3 classes identically
             define(EntityDataAccess.ENTITY_DATA_SHARED_FLAGS_ID, 0.toByte())
             define(EntityDataAccess.ENTITY_DATA_AIR_SUPPLY_ID, 300)
             define(EntityDataAccess.ENTITY_DATA_CUSTOM_NAME_VISIBLE, false)
@@ -290,9 +300,10 @@ class BlockTextureEntityImpl : BlockTextureEntity, SyncedDataHolder {
         @JvmSynthetic
         internal val tickJob = Rebar.scope.launch {
             while (true) {
+                // TODO: Consider making this configurable & async, the delay is the delay between making a change to the entity & it being reflected to the clients
                 delayTicks(1)
                 for (blockTextureOctree in BlockCullingEngine.blockTextureOctrees.values) {
-                    for (block in blockTextureOctree.allEntries()) {
+                    for (block in blockTextureOctree) {
                         val entity = block.blockTextureEntity as? BlockTextureEntityImpl ?: continue
                         if (entity.viewers.isEmpty()) continue
 

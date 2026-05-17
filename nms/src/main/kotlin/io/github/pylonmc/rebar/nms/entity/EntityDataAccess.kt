@@ -1,6 +1,5 @@
 package io.github.pylonmc.rebar.nms.entity
 
-import com.google.gson.internal.reflect.ReflectionHelper.getAccessor
 import io.github.pylonmc.rebar.Rebar
 import net.minecraft.network.chat.Component
 import net.minecraft.network.syncher.EntityDataAccessor
@@ -15,7 +14,6 @@ import org.joml.Quaternionfc
 import org.joml.Vector3fc
 import java.lang.invoke.MethodHandle
 import java.lang.invoke.MethodHandles
-import java.lang.invoke.VarHandle
 import java.util.*
 
 object EntityDataAccess {
@@ -71,6 +69,10 @@ object EntityDataAccess {
         }
     }
 
+    /**
+     * When creating a packet entity based on a real entity, you need a builder scaled for the real entity type but backed by the packet based implementation
+     * @return A [SynchedEntityData.Builder] scaled for the real entity type but backed by the packet based implementation
+     */
     internal fun <T : SyncedDataHolder> fakedDataBuilder(real: SyncedDataHolder, faked: Class<T>) : SynchedEntityData.Builder {
         try {
             val builder = SynchedEntityData.Builder(real)
