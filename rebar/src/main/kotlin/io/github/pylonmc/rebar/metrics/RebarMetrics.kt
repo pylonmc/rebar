@@ -13,7 +13,7 @@ import org.bukkit.Bukkit
 import java.util.concurrent.ConcurrentHashMap
 
 internal object RebarMetrics {
-    val metrics = Metrics(Rebar, 27322)
+    val metrics = Metrics(Rebar, 31411)
     val dataConfig = Config(Rebar, "data/metrics.yml")
 
     var commandsRun = ConcurrentHashMap<String, Int>()
