@@ -43,10 +43,8 @@ import io.github.pylonmc.rebar.recipe.RebarRecipeListener
 import io.github.pylonmc.rebar.recipe.RecipeCompletion
 import io.github.pylonmc.rebar.recipe.RecipeType
 import io.github.pylonmc.rebar.registry.RebarRegistry
-import io.github.pylonmc.rebar.resourcepack.armor.ArmorTextureEngine
 import io.github.pylonmc.rebar.util.PlayerInput
 import io.github.pylonmc.rebar.util.delayTicks
-import io.github.pylonmc.rebar.item.base.VanillaAnvilItem
 import io.github.pylonmc.rebar.util.mergeGlobalConfig
 import io.github.pylonmc.rebar.waila.Waila
 import io.github.pylonmc.rebar.waila.WailaPlaceholders
@@ -190,31 +188,31 @@ object Rebar : JavaPlugin(), RebarAddon {
         RebarFlowerPot.register(this)
         RebarVanillaContainerBlock.register(this)
         RebarHopper.register(this)
-        RebarFire.register(this, pm)
+        RebarFire.register(this)
         RebarCargoBlock.register(this)
         RebarCopperBlock.register(this)
         RebarEntityChangedBlock.register(this)
 
         // Rebar Items
-        RebarArrow.register(this, pm)
-        RebarBlockInteractor.register(this, pm)
-        RebarBow.register(this, pm)
-        RebarBrewingStandFuel.register(this, pm)
-        RebarBucket.register(this, pm)
-        RebarConsumable.register(this, pm)
-        RebarDispensable.register(this, pm)
-        RebarInteractor.register(this, pm)
-        RebarItemDamageable.register(this, pm)
-        RebarItemEntityInteractor.register(this, pm)
-        RebarJoinHandler.register(this, pm)
-        RebarLingeringPotion.register(this, pm)
-        RebarSplashPotion.register(this, pm)
-        RebarTool.register(this, pm)
-        RebarWeapon.register(this, pm)
-        VanillaAnvilItem.register(this, pm)
-        VanillaCookingFuel.register(this, pm)
-        RebarPickupable.register(this, pm)
-        RebarDroppable.register(this, pm)
+        RebarArrow.register(this)
+        RebarBlockInteractor.register(this)
+        RebarBow.register(this)
+        RebarBrewingStandFuel.register(this)
+        RebarBucket.register(this)
+        RebarConsumable.register(this)
+        RebarDispensable.register(this)
+        RebarInteractor.register(this)
+        RebarItemDamageable.register(this)
+        RebarItemEntityInteractor.register(this)
+        RebarJoinHandler.register(this)
+        RebarLingeringPotion.register(this)
+        RebarSplashPotion.register(this)
+        RebarTool.register(this)
+        RebarWeapon.register(this)
+        VanillaAnvilItem.register(this)
+        VanillaCookingFuel.register(this)
+        RebarPickupable.register(this)
+        RebarDroppable.register(this)
 
         // Rebar Entities
         EntityListener.register(this)

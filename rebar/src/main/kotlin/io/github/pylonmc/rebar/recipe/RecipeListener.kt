@@ -1,5 +1,6 @@
 package io.github.pylonmc.rebar.recipe
 
+import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.item.RebarItemSchema
 import io.github.pylonmc.rebar.item.base.*
 import io.github.pylonmc.rebar.item.research.Research.Companion.canCraft
