@@ -56,7 +56,7 @@ open class ItemRecipesPage(val stack: ItemStack) : PagedGuidePage {
         .addIngredient('b', RebarGuide.backButton)
         .addIngredient('g', RebarGuide.ingredientsButton(FluidOrItem.of(stack)))
         .addIngredient('i', RebarGuide.infoButton(FluidOrItem.of(stack)))
-        .addIngredient('s', RebarGuide.searchItemsAndFluidsButton)
+        .addIngredient('s', RebarGuide.getSearchButton(player))
         .addIngredient('>', GuiItems.pageNext())
         .addIngredient('x', Markers.CONTENT_LIST_SLOT_HORIZONTAL)
         .addPageChangeHandler { _, newPage -> saveCurrentPage(player, newPage) }

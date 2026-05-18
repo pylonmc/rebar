@@ -186,9 +186,9 @@ abstract class SearchPage(key: NamespacedKey) : SimpleStaticGuidePage(key) {
         data class Lore(val filter: String) : SearchSpecifier {
             override fun weight(player: Player, entry: Pair<Item, String>): Double? {
                 val stack = entry.first.getItemProvider(player).get()
-                return stack.lore()?.map {
+                return stack.lore()?.mapNotNull {
                     weight(filter, it.plainText.lowercase(player.locale()))
-                }?.filterNotNull()?.minOrNull()
+                }?.minOrNull()
             }
         }
     }

@@ -56,7 +56,7 @@ open class FluidRecipesPage(fluidKey: NamespacedKey) : PagedGuidePage {
         .addIngredient('<', GuiItems.pagePrevious())
         .addIngredient('b', RebarGuide.backButton)
         .addIngredient('g', RebarGuide.ingredientsButton(FluidOrItem.of(fluid, 1000.0)))
-        .addIngredient('s', RebarGuide.searchItemsAndFluidsButton)
+        .addIngredient('s', RebarGuide.getSearchButton(player))
         .addIngredient('>', GuiItems.pageNext())
         .addIngredient('x', Markers.CONTENT_LIST_SLOT_HORIZONTAL)
         .addPageChangeHandler { _, newPage -> saveCurrentPage(player, newPage) }
