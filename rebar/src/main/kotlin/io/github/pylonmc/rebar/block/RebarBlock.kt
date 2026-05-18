@@ -1,7 +1,5 @@
 package io.github.pylonmc.rebar.block
 
-import com.github.retrooper.packetevents.protocol.world.Location
-import com.github.retrooper.packetevents.util.Vector3f
 import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.block.RebarBlock.Companion.rebarBlockTextureEntityKey
 import io.github.pylonmc.rebar.block.RebarBlock.Companion.register
@@ -26,17 +24,18 @@ import io.github.pylonmc.rebar.util.position.BlockPosition
 import io.github.pylonmc.rebar.util.position.position
 import io.github.pylonmc.rebar.util.rebarKey
 import io.github.pylonmc.rebar.waila.WailaDisplay
-import io.github.retrooper.packetevents.util.SpigotConversionUtil
 import io.papermc.paper.datacomponent.DataComponentTypes
-import me.tofaa.entitylib.meta.display.ItemDisplayMeta
 import net.kyori.adventure.key.Key
 import org.bukkit.*
 import org.bukkit.block.Block
+import org.bukkit.entity.Display
 import org.bukkit.entity.ItemDisplay
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataAdapterContext
 import org.bukkit.persistence.PersistentDataContainer
+import org.bukkit.util.Transformation
+import org.joml.Vector3f
 
 /**
  * Represents a Rebar block in the world.
@@ -80,8 +79,7 @@ open class RebarBlock private constructor(val block: Block) : Keyed {
      * you want to expose to resource packs for custom models/textures. If those properties change
      * you can call [refreshBlockTextureItem] to update the model accordingly.
      *
-     * Upon initialization the entity is set up by [setupBlockTexture] (which can be overridden),
-     * and modifications afterward can be done using [updateBlockTexture].
+     * Upon initialization the entity is set up by [setupBlockTexture] (which can be overridden).
      *
      * Being lazily initialized, if you do not access the entity directly it will only be created
      * when a player with `customBlockTextures` comes within range for the first time. This is to
@@ -92,9 +90,7 @@ open class RebarBlock private constructor(val block: Block) : Keyed {
         if (!RebarConfig.BlockTextureConfig.ENABLED || disableBlockTextureEntity) {
             null
         } else {
-            val entity = BlockTextureEntity(this)
-            val meta = entity.getEntityMeta(ItemDisplayMeta::class.java)
-            setupBlockTexture(entity, meta)
+            setupBlockTexture(NmsAccessor.instance.createBlockTextureEntity(this))
         }
     }
 
@@ -143,42 +139,30 @@ open class RebarBlock private constructor(val block: Block) : Keyed {
     open fun postInitialise() {}
 
     /**
-     * Used to initialize [blockTextureEntity], if you need to modify the entity post-initialization,
-     * use [updateBlockTexture].
+     * Used to initialize [blockTextureEntity].
      *
      * By default, this method sets the item display to be at the center of the block, using the
      * item returned by [getBlockTextureItem] (or a barrier if none is provided), set's its item
-     * model to air, making it invisible for players without a resource pack, scales it to
-     * 1.00085f in all directions to prevent z-fighting with the vanilla block model, and maxes its
-     * brightness. It sets the display type to be "fixed".
+     * model to air, making it invisible for players without a resource pack, scales in all
+     * directions to prevent z-fighting with the vanilla block model, and maxes its brightness.
+     * It sets the display type to be "fixed".
      */
-    protected open fun setupBlockTexture(entity: BlockTextureEntity, meta: ItemDisplayMeta): BlockTextureEntity = entity.apply {
+    protected open fun setupBlockTexture(entity: BlockTextureEntity): BlockTextureEntity = entity.apply {
         // TODO: Add a way to easily just change the transformation of the entity, without having to override this method entirely
-        entity.spawn(Location(this@RebarBlock.block.x + 0.5, this@RebarBlock.block.y + 0.5, this@RebarBlock.block.z + 0.5, 0f, 0f))
-
         val item = getBlockTextureItem() ?: ItemStack(Material.BARRIER)
         item.setData(DataComponentTypes.ITEM_MODEL, Key.key("air"))
-        meta.item = SpigotConversionUtil.fromBukkitItemStack(item)
-        meta.displayType = ItemDisplayMeta.DisplayType.FIXED
-        meta.brightnessOverride = 15 shl 4 or 15 shl 20;
-        meta.scale = Vector3f(
-            1 + BlockTextureEntity.BLOCK_OVERLAP_INCREASE,
-            1 + BlockTextureEntity.BLOCK_OVERLAP_INCREASE,
-            1 + BlockTextureEntity.BLOCK_OVERLAP_INCREASE
-        )
-        meta.width = 0f
-        meta.height = 0f
-    }
-
-    /**
-     * Use this method to make any changes to the block texture entity, such as changing its item,
-     * transformation, etc, after initialization. (see [setupBlockTexture])
-     */
-    protected fun updateBlockTexture(updater: (BlockTextureEntity, ItemDisplayMeta) -> Unit) {
-        blockTextureEntity?.let {
-            val meta = it.getEntityMeta(ItemDisplayMeta::class.java)
-            updater(it, meta)
+        itemStack = item
+        itemDisplayTransform = ItemDisplay.ItemDisplayTransform.FIXED
+        brightness = Display.Brightness(15, 15)
+        transformation = transformation.let {
+            Transformation(
+                it.translation,
+                it.leftRotation,
+                Vector3f(1 + BlockTextureEntity.BLOCK_OVERLAP_INCREASE),
+                it.rightRotation
+            )
         }
+        entity.spawn()
     }
 
     /**
@@ -196,10 +180,10 @@ open class RebarBlock private constructor(val block: Block) : Keyed {
      * [getBlockTextureItem], or a barrier if that returns null.
      */
     fun refreshBlockTextureItem() {
-        updateBlockTexture { _, meta ->
+        blockTextureEntity?.let {
             val item = getBlockTextureItem() ?: ItemStack(Material.BARRIER)
             item.setData(DataComponentTypes.ITEM_MODEL, Key.key("air"))
-            meta.item = SpigotConversionUtil.fromBukkitItemStack(item)
+            it.itemStack = item
         }
     }
 

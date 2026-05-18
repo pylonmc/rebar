@@ -2,8 +2,11 @@ package io.github.pylonmc.rebar.nms
 
 import com.destroystokyo.paper.event.player.PlayerRecipeBookClickEvent
 import io.github.pylonmc.rebar.async.PlayerScope
+import io.github.pylonmc.rebar.block.RebarBlock
+import io.github.pylonmc.rebar.entity.packet.BlockTextureEntity
 import io.github.pylonmc.rebar.i18n.PlayerTranslationHandler
 import io.github.pylonmc.rebar.i18n.packet.PlayerPacketHandler
+import io.github.pylonmc.rebar.nms.entity.BlockTextureEntityImpl
 import io.github.pylonmc.rebar.nms.recipe.HandlerRecipeBookClick
 import io.papermc.paper.adventure.PaperAdventure
 import kotlinx.coroutines.Dispatchers
@@ -176,4 +179,6 @@ object NmsAccessorImpl : NmsAccessor {
         val id = entity.entityId
         return (entity.world as CraftWorld).handle.chunkSource.chunkMap.entityMap.get(id)?.seenBy?.isNotEmpty() ?: false
     }
+
+    override fun createBlockTextureEntity(block: RebarBlock): BlockTextureEntity = BlockTextureEntityImpl(block)
 }

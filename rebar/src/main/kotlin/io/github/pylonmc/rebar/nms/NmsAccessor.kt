@@ -1,6 +1,8 @@
 package io.github.pylonmc.rebar.nms
 
 import com.destroystokyo.paper.event.player.PlayerRecipeBookClickEvent
+import io.github.pylonmc.rebar.block.RebarBlock
+import io.github.pylonmc.rebar.entity.packet.BlockTextureEntity
 import io.github.pylonmc.rebar.i18n.PlayerTranslationHandler
 import net.kyori.adventure.text.Component
 import org.bukkit.Material
@@ -47,6 +49,8 @@ interface NmsAccessor {
     fun handleRecipeBookClick(event: PlayerRecipeBookClickEvent)
 
     fun hasTracker(entity: Entity): Boolean
+
+    fun createBlockTextureEntity(block: RebarBlock): BlockTextureEntity
 
     companion object {
         val instance = Class.forName("io.github.pylonmc.rebar.nms.NmsAccessorImpl")
