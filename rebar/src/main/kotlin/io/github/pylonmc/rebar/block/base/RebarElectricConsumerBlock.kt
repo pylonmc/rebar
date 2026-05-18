@@ -2,7 +2,9 @@ package io.github.pylonmc.rebar.block.base
 
 import io.github.pylonmc.rebar.electricity.ElectricNode
 import io.github.pylonmc.rebar.event.RebarBlockPlaceEvent
+import io.github.pylonmc.rebar.util.Vectors
 import io.github.pylonmc.rebar.util.position.position
+import org.bukkit.block.BlockFace
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.jetbrains.annotations.ApiStatus
@@ -28,6 +30,12 @@ interface RebarElectricConsumerBlock : RebarElectricBlock, RebarDirectionalBlock
             node.requiredPower = value
         }
 
+    val portFace: BlockFace
+        get() = facing
+
+    val portRadius: Double
+        get() = 0.5
+
     @ApiStatus.Internal
     companion object : Listener {
 
@@ -36,12 +44,15 @@ interface RebarElectricConsumerBlock : RebarElectricBlock, RebarDirectionalBlock
             val block = event.rebarBlock as? RebarElectricConsumerBlock ?: return
             val blockPos = event.block.position
             block.addElectricPort(
-                block.facing,
+                block.portFace,
                 ElectricNode.Consumer(
                     name = "main",
                     block = blockPos,
                     requiredPower = 0.0
-                )
+                ),
+                block.portRadius,
+                Vectors.zero,
+                null
             )
         }
     }

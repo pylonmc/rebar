@@ -12,7 +12,10 @@ import io.github.pylonmc.rebar.event.RebarBlockDeserializeEvent
 import io.github.pylonmc.rebar.event.RebarBlockSerializeEvent
 import io.github.pylonmc.rebar.event.RebarBlockUnloadEvent
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
+import io.github.pylonmc.rebar.util.Vectors
+import io.github.pylonmc.rebar.util.plus
 import io.github.pylonmc.rebar.util.rebarKey
+import io.github.pylonmc.rebar.util.times
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.block.BlockFace
@@ -20,6 +23,7 @@ import org.bukkit.entity.Interaction
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
+import org.bukkit.util.Vector
 import org.jetbrains.annotations.ApiStatus
 import java.util.*
 
@@ -49,7 +53,7 @@ interface RebarElectricBlock : RebarEntityHolderBlock {
      * @return [node]
      */
     @ApiStatus.NonExtendable
-    fun <T : ElectricNode> addElectricPort(face: BlockFace, node: T, radius: Double, overrideMaterial: Material?): T {
+    fun <T : ElectricNode> addElectricPort(face: BlockFace, node: T, radius: Double, offset: Vector, overrideMaterial: Material?): T {
         val material = overrideMaterial ?: when (node) {
             is ElectricNode.Connector -> Material.GRAY_CONCRETE
             is ElectricNode.Consumer -> Material.LIME_CONCRETE
@@ -61,19 +65,19 @@ interface RebarElectricBlock : RebarEntityHolderBlock {
             "outer_${node.id}", ItemDisplayBuilder()
                 .itemStack(ItemStackBuilder.of(material).addCustomModelDataString("electric_port_outer"))
                 .transformation(TransformBuilder().scale(PORT_OUTER_SCALE))
-                .build(block.location.toCenterLocation().add(face.direction.multiply(expandedRadius)))
+                .build(block.location.toCenterLocation().add(face.direction * expandedRadius + offset))
         )
         addEntity(
             "inner_${node.id}", ItemDisplayBuilder()
                 .itemStack(ItemStackBuilder.of(Material.BLACK_CONCRETE).addCustomModelDataString("electric_port_inner"))
                 .transformation(TransformBuilder().scale(PORT_INNER_SCALE))
-                .build(block.location.toCenterLocation().add(face.direction.multiply(expandedRadius + 0.001 + PORT_OUTER_SCALE / 2 - PORT_INNER_SCALE / 2)))
+                .build(block.location.toCenterLocation().add(face.direction * (expandedRadius + 0.001 + PORT_OUTER_SCALE / 2 - PORT_INNER_SCALE / 2) + offset))
         )
         val interaction = addEntity(
             "interaction_${node.id}", InteractionBuilder()
                 .width(PORT_OUTER_SCALE)
                 .height(PORT_OUTER_SCALE)
-                .build(block.location.toCenterLocation().add(face.direction.multiply(radius - 0.001)))
+                .build(block.location.toCenterLocation().add(face.direction * (radius - 0.001) + offset))
         )
         interaction.persistentDataContainer.set(NODE_KEY, RebarSerializers.UUID, node.id)
         WireConnectionService.addInteraction(interaction, node)
@@ -87,7 +91,7 @@ interface RebarElectricBlock : RebarEntityHolderBlock {
      * @return [node]
      */
     @ApiStatus.NonExtendable
-    fun <T : ElectricNode> addElectricPort(face: BlockFace, node: T): T = addElectricPort(face, node, 0.5, null)
+    fun <T : ElectricNode> addElectricPort(face: BlockFace, node: T): T = addElectricPort(face, node, 0.5, Vectors.zero, null)
 
     @ApiStatus.Internal
     companion object : Listener {
