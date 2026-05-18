@@ -18,7 +18,6 @@ public class FluidTickerTest extends AsyncTest {
     @Override
     protected void test() {
         Chunk chunk = TestUtil.getRandomChunk(false).join();
-        chunk.setForceLoaded(true);
 
         Block producerBlock = chunk.getBlock(2, 64, 5);
         FluidProducer producer = (FluidProducer) TestUtil.runSync(
@@ -56,6 +55,6 @@ public class FluidTickerTest extends AsyncTest {
                 .isGreaterThanOrEqualTo(99.5)
                 .isLessThanOrEqualTo(100.5);
 
-        chunk.setForceLoaded(false);
+        TestUtil.unloadChunk(chunk).join();
     }
 }

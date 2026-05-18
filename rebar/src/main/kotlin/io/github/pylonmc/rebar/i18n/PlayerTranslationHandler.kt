@@ -4,7 +4,9 @@ package io.github.pylonmc.rebar.i18n
 
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.i18n.RebarTranslator.Companion.translate
+import io.github.pylonmc.rebar.i18n.RebarTranslator.Companion.untranslate
 import io.github.pylonmc.rebar.item.RebarItem
+import io.github.pylonmc.rebar.resourcepack.armor.ArmorTextureEngine
 import io.github.pylonmc.rebar.util.editData
 import io.github.pylonmc.rebar.util.rebarKey
 import io.papermc.paper.datacomponent.DataComponentTypes
@@ -19,10 +21,6 @@ import org.jetbrains.annotations.ApiStatus
 
 @ApiStatus.Internal
 class PlayerTranslationHandler internal constructor(private val player: Player) {
-    companion object {
-        val FOOTER_APPENDED = rebarKey("footer_appended")
-    }
-
     fun handleItem(stack: ItemStack) {
         val rebarItem = RebarItem.fromStack(stack)
         val placeholders = rebarItem?.getPlaceholders().orEmpty()
@@ -66,6 +64,32 @@ class PlayerTranslationHandler internal constructor(private val player: Player) 
                 item
             }
             ItemContainerContents.containerContents(translated)
+        }
+
+        ArmorTextureEngine.handleItem(player, stack)
+    }
+
+    companion object {
+        val FOOTER_APPENDED = rebarKey("footer_appended")
+
+        fun resetItem(stack: ItemStack) {
+            stack.untranslate()
+
+            stack.editData(DataComponentTypes.CHARGED_PROJECTILES) { chargedProjectiles ->
+                val translated = chargedProjectiles.projectiles().map { projectile ->
+                    resetItem(projectile)
+                    projectile
+                }
+                ChargedProjectiles.chargedProjectiles(translated)
+            }
+
+            stack.editData(DataComponentTypes.CONTAINER) { container ->
+                val translated = container.contents().map { item ->
+                    resetItem(item)
+                    item
+                }
+                ItemContainerContents.containerContents(translated)
+            }
         }
     }
 }

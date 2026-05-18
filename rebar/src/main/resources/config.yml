@@ -11,6 +11,9 @@ allowed-block-errors: 5
 # The number of errors a entity can throw before it is disabled
 allowed-entity-errors: 5
 
+# When a block or entity errors, should the full error stack trace be printed in the console or just the error message & context?
+full-error-stack-traces: true
+
 # The interval (in Minecraft ticks) between fluid network ticks
 fluid-tick-interval: 5
 

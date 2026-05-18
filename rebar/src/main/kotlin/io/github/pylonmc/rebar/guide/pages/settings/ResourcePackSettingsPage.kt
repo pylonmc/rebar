@@ -2,6 +2,7 @@ package io.github.pylonmc.rebar.guide.pages.settings
 
 import io.github.pylonmc.rebar.config.RebarConfig
 import io.github.pylonmc.rebar.guide.button.setting.TogglePlayerSettingButton
+import io.github.pylonmc.rebar.nms.NmsAccessor
 import io.github.pylonmc.rebar.resourcepack.armor.ArmorTextureEngine.hasCustomArmorTextures
 import io.github.pylonmc.rebar.resourcepack.block.BlockTextureEngine.hasCustomBlockTextures
 import io.github.pylonmc.rebar.util.rebarKey
@@ -13,7 +14,10 @@ object ResourcePackSettingsPage : PlayerSettingsPage(rebarKey("resource_pack_set
             addSetting(
                 TogglePlayerSettingButton(
                     rebarKey("toggle-armor-textures"),
-                    toggle = { player -> player.hasCustomArmorTextures = !player.hasCustomArmorTextures },
+                    toggle = { player ->
+                        player.hasCustomArmorTextures = !player.hasCustomArmorTextures
+                        NmsAccessor.instance.resendEquipment(player, player)
+                    },
                     isEnabled = { player -> player.hasCustomArmorTextures },
                 )
             )

@@ -11,7 +11,7 @@ import io.github.pylonmc.rebar.fluid.FluidPointType;
 import io.github.pylonmc.rebar.fluid.RebarFluid;
 import io.github.pylonmc.rebar.fluid.VirtualFluidPoint;
 import io.github.pylonmc.rebar.test.RebarTest;
-import io.github.pylonmc.rebar.test.fluid.Fluids;
+import io.github.pylonmc.rebar.test.fluid.TestFluids;
 import lombok.Getter;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
@@ -63,8 +63,8 @@ public class FluidConsumer extends RebarBlock implements RebarFluidBufferBlock, 
 
     private RebarFluid getFluidType() {
         return Map.of(
-                LAVA_CONSUMER_KEY, Fluids.LAVA,
-                WATER_CONSUMER_KEY, Fluids.WATER
+                LAVA_CONSUMER_KEY, TestFluids.LAVA,
+                WATER_CONSUMER_KEY, TestFluids.WATER
         ).get(getKey());
     }
 }

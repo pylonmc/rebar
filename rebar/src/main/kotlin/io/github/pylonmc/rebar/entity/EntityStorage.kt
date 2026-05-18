@@ -14,6 +14,7 @@ import io.github.pylonmc.rebar.util.isFromAddon
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.bukkit.Bukkit
 import org.bukkit.NamespacedKey
 import org.bukkit.entity.Entity
 import org.bukkit.event.EventHandler
@@ -37,6 +38,7 @@ object EntityStorage : Listener {
     private val entitiesByKey: MutableMap<NamespacedKey, MutableSet<RebarEntity<*>>> = ConcurrentHashMap()
     private val entityAutosaveTasks: MutableMap<UUID, Job> = ConcurrentHashMap()
     private val whenEntityLoadsTasks: MutableMap<UUID, MutableSet<Consumer<RebarEntity<*>>>> = ConcurrentHashMap()
+    private val whenVanillaEntityLoadsTasks: MutableMap<UUID, MutableSet<Consumer<Entity>>> = ConcurrentHashMap()
 
     // Access to entities, entitiesById fields must be synchronized to prevent them
     // briefly going out of sync
@@ -130,7 +132,6 @@ object EntityStorage : Listener {
                 consumer.accept(it)
             }
         }
-
     }
 
     /**
@@ -160,6 +161,52 @@ object EntityStorage : Listener {
     @JvmStatic
     inline fun <reified T> whenEntityLoads(uuid: UUID, crossinline consumer: (T) -> Unit)
             = whenEntityLoads(uuid, T::class.java) { t -> consumer(t) }
+
+    /**
+     * Schedules a task to run when the vanilla entity with id [uuid] is loaded, or runs the task immediately
+     * if the entity is already loaded.
+     *
+     * Useful for when you don't know whether a block or one of its associated entity will be loaded first.
+     */
+    @JvmStatic
+    fun whenVanillaEntityLoads(uuid: UUID, consumer: Consumer<Entity>) {
+        val entity = Bukkit.getEntity(uuid)
+        if (entity != null) {
+            consumer.accept(entity)
+        } else {
+            whenVanillaEntityLoadsTasks.getOrPut(uuid) { mutableSetOf() }.add {
+                consumer.accept(it)
+            }
+        }
+    }
+
+    /**
+     * Schedules a task to run when the vanilla entity with id [uuid] is loaded, or runs the task immediately
+     * if the entity is already loaded.
+     *
+     * Useful for when you don't know whether a block or one of its associated entity will be loaded first.
+     */
+    @JvmStatic
+    fun <T> whenVanillaEntityLoads(uuid: UUID, clazz: Class<T>, consumer: Consumer<T>) {
+        val entity = Bukkit.getEntity(uuid)
+        if (entity != null && clazz.isInstance(entity)) {
+            consumer.accept(clazz.cast(entity))
+        } else {
+            whenVanillaEntityLoadsTasks.getOrPut(uuid) { mutableSetOf() }.add {
+                consumer.accept(if (clazz.isInstance(it)) clazz.cast(it) else throw IllegalStateException("Entity $uuid was not of expected type ${clazz.simpleName}"))
+            }
+        }
+    }
+
+    /**
+     * Schedules a task to run when the vanilla entity with id [uuid] is loaded, or runs the task immediately
+     * if the entity is already loaded
+     *
+     * Useful for when you don't know whether a block or one of its associated entity will be loaded first.
+     */
+    @JvmStatic
+    inline fun <reified T> whenVanillaEntityLoads(uuid: UUID, crossinline consumer: (T) -> Unit)
+            = whenVanillaEntityLoads(uuid, T::class.java) { t -> consumer(t) }
 
     /**
      * Returns false if the entity is not a [RebarEntity] or does not exist.
@@ -203,10 +250,21 @@ object EntityStorage : Listener {
     @EventHandler
     private fun onEntityLoad(event: EntitiesLoadEvent) {
         for (entity in event.entities) {
+            val vanillaTasks = whenVanillaEntityLoadsTasks.remove(entity.uniqueId)
+            if (vanillaTasks != null) {
+                for (task in vanillaTasks) {
+                    try {
+                        task.accept(entity)
+                    } catch (t: Throwable) {
+                        t.printStackTrace()
+                    }
+                }
+            }
+
             val rebarEntity = RebarEntity.deserialize(entity) ?: continue
             add(rebarEntity)
 
-            val tasks = whenEntityLoadsTasks[rebarEntity.uuid]
+            val tasks = whenEntityLoadsTasks.remove(rebarEntity.uuid)
             if (tasks != null) {
                 for (task in tasks) {
                     try {
@@ -215,7 +273,6 @@ object EntityStorage : Listener {
                         t.printStackTrace()
                     }
                 }
-                whenEntityLoadsTasks.remove(rebarEntity.uuid)
             }
 
             RebarEntityLoadEvent(rebarEntity).callEvent()

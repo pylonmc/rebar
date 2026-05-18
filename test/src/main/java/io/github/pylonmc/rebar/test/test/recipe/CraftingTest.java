@@ -3,7 +3,7 @@ package io.github.pylonmc.rebar.test.test.recipe;
 import io.github.pylonmc.rebar.recipe.RecipeType;
 import io.github.pylonmc.rebar.test.RebarTest;
 import io.github.pylonmc.rebar.test.base.SyncTest;
-import io.github.pylonmc.rebar.test.item.Items;
+import io.github.pylonmc.rebar.test.item.TestItems;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
@@ -18,7 +18,7 @@ public class CraftingTest extends SyncTest {
 
     @Override
     protected void test() {
-        ItemStack stickyStick = Items.STICKY_STICK_STACK;
+        ItemStack stickyStick = TestItems.STICKY_STICK_STACK;
         ItemStack diamond = new ItemStack(Material.DIAMOND);
         ItemStack nothing = new ItemStack(Material.AIR);
         ItemStack normalStick = new ItemStack(Material.STICK);

@@ -134,6 +134,10 @@ guide:
   button:
     back:
       name: "<white>Back"
+      hints: |-
+        
+        <u>Hints</u>
+        <guidearrow> <guideinsn>Shift left click</guideinsn> to go to the main menu
     item-recipes: "<white>Recipe"
     machine-recipes: "<white>Recipes made with this machine"
     search-specifiers:

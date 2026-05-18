@@ -34,6 +34,10 @@ interface NmsAccessor {
 
     fun resendInventory(player: Player)
 
+    fun resendEquipment(player: Player, entity: LivingEntity)
+
+    fun resendSlot(player: Player, slot: Int)
+
     fun resendRecipeBook(player: Player)
 
     fun serializePdc(pdc: PersistentDataContainer): Component

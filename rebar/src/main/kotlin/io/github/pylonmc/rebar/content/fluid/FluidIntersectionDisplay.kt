@@ -1,5 +1,6 @@
 package io.github.pylonmc.rebar.content.fluid
 
+import io.github.pylonmc.rebar.block.BlockStorage
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.entity.EntityStorage
 import io.github.pylonmc.rebar.entity.RebarEntity
@@ -11,7 +12,12 @@ import io.github.pylonmc.rebar.fluid.FluidManager
 import io.github.pylonmc.rebar.fluid.FluidPointType
 import io.github.pylonmc.rebar.fluid.VirtualFluidPoint
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
+import io.github.pylonmc.rebar.util.IMMEDIATE_FACES
 import io.github.pylonmc.rebar.util.rebarKey
+import io.papermc.paper.datacomponent.DataComponentTypes
+import io.papermc.paper.datacomponent.item.CustomModelData
+import jdk.internal.org.jline.keymap.KeyMap.display
+import org.bukkit.NamespacedKey
 import org.bukkit.block.Block
 import org.bukkit.entity.ItemDisplay
 import org.bukkit.event.EventPriority
@@ -63,13 +69,42 @@ class FluidIntersectionDisplay : RebarEntity<ItemDisplay>, RebarDeathEntity, Flu
         pdc.set(CONNECTED_PIPE_DISPLAYS_KEY, RebarSerializers.TAG_CONTAINER, connectedPdc)
     }
 
+    @Suppress("UnstableApiUsage")
+    fun updateItemDisplay() {
+        if (connectedPipeDisplays.isEmpty()) return
+
+        val marker = BlockStorage.getAs(FluidIntersectionMarker::class.java, entity.location.block) ?: return
+        val modelData = CustomModelData.customModelData()
+        modelData.addString("fluid_point_display:${FluidPointType.INTERSECTION.name.lowercase()}")
+        modelData.addString("fluid_point_display:${marker.pipe.key}")
+
+        val from = this.entity.location
+        for (face in IMMEDIATE_FACES) {
+            var hasFace = false
+            for (displayId in this.connectedPipeDisplays) {
+                val display = EntityStorage.getAs(FluidPipeDisplay::class.java, displayId) ?: continue
+                val towards = display.entity.location.subtract(from).toVector().normalize()
+                if (face.direction == towards) {
+                    hasFace = true
+                    break
+                }
+            }
+            modelData.addString("${face.name.lowercase()}=$hasFace")
+        }
+        this.entity.setItemStack(this.entity.itemStack.apply {
+            setData(DataComponentTypes.CUSTOM_MODEL_DATA, modelData)
+        })
+    }
+
     override fun connectPipeDisplay(uuid: UUID) {
         this.connectedPipeDisplays.add(uuid)
+        updateItemDisplay()
     }
 
     override fun disconnectPipeDisplay(uuid: UUID) {
         check(uuid in this.connectedPipeDisplays) { "$uuid is not connected" }
         this.connectedPipeDisplays.remove(uuid)
+        updateItemDisplay()
     }
 
     override fun onDeath(event: RebarEntityDeathEvent, priority: EventPriority) {

@@ -11,7 +11,9 @@ import kotlinx.coroutines.launch
 import net.kyori.adventure.text.Component
 import net.minecraft.core.registries.Registries
 import net.minecraft.nbt.TextComponentTagVisitor
+import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket
 import net.minecraft.network.protocol.game.ClientboundPlaceGhostRecipePacket
+import net.minecraft.network.protocol.game.ClientboundSetEquipmentPacket
 import net.minecraft.resources.ResourceKey
 import net.minecraft.server.MinecraftServer
 import net.minecraft.world.inventory.AbstractCraftingMenu
@@ -40,6 +42,8 @@ import org.bukkit.persistence.PersistentDataContainer
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.coroutines.EmptyCoroutineContext
+import com.mojang.datafixers.util.Pair as NmsPair
+import net.minecraft.world.entity.EquipmentSlot as NmsEquipmentSlot
 
 @Suppress("unused")
 object NmsAccessorImpl : NmsAccessor {
@@ -73,12 +77,36 @@ object NmsAccessorImpl : NmsAccessor {
     }
 
     override fun resendInventory(player: Player) {
+        resendEquipment(player, player)
         val player = (player as CraftPlayer).handle
         val inventory = player.containerMenu
         for (slot in 0..45) {
             val item = inventory.getSlot(slot).item
             player.containerSynchronizer.sendSlotChange(inventory, slot, item)
         }
+    }
+
+    override fun resendEquipment(player: Player, entity: LivingEntity) {
+        val player = (player as CraftPlayer).handle
+        val entity = (entity as CraftLivingEntity).handle
+        player.connection.send(ClientboundSetEquipmentPacket(entity.id, listOf(
+            NmsPair.of(NmsEquipmentSlot.HEAD, entity.getItemBySlot(NmsEquipmentSlot.HEAD)),
+            NmsPair.of(NmsEquipmentSlot.CHEST, entity.getItemBySlot(NmsEquipmentSlot.CHEST)),
+            NmsPair.of(NmsEquipmentSlot.LEGS, entity.getItemBySlot(NmsEquipmentSlot.LEGS)),
+            NmsPair.of(NmsEquipmentSlot.FEET, entity.getItemBySlot(NmsEquipmentSlot.FEET)),
+        )))
+    }
+
+    override fun resendSlot(player: Player, slot: Int) {
+        val player = (player as CraftPlayer).handle
+        player.connection.send(
+            ClientboundContainerSetSlotPacket(
+                player.inventoryMenu.containerId,
+                player.inventoryMenu.incrementStateId(),
+                slot,
+                player.inventoryMenu.getSlot(slot).item
+            )
+        )
     }
 
     override fun resendRecipeBook(player: Player) {

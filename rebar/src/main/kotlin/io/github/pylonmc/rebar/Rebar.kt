@@ -30,6 +30,7 @@ import io.github.pylonmc.rebar.event.RebarConfigurableRecipesLoadedEvent
 import io.github.pylonmc.rebar.fluid.placement.FluidPipePlacementService
 import io.github.pylonmc.rebar.guide.pages.base.PagedGuidePage
 import io.github.pylonmc.rebar.guide.pages.base.TabbedGuidePage
+import io.github.pylonmc.rebar.i18n.CreativeActionTranslationHandler
 import io.github.pylonmc.rebar.i18n.RebarTranslator
 import io.github.pylonmc.rebar.item.RebarInventoryTicker
 import io.github.pylonmc.rebar.item.RebarItem
@@ -45,8 +46,10 @@ import io.github.pylonmc.rebar.recipe.RecipeType
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.resourcepack.armor.ArmorTextureEngine
 import io.github.pylonmc.rebar.util.delayTicks
+import io.github.pylonmc.rebar.item.base.VanillaAnvilItem
 import io.github.pylonmc.rebar.util.mergeGlobalConfig
 import io.github.pylonmc.rebar.waila.Waila
+import io.github.pylonmc.rebar.waila.WailaPlaceholders
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder
 import io.papermc.paper.ServerBuildInfo
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents
@@ -66,6 +69,7 @@ import org.bukkit.entity.BlockDisplay
 import org.bukkit.entity.Display
 import org.bukkit.entity.FallingBlock
 import org.bukkit.entity.ItemDisplay
+import org.bukkit.inventory.PlayerInventory
 import org.bukkit.permissions.Permission
 import org.bukkit.permissions.PermissionDefault
 import org.bukkit.plugin.java.JavaPlugin
@@ -164,6 +168,8 @@ object Rebar : JavaPlugin(), RebarAddon {
         pm.registerEvents(RebarTickingEntity, this)
         pm.registerEvents(ChunkScope, this)
         pm.registerEvents(PlayerScope, this)
+        pm.registerEvents(CreativeActionTranslationHandler, this)
+        pm.registerEvents(RebarJoinHandler, this)
         ConfettiCreeperListener.register(this, pm)
 
         // Rebar Blocks
@@ -198,6 +204,7 @@ object Rebar : JavaPlugin(), RebarAddon {
         RebarFlowerPot.register(this, pm)
         RebarVanillaContainerBlock.register(this, pm)
         RebarHopper.register(this, pm)
+        RebarFire.register(this, pm)
         RebarCargoBlock.register(this, pm)
         RebarCopperBlock.register(this, pm)
         RebarEntityChangedBlock.register(this, pm)
@@ -217,7 +224,10 @@ object Rebar : JavaPlugin(), RebarAddon {
         RebarSplashPotion.register(this, pm)
         RebarTool.register(this, pm)
         RebarWeapon.register(this, pm)
+        VanillaAnvilItem.register(this, pm)
         VanillaCookingFuel.register(this, pm)
+        RebarPickupable.register(this, pm)
+        RebarDroppable.register(this, pm)
 
         // Rebar Entities
         EntityListener.register(this, pm)
@@ -257,10 +267,9 @@ object Rebar : JavaPlugin(), RebarAddon {
 
         if (RebarConfig.WailaConfig.ENABLED) {
             pm.registerEvents(Waila, this)
-        }
-
-        if (RebarConfig.ArmorTextureConfig.ENABLED) {
-            packetEvents.eventManager.registerListener(ArmorTextureEngine, PacketListenerPriority.HIGHEST)
+            if (pm.getPlugin("PlaceholderAPI") != null) {
+                WailaPlaceholders.register()
+            }
         }
 
         if (RebarConfig.BlockTextureConfig.ENABLED) {

@@ -150,7 +150,7 @@ open class RebarItem(val stack: ItemStack) : Keyed {
         @Suppress("UNCHECKED_CAST")
         fun <T> fromStack(stack: ItemStack?, clazz: Class<T>): T? {
             val schema = RebarItemSchema.fromStack(stack) ?: return null
-            if (!clazz.isAssignableFrom(schema.itemClass)) return null
+            if (!schema.isType(clazz)) return null
             return schema.itemClass.cast(schema.loadConstructor.invoke(stack)) as T?
         }
 
@@ -176,7 +176,7 @@ open class RebarItem(val stack: ItemStack) : Keyed {
         @Contract("null, _ -> false")
         fun isRebarItem(stack: ItemStack?, clazz: Class<*>): Boolean {
             val schema = RebarItemSchema.fromStack(stack) ?: return false
-            return clazz.isAssignableFrom(schema.itemClass)
+            return schema.isType(clazz)
         }
 
         /**

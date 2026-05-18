@@ -19,12 +19,17 @@ public class BlockEventErrorTest extends GameTest {
         super(new GameTestConfig.Builder(new NamespacedKey(RebarTest.instance(), "block_event_error_test"))
                 .size(1)
                 .setUp(test -> {
+                    RebarConfig.FULL_ERROR_STACK_TRACES = false;
                     Block block = BlockStorage.placeBlock(test.location(), BlockEventError.KEY).getBlock();
                     Entity theRinger = test.location().getWorld().spawn(test.location().clone().add(1, 0, 0), Skeleton.class);
                     for(int i = 0; i < RebarConfig.ALLOWED_BLOCK_ERRORS + 1; i++){
                         new BellRingEvent(block, BlockFace.EAST, theRinger).callEvent();
                     }
                     test.succeedWhen(() -> BlockStorage.get(block) instanceof PhantomBlock);
+                })
+                .cleanup(test -> {
+                    BlockStorage.breakBlock(test.location());
+                    RebarConfig.FULL_ERROR_STACK_TRACES = true;
                 })
                 .build()
         );

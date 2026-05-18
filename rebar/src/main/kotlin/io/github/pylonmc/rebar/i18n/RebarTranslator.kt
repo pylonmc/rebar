@@ -14,12 +14,14 @@ import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.util.editData
 import io.github.pylonmc.rebar.util.mergeGlobalConfig
 import io.github.pylonmc.rebar.util.plainText
+import io.github.pylonmc.rebar.util.rebarKey
 import io.github.pylonmc.rebar.util.withArguments
 import io.papermc.paper.datacomponent.DataComponentTypes
 import io.papermc.paper.datacomponent.item.ItemLore
 import io.papermc.paper.datacomponent.item.ResolvableProfile
 import net.kyori.adventure.key.Key
 import net.kyori.adventure.text.*
+import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.Style
 import net.kyori.adventure.translation.GlobalTranslator
 import net.kyori.adventure.translation.Translator
@@ -137,25 +139,11 @@ class RebarTranslator private constructor(private val addon: RebarAddon) : Trans
 
         private val wordStartRegex = Regex("""(?<=\s)""")
 
-        @JvmStatic
-        fun wrapText(text: String, limit: Int): List<String> {
-            if (text.length <= limit) return listOf(text)
-            val words = text.split(wordStartRegex)
-            val lines = mutableListOf<String>()
-            var currentLine = StringBuilder()
+        private val originalNameKey = rebarKey("translation_original_name")
+        private val originalLoreKey = rebarKey("translation_original_lore")
+        private val originalTypeKey = rebarKey("translation_original_type")
 
-            for (word in words) {
-                if (currentLine.length + word.length > limit) {
-                    lines.add(currentLine.toString())
-                    currentLine = StringBuilder()
-                }
-                currentLine.append(word)
-            }
-            if (currentLine.isNotEmpty()) {
-                lines.add(currentLine.toString())
-            }
-            return lines
-        }
+        private val loreType = RebarSerializers.LIST.listTypeFrom(RebarSerializers.COMPONENT)
 
         @JvmStatic
         @get:JvmName("getTranslatorForAddon")
@@ -185,6 +173,8 @@ class RebarTranslator private constructor(private val addon: RebarAddon) : Trans
             editData(DataComponentTypes.ITEM_NAME) {
                 if (!isRebarOrAddon(it)) return@editData it
 
+                editPersistentDataContainer { pdc -> pdc.set(originalNameKey, RebarSerializers.COMPONENT, it) }
+
                 if (!persistentDataContainer.getOrDefault(
                         ItemStackBuilder.disableNameHacksKey,
                         RebarSerializers.BOOLEAN,
@@ -209,6 +199,7 @@ class RebarTranslator private constructor(private val addon: RebarAddon) : Trans
                         if (!oldStack.isDataOverridden(DataComponentTypes.ITEM_MODEL)) {
                             editData(DataComponentTypes.ITEM_MODEL) { oldStack.type.key }
                         }
+                        editPersistentDataContainer { pdc -> pdc.set(originalTypeKey, RebarSerializers.MATERIAL, oldStack.type) }
                     }
                 }
 
@@ -218,14 +209,17 @@ class RebarTranslator private constructor(private val addon: RebarAddon) : Trans
                 }
 
                 val translated = GlobalTranslator.render(it.withArguments(concatenatedArguments), locale)
-                if (translated is TranslatableComponent && translated.fallback() != null) {
+                val result = if (translated is TranslatableComponent && translated.fallback() != null) {
                     Component.text(translated.fallback()!!)
                 } else {
                     translated
                 }
 
+                // apply white color if not set
+                if (result.style().color() == null) result.color(NamedTextColor.WHITE) else result
             }
             editData(DataComponentTypes.LORE) { lore ->
+                editPersistentDataContainer { pdc -> pdc.set(originalLoreKey, loreType, lore.lines())}
                 val newLore = lore.lines().flatMap { line ->
                     if (!isRebarOrAddon(line)) return@flatMap listOf(line)
                     val concatenatedArguments: MutableList<TranslationArgumentLike> = arguments.toMutableList()
@@ -239,6 +233,34 @@ class RebarTranslator private constructor(private val addon: RebarAddon) : Trans
                     }
                 }
                 ItemLore.lore(newLore)
+            }
+        }
+
+        /**
+         * Reverts any changes made to the item by the [translate] method
+         */
+        @JvmStatic
+        @JvmName("translateItem")
+        @Suppress("UnstableApiUsage")
+        fun ItemStack.untranslate() {
+            val originalName = persistentDataContainer.get(originalNameKey, RebarSerializers.COMPONENT)
+            val originalLore = persistentDataContainer.get(originalLoreKey, loreType)
+            val originalType = persistentDataContainer.get(originalTypeKey, RebarSerializers.MATERIAL)
+            if (originalName != null) {
+                setData(DataComponentTypes.ITEM_NAME, originalName)
+                editPersistentDataContainer { pdc -> pdc.remove(originalNameKey) }
+            }
+            if (originalLore != null) {
+                setData(DataComponentTypes.LORE, ItemLore.lore(originalLore))
+                editPersistentDataContainer { pdc -> pdc.remove(originalLoreKey) }
+            }
+            if (originalType != null) {
+                val oldStack = clone()
+                @Suppress("DEPRECATION")
+                type = originalType
+                check(type == originalType) { "ItemStack.setType no longer works" }
+                copyDataFrom(oldStack) { true }
+                editPersistentDataContainer { pdc -> pdc.remove(originalTypeKey) }
             }
         }
 

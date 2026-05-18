@@ -20,6 +20,9 @@ allprojects {
         maven("https://repo.codemc.io/repository/maven-releases/") {
             name = "CodeMC"
         }
+        maven("https://repo.extendedclip.com/releases/") {
+            name = "PlaceholderAPI"
+        }
     }
 }
 

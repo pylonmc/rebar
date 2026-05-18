@@ -18,7 +18,6 @@ public class FluidCyclicConnectionsTest extends AsyncTest {
     @Override
     protected void test() {
         Chunk chunk = TestUtil.getRandomChunk(false).join();
-        chunk.setForceLoaded(true);
 
         Block producerBlock = chunk.getBlock(2, 64, 5);
         FluidProducer producer = (FluidProducer) TestUtil.runSync(
@@ -67,6 +66,6 @@ public class FluidCyclicConnectionsTest extends AsyncTest {
                 .isNotEqualTo(producer.getPoint().getSegment())
                 .isNotEqualTo(connector.getPoint().getSegment());
 
-        chunk.setForceLoaded(false);
+        TestUtil.unloadChunk(chunk).join();
     }
 }
