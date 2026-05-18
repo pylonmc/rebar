@@ -52,6 +52,10 @@ class RebarItemSchema @JvmOverloads internal constructor(
      */
     fun createNewRebarItem(): RebarItem = itemClass.cast(loadConstructor.invoke(createNewItemStack()))
 
+    fun <T> isType(clazz: Class<T>): Boolean {
+        return clazz.isAssignableFrom(itemClass)
+    }
+
     val research: Research?
         get() = RebarRegistry.RESEARCHES.find { key in it.unlocks }
 

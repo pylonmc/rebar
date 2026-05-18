@@ -34,7 +34,7 @@ sealed class CookingRecipeWrapper(final override val recipe: CookingRecipe<*>) :
         )
         .addIngredient('#', GuiItems.backgroundBlack())
         .addIngredient('b', ItemStack(displayBlock))
-        .addIngredient('i', ItemButton.from(recipe.inputChoice))
+        .addIngredient('i', ItemButton.of(recipe.inputChoice))
         .addIngredient(
             'f', GuiItems.progressCyclingItem(
                 recipe.cookingTime,
@@ -47,7 +47,7 @@ sealed class CookingRecipeWrapper(final override val recipe: CookingRecipe<*>) :
                     )
             )
         )
-        .addIngredient('o', ItemButton.from(recipe.result))
+        .addIngredient('o', ItemButton.of(recipe.result))
         .build()
 }
 

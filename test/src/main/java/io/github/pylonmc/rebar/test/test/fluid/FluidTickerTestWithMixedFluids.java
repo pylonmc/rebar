@@ -16,7 +16,6 @@ public class FluidTickerTestWithMixedFluids extends AsyncTest {
     @Override
     protected void test() {
         Chunk chunk = TestUtil.getRandomChunk(false).join();
-        chunk.setForceLoaded(true);
 
         Block producerBlock1 = chunk.getBlock(2, 64, 4);
         FluidProducer producer1 = (FluidProducer) TestUtil.runSync(
@@ -52,6 +51,6 @@ public class FluidTickerTestWithMixedFluids extends AsyncTest {
 
         TestUtil.waitUntil(() -> consumer1.getAmount() == 100 && consumer2.getAmount() == 100).join();
 
-        chunk.setForceLoaded(false);
+        TestUtil.unloadChunk(chunk).join();
     }
 }

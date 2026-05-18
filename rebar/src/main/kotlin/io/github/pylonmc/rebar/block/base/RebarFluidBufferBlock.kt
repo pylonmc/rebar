@@ -94,7 +94,7 @@ interface RebarFluidBufferBlock : RebarFluidBlock {
      * the corresponding buffer.
      */
     fun canSetFluid(fluid: RebarFluid, amount: Double): Boolean
-            = amount >= 0 && amount <= fluidData(fluid).capacity + FLUID_EPSILON
+            = fluid in fluidBuffers && amount >= 0 && amount <= fluidData(fluid).capacity + FLUID_EPSILON
 
     /**
      * Sets a fluid buffer only if the new amount of fluid is greater

@@ -384,7 +384,7 @@ internal object BlockListener : MultiListener {
         } else {
             Rebar.logger.severe("Error when handling block(${block.key}, ${block.block.location}) ticking: ${e.localizedMessage}")
         }
-        e.printStackTrace()
+        if (RebarConfig.FULL_ERROR_STACK_TRACES) e.printStackTrace()
         blockErrMap[block] = blockErrMap[block]?.plus(1) ?: 1
         if (blockErrMap[block]!! > RebarConfig.ALLOWED_BLOCK_ERRORS) {
             BlockStorage.makePhantom(block)

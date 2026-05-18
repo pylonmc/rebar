@@ -217,7 +217,7 @@ class ItemButton @JvmOverloads constructor(
         }
 
         @JvmStatic
-        fun from(stack: ItemStack?): Item {
+        fun of(stack: ItemStack?): Item {
             if (stack == null) {
                 return EMPTY
             }
@@ -226,7 +226,7 @@ class ItemButton @JvmOverloads constructor(
         }
 
         @JvmStatic
-        fun from(stack: ItemStack?, preDisplayDecorator: (ItemStack, Player) -> ItemStack):  Item {
+        fun of(stack: ItemStack?, preDisplayDecorator: (ItemStack, Player) -> ItemStack): Item {
             if (stack == null) {
                 return EMPTY
             }
@@ -235,7 +235,7 @@ class ItemButton @JvmOverloads constructor(
         }
 
         @JvmStatic
-        fun from(input: RecipeInput.Item?): Item {
+        fun of(input: RecipeInput.Item?): Item {
             if (input == null) {
                 return EMPTY
             }
@@ -244,10 +244,29 @@ class ItemButton @JvmOverloads constructor(
         }
 
         @JvmStatic
-        fun from(choice: RecipeChoice?): Item = when (choice) {
+        fun of(choice: RecipeChoice?): Item = when (choice) {
             is RecipeChoice.MaterialChoice -> ItemButton(choice.choices.map(::ItemStack))
             is RecipeChoice.ExactChoice -> ItemButton(choice.choices)
             else -> EMPTY
         }
+
+        @JvmStatic @JvmOverloads
+        fun of(stacks: List<ItemStack>, preDisplayDecorator: (ItemStack, Player) -> ItemStack = { stack, _ -> stack })
+                = ItemButton(stacks, preDisplayDecorator)
+        /**
+         * @param stacks The items to display. If multiple are provided, the button will automatically
+         * cycle through all of them. You must supply at least one item
+         */
+        @JvmStatic
+        fun of(vararg stacks: ItemStack)
+                = ItemButton(stacks.toList())
+
+        /**
+         * @param stacks The items to display. If multiple are provided, the button will automatically
+         * cycle through all of them. You must supply at least one item
+         */
+        @JvmStatic
+        fun of(stack: ItemStack, preDisplayDecorator: (ItemStack, Player) -> ItemStack)
+                = ItemButton(stack, preDisplayDecorator)
     }
 }

@@ -314,7 +314,7 @@ fun fromMiniMessage(string: String): Component = customMiniMessage.deserialize(s
  * @param targetItem The item to find. Items will be compared by their Rebar ID
  * @return The slot containing the item, or null if no item was found
  */
-fun findRebarItemInInventory(inventory: Inventory, targetItem: RebarItem): Int? {
+fun findRebarItemInInventory(inventory: Inventory, targetItem: RebarItemSchema): Int? {
     for (i in 0..<inventory.size) {
         val item = inventory.getItem(i)?.let {
             RebarItemSchema.fromStack(it)
@@ -329,7 +329,7 @@ fun findRebarItemInInventory(inventory: Inventory, targetItem: RebarItem): Int? 
 @JvmSynthetic
 inline fun <reified T> ItemStack?.isRebarAndIsNot(): Boolean {
     val schema = RebarItemSchema.fromStack(this)
-    return schema != null && !T::class.java.isAssignableFrom(schema.itemClass)
+    return schema != null && !schema.isType(T::class.java)
 }
 
 @JvmSynthetic

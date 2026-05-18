@@ -3,6 +3,7 @@ package io.github.pylonmc.rebar.test.block;
 import io.github.pylonmc.rebar.block.RebarBlock;
 import io.github.pylonmc.rebar.block.base.RebarTickingBlock;
 import io.github.pylonmc.rebar.block.context.BlockCreateContext;
+import io.github.pylonmc.rebar.config.RebarConfig;
 import io.github.pylonmc.rebar.test.RebarTest;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;

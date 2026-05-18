@@ -2,8 +2,6 @@
 
 package io.github.pylonmc.rebar
 
-import com.github.retrooper.packetevents.PacketEvents
-import com.github.retrooper.packetevents.event.PacketListenerPriority
 import io.github.pylonmc.rebar.addon.RebarAddon
 import io.github.pylonmc.rebar.async.BukkitMainThreadDispatcher
 import io.github.pylonmc.rebar.async.ChunkScope
@@ -31,6 +29,7 @@ import io.github.pylonmc.rebar.event.RebarConfigurableRecipesLoadedEvent
 import io.github.pylonmc.rebar.fluid.placement.FluidPipePlacementService
 import io.github.pylonmc.rebar.guide.pages.base.PagedGuidePage
 import io.github.pylonmc.rebar.guide.pages.base.TabbedGuidePage
+import io.github.pylonmc.rebar.i18n.CreativeActionTranslationHandler
 import io.github.pylonmc.rebar.i18n.RebarTranslator
 import io.github.pylonmc.rebar.item.RebarInventoryTicker
 import io.github.pylonmc.rebar.item.RebarItem
@@ -47,19 +46,16 @@ import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.resourcepack.armor.ArmorTextureEngine
 import io.github.pylonmc.rebar.util.PlayerInput
 import io.github.pylonmc.rebar.util.delayTicks
+import io.github.pylonmc.rebar.item.base.VanillaAnvilItem
 import io.github.pylonmc.rebar.util.mergeGlobalConfig
 import io.github.pylonmc.rebar.waila.Waila
-import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder
+import io.github.pylonmc.rebar.waila.WailaPlaceholders
 import io.papermc.paper.ServerBuildInfo
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import me.tofaa.entitylib.APIConfig
-import me.tofaa.entitylib.EntityIdProvider
-import me.tofaa.entitylib.EntityLib
-import me.tofaa.entitylib.spigot.SpigotEntityLibPlatform
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
@@ -70,6 +66,7 @@ import org.bukkit.entity.ItemDisplay
 import org.bukkit.permissions.Permission
 import org.bukkit.permissions.PermissionDefault
 import org.bukkit.plugin.java.JavaPlugin
+import org.jetbrains.annotations.ApiStatus
 import xyz.xenondevs.invui.InvUI
 import xyz.xenondevs.invui.i18n.Languages
 import java.util.*
@@ -84,18 +81,15 @@ object Rebar : JavaPlugin(), RebarAddon {
      * Ticks once per tick
      */
     @get:JvmSynthetic
-    internal val mainThreadDispatcher by lazy { BukkitMainThreadDispatcher(this, 1) }
+    @get:ApiStatus.Internal
+    val mainThreadDispatcher by lazy { BukkitMainThreadDispatcher(this, 1) }
 
     /**
      * By default, dispatches on the main thread
      */
     @get:JvmSynthetic
-    internal val scope by lazy { CoroutineScope(SupervisorJob() + mainThreadDispatcher) }
-
-    override fun onLoad() {
-        PacketEvents.setAPI(SpigotPacketEventsBuilder.build(this))
-        PacketEvents.getAPI().load()
-    }
+    @get:ApiStatus.Internal
+    val scope by lazy { CoroutineScope(SupervisorJob() + mainThreadDispatcher) }
 
     override fun onEnable() {
         val start = System.currentTimeMillis()
@@ -114,17 +108,6 @@ object Rebar : JavaPlugin(), RebarAddon {
 
         InvUI.getInstance().setPlugin(this)
         Languages.getInstance().enableServerSideTranslations(false) // we do our own
-
-        val packetEvents = PacketEvents.getAPI()
-        packetEvents.init()
-
-        val entityLibPlatform = SpigotEntityLibPlatform(this)
-        val entityLibSettings = APIConfig(packetEvents).tickTickables()
-        EntityLib.init(entityLibPlatform, entityLibSettings)
-        entityLibPlatform.entityIdProvider = EntityIdProvider { _, _ ->
-            @Suppress("DEPRECATION")
-            Bukkit.getUnsafe().nextEntityId()
-        }
 
         saveDefaultConfig()
         // Add any keys that are missing from global config - saveDefaultConfig will not do anything if config already present
@@ -166,6 +149,7 @@ object Rebar : JavaPlugin(), RebarAddon {
         pm.registerEvents(RebarTickingEntity, this)
         pm.registerEvents(ChunkScope, this)
         pm.registerEvents(PlayerScope, this)
+        pm.registerEvents(CreativeActionTranslationHandler, this)
         pm.registerEvents(RebarElectricBlock, this)
         pm.registerEvents(RebarElectricConsumerBlock, this)
         pm.registerEvents(RebarElectricProducerBlock, this)
@@ -206,26 +190,31 @@ object Rebar : JavaPlugin(), RebarAddon {
         RebarFlowerPot.register(this)
         RebarVanillaContainerBlock.register(this)
         RebarHopper.register(this)
+        RebarFire.register(this, pm)
         RebarCargoBlock.register(this)
         RebarCopperBlock.register(this)
         RebarEntityChangedBlock.register(this)
 
         // Rebar Items
-        RebarArrow.register(this)
-        RebarBlockInteractor.register(this)
-        RebarBow.register(this)
-        RebarBrewingStandFuel.register(this)
-        RebarBucket.register(this)
-        RebarConsumable.register(this)
-        RebarDispensable.register(this)
-        RebarInteractor.register(this)
-        RebarItemDamageable.register(this)
-        RebarItemEntityInteractor.register(this)
-        RebarLingeringPotion.register(this)
-        RebarSplashPotion.register(this)
-        RebarTool.register(this)
-        RebarWeapon.register(this)
-        VanillaCookingFuel.register(this)
+        RebarArrow.register(this, pm)
+        RebarBlockInteractor.register(this, pm)
+        RebarBow.register(this, pm)
+        RebarBrewingStandFuel.register(this, pm)
+        RebarBucket.register(this, pm)
+        RebarConsumable.register(this, pm)
+        RebarDispensable.register(this, pm)
+        RebarInteractor.register(this, pm)
+        RebarItemDamageable.register(this, pm)
+        RebarItemEntityInteractor.register(this, pm)
+        RebarJoinHandler.register(this, pm)
+        RebarLingeringPotion.register(this, pm)
+        RebarSplashPotion.register(this, pm)
+        RebarTool.register(this, pm)
+        RebarWeapon.register(this, pm)
+        VanillaAnvilItem.register(this, pm)
+        VanillaCookingFuel.register(this, pm)
+        RebarPickupable.register(this, pm)
+        RebarDroppable.register(this, pm)
 
         // Rebar Entities
         EntityListener.register(this)
@@ -265,10 +254,9 @@ object Rebar : JavaPlugin(), RebarAddon {
 
         if (RebarConfig.WailaConfig.ENABLED) {
             pm.registerEvents(Waila, this)
-        }
-
-        if (RebarConfig.ArmorTextureConfig.ENABLED) {
-            packetEvents.eventManager.registerListener(ArmorTextureEngine, PacketListenerPriority.HIGHEST)
+            if (pm.getPlugin("PlaceholderAPI") != null) {
+                WailaPlaceholders.register()
+            }
         }
 
         if (RebarConfig.BlockTextureConfig.ENABLED) {
@@ -403,7 +391,6 @@ object Rebar : JavaPlugin(), RebarAddon {
 
     override fun onDisable() {
         // Note: At this point all listeners have been unregistered
-        PacketEvents.getAPI().terminate()
         RebarMetrics.save()
         scope.cancel()
     }

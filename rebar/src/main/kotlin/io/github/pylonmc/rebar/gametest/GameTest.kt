@@ -127,6 +127,7 @@ class GameTest(
                 } catch (e: Throwable) {
                     result = GameTestFailException(gameTest, "An exception occurred", e)
                 }
+                gameTest.config.cleanup.accept(gameTest)
                 for (entity in gameTest.world.getNearbyEntities(gameTest.boundingBox)) {
                     if (entity !is Player) {
                         entity.remove()

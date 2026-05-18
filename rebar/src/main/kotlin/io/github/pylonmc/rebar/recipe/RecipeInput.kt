@@ -24,12 +24,12 @@ sealed interface RecipeInput {
             representativeItems.first()
         }
 
-        fun matches(itemStack: ItemStack): Boolean {
-            if (itemStack.amount < amount) return false
-            return contains(itemStack)
+        fun matches(itemStack: ItemStack?): Boolean {
+            if (itemStack == null || itemStack.amount < amount) return false
+            return matchesIgnoringAmount(itemStack)
         }
 
-        operator fun contains(itemStack: ItemStack?): Boolean = itemStack != null && ItemTypeWrapper(itemStack) in items
+        fun matchesIgnoringAmount(itemStack: ItemStack?): Boolean = itemStack != null && ItemTypeWrapper(itemStack) in items
     }
 
     @JvmRecord
@@ -42,8 +42,8 @@ sealed interface RecipeInput {
             require(fluids.isNotEmpty()) { "Fluids set must not be empty" }
         }
 
-        fun matches(fluid: RebarFluid, amountMillibuckets: Double): Boolean {
-            if (amountMillibuckets < this.amountMillibuckets) return false
+        fun matches(fluid: RebarFluid?, amountMillibuckets: Double): Boolean {
+            if (fluid == null || amountMillibuckets < this.amountMillibuckets) return false
             return contains(fluid)
         }
 

@@ -137,7 +137,7 @@ class FluidPipeDisplay : RebarEntity<ItemDisplay> {
                     .buildForItemDisplay()
                 )
                 .itemStack(ItemStackBuilder.of(pipe.material)
-                    .addCustomModelDataString("fluid_pipe_display:${pipe.key.key}")
+                    .addCustomModelDataString("fluid_pipe_display:${pipe.key}")
                     .addCustomModelDataString("fluid_pipe_length:${pipeAmount}")
                 )
                 .build(centerLocation)

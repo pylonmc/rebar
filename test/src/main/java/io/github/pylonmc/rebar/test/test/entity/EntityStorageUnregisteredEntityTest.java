@@ -80,5 +80,6 @@ public class EntityStorageUnregisteredEntityTest extends AsyncTest {
         assertThat(EntityStorage.get(uuid))
                 .isNotNull()
                 .isInstanceOf(UnregisteredEntity.class);
+        TestUtil.unloadChunk(chunk).join();
     }
 }

@@ -17,7 +17,6 @@ public class FluidFlowRateTest extends AsyncTest {
     @Override
     protected void test() {
         Chunk chunk = TestUtil.getRandomChunk(false).join();
-        chunk.setForceLoaded(true);
 
         Block waterProducerBlock = chunk.getBlock(2, 64, 5);
         FluidProducer waterProducer = (FluidProducer) TestUtil.runSync(
@@ -53,6 +52,6 @@ public class FluidFlowRateTest extends AsyncTest {
                 .isGreaterThan(lavaConsumer.getAmount() - 0.101)
                 .isLessThan(lavaConsumer.getAmount() + 0.101);
 
-        chunk.setForceLoaded(false);
+        TestUtil.unloadChunk(chunk).join();
     }
 }

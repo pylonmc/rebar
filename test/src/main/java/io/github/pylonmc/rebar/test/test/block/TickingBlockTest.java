@@ -1,6 +1,7 @@
 package io.github.pylonmc.rebar.test.test.block;
 
 import io.github.pylonmc.rebar.block.BlockStorage;
+import io.github.pylonmc.rebar.config.RebarConfig;
 import io.github.pylonmc.rebar.gametest.GameTestConfig;
 import io.github.pylonmc.rebar.test.RebarTest;
 import io.github.pylonmc.rebar.test.base.GameTest;
@@ -17,6 +18,7 @@ public class TickingBlockTest extends GameTest {
 
                     test.succeedWhen(() -> BlockStorage.getAs(TickingBlock.class, test.location()).ticks >= 5);
                 })
+                .cleanup(test -> BlockStorage.breakBlock(test.location()))
                 .build());
     }
 }

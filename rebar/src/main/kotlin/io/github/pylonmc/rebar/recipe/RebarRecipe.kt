@@ -16,7 +16,7 @@ interface RebarRecipe : Keyed {
 
     fun isInput(stack: ItemStack) = inputs.any { input ->
         when (input) {
-            is RecipeInput.Item -> stack in input
+            is RecipeInput.Item -> input.matchesIgnoringAmount(stack)
             else -> false
         }
     }

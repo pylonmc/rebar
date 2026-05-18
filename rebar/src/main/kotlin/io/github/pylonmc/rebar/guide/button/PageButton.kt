@@ -28,7 +28,7 @@ open class PageButton(val stack: ItemStack, val page: GuidePage) : GuideButton()
 
     constructor(material: Material, page: GuidePage) : this(ItemStack(material), page)
 
-    override fun getItemProvider(viewer: Player): ItemProvider = ItemStackBuilder.gui(stack, "${rebarKey("guide_page")}:${page.key}")
+    override fun getItemProvider(viewer: Player): ItemProvider = ItemStackBuilder.gui(stack.clone(), "${rebarKey("guide_page")}:${page.key}")
         .name(Component.translatable("${page.key.namespace}.guide.page.${page.key.key}"))
         .clearLore()
         .lore(Component.translatable("${page.key.namespace}.guide.button.${page.key.key}.lore", ""))

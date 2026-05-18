@@ -52,7 +52,7 @@ abstract class SearchPage(key: NamespacedKey) : SimpleStaticGuidePage(key) {
         val upperGui = Gui.builder()
             .setStructure("# S #")
             .addIngredient('S', searchSpecifiersStack)
-            .addIngredient('#', GuiItems.background(search))
+            .addIngredient('#', GuiItems.background())
             .build()
         loadCurrentPage(player, lowerGui)
 

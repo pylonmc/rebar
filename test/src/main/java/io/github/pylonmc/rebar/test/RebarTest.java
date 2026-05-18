@@ -1,12 +1,13 @@
 package io.github.pylonmc.rebar.test;
 
 import io.github.pylonmc.rebar.addon.RebarAddon;
+import io.github.pylonmc.rebar.config.RebarConfig;
 import io.github.pylonmc.rebar.test.base.Test;
 import io.github.pylonmc.rebar.test.base.TestResult;
-import io.github.pylonmc.rebar.test.block.Blocks;
-import io.github.pylonmc.rebar.test.entity.Entities;
-import io.github.pylonmc.rebar.test.fluid.Fluids;
-import io.github.pylonmc.rebar.test.item.Items;
+import io.github.pylonmc.rebar.test.block.TestBlocks;
+import io.github.pylonmc.rebar.test.entity.TestEntities;
+import io.github.pylonmc.rebar.test.fluid.TestFluids;
+import io.github.pylonmc.rebar.test.item.TestItems;
 import io.github.pylonmc.rebar.test.test.block.*;
 import io.github.pylonmc.rebar.test.test.entity.EntityEventErrorTest;
 import io.github.pylonmc.rebar.test.test.entity.EntityStorageChunkReloadTest;
@@ -112,10 +113,10 @@ public class RebarTest extends JavaPlugin implements RebarAddon {
 
             try {
                 // TODO get rid of these and convert registration to static blocks
-                Blocks.register();
-                Items.register();
-                Entities.register();
-                Fluids.register();
+                TestBlocks.register();
+                TestItems.register();
+                TestEntities.register();
+                TestFluids.register();
             } catch (Exception e) {
                 instance().getLogger().severe("Failed to set up tests");
                 e.printStackTrace();
@@ -130,7 +131,7 @@ public class RebarTest extends JavaPlugin implements RebarAddon {
         List<Test> tests = TestUtil.runSync(RebarTest::initTests).join();
 
         List<TestResult> results = tests.stream()
-                .map(Test::run)
+                .map(Test::start)
                 .toList();
 
         List<NamespacedKey> succeeded = results.stream()

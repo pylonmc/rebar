@@ -99,6 +99,8 @@ public final class TestUtil {
                         throw new RuntimeException(e);
                     }
                 }
+            } else {
+                chunk.setForceLoaded(true);
             }
 
             return chunk;
@@ -145,7 +147,10 @@ public final class TestUtil {
     @CheckReturnValue
     public static @NotNull CompletableFuture<Void> loadChunk(@NotNull Chunk chunk) {
         return runAsync(() -> {
-            runSync(() -> chunk.load()).join();
+            runSync(() -> {
+                chunk.load();
+                chunk.setForceLoaded(true);
+            }).join();
             waitUntil(chunk::isLoaded).join();
         });
     }
@@ -154,7 +159,10 @@ public final class TestUtil {
     public static @NotNull CompletableFuture<Void> unloadChunk(@NotNull Chunk chunk) {
         return runAsync(() -> {
             ChunkPosition chunkPosition = new ChunkPosition(chunk);
-            runSync(() -> chunk.unload()).join();
+            runSync(() -> {
+                chunk.setForceLoaded(false);
+                chunk.unload();
+            }).join();
             waitUntil(() -> !chunkPosition.isLoaded()).join();
         });
     }

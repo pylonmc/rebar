@@ -24,6 +24,12 @@ object RebarConfig {
     @JvmField
     val ALLOWED_ENTITY_ERRORS = config.getOrThrow("allowed-entity-errors", ConfigAdapter.INTEGER)
 
+    /**
+     * Mutable so that they can be disabled/enabled live for things like tests, etc.
+     */
+    @JvmField
+    var FULL_ERROR_STACK_TRACES = config.getOrThrow("full-error-stack-traces", ConfigAdapter.BOOLEAN)
+
     @JvmField
     val FLUID_TICK_INTERVAL = config.getOrThrow("fluid-tick-interval", ConfigAdapter.INTEGER)
 
