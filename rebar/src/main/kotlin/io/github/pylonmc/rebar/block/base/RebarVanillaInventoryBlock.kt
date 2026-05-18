@@ -16,7 +16,7 @@ import org.jetbrains.annotations.ApiStatus
 /**
  * Represents blocks which can naturally store items such as chests and hoppers.
  */
-interface RebarVanillaContainerBlock {
+interface RebarVanillaInventoryBlock {
     fun onInventoryOpen(event: InventoryOpenEvent, priority: EventPriority) {}
     fun onItemMoveTo(event: InventoryMoveItemEvent, priority: EventPriority) {}
     fun onItemMoveFrom(event: InventoryMoveItemEvent, priority: EventPriority) {}
@@ -26,9 +26,9 @@ interface RebarVanillaContainerBlock {
         @UniversalHandler
         private fun onInventoryOpen(event: InventoryOpenEvent, priority: EventPriority) {
             val holder = event.inventory.getHolder(false)
-            if (holder is Container) {
+            if (holder is BlockInventoryHolder) {
                 val rebarBlock = BlockStorage.get(holder.block)
-                if (rebarBlock is RebarVanillaContainerBlock) {
+                if (rebarBlock is RebarVanillaInventoryBlock) {
                     try {
                         MultiHandlers.handleEvent(rebarBlock, "onInventoryOpen", event, priority)
                     } catch (e: Exception) {
@@ -43,7 +43,7 @@ interface RebarVanillaContainerBlock {
             val sourceHolder = event.source.getHolder(false)
             if (sourceHolder is BlockInventoryHolder) {
                 val sourceBlock = BlockStorage.get(sourceHolder.block)
-                if (sourceBlock is RebarVanillaContainerBlock) {
+                if (sourceBlock is RebarVanillaInventoryBlock) {
                     try {
                         MultiHandlers.handleEvent(sourceBlock, "onItemMoveFrom", event, priority)
                     } catch (e: Exception) {
@@ -55,7 +55,7 @@ interface RebarVanillaContainerBlock {
             val destHolder = event.destination.getHolder(false)
             if (destHolder is BlockInventoryHolder) {
                 val destBlock = BlockStorage.get(destHolder.block)
-                if (destBlock is RebarVanillaContainerBlock) {
+                if (destBlock is RebarVanillaInventoryBlock) {
                     try {
                         MultiHandlers.handleEvent(destBlock, "onItemMoveTo", event, priority)
                     } catch (e: Exception) {
