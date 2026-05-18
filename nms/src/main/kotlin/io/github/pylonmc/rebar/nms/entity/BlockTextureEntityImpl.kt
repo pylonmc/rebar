@@ -70,14 +70,14 @@ class BlockTextureEntityImpl : BlockTextureEntity, SyncedDataHolder {
     private val lastScaleIncreases: MutableMap<UUID, Float> = mutableMapOf()
 
     /**
-     * The translation needed to center scaling on the bounding box center instead of the block center.
-     * This is needed so that the scaling of non-full blocks (like slabs) scales around the correct point.
+     * The transformation of the texture entity needs to be centered on the bounding box of the block instead of the block center.
+     * This is needed so that the scaling of non-full blocks (like slabs) scales around the correct point to combat z-fighting.
      * The bounding box is unlikely to change often, so we cache the translation and only recalculate it every 5 seconds when requested.
      */
-    private var scaleTranslation = Vector3f()
+    private var centerTranslation = Vector3f()
         get() {
             if (System.currentTimeMillis() - translationTimestamp > 5000) {
-                field = calculateScaleTranslation()
+                field = calculateCenterTranslation()
                 translationTimestamp = System.currentTimeMillis()
             }
             return field
@@ -196,7 +196,7 @@ class BlockTextureEntityImpl : BlockTextureEntity, SyncedDataHolder {
         get() = ItemDisplay.ItemDisplayTransform.entries[entityData.get(EntityDataAccess.ITEM_DISPLAY_DATA_ITEM_DISPLAY_ID).toInt()]
         set(value) = entityData.set(EntityDataAccess.ITEM_DISPLAY_DATA_ITEM_DISPLAY_ID, value.ordinal.toByte())
 
-    private fun calculateScaleTranslation(): Vector3f {
+    private fun calculateCenterTranslation(): Vector3f {
         val boundingBox = block.block.boundingBox
         val blockX = block.block.x
         val blockY = block.block.y
@@ -238,9 +238,9 @@ class BlockTextureEntityImpl : BlockTextureEntity, SyncedDataHolder {
         return ClientboundSetEntityDataPacket(id, trackedData.map { data ->
             if (data.id == EntityDataAccess.DISPLAY_DATA_TRANSLATION_ID.id && scale != null) {
                 SynchedEntityData.DataValue(data.id, EntityDataSerializers.VECTOR3, Vector3f(
-                    scaleTranslation.x * (1 - scale.x),
-                    scaleTranslation.y * (1 - scale.y),
-                    scaleTranslation.z * (1 - scale.z)
+                    centerTranslation.x * (1 - scale.x),
+                    centerTranslation.y * (1 - scale.y),
+                    centerTranslation.z * (1 - scale.z)
                 ))
             } else {
                 data
