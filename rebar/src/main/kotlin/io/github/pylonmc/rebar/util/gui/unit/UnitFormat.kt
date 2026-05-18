@@ -8,7 +8,7 @@ import java.math.BigDecimal
 import java.math.MathContext
 import java.math.RoundingMode
 import java.time.Duration
-import java.util.EnumSet
+import java.util.*
 
 /**
  * Handles formatting of a specific unit. Call [format] to format a value using this unit.
@@ -36,13 +36,13 @@ class UnitFormat @JvmOverloads constructor(
         name: String,
         color: TextColor,
         abbreviate: Boolean,
-        prefix: MetricPrefix? = null,
+        prefix: MetricPrefix = MetricPrefix.NONE,
     ) : this(
         name = name,
         singular = Component.translatable("rebar.unit.$name.singular"),
         plural = Component.translatable("rebar.unit.$name.plural"),
         abbreviation = Component.translatable("rebar.unit.$name.abbr").takeIf { abbreviate },
-        defaultPrefix = prefix ?: MetricPrefix.NONE,
+        defaultPrefix = prefix,
         defaultStyle = Style.style(color),
     )
 
@@ -185,8 +185,7 @@ class UnitFormat @JvmOverloads constructor(
         val BLOCKS_PER_SECOND = UnitFormat(
             "blocks_per_second",
             TextColor.color(0x0ae256),
-            abbreviate = true,
-            prefix = MetricPrefix.NONE
+            abbreviate = true
         )
 
         @JvmField
@@ -265,22 +264,6 @@ class UnitFormat @JvmOverloads constructor(
         )
 
         @JvmField
-        val JOULES = UnitFormat(
-            "joules",
-            TextColor.color(0xF2A900),
-            abbreviate = true,
-            prefix = MetricPrefix.NONE
-        )
-
-        @JvmField
-        val WATTS = UnitFormat(
-            "watts",
-            TextColor.color(0xF2A900),
-            abbreviate = true,
-            prefix = MetricPrefix.NONE
-        )
-
-        @JvmField
         val EXPERIENCE = UnitFormat(
             "experience",
             TextColor.color(0xb2e01a),
@@ -320,8 +303,28 @@ class UnitFormat @JvmOverloads constructor(
         val CYCLES_PER_SECOND = UnitFormat(
             "cycles_per_second",
             TextColor.color(0xb672bf),
-            abbreviate = true,
-            prefix = MetricPrefix.NONE
+            abbreviate = true
+        )
+
+        @JvmField
+        val JOULES = UnitFormat(
+            "joules",
+            TextColor.color(0xF2A900),
+            abbreviate = true
+        )
+
+        @JvmField
+        val WATTS = UnitFormat(
+            "watts",
+            TextColor.color(0xF2A900),
+            abbreviate = true
+        )
+
+        @JvmField
+        val WATTS_PER_MILLIBUCKET = UnitFormat(
+            "watts_per_millibucket",
+            TextColor.color(0xF2A900),
+            abbreviate = true
         )
 
         /**

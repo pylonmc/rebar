@@ -11,7 +11,6 @@ import io.github.pylonmc.rebar.entity.display.transform.TransformBuilder
 import io.github.pylonmc.rebar.event.RebarBlockLoadEvent
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.util.rebarKey
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.time.delay
 import org.bukkit.Color
@@ -29,7 +28,6 @@ import org.bukkit.util.Vector
 import org.jetbrains.annotations.MustBeInvokedByOverriders
 import org.joml.Vector3i
 import java.time.Duration
-import kotlin.time.Duration.Companion.seconds
 
 /**
  * A wrapper over [RebarEntityHolderBlock] which allows for 'ghost blocks' (like those used
@@ -120,7 +118,7 @@ interface RebarGhostBlockHolder : RebarEntityHolderBlock {
         constructor(ghostBlockHolder: Block, position: Vector3i, items: MutableList<NamespacedKey>) : super(
             KEY,
             ItemDisplayBuilder()
-                .itemStack(RebarRegistry.ITEMS.getOrThrow(items.first()).getItemStack())
+                .itemStack(RebarRegistry.ITEMS.getOrThrow(items.first()).createNewItemStack())
                 .glow(Color.WHITE)
                 .transformation(TransformBuilder().scale(0.501))
                 .build(ghostBlockHolder.location.toCenterLocation().add(Vector.fromJOML(position))),
@@ -139,7 +137,7 @@ interface RebarGhostBlockHolder : RebarEntityHolderBlock {
         }
 
         fun setIndex(i: Int) {
-            entity.setItemStack(RebarRegistry.ITEMS.getOrThrow(rebarBlocks[i]).getItemStack())
+            entity.setItemStack(RebarRegistry.ITEMS.getOrThrow(rebarBlocks[i]).createNewItemStack())
         }
 
         companion object {

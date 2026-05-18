@@ -7,13 +7,13 @@ import io.github.pylonmc.rebar.event.RebarBlockLoadEvent
 import io.github.pylonmc.rebar.event.RebarBlockPlaceEvent
 import io.github.pylonmc.rebar.event.RebarBlockUnloadEvent
 import net.kyori.adventure.text.Component
+import org.bukkit.entity.Player
 import org.bukkit.event.Event
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.EquipmentSlot
-import org.jetbrains.annotations.MustBeInvokedByOverriders
 import xyz.xenondevs.invui.gui.Gui
 import xyz.xenondevs.invui.inventory.VirtualInventory
 import xyz.xenondevs.invui.window.Window
@@ -42,6 +42,13 @@ interface RebarGuiBlock : RebarBreakHandler, RebarNoVanillaContainerBlock {
      */
     val guiTitle: Component
         get() = (this as RebarBlock).nameTranslationKey
+
+    fun openWindow(player: Player) {
+        Window.builder()
+            .setUpperGui(guiBlocks[this] ?: error("GUI not found for block"))
+            .setTitle(guiTitle)
+            .open(player)
+    }
 
     companion object : Listener {
         private val guiBlocks = IdentityHashMap<RebarGuiBlock, Gui>()
@@ -75,12 +82,7 @@ interface RebarGuiBlock : RebarBreakHandler, RebarNoVanillaContainerBlock {
             event.setUseInteractedBlock(Event.Result.DENY)
             event.setUseItemInHand(Event.Result.DENY)
 
-            Window.builder()
-                .setUpperGui(guiBlocks[guiBlock]!!)
-                .setTitle(guiBlock.guiTitle)
-                .setViewer(event.player)
-                .build()
-                .open()
+            guiBlock.openWindow(event.player)
         }
 
         @EventHandler

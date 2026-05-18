@@ -1,5 +1,6 @@
 package io.github.pylonmc.rebar.guide.button
 
+import io.github.pylonmc.rebar.fluid.FluidWithAmount
 import io.github.pylonmc.rebar.fluid.RebarFluid
 import io.github.pylonmc.rebar.guide.pages.fluid.FluidRecipesPage
 import io.github.pylonmc.rebar.guide.pages.fluid.FluidUsagesPage
@@ -50,6 +51,8 @@ open class FluidButton(
     constructor(vararg fluids: RebarFluid) : this(null, *fluids)
 
     constructor(input: RecipeInput.Fluid) : this(input.amountMillibuckets, *input.fluids.toTypedArray())
+
+    constructor(fluidWithAmount: FluidWithAmount) : this(fluidWithAmount.amount, fluidWithAmount.fluid)
 
     val fluids = fluids.shuffled()
     val currentFluid: RebarFluid

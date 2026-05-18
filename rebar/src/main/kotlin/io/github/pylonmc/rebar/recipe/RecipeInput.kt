@@ -1,5 +1,6 @@
 package io.github.pylonmc.rebar.recipe
 
+import io.github.pylonmc.rebar.fluid.FluidWithAmount
 import io.github.pylonmc.rebar.fluid.RebarFluid
 import io.github.pylonmc.rebar.item.ItemTypeWrapper
 import org.bukkit.Tag
@@ -46,7 +47,9 @@ sealed interface RecipeInput {
             return contains(fluid)
         }
 
-        operator fun contains(fluid: RebarFluid?): Boolean = fluid in fluids
+        fun matches(fluidWithAmount: FluidWithAmount) = matches(fluidWithAmount.fluid, fluidWithAmount.amount)
+
+        operator fun contains(fluid: RebarFluid?): Boolean = fluid != null && fluid in fluids
     }
 
     companion object {

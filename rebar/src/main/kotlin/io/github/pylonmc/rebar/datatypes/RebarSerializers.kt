@@ -66,6 +66,15 @@ object RebarSerializers {
     val ENUM = EnumPersistentDataType
 
     @JvmField
+    val PAIR = PairPersistentDataType
+
+    /**
+     * @see [PolymorphicPersistentDataType]
+     */
+    @JvmField
+    val POLYMORPHIC = PolymorphicPersistentDataType
+
+    @JvmField
     val NAMESPACED_KEY = NamespacedKeyPersistentDataType
 
     @JvmField
@@ -164,9 +173,6 @@ object RebarSerializers {
 
     @JvmSynthetic
     internal val RECIPE_PROCESSOR_DATA = RecipeProcessorDataPersistentDataType
-
-    @JvmSynthetic
-    internal val SIMPLE_MULTIBLOCK_DATA = SimpleMultiblockDataPersistentDataType
 
     @JvmSynthetic
     internal val TICKING_BLOCK_DATA = TickingBlockPersistentDataType

@@ -48,7 +48,7 @@ class CargoDuct : RebarBlock, RebarBreakHandler, RebarEntityHolderBlock, RebarEn
         connectedFaces = pdc.get(connectedFacesKey, connectedFacesType)!!.toMutableList()
     }
 
-    override fun postLoad() {
+    override fun postLoad(pdc: PersistentDataContainer) {
         for (face in connectedFaces) {
             val displayId = getHeldEntityUuid(ductDisplayName(face)) ?: continue
             EntityStorage.whenEntityLoads(displayId) { display: ItemDisplay ->

@@ -500,7 +500,7 @@ val Component.plainText: String
  */
 fun blocksOnPath(from: BlockPosition, to: BlockPosition): List<Block> {
     val originBlock = from.block
-    val offset = to.location
+    val offset = to.toLocation()
         .subtract(originBlock.location)
         .toVector().toVector3i()
 

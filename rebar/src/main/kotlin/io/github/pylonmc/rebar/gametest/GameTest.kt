@@ -82,17 +82,17 @@ class GameTest(
     /**
      * Returns the center location of the game test
      */
-    fun location(): Location = center.location
+    fun location(): Location = center.toLocation()
 
     /**
      * Returns a location relative to the center of the game test
      */
-    fun location(location: Location): Location = location.clone().add(center.location)
+    fun location(location: Location): Location = location.clone().add(center.toLocation())
 
     /**
      * Returns a location relative to the center of the game test
      */
-    fun location(x: Double, y: Double, z: Double): Location = center.location.clone().add(x, y, z)
+    fun location(x: Double, y: Double, z: Double): Location = center.toLocation().clone().add(x, y, z)
 
     companion object {
         @JvmSynthetic

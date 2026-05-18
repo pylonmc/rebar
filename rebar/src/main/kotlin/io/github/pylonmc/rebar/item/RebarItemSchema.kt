@@ -12,7 +12,6 @@ import io.github.pylonmc.rebar.util.findConstructorMatching
 import io.github.pylonmc.rebar.util.getAddon
 import io.github.pylonmc.rebar.util.position.position
 import io.github.pylonmc.rebar.util.rebarKey
-import io.papermc.paper.command.brigadier.argument.ArgumentTypes.blockPosition
 import org.bukkit.Keyed
 import org.bukkit.NamespacedKey
 import org.bukkit.inventory.ItemStack
@@ -46,12 +45,12 @@ class RebarItemSchema @JvmOverloads internal constructor(
     /**
      * Return's a clone of the [template] [ItemStack]
      */
-    fun getItemStack(): ItemStack = template.clone()
+    fun createNewItemStack(): ItemStack = template.clone()
 
     /**
      * Return's a new instance of the [RebarItem] from the [itemClass] using a copy of the [template] [ItemStack]
      */
-    fun getRebarItem(): RebarItem = itemClass.cast(loadConstructor.invoke(getItemStack()))
+    fun createNewRebarItem(): RebarItem = itemClass.cast(loadConstructor.invoke(createNewItemStack()))
 
     fun <T> isType(clazz: Class<T>): Boolean {
         return clazz.isAssignableFrom(itemClass)

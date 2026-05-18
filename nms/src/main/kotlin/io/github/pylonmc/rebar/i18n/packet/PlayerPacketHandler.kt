@@ -5,6 +5,8 @@ package io.github.pylonmc.rebar.i18n.packet
 import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.i18n.PlayerTranslationHandler
 import io.github.pylonmc.rebar.resourcepack.armor.ArmorTextureEngine
+import io.github.pylonmc.rebar.item.RebarItemSchema
+import io.github.pylonmc.rebar.util.editData
 import io.netty.channel.ChannelDuplexHandler
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.ChannelPromise

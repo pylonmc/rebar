@@ -10,7 +10,7 @@ import io.github.pylonmc.rebar.util.rebarKey
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.jetbrains.annotations.ApiStatus
-import java.util.IdentityHashMap
+import java.util.*
 import kotlin.math.max
 
 /**
@@ -124,7 +124,7 @@ interface RebarFluidBufferBlock : RebarFluidBlock {
      * Removes from a fluid buffer only if the new amount of fluid is greater
      * than zero and fits in the buffer.
      *
-     * @return true only if the buffer was added to successfully
+     * @return true only if the buffer was removed from successfully
      */
     fun removeFluid(fluid: RebarFluid, amount: Double): Boolean {
         return setFluid(fluid, fluidData(fluid).amount - amount)
@@ -163,8 +163,7 @@ interface RebarFluidBufferBlock : RebarFluidBlock {
         private fun onDeserialize(event: RebarBlockDeserializeEvent) {
             val block = event.rebarBlock
             if (block is RebarFluidBufferBlock) {
-                bufferFluidBlocks[block] = event.pdc.get(fluidBuffersKey, fluidBuffersType)?.toMutableMap()
-                    ?: error("Fluid buffers not found for ${block.key}")
+                bufferFluidBlocks[block] = event.pdc.get(fluidBuffersKey, fluidBuffersType).orEmpty().toMutableMap()
             }
         }
 
@@ -172,7 +171,7 @@ interface RebarFluidBufferBlock : RebarFluidBlock {
         private fun onSerialize(event: RebarBlockSerializeEvent) {
             val block = event.rebarBlock
             if (block is RebarFluidBufferBlock) {
-                event.pdc.set(fluidBuffersKey, fluidBuffersType, bufferFluidBlocks[block]!!)
+                event.pdc.set(fluidBuffersKey, fluidBuffersType, bufferFluidBlocks[block].orEmpty())
             }
         }
 
