@@ -9,8 +9,8 @@ abstract class KeyedConfigAdapter<T : Keyed> : ConfigAdapter<T> {
 
     abstract fun fromKey(key: NamespacedKey): T
 
-    final override fun convert(value: Any): T {
-        return fromKey(ConfigAdapter.NAMESPACED_KEY.convert(value))
+    final override fun convert(key: String?, value: Any): T {
+        return fromKey(ConfigAdapter.NAMESPACED_KEY.convert(key, value))
     }
 
     companion object {

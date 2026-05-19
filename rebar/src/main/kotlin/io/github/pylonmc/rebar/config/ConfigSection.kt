@@ -1,7 +1,5 @@
 package io.github.pylonmc.rebar.config
 
-import com.google.common.base.Defaults.defaultValue
-import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter
 import org.bukkit.configuration.ConfigurationSection
 import java.lang.reflect.ParameterizedType
@@ -99,7 +97,7 @@ open class ConfigSection(val internalSection: ConfigurationSection) {
 
         val rawValue = internalSection.get(key) ?: throw modifyException(KeyNotFoundException(getKeyPath(key)))
         val value = try {
-            adapter.convert(rawValue)
+            adapter.convert(key, rawValue)
         } catch (e: KeyNotFoundException) {
             val exception = modifyException(KeyNotFoundException("$key.${e.key.removePrefix("$key.")}"))
             exception.stackTrace = e.stackTrace

@@ -6,8 +6,8 @@ import java.lang.reflect.Type
 object SoundConfigAdapter : ConfigAdapter<Sound> {
     override val type: Type = Sound::class.java
 
-    override fun convert(value: Any): Sound {
-        val section = ConfigAdapter.CONFIG_SECTION.convert(value)
+    override fun convert(key: String?, value: Any): Sound {
+        val section = ConfigAdapter.CONFIG_SECTION.convert(key, value)
         return Sound.sound(
             section.getOrThrow("name", ConfigAdapter.NAMESPACED_KEY),
             section.getOrThrow("source", ConfigAdapter.ENUM.from<Sound.Source>()),

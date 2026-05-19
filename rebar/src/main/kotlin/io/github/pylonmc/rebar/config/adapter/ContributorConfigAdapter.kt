@@ -7,12 +7,12 @@ import java.lang.reflect.Type
 object ContributorConfigAdapter : ConfigAdapter<ContributorConfig> {
     override val type: Type = ContributorConfig::class.java
 
-    override fun convert(value: Any): ContributorConfig {
+    override fun convert(key: String?, value: Any): ContributorConfig {
         if (value is String) {
             return ContributorConfig(displayName = value)
         }
 
-        val section = ConfigAdapter.CONFIG_SECTION.convert(value)
+        val section = ConfigAdapter.CONFIG_SECTION.convert(key, value)
         val displayName = section.getOrThrow("display-name", ConfigAdapter.STRING)
         val description = section.get("description", ConfigAdapter.STRING)
         val minecraftUUID = section.get("minecraft-uuid", ConfigAdapter.UUID) { Bukkit.getOfflinePlayer(displayName).uniqueId }

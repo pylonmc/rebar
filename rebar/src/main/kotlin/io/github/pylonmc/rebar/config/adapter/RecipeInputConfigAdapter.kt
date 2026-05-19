@@ -10,9 +10,9 @@ object RecipeInputConfigAdapter : ConfigAdapter<RecipeInput> {
 
     override val type = FluidOrItem::class.java
 
-    override fun convert(value: Any): RecipeInput {
-        runCatching { RecipeInputItemAdapter.convert(value) }.onSuccess { return it }
-        runCatching { RecipeInputFluidAdapter.convert(value) }.onSuccess { return it }
+    override fun convert(key: String?, value: Any): RecipeInput {
+        runCatching { RecipeInputItemAdapter.convert(key, value) }.onSuccess { return it }
+        runCatching { RecipeInputFluidAdapter.convert(key, value) }.onSuccess { return it }
         throw IllegalArgumentException("Cannot convert $value to recipe input")
     }
 }
@@ -20,22 +20,23 @@ object RecipeInputConfigAdapter : ConfigAdapter<RecipeInput> {
 object RecipeInputItemAdapter : ConfigAdapter<RecipeInput.Item> {
     override val type = RecipeInput.Item::class.java
 
-    override fun convert(value: Any): RecipeInput.Item {
-        runCatching { ConfigAdapter.ITEM_STACK.convert(value) }.onSuccess { return RecipeInput.of(it) }
+    override fun convert(key: String?, value: Any): RecipeInput.Item {
+        runCatching { ConfigAdapter.ITEM_STACK.convert(key, value) }.onSuccess { return RecipeInput.of(it) }
         return when (value) {
             is ConfigurationSection, is Map<*, *> -> convert(
-                MapConfigAdapter.STRING_TO_ANY.convert(value).toList().single()
+                key,
+                MapConfigAdapter.STRING_TO_ANY.convert(key, value).toList().single()
             )
 
             is Pair<*, *> -> {
-                val tag = ConfigAdapter.ITEM_TAG.convert(value.first!!)
-                val amount = ConfigAdapter.INTEGER.convert(value.second!!)
+                val tag = ConfigAdapter.ITEM_TAG.convert(key, value.first!!)
+                val amount = ConfigAdapter.INTEGER.convert(key, value.second!!)
                 RecipeInput.Item(tag, amount)
             }
 
             is String -> {
                 if (value.startsWith("#")) {
-                    RecipeInput.Item(ConfigAdapter.ITEM_TAG.convert(value), 1)
+                    RecipeInput.Item(ConfigAdapter.ITEM_TAG.convert(key, value), 1)
                 } else {
                     val nsKey = NamespacedKey.fromString(value) ?: throw IllegalArgumentException("'$value' is not a namespaced key")
                     RecipeInput.Item(hashSetOf(ItemTypeWrapper.invoke(nsKey)), 1)
@@ -49,15 +50,16 @@ object RecipeInputItemAdapter : ConfigAdapter<RecipeInput.Item> {
 object RecipeInputFluidAdapter : ConfigAdapter<RecipeInput.Fluid> {
     override val type = RecipeInput.Fluid::class.java
 
-    override fun convert(value: Any): RecipeInput.Fluid {
+    override fun convert(key: String?, value: Any): RecipeInput.Fluid {
         return when (value) {
             is ConfigurationSection, is Map<*, *> -> convert(
-                MapConfigAdapter.STRING_TO_ANY.convert(value).toList().single()
+                key,
+                MapConfigAdapter.STRING_TO_ANY.convert(key, value).toList().single()
             )
 
             is Pair<*, *> -> {
-                val fluid = ConfigAdapter.REBAR_FLUID.convert(value.first!!)
-                val amount = ConfigAdapter.DOUBLE.convert(value.second!!)
+                val fluid = ConfigAdapter.REBAR_FLUID.convert(key, value.first!!)
+                val amount = ConfigAdapter.DOUBLE.convert(key, value.second!!)
                 RecipeInput.of(fluid, amount)
             }
 

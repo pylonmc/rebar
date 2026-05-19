@@ -10,8 +10,8 @@ import java.lang.reflect.Type
 object RandomizedSoundConfigAdapter : ConfigAdapter<RandomizedSound> {
     override val type: Type = RandomizedSound::class.java
 
-    override fun convert(value: Any): RandomizedSound {
-        val section = ConfigAdapter.CONFIG_SECTION.convert(value)
+    override fun convert(key: String?, value: Any): RandomizedSound {
+        val section = ConfigAdapter.CONFIG_SECTION.convert(key, value)
         val keys = mutableListOf<Key>()
         section.get("sound", ConfigAdapter.NAMESPACED_KEY)?.let(keys::add)
         section.get("sounds", ConfigAdapter.LIST.from(ConfigAdapter.NAMESPACED_KEY))?.let(keys::addAll)
@@ -32,11 +32,11 @@ object RandomizedSoundConfigAdapter : ConfigAdapter<RandomizedSound> {
     private fun getRange(section: ConfigSection, key: String): Pair<Double, Double> {
         return when (val range = section.getOrThrow(key, ConfigAdapter.ANY)) {
             is ConfigurationSection, is Map<*, *> -> {
-                val range = ConfigAdapter.CONFIG_SECTION.convert(range)
+                val range = ConfigAdapter.CONFIG_SECTION.convert(key, range)
                 range.getOrThrow("min", ConfigAdapter.DOUBLE) to range.getOrThrow("max", ConfigAdapter.DOUBLE)
             }
 
-            is List<*> -> ConfigAdapter.DOUBLE.convert(range[0]!!) to ConfigAdapter.DOUBLE.convert(range[1]!!)
+            is List<*> -> ConfigAdapter.DOUBLE.convert(key, range[0]!!) to ConfigAdapter.DOUBLE.convert(key, range[1]!!)
 
             else -> try {
                 val value = range.toString().toDouble()

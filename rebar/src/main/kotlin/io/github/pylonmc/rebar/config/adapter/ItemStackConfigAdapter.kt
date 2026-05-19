@@ -9,15 +9,18 @@ object ItemStackConfigAdapter : ConfigAdapter<ItemStack> {
 
     override val type = ItemStack::class.java
 
-    override fun convert(value: Any): ItemStack {
+    override fun convert(key: String?, value: Any): ItemStack {
         return when (value) {
             is Pair<*, *> -> {
-                val itemKey = ConfigAdapter.STRING.convert(value.first!!)
-                val amount = ConfigAdapter.INTEGER.convert(value.second!!)
-                convert(itemKey).asQuantity(amount)
+                val itemKey = ConfigAdapter.STRING.convert(key, value.first!!)
+                val amount = ConfigAdapter.INTEGER.convert(key, value.second!!)
+                convert(key, itemKey).asQuantity(amount)
             }
 
-            is ConfigurationSection, is Map<*, *> -> convert(MapConfigAdapter.STRING_TO_ANY.convert(value).toList().single())
+            is ConfigurationSection, is Map<*, *> -> convert(
+                key,
+                MapConfigAdapter.STRING_TO_ANY.convert(key, value).toList().single()
+            )
             is String -> ItemTypeWrapper(
                 NamespacedKey.fromString(value) ?: throw IllegalArgumentException("Could not find item '$value'")
             ).createItemStack()

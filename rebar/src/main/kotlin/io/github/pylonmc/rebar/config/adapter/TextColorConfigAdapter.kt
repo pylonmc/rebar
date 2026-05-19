@@ -7,7 +7,7 @@ import java.lang.reflect.Type
 object TextColorConfigAdapter : ConfigAdapter<TextColor> {
     override val type: Type = TextColor::class.java
 
-    override fun convert(value: Any): TextColor {
+    override fun convert(key: String?, value: Any): TextColor {
         if (value is String) {
             val color = TextColor.fromHexString("#${value.trimStart().trimEnd()}")
             if (color != null) {
@@ -16,7 +16,7 @@ object TextColorConfigAdapter : ConfigAdapter<TextColor> {
                 throw RuntimeException("Unable to convert hex color #${value.trimStart().trimEnd()} to TextColor")
             }
         } else {
-            val section = ConfigAdapter.CONFIG_SECTION.convert(value)
+            val section = ConfigAdapter.CONFIG_SECTION.convert(key, value)
             val h = section.get("h", ConfigAdapter.FLOAT)
             val s = section.get("s", ConfigAdapter.FLOAT)
             val v = section.get("v", ConfigAdapter.FLOAT)

@@ -8,15 +8,15 @@ class SetConfigAdapter<E>(private val elementAdapter: ConfigAdapter<E>) : Config
 
     override val type: Type = TypeUtils.parameterize(Set::class.java, elementAdapter.type)
 
-    override fun convert(value: Any): Set<E> {
+    override fun convert(key: String?, value: Any): Set<E> {
         val list = when (value) {
             is List<*> -> value
-            is ConfigurationSection, is Map<*, *> -> MapConfigAdapter.STRING_TO_ANY.convert(value).toList()
+            is ConfigurationSection, is Map<*, *> -> MapConfigAdapter.STRING_TO_ANY.convert(key, value).toList()
             else -> throw IllegalArgumentException("Expected a list or section, but got: ${value::class.java.name}")
         }
         return list.mapTo(mutableSetOf()) {
             @Suppress("UNCHECKED_CAST")
-            it?.let(elementAdapter::convert) as E
+            it?.let { elementAdapter.convert(key, it) } as E
         }
     }
 

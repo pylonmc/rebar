@@ -8,16 +8,16 @@ class WeightedSetConfigAdapter<E>(private val elementAdapter: ConfigAdapter<E>) 
 
     override val type: Type = TypeUtils.parameterize(WeightedSet::class.java, elementAdapter.type)
 
-    override fun convert(value: Any): WeightedSet<E> {
+    override fun convert(key: String?, value: Any): WeightedSet<E> {
         return if (value is List<*>) {
             value.mapTo(WeightedSet()) {
-                val section = ConfigAdapter.CONFIG_SECTION.convert(it!!)
+                val section = ConfigAdapter.CONFIG_SECTION.convert(key, it!!)
                 val element = section.getOrThrow("value", elementAdapter)
                 val weight = section.get("weight", ConfigAdapter.FLOAT, 1f)
                 WeightedSet.Element(element, weight)
             }
         } else {
-            WeightedSet(elementAdapter.convert(value) to 1f)
+            WeightedSet(elementAdapter.convert(key, value) to 1f)
         }
     }
 

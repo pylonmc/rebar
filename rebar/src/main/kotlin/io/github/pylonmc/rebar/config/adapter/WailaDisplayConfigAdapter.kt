@@ -7,8 +7,8 @@ import net.kyori.adventure.text.Component
 object WailaDisplayConfigAdapter : ConfigAdapter<WailaDisplay> {
     override val type = WailaDisplay::class.java
 
-    override fun convert(value: Any): WailaDisplay {
-        val section = ConfigAdapter.CONFIG_SECTION.convert(value)
+    override fun convert(key: String?, value: Any): WailaDisplay {
+        val section = ConfigAdapter.CONFIG_SECTION.convert(key, value)
         return WailaDisplay(
             text = Component.translatable(section.getOrThrow("text", ConfigAdapter.STRING)),
             color = section.getOrThrow("color", ConfigAdapter.ENUM.from<BossBar.Color>()),

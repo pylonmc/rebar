@@ -8,12 +8,12 @@ object ConfigSectionConfigAdapter : ConfigAdapter<ConfigSection> {
 
     override val type = ConfigSection::class.java
 
-    override fun convert(value: Any): ConfigSection {
+    override fun convert(key: String?, value: Any): ConfigSection {
         val section = if (value is ConfigurationSection) {
             value
         } else {
             val memoryConfig = MemoryConfiguration()
-            for ((key, value) in MapConfigAdapter.STRING_TO_ANY.convert(value)) {
+            for ((key, value) in MapConfigAdapter.STRING_TO_ANY.convert(key, value)) {
                 memoryConfig.set(key, value)
             }
             memoryConfig

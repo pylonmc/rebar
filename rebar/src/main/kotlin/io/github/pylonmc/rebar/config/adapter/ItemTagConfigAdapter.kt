@@ -13,8 +13,8 @@ import java.lang.reflect.Modifier
 object ItemTagConfigAdapter : ConfigAdapter<Tag<ItemTypeWrapper>> {
     override val type = Tag::class.java
 
-    override fun convert(value: Any): Tag<ItemTypeWrapper> {
-        val string = ConfigAdapter.STRING.convert(value)
+    override fun convert(key: String?, value: Any): Tag<ItemTypeWrapper> {
+        val string = ConfigAdapter.STRING.convert(key, value)
         if (!string.startsWith("#")) {
             throw IllegalArgumentException("Item tag must start with '#': $value")
         }

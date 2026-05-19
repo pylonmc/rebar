@@ -11,14 +11,14 @@ class MapConfigAdapter<K, V>(
 
     override val type: Type = TypeUtils.parameterize(Map::class.java, keyAdapter.type, valueAdapter.type)
 
-    override fun convert(value: Any): Map<K, V> {
+    override fun convert(key: String?, value: Any): Map<K, V> {
         if (value is ConfigurationSection) {
-            return convert(value.getValues(false))
+            return convert(key, value.getValues(false))
         }
         return buildMap {
             for ((k, v) in (value as Map<*, *>)) {
                 @Suppress("UNCHECKED_CAST")
-                put(keyAdapter.convert(k!!), v?.let(valueAdapter::convert) as V)
+                put(keyAdapter.convert(key, k!!), v?.let { valueAdapter.convert(key, it) } as V)
             }
         }
     }
