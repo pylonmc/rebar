@@ -5,6 +5,7 @@ import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.advancements.RebarAdvancement
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.papermc.paper.adventure.PaperAdventure
+import net.kyori.adventure.text.Component
 import net.minecraft.advancements.*
 import net.minecraft.advancements.criterion.ImpossibleTrigger
 import net.minecraft.commands.CacheableFunction
@@ -49,7 +50,7 @@ object AdvancementsAccessor {
         key: NamespacedKey
     ): org.bukkit.advancement.Advancement? {
         if (advancement.displayInfo != null && RebarRegistry.ITEMS[advancement.displayInfo!!.icon.id] == null) {
-            Rebar.logger.warning("Failed to register advancement ${advancement.name} due to failing to find the pylon item with the key for the icon")
+            Rebar.logger.warning("Failed to register advancement $key due to failing to find the pylon item with the key for the icon")
             return null
         }
 
@@ -61,8 +62,8 @@ object AdvancementsAccessor {
                     ItemStackTemplate(
                         CraftItemStack.asNMSCopy(RebarRegistry.ITEMS[info.icon.id]!!.getItemStack()).item
                     ),
-                    PaperAdventure.asVanilla(info.title),
-                    PaperAdventure.asVanilla(info.description),
+                    PaperAdventure.asVanilla(info.title ?: Component.translatable("${key.namespace}.advancements.${key.key}.title")),
+                    PaperAdventure.asVanilla(info.description ?: Component.translatable("${key.namespace}.advancements.${key.key}.description")),
                     Optional.ofNullable(info.iconBackground)
                         .map { background -> ClientAsset.ResourceTexture(identifierFromKey(background)) },
                     AdvancementType.valueOf(info.iconFrame.uppercase()),
