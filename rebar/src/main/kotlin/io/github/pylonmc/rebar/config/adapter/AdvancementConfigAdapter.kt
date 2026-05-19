@@ -5,6 +5,7 @@ import io.github.pylonmc.rebar.advancements.RebarAdvancementDisplayInfo
 import io.github.pylonmc.rebar.advancements.RebarAdvancementIcon
 import io.github.pylonmc.rebar.advancements.RebarAdvancementRewards
 import net.kyori.adventure.text.Component
+import org.bukkit.NamespacedKey
 import java.lang.reflect.Type
 
 object AdvancementConfigAdapter : ConfigAdapter<RebarAdvancement> {
@@ -16,6 +17,7 @@ object AdvancementConfigAdapter : ConfigAdapter<RebarAdvancement> {
         val rewardsSection = section.getOrThrow("rewards", ConfigAdapter.CONFIG_SECTION) // TODO: make this skippable
 
         return RebarAdvancement(
+            section.name?.let { NamespacedKey.fromString(it) } ?: throw ExceptionInInitializerError("RebarAdvancement must have a key"),
             section.get("parent", ConfigAdapter.NAMESPACED_KEY),
             section.get("display-info", DisplayInfoConfigAdapter),
             section.get("rewards", ConfigAdapter.CONFIG_SECTION)?.let {
