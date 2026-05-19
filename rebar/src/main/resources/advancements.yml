@@ -1,0 +1,16 @@
+pylon:root:
+  parent: minecraft:adventure/root
+  name: pylon:message.advancements.test.name
+  rewards:
+    experience: 0
+  displayInfo:
+    icon:
+      item: pylon:cleansing_potion
+      count: 1
+    title: pylon:message.advancements.test.title
+    description: pylon:message.advancements.test.description
+    frame: task
+    background: minecraft:gui/advancements/backgrounds/adventure
+    showToast: true
+    announceToChat: true
+    hidden: false
