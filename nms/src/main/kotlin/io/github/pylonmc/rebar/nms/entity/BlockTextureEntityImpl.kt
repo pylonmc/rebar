@@ -185,9 +185,9 @@ class BlockTextureEntityImpl : BlockTextureEntity, SyncedDataHolder {
     override var brightness: Display.Brightness?
         get() = when (val brightness = entityData.get(EntityDataAccess.DISPLAY_DATA_BRIGHTNESS_OVERRIDE_ID)) {
             -1 -> null
-            else -> Display.Brightness(NmsBrightness.block(brightness), NmsBrightness.sky(brightness))
+            else -> NmsBrightness.unpack(brightness).let { Display.Brightness(it.block, it.sky) }
         }
-        set(value) = entityData.set(EntityDataAccess.DISPLAY_DATA_BRIGHTNESS_OVERRIDE_ID, value?.let { NmsBrightness.pack(value.blockLight, value.skyLight) } ?: -1)
+        set(value) = entityData.set(EntityDataAccess.DISPLAY_DATA_BRIGHTNESS_OVERRIDE_ID, value?.let { NmsBrightness(value.blockLight, value.skyLight).pack() } ?: -1)
 
     override var itemStack: ItemStack?
         get() = entityData.get(EntityDataAccess.ITEM_DISPLAY_DATA_ITEM_STACK_ID).asBukkitCopy()

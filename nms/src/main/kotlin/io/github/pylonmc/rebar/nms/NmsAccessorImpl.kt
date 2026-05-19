@@ -121,7 +121,7 @@ object NmsAccessorImpl : NmsAccessor {
         = PaperAdventure.asAdventure(TextComponentTagVisitor("  ").visit((pdc as CraftPersistentDataContainer).toTagCompound()))
 
     override fun getStateProperties(block: Block, custom: Map<String, Pair<String, Int>>): Map<String, String> {
-        val state = (block as CraftBlock).nms
+        val state = (block as CraftBlock).blockState
         val map = mutableMapOf<String, String>()
         val possibleValues = mutableMapOf<String, Int>()
         for (property in state.block.stateDefinition.properties) {

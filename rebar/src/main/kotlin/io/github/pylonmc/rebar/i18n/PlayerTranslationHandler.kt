@@ -90,6 +90,10 @@ class PlayerTranslationHandler internal constructor(private val player: Player) 
                 }
                 ItemContainerContents.containerContents(translated)
             }
+
+            stack.editPersistentDataContainer {
+                it.remove(FOOTER_APPENDED)
+            }
         }
     }
 }

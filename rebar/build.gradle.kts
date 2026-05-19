@@ -38,10 +38,10 @@ dependencies {
     paperLibraryApi("org.jetbrains.kotlin:kotlin-reflect:${kotlin.coreLibrariesVersion}")
     paperLibraryApi("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
 
-    compileOnly("io.papermc.paper:paper-api:$minecraftVersion-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:$minecraftVersion.build.+")
 
-    paperLibraryApi("xyz.xenondevs.invui:invui:2.0.0-beta.5")
-    paperLibraryApi("xyz.xenondevs.invui:invui-kotlin:2.0.0-beta.5")
+    paperLibraryApi("xyz.xenondevs.invui:invui:2.1.0")
+    paperLibraryApi("xyz.xenondevs.invui:invui-kotlin:2.1.0")
     compileOnly("me.clip:placeholderapi:2.12.2")
     implementation("info.debatty:java-string-similarity:2.0.0")
     implementation("org.bstats:bstats-bukkit:2.2.1")
@@ -67,7 +67,7 @@ tasks.test {
 }
 
 kotlin {
-    jvmToolchain(21)
+    jvmToolchain(25)
     compilerOptions {
         javaParameters = true
         jvmDefault = JvmDefaultMode.NO_COMPATIBILITY
