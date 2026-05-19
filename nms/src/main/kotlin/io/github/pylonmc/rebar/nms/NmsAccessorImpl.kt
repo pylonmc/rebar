@@ -1,11 +1,13 @@
 package io.github.pylonmc.rebar.nms
 
 import com.destroystokyo.paper.event.player.PlayerRecipeBookClickEvent
+import io.github.pylonmc.rebar.advancements.RebarAdvancement
 import io.github.pylonmc.rebar.async.PlayerScope
 import io.github.pylonmc.rebar.block.RebarBlock
 import io.github.pylonmc.rebar.entity.packet.BlockTextureEntity
 import io.github.pylonmc.rebar.i18n.PlayerTranslationHandler
 import io.github.pylonmc.rebar.i18n.packet.PlayerPacketHandler
+import io.github.pylonmc.rebar.nms.advancements.AdvancementsAccessor.registerRebarAdvancement
 import io.github.pylonmc.rebar.nms.entity.BlockTextureEntityImpl
 import io.github.pylonmc.rebar.nms.recipe.HandlerRecipeBookClick
 import io.papermc.paper.adventure.PaperAdventure
@@ -24,6 +26,7 @@ import net.minecraft.world.inventory.RecipeBookMenu.PostPlaceAction
 import net.minecraft.world.item.Item
 import net.minecraft.world.level.block.state.properties.Property
 import org.bukkit.Material
+import org.bukkit.NamespacedKey
 import org.bukkit.World
 import org.bukkit.block.Block
 import org.bukkit.craftbukkit.CraftEquipmentSlot
@@ -174,6 +177,9 @@ object NmsAccessorImpl : NmsAccessor {
             }
         }
     }
+
+    override fun registerAdvancement(advancement: RebarAdvancement, key: NamespacedKey)
+        = registerRebarAdvancement(advancement, key)
 
     override fun hasTracker(entity: Entity): Boolean {
         val id = entity.entityId

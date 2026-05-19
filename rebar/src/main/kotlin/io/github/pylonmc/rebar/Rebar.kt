@@ -3,6 +3,7 @@
 package io.github.pylonmc.rebar
 
 import io.github.pylonmc.rebar.addon.RebarAddon
+import io.github.pylonmc.rebar.advancements.AdvancementsManager.registerAdvancements
 import io.github.pylonmc.rebar.async.BukkitMainThreadDispatcher
 import io.github.pylonmc.rebar.async.ChunkScope
 import io.github.pylonmc.rebar.async.PlayerScope
@@ -305,6 +306,7 @@ object Rebar : JavaPlugin(), RebarAddon {
             delayTicks(1)
             loadRecipes()
             loadResearches()
+            registerAdvancements()
         }
 
         val end = System.currentTimeMillis()
