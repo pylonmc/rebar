@@ -189,6 +189,7 @@ object Rebar : JavaPlugin(), RebarAddon {
         // Rebar Items
         RebarArrow.register(this, pm)
         RebarBlockInteractor.register(this, pm)
+        RebarBottle.register(this, pm)
         RebarBow.register(this, pm)
         RebarBrewingStandFuel.register(this, pm)
         RebarBucket.register(this, pm)
@@ -199,6 +200,7 @@ object Rebar : JavaPlugin(), RebarAddon {
         RebarItemEntityInteractor.register(this, pm)
         RebarJoinHandler.register(this, pm)
         RebarLingeringPotion.register(this, pm)
+        RebarProjectileItem.register(this, pm)
         RebarSplashPotion.register(this, pm)
         RebarTool.register(this, pm)
         RebarWeapon.register(this, pm)

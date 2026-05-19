@@ -563,6 +563,10 @@ unit:
     singular: "bucket per second"
     plural: "buckets per second"
     abbr: "B/s"
+  buckets_per_item:
+    singular: "bucket per item"
+    plural: "buckets per item"
+    abbr: "B/item"
   days:
     singular: "day"
     plural: "days"
