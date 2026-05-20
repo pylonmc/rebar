@@ -5,14 +5,15 @@ import io.github.pylonmc.rebar.addon.RebarAddon
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter
 import io.github.pylonmc.rebar.nms.NmsAccessor
 import io.github.pylonmc.rebar.registry.RebarRegistry
-import io.github.pylonmc.rebar.util.mergeGlobalConfig
+import io.github.pylonmc.rebar.util.mergeResource
+import org.bukkit.NamespacedKey
 import org.bukkit.configuration.file.YamlConfiguration
 import java.io.File
 
 object AdvancementsManager {
     fun registerAdvancements() {
         for (addon in RebarRegistry.ADDONS) {
-            mergeGlobalConfig(addon, "advancements.yml", "advancements/${addon.key.namespace}.yml", false)
+            mergeResource(addon, Rebar, "advancements.yml", "advancements/${addon.key.namespace}.yml", false)
             registerAdvancementsForAddon(addon)
         }
     }
