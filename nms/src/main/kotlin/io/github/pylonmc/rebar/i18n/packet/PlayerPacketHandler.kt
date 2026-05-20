@@ -225,6 +225,20 @@ class PlayerPacketHandler(private val player: ServerPlayer, val handler: PlayerT
                 handleSlotDisplay(display.remainder)
             )
 
+            is SlotDisplay.OnlyWithComponent -> SlotDisplay.OnlyWithComponent(
+                handleSlotDisplay(display.source),
+                display.component
+            )
+
+            is SlotDisplay.WithAnyPotion -> SlotDisplay.WithAnyPotion(
+                handleSlotDisplay(display.display)
+            )
+
+            is SlotDisplay.DyedSlotDemo -> SlotDisplay.DyedSlotDemo(
+                handleSlotDisplay(display.dye),
+                handleSlotDisplay(display.target)
+            )
+
             else -> throw IllegalArgumentException("Unknown slot display type: ${display::class.simpleName}")
         }
     }
