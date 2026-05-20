@@ -16,9 +16,12 @@ import net.minecraft.resources.ResourceKey
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.item.ItemStackTemplate
+import net.minecraft.world.item.crafting.display.SlotDisplay
 import org.bukkit.Bukkit
 import org.bukkit.NamespacedKey
+import org.bukkit.Registry
 import org.bukkit.craftbukkit.inventory.CraftItemStack
+import org.bukkit.inventory.ItemStack
 import java.util.*
 import java.util.function.Consumer
 
@@ -49,8 +52,11 @@ object AdvancementsAccessor {
         advancement: RebarAdvancement,
         key: NamespacedKey
     ): org.bukkit.advancement.Advancement? {
-        if (advancement.displayInfo != null && RebarRegistry.ITEMS[advancement.displayInfo!!.icon.id] == null) {
-            Rebar.logger.warning("Failed to register advancement $key due to failing to find the pylon item with the key for the icon")
+        if (advancement.displayInfo != null && RebarRegistry.ITEMS[advancement.displayInfo!!.icon.id] == null && Registry.MATERIAL.get(
+                advancement.displayInfo!!.icon.id
+            ) == null
+        ) {
+            Rebar.logger.warning("Failed to register advancement $key due to failing to find the item with the key for the icon")
             return null
         }
 
@@ -60,10 +66,19 @@ object AdvancementsAccessor {
             Optional.ofNullable(advancement.displayInfo).map { info ->
                 DisplayInfo(
                     ItemStackTemplate(
-                        CraftItemStack.asNMSCopy(RebarRegistry.ITEMS[info.icon.id]!!.getItemStack()).item
+                        CraftItemStack.asNMSCopy(
+                            RebarRegistry.ITEMS[info.icon.id]?.getItemStack() ?: ItemStack.of(
+                                Registry.MATERIAL.get(info.icon.id)!!
+                            )
+                        ).item
                     ),
-                    PaperAdventure.asVanilla(info.title ?: Component.translatable("${key.namespace}.advancements.${key.key}.title")),
-                    PaperAdventure.asVanilla(info.description ?: Component.translatable("${key.namespace}.advancements.${key.key}.description")),
+                    PaperAdventure.asVanilla(
+                        info.title ?: Component.translatable("${key.namespace}.advancements.${key.key}.title")
+                    ),
+                    PaperAdventure.asVanilla(
+                        info.description
+                            ?: Component.translatable("${key.namespace}.advancements.${key.key}.description")
+                    ),
                     Optional.ofNullable(info.iconBackground)
                         .map { background -> ClientAsset.ResourceTexture(identifierFromKey(background)) },
                     AdvancementType.valueOf(info.iconFrame.uppercase()),
@@ -92,7 +107,7 @@ object AdvancementsAccessor {
                 ImpossibleTrigger().createCriterion(ImpossibleTrigger.TriggerInstance()) // TODO: Allow the usage of Mojang's criterions
             },
             AdvancementRequirements(
-                advancement.requirements
+                advancement.requirements.map { it.map { key -> key.toString() } }
             ),
             false // Not allowing this to be configured to avoid spamming Mojang's servers with junk data about fake advancements
         )

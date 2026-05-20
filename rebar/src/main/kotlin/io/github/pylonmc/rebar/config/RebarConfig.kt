@@ -69,6 +69,9 @@ object RebarConfig {
     @JvmField
     val GHOST_BLOCK_TICK_INTERVAL = config.getOrThrow("ghost-block-tick-interval", ConfigAdapter.INTEGER)
 
+    @JvmField
+    val ADVANCEMENTS_ITEM_TICKER_BASE_RATE = config.getOrThrow("advancements-item-tick-interval", ConfigAdapter.LONG)
+
     object ConfettiCreeperConfig {
 
         @JvmField

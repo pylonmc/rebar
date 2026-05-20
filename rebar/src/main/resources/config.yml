@@ -33,6 +33,9 @@ inventory-ticker-base-rate: 10
 # The number of ticks between ghost blocks with multiple states changing to the next state
 ghost-block-tick-interval: 20
 
+# The number of ticks between checking inventories for advancement-unlocking items
+advancements-item-tick-interval: 160
+
 confetti-creeper:
   # The chance for a creeper to explode into confetti instead of a normal explosion, 0 = 0% chance, 1 = 100% chance
   chance: 0.001

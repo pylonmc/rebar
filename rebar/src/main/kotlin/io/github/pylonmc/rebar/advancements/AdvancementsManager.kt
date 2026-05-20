@@ -6,6 +6,7 @@ import io.github.pylonmc.rebar.config.adapter.ConfigAdapter
 import io.github.pylonmc.rebar.nms.NmsAccessor
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.util.mergeGlobalConfig
+import org.bukkit.NamespacedKey
 import org.bukkit.configuration.file.YamlConfiguration
 import java.io.File
 
@@ -27,10 +28,12 @@ object AdvancementsManager {
 
         try {
             val config = YamlConfiguration.loadConfiguration(advancementsFile)
-            val advancementsMap =
-                ConfigAdapter.MAP.from(ConfigAdapter.NAMESPACED_KEY, ConfigAdapter.ADVANCEMENT)
-                    .convert(null, config.getValues(false))
-            advancementsMap.forEach { (key, value) -> NmsAccessor.instance.registerAdvancement(value, key) }
+            config.getKeys(false).forEach { it ->
+                NmsAccessor.instance.registerAdvancement(
+                    ConfigAdapter.ADVANCEMENT.convert(it, config.getConfigurationSection(it)!!)
+                    , ConfigAdapter.NAMESPACED_KEY.convert(null, it)
+                )
+            }
         } catch (e: Exception) {
             Rebar.logger.severe("Error while loading advancement $advancementsFile at ${advancementsFile.absolutePath}: \n${e.message}")
             e.printStackTrace()

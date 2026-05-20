@@ -4,6 +4,8 @@ package io.github.pylonmc.rebar
 
 import io.github.pylonmc.rebar.addon.RebarAddon
 import io.github.pylonmc.rebar.advancements.AdvancementsManager.registerAdvancements
+import io.github.pylonmc.rebar.advancements.base.UnlockOnItemCriteria
+import io.github.pylonmc.rebar.advancements.base.UnlockOnJoinCriteria
 import io.github.pylonmc.rebar.async.BukkitMainThreadDispatcher
 import io.github.pylonmc.rebar.async.ChunkScope
 import io.github.pylonmc.rebar.async.PlayerScope
@@ -44,7 +46,6 @@ import io.github.pylonmc.rebar.recipe.RecipeCompletion
 import io.github.pylonmc.rebar.recipe.RecipeType
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.util.delayTicks
-import io.github.pylonmc.rebar.item.base.VanillaAnvilItem
 import io.github.pylonmc.rebar.util.mergeGlobalConfig
 import io.github.pylonmc.rebar.waila.Waila
 import io.github.pylonmc.rebar.waila.WailaPlaceholders
@@ -150,6 +151,10 @@ object Rebar : JavaPlugin(), RebarAddon {
         pm.registerEvents(RebarJoinHandler, this)
         ConfettiCreeperListener.register(this, pm)
 
+        // Rebar Advancements
+        pm.registerEvents(UnlockOnJoinCriteria.JoinListener, this)
+        UnlockOnJoinCriteria.register()
+
         // Rebar Blocks
         BlockListener.register(this, pm)
         RebarBeacon.register(this, pm)
@@ -243,6 +248,7 @@ object Rebar : JavaPlugin(), RebarAddon {
         RebarZombiePigman.register(this, pm)
 
         Bukkit.getScheduler().runTaskTimer(this, RebarInventoryTicker(), 0, RebarConfig.INVENTORY_TICKER_BASE_RATE)
+        Bukkit.getScheduler().runTaskTimer(this, UnlockOnItemCriteria.Ticker, 0, RebarConfig.ADVANCEMENTS_ITEM_TICKER_BASE_RATE)
 
         if (RebarConfig.WailaConfig.ENABLED) {
             pm.registerEvents(Waila, this)

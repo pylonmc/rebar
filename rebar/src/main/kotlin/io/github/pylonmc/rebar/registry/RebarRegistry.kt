@@ -1,6 +1,7 @@
 package io.github.pylonmc.rebar.registry
 
 import io.github.pylonmc.rebar.addon.RebarAddon
+import io.github.pylonmc.rebar.advancements.Criteria
 import io.github.pylonmc.rebar.advancements.RebarAdvancement
 import io.github.pylonmc.rebar.block.RebarBlockSchema
 import io.github.pylonmc.rebar.entity.RebarEntitySchema
@@ -136,6 +137,7 @@ class RebarRegistry<T : Keyed>(val key: NamespacedKey) : Iterable<T> {
         @JvmField val RESEARCHES_KEY = rebarKey("researches")
         @JvmField val ITEM_TAGS_KEY = rebarKey("tags")
         @JvmField val ADVANCEMENT_KEY = rebarKey("advancements")
+        @JvmField val CRITERIA_KEY = rebarKey("criteria")
         // @formatter:on
 
         // @formatter:off
@@ -149,6 +151,7 @@ class RebarRegistry<T : Keyed>(val key: NamespacedKey) : Iterable<T> {
         @JvmField val RESEARCHES = RebarRegistry<Research>(RESEARCHES_KEY).also(::addRegistry)
         @JvmField val ITEM_TAGS = RebarRegistry<Tag<ItemTypeWrapper>>(ITEM_TAGS_KEY).also(::addRegistry)
         @JvmField val ADVANCEMENTS = RebarRegistry<RebarAdvancement>(ADVANCEMENT_KEY).also(::addRegistry)
+        @JvmField val CRITERIA = RebarRegistry<Criteria<*>>(CRITERIA_KEY).also(::addRegistry)
         // @formatter:on
 
         @JvmStatic

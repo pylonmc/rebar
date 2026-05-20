@@ -1,9 +1,7 @@
 package io.github.pylonmc.rebar.config.adapter
 
-import io.github.pylonmc.rebar.advancements.RebarAdvancement
-import io.github.pylonmc.rebar.advancements.RebarAdvancementDisplayInfo
-import io.github.pylonmc.rebar.advancements.RebarAdvancementIcon
-import io.github.pylonmc.rebar.advancements.RebarAdvancementRewards
+import io.github.pylonmc.rebar.advancements.*
+import io.github.pylonmc.rebar.registry.RebarRegistry
 import net.kyori.adventure.text.Component
 import org.bukkit.NamespacedKey
 import java.lang.reflect.Type
@@ -14,18 +12,20 @@ object AdvancementConfigAdapter : ConfigAdapter<RebarAdvancement> {
 
     override fun convert(key: String?, value: Any): RebarAdvancement {
         val section = ConfigAdapter.CONFIG_SECTION.convert(key, value)
-        val rewardsSection = section.getOrThrow("rewards", ConfigAdapter.CONFIG_SECTION) // TODO: make this skippable
+        val rewardsSection = section.get("rewards", ConfigAdapter.CONFIG_SECTION)
 
-        return RebarAdvancement(
-            key?.let { NamespacedKey.fromString(key) } ?: throw ExceptionInInitializerError("RebarAdvancement must have a key"),
+        val criteria = section.get("criteria", ConfigAdapter.LIST.from(CriteriaConfigAdapter)) ?: listOf()
+        val advancement = RebarAdvancement(
+            key?.let { NamespacedKey.fromString(key) }
+                ?: throw ExceptionInInitializerError("RebarAdvancement must have a key"),
             section.get("parent", ConfigAdapter.NAMESPACED_KEY),
             section.get("display-info", DisplayInfoConfigAdapter),
             section.get("rewards", ConfigAdapter.CONFIG_SECTION)?.let {
                 RebarAdvancementRewards(
-                    rewardsSection.get("experience", ConfigAdapter.INTEGER) ?: 0,
-                    rewardsSection.get("recipes", ConfigAdapter.LIST.from(ConfigAdapter.NAMESPACED_KEY)) ?: listOf(),
-                    rewardsSection.get("loot", ConfigAdapter.LIST.from(ConfigAdapter.NAMESPACED_KEY)) ?: listOf(),
-                    rewardsSection.get("function", ConfigAdapter.NAMESPACED_KEY)
+                    rewardsSection?.get("experience", ConfigAdapter.INTEGER) ?: 0,
+                    rewardsSection?.get("recipes", ConfigAdapter.LIST.from(ConfigAdapter.NAMESPACED_KEY)) ?: listOf(),
+                    rewardsSection?.get("loot", ConfigAdapter.LIST.from(ConfigAdapter.NAMESPACED_KEY)) ?: listOf(),
+                    rewardsSection?.get("function", ConfigAdapter.NAMESPACED_KEY)
                 )
             } ?: RebarAdvancementRewards(
                 0,
@@ -33,10 +33,26 @@ object AdvancementConfigAdapter : ConfigAdapter<RebarAdvancement> {
                 listOf(),
                 null
             ),
-            section.get("criteria", ConfigAdapter.LIST.from(ConfigAdapter.NAMESPACED_KEY)) ?: listOf(),
-            section.get("requirements", ConfigAdapter.LIST.from(ConfigAdapter.LIST.from(ConfigAdapter.STRING)))
-                ?: listOf()
+            criteria,
+            section.get("requirements", ConfigAdapter.LIST.from(ConfigAdapter.LIST.from(ConfigAdapter.NAMESPACED_KEY)))
+                ?: listOf(criteria.map { it.key })
         )
+        advancement.register()
+        return advancement
+    }
+
+    object CriteriaConfigAdapter : ConfigAdapter<Criterion> {
+        override val type: Type
+            get() = Criteria::class.java
+
+        override fun convert(key: String?, value: Any): Criterion {
+            val section = ConfigAdapter.CONFIG_SECTION.convert(key, value)
+            val criterionKey = section.getOrThrow("key", ConfigAdapter.NAMESPACED_KEY)
+            val criteriaTypeKey = section.getOrThrow("type", ConfigAdapter.NAMESPACED_KEY)
+            val criteria = RebarRegistry.CRITERIA[criteriaTypeKey] ?: throw ExceptionInInitializerError("criteria type $criteriaTypeKey was not defined in registry, did you remember to call register()?")
+            return criteria.createCriterion(criterionKey, section)
+        }
+
     }
 
     object DisplayInfoConfigAdapter : ConfigAdapter<RebarAdvancementDisplayInfo> {
