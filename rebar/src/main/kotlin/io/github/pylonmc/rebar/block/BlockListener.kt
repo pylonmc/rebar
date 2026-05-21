@@ -18,9 +18,7 @@ import io.papermc.paper.event.block.BlockBreakBlockEvent
 import org.bukkit.ExplosionResult
 import org.bukkit.Material
 import org.bukkit.block.Block
-import org.bukkit.entity.EntityType
 import org.bukkit.entity.FallingBlock
-import org.bukkit.entity.Item
 import org.bukkit.event.Event
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
@@ -288,17 +286,24 @@ internal object BlockListener : MultiListener {
     // Event added by paper, not really documented when it's called so two separate handlers might
     // fire for some block breaks but this shouldn't be an issue
     // Primarily added to handle sensitive blocks
+
+    // We need to remember if the event was going to drop originally or not
+    private var destroyWillDrop: Boolean? = null
+
     @MultiHandler(priorities = [ EventPriority.LOWEST, EventPriority.MONITOR ], ignoreCancelled = true)
     private fun blockRemove(event: BlockDestroyEvent, priority: EventPriority) {
         val block = BlockStorage.get(event.block) ?: return
-        val context = BlockBreakContext.Destroyed(event);
+        val context = BlockBreakContext.Destroyed(event, destroyWillDrop ?: event.willDrop())
         if (priority == EventPriority.LOWEST) {
             if (!BlockStorage.preBreakBlock(block, context)) {
                 event.isCancelled = true
                 return
             }
+            this.destroyWillDrop = event.willDrop()
+            event.expToDrop = 0
             event.setWillDrop(false)
         } else {
+            this.destroyWillDrop = null
             BlockStorage.removeBlock(block, event.block.position, context)
         }
     }
