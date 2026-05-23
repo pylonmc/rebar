@@ -16,9 +16,7 @@ import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
 import io.github.pylonmc.rebar.nms.NmsAccessor
 import io.github.pylonmc.rebar.util.position.position
 import io.github.pylonmc.rebar.util.rebarKey
-import io.github.retrooper.packetevents.util.SpigotConversionUtil
 import io.papermc.paper.datacomponent.DataComponentTypes
-import me.tofaa.entitylib.meta.display.ItemDisplayMeta
 import net.kyori.adventure.audience.Audience
 import net.kyori.adventure.text.Component
 import org.bukkit.Material
@@ -92,7 +90,7 @@ internal class DebugWaxedWeatheredCutCopperStairs(stack: ItemStack)
                 pdc.set(
                     RebarBlock.rebarBlockTextureEntityKey,
                     RebarSerializers.ITEM_STACK_READABLE,
-                    SpigotConversionUtil.toBukkitItemStack(entity.getEntityMeta(ItemDisplayMeta::class.java).item)
+                    entity.itemStack ?: ItemStack.empty()
                 )
             }
         }

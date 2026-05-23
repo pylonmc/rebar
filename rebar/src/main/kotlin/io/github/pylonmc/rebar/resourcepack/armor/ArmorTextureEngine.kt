@@ -2,102 +2,47 @@
 
 package io.github.pylonmc.rebar.resourcepack.armor
 
-import com.github.retrooper.packetevents.event.PacketListener
-import com.github.retrooper.packetevents.event.PacketReceiveEvent
-import com.github.retrooper.packetevents.event.PacketSendEvent
-import com.github.retrooper.packetevents.protocol.ConnectionState
-import com.github.retrooper.packetevents.protocol.item.ItemStack
-import com.github.retrooper.packetevents.protocol.packettype.PacketType
-import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientCreativeInventoryAction
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityEquipment
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSetPlayerInventory
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSetSlot
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerWindowItems
 import io.github.pylonmc.rebar.config.RebarConfig
 import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.item.RebarItemSchema
 import io.github.pylonmc.rebar.item.base.RebarArmor
 import io.github.pylonmc.rebar.util.rebarKey
-import io.github.retrooper.packetevents.util.SpigotConversionUtil
 import io.papermc.paper.datacomponent.DataComponentTypes
 import io.papermc.paper.datacomponent.item.Equippable
 import org.bukkit.entity.Player
+import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataType
 
-object ArmorTextureEngine : PacketListener {
+object ArmorTextureEngine {
     val customArmorTexturesKey = rebarKey("custom_armor_textures")
-    val armorSlots = setOf(5, 6, 7, 8)
 
     @JvmStatic
     var Player.hasCustomArmorTextures: Boolean
         get() = RebarConfig.ArmorTextureConfig.FORCED || this.persistentDataContainer.getOrDefault(customArmorTexturesKey, PersistentDataType.BOOLEAN, false)
         set(value) = this.persistentDataContainer.set(customArmorTexturesKey, PersistentDataType.BOOLEAN, RebarConfig.ArmorTextureConfig.FORCED || value)
 
-    override fun onPacketSend(event: PacketSendEvent?) {
-        if (event == null || event.connectionState != ConnectionState.PLAY) return
-
-        val player = event.getPlayer<Player>()
-        if (!player.hasCustomArmorTextures) return
-
-        when (event.packetType) {
-            PacketType.Play.Server.SET_SLOT -> handleSetSlot(WrapperPlayServerSetSlot(event))
-            PacketType.Play.Server.WINDOW_ITEMS -> handleWindowItems(WrapperPlayServerWindowItems(event))
-            PacketType.Play.Server.SET_PLAYER_INVENTORY -> handlePlayerInventorySlot(WrapperPlayServerSetPlayerInventory(event))
-            PacketType.Play.Server.ENTITY_EQUIPMENT -> handleEntityEquipmentPacket(WrapperPlayServerEntityEquipment(event))
-            else -> {}
-        }
-    }
-
-    override fun onPacketReceive(event: PacketReceiveEvent?) {
-        if (event == null || event.connectionState != ConnectionState.PLAY) return
-        when (event.packetType) {
-            PacketType.Play.Client.CREATIVE_INVENTORY_ACTION -> handleCreativeAction(WrapperPlayClientCreativeInventoryAction(event))
-            else -> {}
-        }
-    }
-
-    private fun handleSetSlot(packet: WrapperPlayServerSetSlot) {
-        if (armorSlots.contains(packet.slot)) {
-            packet.item = addArmorTexture(packet.item)
-        }
-    }
-
-    private fun handleWindowItems(packet: WrapperPlayServerWindowItems) {
-        packet.items.toList().forEachIndexed { index, itemStack ->
-            if (armorSlots.contains(index)) {
-                packet.items[index] = addArmorTexture(itemStack)
+    fun handleItem(player: Player, stack: ItemStack) {
+        if (!RebarConfig.ArmorTextureConfig.ENABLED) return
+        if (!player.hasCustomArmorTextures) {
+            if (stack.persistentDataContainer.has(customArmorTexturesKey)) {
+                resetItem(stack)
             }
+            return
         }
-    }
 
-    private fun handlePlayerInventorySlot(packet : WrapperPlayServerSetPlayerInventory) {
-        if (armorSlots.contains(packet.slot)) {
-            packet.stack = addArmorTexture(packet.stack)
-        }
-    }
-
-    private fun handleEntityEquipmentPacket(packet: WrapperPlayServerEntityEquipment) {
-        packet.equipment.forEach { equipment ->
-            equipment.item = addArmorTexture(equipment.item)
-        }
-    }
-
-    private fun addArmorTexture(packetStack: ItemStack?) : ItemStack? {
-        if (packetStack == null) return null
-        val stack = SpigotConversionUtil.toBukkitItemStack(packetStack)
         val schema = RebarItemSchema.fromStack(stack)
-        if (schema == null || !RebarArmor::class.java.isAssignableFrom(schema.itemClass)) {
-            return packetStack
+        if (schema == null || !RebarItem.isRebarItem(stack, RebarArmor::class.java)) {
+            return
         }
 
         val template = schema.getOriginalTemplate()
         val defaultAssetId = template.getDataOrDefault(DataComponentTypes.EQUIPPABLE, template.type.getDefaultData(DataComponentTypes.EQUIPPABLE))?.assetId()
         val component = stack.getDataOrDefault(DataComponentTypes.EQUIPPABLE, stack.type.getDefaultData(DataComponentTypes.EQUIPPABLE))
         if (component == null || component.assetId() != defaultAssetId) {
-            return packetStack
+            return
         }
 
-        val armor = RebarItem.fromStack(template) as RebarArmor
+        val armor = RebarItem.fromStack(template, RebarArmor::class.java) ?: return
         stack.setData(DataComponentTypes.EQUIPPABLE, Equippable.equippable(component.slot())
             .assetId(armor.equipmentType)
             .swappable(component.swappable())
@@ -109,25 +54,28 @@ object ArmorTextureEngine : PacketListener {
             .equipSound(component.equipSound())
             .shearSound(component.shearSound())
             .canBeSheared(component.canBeSheared()))
-        return SpigotConversionUtil.fromBukkitItemStack(stack)
+        stack.editPersistentDataContainer { it.set(customArmorTexturesKey, PersistentDataType.BOOLEAN, true) }
     }
 
-    private fun handleCreativeAction(packet: WrapperPlayClientCreativeInventoryAction) {
-        if (packet.itemStack == null) return
-        val stack = SpigotConversionUtil.toBukkitItemStack(packet.itemStack)
-        val item = RebarItem.fromStack(stack, RebarArmor::class.java)
-        if (item is RebarItem) {
-            val component = stack.getData(DataComponentTypes.EQUIPPABLE) ?: return
-            if (component.assetId() == item.equipmentType) {
-                val template = item.schema.getOriginalTemplate()
-                val defaultComponent = template.getData(DataComponentTypes.EQUIPPABLE)
-                if (defaultComponent == null) {
-                    stack.resetData(DataComponentTypes.EQUIPPABLE)
-                } else {
-                    stack.setData(DataComponentTypes.EQUIPPABLE, defaultComponent)
-                }
-                packet.itemStack = SpigotConversionUtil.fromBukkitItemStack(stack)
+    fun resetItem(item: ItemStack) {
+        val armor = RebarItem.fromStack(item, RebarArmor::class.java)
+        if (armor !is RebarItem) return
+
+        val component = item.getData(DataComponentTypes.EQUIPPABLE) ?: return
+        if (component.assetId() == armor.equipmentType) {
+            val template = armor.schema.getOriginalTemplate()
+            if (!template.isDataOverridden(DataComponentTypes.EQUIPPABLE)) {
+                item.resetData(DataComponentTypes.EQUIPPABLE)
+                return
+            }
+
+            val templateComponent = template.getData(DataComponentTypes.EQUIPPABLE)
+            if (templateComponent == null) {
+                item.unsetData(DataComponentTypes.EQUIPPABLE)
+            } else {
+                item.setData(DataComponentTypes.EQUIPPABLE, templateComponent)
             }
         }
+        item.editPersistentDataContainer { it.remove(customArmorTexturesKey) }
     }
 }

@@ -17,7 +17,6 @@ public class FluidConnectionTest extends AsyncTest {
     @Override
     protected void test() {
         Chunk chunk = TestUtil.getRandomChunk(false).join();
-        chunk.setForceLoaded(true);
 
         Block consumerBlock = chunk.getBlock(6, 64, 5);
         FluidConsumer consumer = (FluidConsumer) TestUtil.runSync(
@@ -65,6 +64,6 @@ public class FluidConnectionTest extends AsyncTest {
             BlockStorage.breakBlock(producerBlock);
         }).join();
 
-        chunk.setForceLoaded(false);
+        TestUtil.unloadChunk(chunk).join();
     }
 }

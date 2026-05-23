@@ -60,6 +60,7 @@ interface BlockCreateContext {
      * ex:
      * - Growing of Rebar Trees
      * - Evolution of Rebar Sponges
+     * - Spread of Rebar Fire
      */
     @JvmRecord
     data class PluginGenerate(
@@ -67,7 +68,8 @@ interface BlockCreateContext {
         override val facing: BlockFace = BlockFace.NORTH,
         override val facingVertical: BlockFace = BlockFace.NORTH,
         override val block: Block,
-        override val item: ItemStack,
+        override val item: ItemStack? = null,
+        override val shouldSetType: Boolean = true,
     ) : BlockCreateContext
 
     /**

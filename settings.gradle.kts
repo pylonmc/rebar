@@ -6,7 +6,7 @@ pluginManagement {
         gradlePluginPortal()
     }
 
-    val dokkaVersion = if (useLocalDokka) "2.1.0-rebar-SNAPSHOT" else "2.0.0"
+    val dokkaVersion = if (useLocalDokka) "2.3.0-rebar-SNAPSHOT" else "2.2.0"
     plugins {
         id("org.jetbrains.dokka") version dokkaVersion
         id("org.jetbrains.dokka-javadoc") version dokkaVersion

@@ -94,7 +94,7 @@ interface RebarFluidBufferBlock : RebarFluidBlock {
      * the corresponding buffer.
      */
     fun canSetFluid(fluid: RebarFluid, amount: Double): Boolean
-            = amount >= 0 && amount <= fluidData(fluid).capacity + FLUID_EPSILON
+            = fluid in fluidBuffers && amount >= 0 && amount <= fluidData(fluid).capacity + FLUID_EPSILON
 
     /**
      * Sets a fluid buffer only if the new amount of fluid is greater
@@ -163,8 +163,7 @@ interface RebarFluidBufferBlock : RebarFluidBlock {
         private fun onDeserialize(event: RebarBlockDeserializeEvent) {
             val block = event.rebarBlock
             if (block is RebarFluidBufferBlock) {
-                bufferFluidBlocks[block] = event.pdc.get(fluidBuffersKey, fluidBuffersType)?.toMutableMap()
-                    ?: error("Fluid buffers not found for ${block.key}")
+                event.pdc.get(fluidBuffersKey, fluidBuffersType)?.toMutableMap()?.let { bufferFluidBlocks[block] = it }
             }
         }
 
@@ -172,7 +171,7 @@ interface RebarFluidBufferBlock : RebarFluidBlock {
         private fun onSerialize(event: RebarBlockSerializeEvent) {
             val block = event.rebarBlock
             if (block is RebarFluidBufferBlock) {
-                event.pdc.set(fluidBuffersKey, fluidBuffersType, bufferFluidBlocks[block]!!)
+                event.pdc.set(fluidBuffersKey, fluidBuffersType, bufferFluidBlocks[block] ?: return)
             }
         }
 

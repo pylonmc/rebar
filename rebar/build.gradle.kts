@@ -1,4 +1,5 @@
 import net.minecrell.pluginyml.bukkit.BukkitPluginDescription
+import net.minecrell.pluginyml.paper.PaperPluginDescription
 import org.jetbrains.kotlin.gradle.dsl.JvmDefaultMode
 
 plugins {
@@ -37,12 +38,11 @@ dependencies {
     paperLibraryApi("org.jetbrains.kotlin:kotlin-reflect:${kotlin.coreLibrariesVersion}")
     paperLibraryApi("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
 
-    compileOnly("io.papermc.paper:paper-api:$minecraftVersion-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:$minecraftVersion.build.+")
 
-    paperLibraryApi("xyz.xenondevs.invui:invui:2.0.0-beta.5")
-    paperLibraryApi("xyz.xenondevs.invui:invui-kotlin:2.0.0-beta.5")
-    implementation("com.github.Tofaa2.EntityLib:spigot:2.4.11")
-    implementation("com.github.retrooper:packetevents-spigot:2.11.2")
+    paperLibraryApi("xyz.xenondevs.invui:invui:2.1.0")
+    paperLibraryApi("xyz.xenondevs.invui:invui-kotlin:2.1.0")
+    compileOnly("me.clip:placeholderapi:2.12.2")
     implementation("info.debatty:java-string-similarity:2.0.0")
     implementation("org.bstats:bstats-bukkit:2.2.1")
     paperLibrary("com.github.ben-manes.caffeine:caffeine:3.2.2")
@@ -67,7 +67,7 @@ tasks.test {
 }
 
 kotlin {
-    jvmToolchain(21)
+    jvmToolchain(25)
     compilerOptions {
         javaParameters = true
         jvmDefault = JvmDefaultMode.NO_COMPATIBILITY
@@ -96,8 +96,8 @@ dokka {
             packageListUrl("https://javadoc.io/doc/net.kyori/adventure-api/latest/element-list")
         }
         externalDocumentationLinks.register("InvUI") {
-            url("https://invui.javadoc.xenondevs.xyz/")
-            packageListUrl("https://invui.javadoc.xenondevs.xyz/element-list")
+            url("https://repo.xenondevs.xyz/javadoc/releases/xyz/xenondevs/invui/invui/2.1.0/raw/")
+            packageListUrl("https://repo.xenondevs.xyz/javadoc/releases/xyz/xenondevs/invui/invui/2.1.0/raw/element-list")
         }
         sourceLink {
             localDirectory.set(file("src/main/kotlin"))
@@ -144,8 +144,6 @@ tasks.shadowJar {
     exclude("org/intellij/lang/annotations/**")
     exclude("org/jetbrains/annotations/**")
 
-    relocate("com.github.retrooper.packetevents", "io.github.pylonmc.rebar.packetevents")
-    relocate("me.tofaa.entitylib", "io.github.pylonmc.rebar.entitylib")
     relocate("org.bstats", "io.github.pylonmc.rebar.bstats")
 
     archiveBaseName = "rebar"
@@ -163,6 +161,13 @@ paper {
     authors = listOf("Rebar team")
     apiVersion = minecraftVersion
     load = BukkitPluginDescription.PluginLoadOrder.STARTUP
+
+    serverDependencies {
+        register("PlaceholderAPI") {
+            load = PaperPluginDescription.RelativeLoadOrder.BEFORE
+            required = false
+        }
+    }
 }
 
 tasks.withType<Jar> {

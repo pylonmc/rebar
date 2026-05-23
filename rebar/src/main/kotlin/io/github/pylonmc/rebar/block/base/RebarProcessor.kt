@@ -109,9 +109,8 @@ interface RebarProcessor {
                 return
             }
 
-            val data = event.pdc.get(processorKey, RebarSerializers.PROCESSOR_DATA)
-                ?: error("Processor data not found for ${block.key}")
-            processorBlocks[block] = data
+            event.pdc.get(processorKey, RebarSerializers.PROCESSOR_DATA)?.let { processorBlocks[block] = it }
+
         }
 
         @EventHandler

@@ -19,6 +19,7 @@ class GameTestConfig(
     private val key: NamespacedKey,
     val size: Int,
     val setUp: Consumer<GameTest>,
+    val cleanup: Consumer<GameTest>,
     val delayTicks: Long,
     val timeoutTicks: Long,
     val positionOverride: BlockPosition?
@@ -31,6 +32,7 @@ class GameTestConfig(
     class Builder(val key: NamespacedKey) {
         private var size by Delegates.notNull<Int>()
         private var setUp: Consumer<GameTest> = Consumer {}
+        private var cleanup: Consumer<GameTest> = Consumer {}
         private var delayTicks = 0L
         private var timeoutTicks = 5L * 60 * 20
         private var positionOverride: BlockPosition? = null
@@ -48,6 +50,13 @@ class GameTestConfig(
         fun setUp(setUp: Consumer<GameTest>): Builder = apply { this.setUp = setUp }
 
         /**
+         * Runs after test ends
+         */
+        fun cleanup(cleanup: Consumer<GameTest>): Builder = apply {
+            this.cleanup = cleanup
+        }
+
+        /**
          * Delay in ticks before the test starts. Defaults to 0.
          */
         fun delayTicks(delayTicks: Long): Builder = apply { this.delayTicks = delayTicks }
@@ -62,7 +71,7 @@ class GameTestConfig(
          */
         fun positionOverride(position: BlockPosition): Builder = apply { this.positionOverride = position }
 
-        fun build() = GameTestConfig(key, size, setUp, delayTicks, timeoutTicks, positionOverride)
+        fun build() = GameTestConfig(key, size, setUp, cleanup, delayTicks, timeoutTicks, positionOverride)
     }
 
     /**

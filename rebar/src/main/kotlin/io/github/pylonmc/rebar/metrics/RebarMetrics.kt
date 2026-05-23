@@ -30,13 +30,15 @@ internal object RebarMetrics {
         metrics.addCustomChart(AdvancedPie("addons") {
             val values = mutableMapOf<String, Int>()
             for (addon in RebarRegistry.ADDONS) {
-                values.put(addon.javaClass.simpleName, 1)
+                if (addon is Rebar) continue
+                values[addon.javaClass.simpleName] = 1
             }
             values
         })
 
         metrics.addCustomChart(AdvancedPie("number_of_addons") {
-            mutableMapOf<String, Int>(RebarRegistry.ADDONS.count().toString() to 1)
+            // Subtract 1 to not include Rebar itself
+            mutableMapOf<String, Int>((RebarRegistry.ADDONS.count() - 1).toString() to 1)
         })
 
         metrics.addCustomChart(AdvancedPie("disabled_items") {

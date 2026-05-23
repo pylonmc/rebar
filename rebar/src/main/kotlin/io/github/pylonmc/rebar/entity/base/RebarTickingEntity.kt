@@ -132,7 +132,7 @@ interface RebarTickingEntity {
                         tickingEntity.tick()
                     } catch (e: Exception) {
                         withContext(Rebar.mainThreadDispatcher) {
-                            EntityListener.logEventHandleErrTicking(e, tickingEntity as RebarEntity<*>)
+                            EntityListener.logTickingErr(e, tickingEntity as RebarEntity<*>)
                         }
                     }
                 }

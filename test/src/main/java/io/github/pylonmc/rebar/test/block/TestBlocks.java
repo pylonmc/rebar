@@ -10,9 +10,9 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 
 
-public final class Blocks {
+public final class TestBlocks {
 
-    private Blocks() {}
+    private TestBlocks() {}
 
     public static final NamespacedKey SIMPLE_BLOCK_KEY = RebarTest.key("simple_block");
 

@@ -48,5 +48,7 @@ public class EntityStorageChunkReloadTest extends AsyncTest {
                 .isEqualTo(69);
         assertThat(((LivingEntity) EntityStorage.get(uuid).getEntity()).hasAI())
                 .isFalse();
+
+        TestUtil.unloadChunk(chunk).join();
     }
 }

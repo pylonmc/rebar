@@ -40,6 +40,7 @@ import org.bukkit.event.world.WorldLoadEvent
 import org.bukkit.event.world.WorldUnloadEvent
 import org.bukkit.util.BoundingBox
 import org.bukkit.util.Vector
+import org.jetbrains.annotations.ApiStatus
 import java.lang.invoke.MethodHandles
 import java.time.Duration
 import java.util.UUID
@@ -61,8 +62,9 @@ object BlockCullingEngine : Listener {
 
     internal val occludingCache = mutableMapOf<UUID, MutableMap<Long, ChunkData>>()
 
-    internal val blockTextureOctrees = mutableMapOf<UUID, Octree<RebarBlock>>()
-    internal  val culledBlockOctrees = mutableMapOf<UUID, Octree<RebarBlock>>()
+    @JvmSynthetic @ApiStatus.Internal
+    val blockTextureOctrees = mutableMapOf<UUID, Octree<RebarBlock>>()
+    internal val culledBlockOctrees = mutableMapOf<UUID, Octree<RebarBlock>>()
 
     private val jobs = mutableMapOf<UUID, Job>()
     internal val syncJobTasks = ConcurrentHashMap<UUID, MutableMap<RebarCulledBlock, Boolean>>()

@@ -94,8 +94,7 @@ interface RebarTickingBlock {
         private fun onDeserialize(event: RebarBlockDeserializeEvent) {
             val block = event.rebarBlock
             if (block is RebarTickingBlock) {
-                tickingBlocks[block] = event.pdc.get(tickingBlockKey, RebarSerializers.TICKING_BLOCK_DATA)
-                    ?: error("Ticking block data not found for ${block.key}")
+                event.pdc.get(tickingBlockKey, RebarSerializers.TICKING_BLOCK_DATA)?.let { tickingBlocks[block] = it }
             }
         }
 
@@ -103,7 +102,7 @@ interface RebarTickingBlock {
         private fun onSerialize(event: RebarBlockSerializeEvent) {
             val block = event.rebarBlock
             if (block is RebarTickingBlock) {
-                event.pdc.set(tickingBlockKey, RebarSerializers.TICKING_BLOCK_DATA, tickingBlocks[block]!!)
+                event.pdc.set(tickingBlockKey, RebarSerializers.TICKING_BLOCK_DATA, tickingBlocks[block] ?: return)
             }
         }
 

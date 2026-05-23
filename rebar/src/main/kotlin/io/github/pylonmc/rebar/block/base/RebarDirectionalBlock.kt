@@ -36,8 +36,7 @@ interface RebarDirectionalBlock : Keyed {
         private fun onDeserialize(event: RebarBlockDeserializeEvent) {
             val block = event.rebarBlock
             if (block is RebarDirectionalBlock) {
-                directionalBlocks[block] = event.pdc.get(directionalBlockKey, RebarSerializers.BLOCK_FACE)
-                    ?: error("Direction not found for ${block.key}")
+                event.pdc.get(directionalBlockKey, RebarSerializers.BLOCK_FACE)?.let { directionalBlocks[block] = it }
             }
         }
 
@@ -45,7 +44,7 @@ interface RebarDirectionalBlock : Keyed {
         private fun onSerialize(event: RebarBlockSerializeEvent) {
             val block = event.rebarBlock
             if (block is RebarDirectionalBlock) {
-                event.pdc.set(directionalBlockKey, RebarSerializers.BLOCK_FACE, directionalBlocks[block]!!)
+                event.pdc.set(directionalBlockKey, RebarSerializers.BLOCK_FACE, directionalBlocks[block] ?: return)
             }
         }
 

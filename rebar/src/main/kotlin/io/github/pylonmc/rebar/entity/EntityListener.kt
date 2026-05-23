@@ -14,7 +14,7 @@ internal object EntityListener : MultiListener {
     @JvmSynthetic
     internal fun logEventHandleErr(event: Event, e: Exception, entity: RebarEntity<*>) {
         Rebar.logger.severe("Error when handling entity(${entity.key}, ${entity.uuid}, ${entity.entity.location}) event handler ${event.javaClass.simpleName}: ${e.localizedMessage}")
-        e.printStackTrace()
+        if (RebarConfig.FULL_ERROR_STACK_TRACES) e.printStackTrace()
         entityErrMap[entity.uuid] = entityErrMap[entity.uuid]?.plus(1) ?: 1
         if (entityErrMap[entity.uuid]!! > RebarConfig.ALLOWED_ENTITY_ERRORS) {
             entity.entity.remove()
@@ -22,9 +22,9 @@ internal object EntityListener : MultiListener {
     }
 
     @JvmSynthetic
-    internal fun logEventHandleErrTicking(e: Exception, entity: RebarEntity<*>) {
+    internal fun logTickingErr(e: Exception, entity: RebarEntity<*>) {
         Rebar.logger.severe("Error when handling ticking entity(${entity.key}, ${entity.uuid}, ${entity.entity.location}): ${e.localizedMessage}")
-        e.printStackTrace()
+        if (RebarConfig.FULL_ERROR_STACK_TRACES) e.printStackTrace()
         entityErrMap[entity.uuid] = entityErrMap[entity.uuid]?.plus(1) ?: 1
         if (entityErrMap[entity.uuid]!! > RebarConfig.ALLOWED_ENTITY_ERRORS) {
             entity.entity.remove()

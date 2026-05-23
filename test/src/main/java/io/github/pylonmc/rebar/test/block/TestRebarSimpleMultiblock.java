@@ -30,8 +30,8 @@ public class TestRebarSimpleMultiblock extends RebarBlock implements RebarSimple
     @Override
     public @NotNull Map<Vector3i, MultiblockComponent> getComponents() {
         return Map.of(
-                new Vector3i(1, 1, 4), MultiblockComponent.of(Blocks.SIMPLE_BLOCK_KEY),
-                new Vector3i(2, -1, 0), MultiblockComponent.of(Blocks.SIMPLE_BLOCK_KEY)
+                new Vector3i(1, 1, 4), MultiblockComponent.of(TestBlocks.SIMPLE_BLOCK_KEY),
+                new Vector3i(2, -1, 0), MultiblockComponent.of(TestBlocks.SIMPLE_BLOCK_KEY)
         );
     }
 }

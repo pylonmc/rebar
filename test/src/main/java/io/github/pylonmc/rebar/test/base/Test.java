@@ -11,6 +11,11 @@ import java.util.logging.Level;
 
 
 public interface Test {
+    default TestResult start() {
+        RebarTest.instance().getLogger().log(Level.INFO, "Test %s started".formatted(getKey()));
+        return run();
+    }
+
     TestResult run();
 
     default NamespacedKey getKey() {

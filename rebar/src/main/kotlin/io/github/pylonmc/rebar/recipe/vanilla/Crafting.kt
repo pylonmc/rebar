@@ -42,8 +42,8 @@ class ShapedRecipeWrapper(
                 "# # # # # # # # #",
             )
             .addIngredient('#', GuiItems.backgroundBlack())
-            .addIngredient('b', ItemButton.from(ItemStack(Material.CRAFTING_TABLE)))
-            .addIngredient('r', ItemButton.from(recipe.result))
+            .addIngredient('b', ItemButton.of(ItemStack(Material.CRAFTING_TABLE)))
+            .addIngredient('r', ItemButton.of(recipe.result))
             .build()
 
         val height = recipe.shape.size
@@ -59,7 +59,7 @@ class ShapedRecipeWrapper(
 
     private fun getDisplaySlot(recipe: ShapedRecipe, x: Int, y: Int): Item {
         val character = recipe.shape[y][x]
-        return ItemButton.from(recipe.choiceMap[character])
+        return ItemButton.of(recipe.choiceMap[character])
     }
 
     fun matches(items: List<ItemStack?>): Boolean {
@@ -83,7 +83,7 @@ sealed class AShapelessRecipeWrapper(
             "# # # # # # # # #",
         )
         .addIngredient('#', GuiItems.backgroundBlack())
-        .addIngredient('b', ItemButton.from(ItemStack(Material.CRAFTING_TABLE)))
+        .addIngredient('b', ItemButton.of(ItemStack(Material.CRAFTING_TABLE)))
         .addIngredient('0', getDisplaySlot(0))
         .addIngredient('1', getDisplaySlot(1))
         .addIngredient('2', getDisplaySlot(2))
@@ -97,7 +97,7 @@ sealed class AShapelessRecipeWrapper(
         .build()
 
     private fun getDisplaySlot(index: Int): Item {
-        return ItemButton.from(recipeInput.getOrNull(index))
+        return ItemButton.of(recipeInput.getOrNull(index))
     }
 
     fun matches(items: List<ItemStack?>): Boolean {

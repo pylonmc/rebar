@@ -12,7 +12,7 @@ import io.github.pylonmc.rebar.fluid.FluidPointType;
 import io.github.pylonmc.rebar.fluid.RebarFluid;
 import io.github.pylonmc.rebar.fluid.VirtualFluidPoint;
 import io.github.pylonmc.rebar.test.RebarTest;
-import io.github.pylonmc.rebar.test.fluid.Fluids;
+import io.github.pylonmc.rebar.test.fluid.TestFluids;
 import kotlin.Pair;
 import lombok.Getter;
 import org.bukkit.NamespacedKey;
@@ -72,8 +72,8 @@ public class FluidProducer extends RebarBlock implements RebarFluidBlock, RebarU
 
     private RebarFluid getFluidType() {
         return Map.of(
-                LAVA_PRODUCER_KEY, Fluids.LAVA,
-                WATER_PRODUCER_KEY, Fluids.WATER
+                LAVA_PRODUCER_KEY, TestFluids.LAVA,
+                WATER_PRODUCER_KEY, TestFluids.WATER
         ).get(getKey());
     }
 }

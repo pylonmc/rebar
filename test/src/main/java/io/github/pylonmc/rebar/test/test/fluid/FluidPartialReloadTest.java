@@ -18,11 +18,8 @@ public class FluidPartialReloadTest extends AsyncTest {
     @Override
     protected void test() {
         Chunk producerChunk = TestUtil.getRandomChunk(false).join();
-        producerChunk.setForceLoaded(true);
         Chunk connectorChunk = TestUtil.getRandomChunk(false).join();
-        connectorChunk.setForceLoaded(true);
         Chunk consumerChunk = TestUtil.getRandomChunk(false).join();
-        consumerChunk.setForceLoaded(true);
 
         Block consumerBlock = consumerChunk.getBlock(6, 64, 5);
         FluidConsumer consumer = (FluidConsumer) TestUtil.runSync(
@@ -50,21 +47,19 @@ public class FluidPartialReloadTest extends AsyncTest {
                 .isEqualTo(producer.getPoint().getSegment());
 
         // After unloading the connector, the producer and consumer should have different segments
-        connectorChunk.setForceLoaded(false);
         TestUtil.unloadChunk(connectorChunk).join();
         assertThat(consumer.getPoint().getSegment())
                 .isNotEqualTo(producer.getPoint().getSegment());
 
         // When the chunk is reloaded, all should have the same segment again
         TestUtil.loadChunk(connectorChunk).join();
-        connectorChunk.setForceLoaded(true);
         FluidConnector reloadedConnector = BlockStorage.getAs(FluidConnector.class, connectorBlock);
         assertThat(consumer.getPoint().getSegment())
                 .isEqualTo(reloadedConnector.getPoint().getSegment())
                 .isEqualTo(producer.getPoint().getSegment());
 
-        producerChunk.setForceLoaded(false);
-        connectorChunk.setForceLoaded(false);
-        consumerChunk.setForceLoaded(false);
+        TestUtil.unloadChunk(producerChunk).join();
+        TestUtil.unloadChunk(connectorChunk).join();
+        TestUtil.unloadChunk(consumerChunk).join();
     }
 }

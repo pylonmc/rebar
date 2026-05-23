@@ -1,6 +1,6 @@
 plugins {
     kotlin("jvm")
-    id("io.papermc.paperweight.userdev") version "2.0.0-beta.18"
+    id("io.papermc.paperweight.userdev") version "2.0.0-beta.21"
 }
 
 group = "io.github.pylonmc"
@@ -13,10 +13,10 @@ repositories {
 val minecraftVersion = property("minecraft.version").toString()
 
 dependencies {
-    paperweight.paperDevBundle("$minecraftVersion-R0.1-SNAPSHOT")
+    paperweight.paperDevBundle("$minecraftVersion.build.+")
     compileOnly(project(":rebar"))
 }
 
 kotlin {
-    jvmToolchain(21)
+    jvmToolchain(25)
 }

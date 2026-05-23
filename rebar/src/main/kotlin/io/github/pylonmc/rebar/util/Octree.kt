@@ -148,8 +148,8 @@ open class Octree<N>(
         return children?.maxOfOrNull { it.maxDepth() } ?: depth
     }
 
-    fun allEntries(): Set<N> {
-        val result = mutableSetOf<N>()
+    fun allEntries(): MutableList<N> {
+        val result = mutableListOf<N>()
         result.addAll(entries)
         if (storeOutOfBoundsEntries) result.addAll(outOfBoundsEntries)
         children?.forEach { result.addAll(it.allEntries()) }

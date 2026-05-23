@@ -1,5 +1,6 @@
 package io.github.pylonmc.rebar.test.test.item;
 
+import io.github.pylonmc.rebar.block.BlockStorage;
 import io.github.pylonmc.rebar.gametest.GameTestConfig;
 import io.github.pylonmc.rebar.test.RebarTest;
 import io.github.pylonmc.rebar.test.base.GameTest;
@@ -23,9 +24,7 @@ public class RebarItemStackInterfaceTest extends GameTest {
 
                     Block block = test.getWorld().getBlockAt(test.location());
                     block.setType(Material.BREWING_STAND);
-                    Bukkit.getPluginManager().callEvent(
-                            new BrewingStandFuelEvent(block, OminousBlazePower.STACK, 1));
-
+                    Bukkit.getPluginManager().callEvent(new BrewingStandFuelEvent(block, OminousBlazePower.STACK, 1));
                 })
                 .build());
     }

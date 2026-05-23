@@ -4,7 +4,7 @@ import io.github.pylonmc.rebar.gametest.GameTestConfig;
 import io.github.pylonmc.rebar.recipe.RecipeType;
 import io.github.pylonmc.rebar.test.RebarTest;
 import io.github.pylonmc.rebar.test.base.GameTest;
-import io.github.pylonmc.rebar.test.item.Items;
+import io.github.pylonmc.rebar.test.item.TestItems;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Furnace;
@@ -19,7 +19,7 @@ public class FurnaceTest extends GameTest {
         super(new GameTestConfig.Builder(RebarTest.key("furnace_test"))
                 .size(0)
                 .setUp(test -> {
-                    ItemStack stickyStick = Items.STICKY_STICK_STACK;
+                    ItemStack stickyStick = TestItems.STICKY_STICK_STACK;
                     ItemStack diamond = new ItemStack(Material.DIAMOND);
                     RecipeType.VANILLA_FURNACE.addRecipe(new FurnaceRecipe(
                             RebarTest.key("sticky_stick_furnace"),

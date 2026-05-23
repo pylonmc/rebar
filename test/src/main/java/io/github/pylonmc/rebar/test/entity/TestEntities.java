@@ -4,9 +4,9 @@ import io.github.pylonmc.rebar.entity.RebarEntity;
 import org.bukkit.entity.LivingEntity;
 
 
-public final class Entities {
+public final class TestEntities {
 
-    private Entities() {}
+    private TestEntities() {}
 
     public static void register() {
         RebarEntity.register(SimpleEntity.KEY, LivingEntity.class, SimpleEntity.class);

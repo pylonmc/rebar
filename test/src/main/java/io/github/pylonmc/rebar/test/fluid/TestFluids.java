@@ -5,7 +5,7 @@ import io.github.pylonmc.rebar.test.RebarTest;
 import org.bukkit.Material;
 
 
-public class Fluids {
+public class TestFluids {
 
     public static final RebarFluid WATER = new RebarFluid(RebarTest.key("water"),  Material.CYAN_CONCRETE);
     public static final RebarFluid LAVA = new RebarFluid(RebarTest.key("lava"), Material.ORANGE_CONCRETE)
