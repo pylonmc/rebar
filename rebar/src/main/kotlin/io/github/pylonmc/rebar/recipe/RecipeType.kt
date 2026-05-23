@@ -28,12 +28,12 @@ open class RecipeType<T : RebarRecipe>(private val key: NamespacedKey) : Keyed, 
 
     open fun addRecipe(recipe: T) {
         registeredRecipes[recipe.key] = recipe
-        RebarRecipe.clearCache()
+        RecipeService.clearCache()
     }
 
     open fun removeRecipe(recipe: NamespacedKey) {
         registeredRecipes.remove(recipe)
-        RebarRecipe.clearCache()
+        RecipeService.clearCache()
     }
 
     fun register() {

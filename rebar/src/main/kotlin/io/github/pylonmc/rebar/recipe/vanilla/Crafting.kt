@@ -4,8 +4,8 @@ import io.github.pylonmc.rebar.config.ConfigSection
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter
 import io.github.pylonmc.rebar.guide.button.ItemButton
 import io.github.pylonmc.rebar.recipe.FluidOrItem
-import io.github.pylonmc.rebar.recipe.RebarRecipe
 import io.github.pylonmc.rebar.recipe.RecipeInput
+import io.github.pylonmc.rebar.recipe.RecipeService
 import io.github.pylonmc.rebar.util.gui.GuiItems
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
@@ -63,13 +63,7 @@ class ShapedRecipeWrapper(
     }
 
     fun matches(items: List<ItemStack?>): Boolean {
-        if (RebarRecipe.matchesShaped(items, recipeInput, 3, 3)) return true
-        val mirror = items.toMutableList()
-        while (mirror.size < 9) mirror.add(null)
-        mirror[2] = mirror[0].also{ mirror[0] = mirror[2] }
-        mirror[5] = mirror[3].also{ mirror[3] = mirror[5] }
-        mirror[8] = mirror[6].also{ mirror[6] = mirror[8] }
-        return RebarRecipe.matchesShaped(mirror, recipeInput, 3, 3)
+        return RecipeService.matchesShapedMirrorableRecipe(items, recipeInput, 3, 3)
     }
 }
 
@@ -107,7 +101,7 @@ sealed class AShapelessRecipeWrapper(
     }
 
     fun matches(items: List<ItemStack?>): Boolean {
-        return RebarRecipe.matchesShapeless(items, recipeInput)
+        return RecipeService.matchesShapelessRecipe(items, recipeInput)
     }
 }
 

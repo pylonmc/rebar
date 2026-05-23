@@ -91,18 +91,19 @@ internal object RebarRecipeListener : Listener {
         }
         // Due to rebar ingredients possibly needing to ignore components (and thus using MaterialChoice)
         // we can't fully trust that the recipe returned by MC is correct
-        var rebarRecipe: CraftingRecipeWrapper? = RebarRecipe.searchRecipes(
+        val matrix = e.inventory.matrix.toList()
+        var rebarRecipe: CraftingRecipeWrapper? = RecipeService.searchRecipes(
             RecipeType.VANILLA_SHAPED,
             recipe.key,
-            RebarRecipe.hashShaped(e.inventory.matrix.toList())
-        ) { it.matches(e.inventory.matrix.toList()) }
+            RecipeService.hashShapedCraftingInput(matrix)
+        ) { it.matches(matrix) }
         if (rebarRecipe == null) {
             // Try shapeless instead
-            rebarRecipe = RebarRecipe.searchRecipes(
+            rebarRecipe = RecipeService.searchRecipes(
                 RecipeType.VANILLA_SHAPELESS,
                 recipe.key,
-                RebarRecipe.hashShapeless(e.inventory.matrix.toList())
-            ) { it.matches(e.inventory.matrix.toList()) }
+                RecipeService.hashShapelessCraftingInput(matrix)
+            ) { it.matches(matrix) }
         }
         if (rebarRecipe == null) {
             inventory.result = null
@@ -133,19 +134,19 @@ internal object RebarRecipeListener : Listener {
     @EventHandler(priority = EventPriority.LOWEST)
     private fun onCrafterCraft(e: CrafterCraftEvent) {
         val crafterState = e.block.state as? Crafter ?: return
-        val inventory = crafterState.inventory
-        var recipe: CraftingRecipeWrapper? = RebarRecipe.searchRecipes(
+        val contents = crafterState.inventory.contents.toList()
+        var recipe: CraftingRecipeWrapper? = RecipeService.searchRecipes(
             RecipeType.VANILLA_SHAPED,
             e.recipe.key,
-            RebarRecipe.hashShaped(inventory.contents.toList())
-        ) { it.matches(inventory.contents.toList()) }
+            RecipeService.hashShapedCraftingInput(contents)
+        ) { it.matches(contents) }
         if (recipe == null) {
             // Try shapeless instead
-            recipe = RebarRecipe.searchRecipes(
+            recipe = RecipeService.searchRecipes(
                 RecipeType.VANILLA_SHAPELESS,
                 e.recipe.key,
-                RebarRecipe.hashShaped(inventory.contents.toList())
-            ) { it.matches(inventory.contents.toList()) }
+                RecipeService.hashShapelessCraftingInput(contents)
+            ) { it.matches(contents) }
         }
         if (recipe == null) {
             e.isCancelled = true
@@ -174,7 +175,7 @@ internal object RebarRecipeListener : Listener {
             e.isCancelled = true
             return
         }
-        val recipe = RebarRecipe.searchRecipes(recipeType, e.recipe?.key, e.source.hashIgnoreAmount()) {
+        val recipe = RecipeService.searchRecipes(recipeType, e.recipe?.key, e.source.hashIgnoreAmount()) {
             it.matches(e.source)
         }
         if (recipe != null) {
@@ -193,7 +194,7 @@ internal object RebarRecipeListener : Listener {
             e.totalCookTime = Int.MAX_VALUE
             return
         }
-        val recipe = RebarRecipe.searchRecipes(recipeType, e.recipe.key, e.source.hashIgnoreAmount()) {
+        val recipe = RecipeService.searchRecipes(recipeType, e.recipe.key, e.source.hashIgnoreAmount()) {
             it.matches(e.source)
         }
         if (recipe == null) {
@@ -215,7 +216,7 @@ internal object RebarRecipeListener : Listener {
             e.totalCookTime = Int.MAX_VALUE
             return
         }
-        val recipe = RebarRecipe.searchRecipes(recipeType, e.recipe.key, e.source.hashIgnoreAmount()) {
+        val recipe = RecipeService.searchRecipes(recipeType, e.recipe.key, e.source.hashIgnoreAmount()) {
             it.matches(e.source)
         }
         if (recipe == null) {
@@ -240,7 +241,7 @@ internal object RebarRecipeListener : Listener {
             e.isCancelled = true
             return
         }
-        val recipe = RebarRecipe.searchRecipes(recipeType, input.hashIgnoreAmount()) { it.matches(input) }
+        val recipe = RecipeService.searchRecipes(recipeType, input.hashIgnoreAmount()) { it.matches(input) }
         if (recipe == null) {
             e.isCancelled = true
             return

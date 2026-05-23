@@ -13,6 +13,7 @@ import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.item.RebarItemSchema
 import io.github.pylonmc.rebar.i18n.customMiniMessage
 import io.github.pylonmc.rebar.nms.NmsAccessor
+import io.github.pylonmc.rebar.recipe.RecipeInput
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.util.position.BlockPosition
 import io.papermc.paper.datacomponent.DataComponentType
