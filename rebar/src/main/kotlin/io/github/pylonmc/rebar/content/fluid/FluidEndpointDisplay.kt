@@ -119,6 +119,7 @@ class FluidEndpointDisplay : RebarEntity<ItemDisplay>, RebarDeathEntity, FluidPo
                     .addCustomModelDataString("fluid_point_${type.name.lowercase()}:none")
                     .addCustomModelDataString("face=${face.oppositeFace.name.lowercase()}")
                 )
+                .itemDisplayTransform(ItemDisplay.ItemDisplayTransform.FIXED)
                 // add a little bit to ensure the point is not obscured by the block itself
                 .build(block.location.toCenterLocation().add(face.direction.multiply(radius + 0.001)))
         }
