@@ -30,7 +30,7 @@ import java.util.IdentityHashMap
  * @see VirtualInventory
  * @see RebarVirtualInventoryBlock
  */
-interface RebarGuiBlock : RebarBreakHandler, RebarNoVanillaContainerBlock {
+interface RebarInventoryBlock : RebarBreakHandler, RebarNoVanillaInventoryBlock {
 
     /**
      * Returns the block's GUI. Called when a block is created.
@@ -51,28 +51,28 @@ interface RebarGuiBlock : RebarBreakHandler, RebarNoVanillaContainerBlock {
     }
 
     companion object : Listener {
-        private val guiBlocks = IdentityHashMap<RebarGuiBlock, Gui>()
+        private val guiBlocks = IdentityHashMap<RebarInventoryBlock, Gui>()
 
         @EventHandler
         private fun onPlace(event: RebarBlockPlaceEvent) {
-            if (event.rebarBlock is RebarGuiBlock) {
+            if (event.rebarBlock is RebarInventoryBlock) {
                 guiBlocks[event.rebarBlock] = event.rebarBlock.createGui()
             }
         }
 
         @EventHandler
         private fun onLoad(event: RebarBlockLoadEvent) {
-            if (event.rebarBlock is RebarGuiBlock) {
+            if (event.rebarBlock is RebarInventoryBlock) {
                 guiBlocks[event.rebarBlock] = event.rebarBlock.createGui()
             }
         }
 
         @EventHandler(priority = EventPriority.HIGH)
         private fun onInteract(event: PlayerInteractEvent) {
-            val guiBlock = BlockStorage.getAs(RebarGuiBlock::class.java, event.clickedBlock ?: return) ?: return
+            val guiBlock = BlockStorage.getAs(RebarInventoryBlock::class.java, event.clickedBlock ?: return) ?: return
 
             if (!event.action.isRightClick
-                || event.player.isSneaking
+                || (event.player.isSneaking && event.isBlockInHand)
                 || event.hand != EquipmentSlot.HAND
                 || event.useInteractedBlock() == Event.Result.DENY
             ) {
@@ -87,14 +87,14 @@ interface RebarGuiBlock : RebarBreakHandler, RebarNoVanillaContainerBlock {
 
         @EventHandler
         private fun onBreak(event: RebarBlockBreakEvent) {
-            if (event.rebarBlock is RebarGuiBlock) {
+            if (event.rebarBlock is RebarInventoryBlock) {
                 guiBlocks.remove(event.rebarBlock)!!.closeForAllViewers()
             }
         }
 
         @EventHandler
         private fun onUnload(event: RebarBlockUnloadEvent) {
-            if (event.rebarBlock is RebarGuiBlock) {
+            if (event.rebarBlock is RebarInventoryBlock) {
                 guiBlocks.remove(event.rebarBlock)!!.closeForAllViewers()
             }
         }

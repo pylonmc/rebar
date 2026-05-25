@@ -50,8 +50,8 @@ class ItemButton @JvmOverloads constructor(
     constructor(vararg stacks: ItemStack) : this(stacks.toList())
 
     /**
-     * @param stacks The items to display. If multiple are provided, the button will automatically
-     * cycle through all of them. You must supply at least one item
+     * @param stack The item to display
+     * @param preDisplayDecorator A function to apply to the button item after creating it
      */
     constructor(stack: ItemStack, preDisplayDecorator: (ItemStack, Player) -> ItemStack) : this(listOf(stack), preDisplayDecorator)
 
@@ -262,8 +262,8 @@ class ItemButton @JvmOverloads constructor(
                 = ItemButton(stacks.toList())
 
         /**
-         * @param stacks The items to display. If multiple are provided, the button will automatically
-         * cycle through all of them. You must supply at least one item
+         * @param stack The item to display
+         * @param preDisplayDecorator A function to apply to the button item after creating it
          */
         @JvmStatic
         fun of(stack: ItemStack, preDisplayDecorator: (ItemStack, Player) -> ItemStack)

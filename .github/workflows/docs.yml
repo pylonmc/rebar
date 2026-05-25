@@ -4,6 +4,7 @@ on:
     branches: [ "master" ]
     paths:
       - "**/src/**"
+      - "**/*.gradle.kts"
   workflow_dispatch:
 
 permissions:
@@ -22,10 +23,10 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: Set up JDK 25
+      - name: Set up JDK 24 for Dokka
         uses: actions/setup-java@v4.6.0
         with:
-          java-version: '25'
+          java-version: '24'
           distribution: 'temurin'
 
       - name: Setup Gradle
@@ -38,7 +39,13 @@ jobs:
           ref: rebar
 
       - name: Publish Dokka to Maven local
-        run: ./gradlew publishToMavenLocal -Pversion=2.1.0-rebar-SNAPSHOT
+        run: ./gradlew publishToMavenLocal -Pversion=2.3.0-rebar-SNAPSHOT
+
+      - name: Set up JDK 25 for Rebar
+        uses: actions/setup-java@v4.6.0
+        with:
+          java-version: '25'
+          distribution: 'temurin'
 
       - name: Checkout
         uses: actions/checkout@v5

@@ -10,6 +10,7 @@ import io.github.pylonmc.rebar.util.editData
 import io.netty.channel.ChannelDuplexHandler
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.ChannelPromise
+import net.minecraft.commands.arguments.SlotsArgument.slots
 import net.minecraft.network.HashedPatchMap
 import net.minecraft.network.HashedStack
 import net.minecraft.network.protocol.Packet
@@ -20,8 +21,10 @@ import net.minecraft.server.level.ServerPlayer
 import net.minecraft.util.HashOps
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.ItemStackTemplate
+import net.minecraft.world.item.crafting.Ingredient
 import net.minecraft.world.item.crafting.display.*
 import org.bukkit.craftbukkit.inventory.CraftItemStack
+import java.util.Optional
 import java.util.logging.Level
 import kotlin.jvm.optionals.getOrNull
 
@@ -87,8 +90,12 @@ class PlayerPacketHandler(private val player: ServerPlayer, val handler: PlayerT
                             handleRecipeDisplay(it.contents.display),
                             it.contents.group,
                             it.contents.category,
-                            it.contents.craftingRequirements.apply {
-                                getOrNull()?.forEach { ingredient -> ingredient.itemStacks()?.forEach { item -> translate(item) } }
+                            it.contents.craftingRequirements.map { ingredients ->
+                                ingredients.map { ingredient ->
+                                    ingredient.itemStacks()?.let { stacks ->
+                                        Ingredient.ofStacks(stacks.map { item -> translate(item.copy()) })
+                                    } ?: ingredient
+                                }
                             }
                         ),
                         it.flags
@@ -227,12 +234,26 @@ class PlayerPacketHandler(private val player: ServerPlayer, val handler: PlayerT
                 handleSlotDisplay(display.remainder)
             )
 
+            is SlotDisplay.OnlyWithComponent -> SlotDisplay.OnlyWithComponent(
+                handleSlotDisplay(display.source),
+                display.component
+            )
+
+            is SlotDisplay.WithAnyPotion -> SlotDisplay.WithAnyPotion(
+                handleSlotDisplay(display.display)
+            )
+
+            is SlotDisplay.DyedSlotDemo -> SlotDisplay.DyedSlotDemo(
+                handleSlotDisplay(display.dye),
+                handleSlotDisplay(display.target)
+            )
+
             else -> throw IllegalArgumentException("Unknown slot display type: ${display::class.simpleName}")
         }
     }
 
-    private fun translate(item: ItemStack) {
-        if (item.isEmpty) return
+    private fun translate(item: ItemStack): ItemStack {
+        if (item.isEmpty) return item
         try {
             handler.handleItem(CraftItemStack.asCraftMirror(item))
         } catch (e: Throwable) {
@@ -244,6 +265,7 @@ class PlayerPacketHandler(private val player: ServerPlayer, val handler: PlayerT
                 e
             )
         }
+        return item
     }
 
     companion object {

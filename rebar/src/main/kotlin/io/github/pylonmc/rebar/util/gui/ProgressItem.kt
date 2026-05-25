@@ -27,7 +27,7 @@ import kotlin.math.min
  *
  * Using any `set` methods on here will automatically update the item in any windows that contain it.
  *
- * @param builder The item stack builder to use for the item
+ * @param item The item to be displayed
  * @param countDown If true, the progress bar will be inverted, meaning that 0.0 is full and 1.0 is empty.
  */
 open class ProgressItem @JvmOverloads constructor(
