@@ -8,8 +8,9 @@ import io.github.pylonmc.rebar.guide.button.FluidButton
 import io.github.pylonmc.rebar.guide.button.PageButton
 import io.github.pylonmc.rebar.guide.button.AddonPageButton
 import io.github.pylonmc.rebar.guide.pages.RootPage
-import io.github.pylonmc.rebar.guide.pages.SearchItemsAndFluidsPage
+import io.github.pylonmc.rebar.guide.pages.LatinSearchItemsAndFluidsPage
 import io.github.pylonmc.rebar.guide.pages.base.GuidePage
+import io.github.pylonmc.rebar.guide.pages.base.SearchPage
 import io.github.pylonmc.rebar.guide.pages.base.SimpleDynamicGuidePage
 import io.github.pylonmc.rebar.guide.pages.base.SimpleInfoPage
 import io.github.pylonmc.rebar.guide.pages.help.HelpPage
@@ -39,6 +40,7 @@ import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.inventory.ItemStack
 import xyz.xenondevs.invui.item.Item
+import java.util.Locale
 import java.util.UUID
 
 /**
@@ -143,10 +145,28 @@ class RebarGuide(stack: ItemStack) : RebarItem(stack), RebarInteractor {
         val backButton = BackButton()
 
         @JvmStatic
-        val searchItemsAndFluidsPage = SearchItemsAndFluidsPage()
+        val latinSearchItemsAndFluidsPage = LatinSearchItemsAndFluidsPage()
 
         @JvmStatic
-        val searchItemsAndFluidsButton = PageButton(Material.OAK_SIGN, searchItemsAndFluidsPage)
+        val latinSearchItemsAndFluidsButton = PageButton(Material.OAK_SIGN, latinSearchItemsAndFluidsPage)
+
+        /**
+         * Maps locales to their corresponding search page buttons.
+         * This allows different locales to use adapted search pages with appropriate text indexers.
+         */
+        @JvmStatic
+        val localSearchPages: MutableMap<Locale, PageButton> = mutableMapOf()
+
+        @JvmStatic
+        fun getSearchButton(player: Player): PageButton =
+            getSearchButton(player.locale())
+
+        @JvmStatic
+        fun getSearchButton(locale: Locale): PageButton {
+            localSearchPages[locale]?.let { return it }
+            localSearchPages[locale] = latinSearchItemsAndFluidsButton
+            return latinSearchItemsAndFluidsButton
+        }
 
         @JvmStatic
         val mainSettingsPage = MainSettingsPage

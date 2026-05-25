@@ -2,7 +2,6 @@ package io.github.pylonmc.rebar.guide.pages.base
 
 import io.github.pylonmc.rebar.content.guide.RebarGuide
 import io.github.pylonmc.rebar.guide.button.GuideButton
-import io.github.pylonmc.rebar.guide.button.PageButton
 import io.github.pylonmc.rebar.util.gui.GuiItems
 import org.bukkit.NamespacedKey
 import org.bukkit.entity.Player
@@ -51,7 +50,7 @@ open class SimpleDynamicGuidePage(
         .addIngredient('#', GuiItems.background())
         .addIngredient('<', GuiItems.pagePrevious())
         .addIngredient('b', RebarGuide.backButton)
-        .addIngredient('s', RebarGuide.searchItemsAndFluidsButton)
+        .addIngredient('s', RebarGuide.getSearchButton(player))
         .addIngredient('>', GuiItems.pageNext())
         .addIngredient('x', Markers.CONTENT_LIST_SLOT_HORIZONTAL)
         .addPageChangeHandler { _, newPage -> saveCurrentPage(player, newPage) }
