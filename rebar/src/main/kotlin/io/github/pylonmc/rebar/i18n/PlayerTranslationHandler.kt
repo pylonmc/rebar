@@ -3,6 +3,7 @@
 package io.github.pylonmc.rebar.i18n
 
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
+import io.github.pylonmc.rebar.fluid.RebarFluid
 import io.github.pylonmc.rebar.i18n.RebarTranslator.Companion.translate
 import io.github.pylonmc.rebar.i18n.RebarTranslator.Companion.untranslate
 import io.github.pylonmc.rebar.item.RebarItem
@@ -23,18 +24,20 @@ import org.jetbrains.annotations.ApiStatus
 class PlayerTranslationHandler internal constructor(private val player: Player) {
     fun handleItem(stack: ItemStack) {
         val rebarItem = RebarItem.fromStack(stack)
+        val rebarFluid = RebarFluid.fromStack(stack)
         val placeholders = rebarItem?.getPlaceholders().orEmpty()
 
         stack.translate(player.locale(), placeholders)
 
-        if (rebarItem != null && !stack.persistentDataContainer.has(FOOTER_APPENDED)) {
+        if ((rebarItem != null || rebarFluid != null) && !stack.persistentDataContainer.has(FOOTER_APPENDED)) {
             stack.editData(DataComponentTypes.LORE) { lore ->
                 val newLore = lore.lines().toMutableList()
                 if (!stack.enchantments.isEmpty()) {
                     newLore.addFirst(Component.empty())
                 }
-                newLore.add(GlobalTranslator.render(rebarItem.addon.footerName, player.locale()))
-                if (rebarItem.isDisabled) {
+                val addon = rebarItem?.addon ?: rebarFluid?.addon!!
+                newLore.add(GlobalTranslator.render(addon.footerName, player.locale()))
+                if (rebarItem?.isDisabled ?: false) {
                     newLore.add(
                         GlobalTranslator.render(
                             Component.translatable("rebar.message.disabled.lore"),

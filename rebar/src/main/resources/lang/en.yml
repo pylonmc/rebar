@@ -144,10 +144,11 @@ guide:
     search-specifiers:
       name: "Search Specifiers"
       lore: |-
-        <guidearrow> By default, searches through item names greedily ("iron ingot" searches for exactly "iron ingot" not "iron" and "ingot")
+        <guidearrow> By default, words will search in item names
         <guidearrow> Prefix <light_purple>@</light_purple> to search by <light_purple>addon</light_purple> id or display name (e.g. "pylon")
         <guidearrow> Prefix <aqua>$</aqua> to search in <aqua>lore</aqua>
         <guidearrow> Prefixed searches only apply to the word directly after the prefix
+        <guidearrow> Spaces are treated as 'and' ("iron ingot" searches for "iron" and "ingot")
         <guidearrow> Example: <light_purple>@pylon <white>iron <aqua>$temperature <white>slurry
     research:
       cost:
