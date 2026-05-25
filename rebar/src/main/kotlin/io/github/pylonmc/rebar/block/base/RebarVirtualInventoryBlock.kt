@@ -23,7 +23,7 @@ import xyz.xenondevs.invui.inventory.event.UpdateReason
  *
  * @see Gui
  * @see VirtualInventory
- * @see RebarGuiBlock
+ * @see RebarInventoryBlock
  */
 interface RebarVirtualInventoryBlock : RebarBreakHandler {
 
