@@ -14,6 +14,7 @@ import io.github.pylonmc.rebar.event.RebarBlockUnloadEvent
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
 import io.github.pylonmc.rebar.util.Vectors
 import io.github.pylonmc.rebar.util.plus
+import io.github.pylonmc.rebar.util.position.position
 import io.github.pylonmc.rebar.util.rebarKey
 import io.github.pylonmc.rebar.util.times
 import org.bukkit.Bukkit
@@ -44,22 +45,14 @@ interface RebarElectricBlock : RebarEntityHolderBlock {
     fun getElectricNode(name: String) = electricNodes.find { it.name == name }
 
     @ApiStatus.NonExtendable
-    fun getElectricNodeOrThrow(name: String) = getElectricNode(name) ?: throw NoSuchElementException("No electric node with name '$name' found in block at ${block.location}")
+    fun getElectricNodeOrThrow(name: String) = getElectricNode(name) ?: throw NoSuchElementException("No electric node with name '$name' found in block at ${block.position}")
 
     /**
      * Adds an electric node to this block that has a physical presence in the form of several display entities.
-     * [RebarDirectionalBlock.facing] must be set before calling this method.
-     *
-     * @return [node]
      */
     @ApiStatus.NonExtendable
-    fun <T : ElectricNode> addElectricPort(face: BlockFace, node: T, radius: Double, offset: Vector, overrideMaterial: Material?): T {
-        val material = overrideMaterial ?: when (node) {
-            is ElectricNode.Connector -> Material.GRAY_CONCRETE
-            is ElectricNode.Consumer -> Material.LIME_CONCRETE
-            is ElectricNode.Acceptor -> Material.LIME_CONCRETE
-            is ElectricNode.Producer -> Material.RED_CONCRETE
-        }
+    fun addElectricPort(port: ElectricPort) {
+        val (node, face, radius, offset, material) = port
         val expandedRadius = radius - PORT_OUTER_SCALE / 2 + 0.001
         addEntity(
             "outer_${node.id}", ItemDisplayBuilder()
@@ -81,17 +74,25 @@ interface RebarElectricBlock : RebarEntityHolderBlock {
         )
         interaction.persistentDataContainer.set(NODE_KEY, RebarSerializers.UUID, node.id)
         WireConnectionService.addInteraction(interaction, node)
-        return addElectricNode(node)
+        addElectricNode(node)
     }
 
-    /**
-     * Adds an electric node to this block that has a physical presence in the form of several display entities.
-     * [RebarDirectionalBlock.facing] must be set before calling this method. Radius defaults to 0.5.
-     *
-     * @return [node]
-     */
-    @ApiStatus.NonExtendable
-    fun <T : ElectricNode> addElectricPort(face: BlockFace, node: T): T = addElectricPort(face, node, 0.5, Vectors.zero, null)
+    @JvmRecord
+    data class ElectricPort @JvmOverloads constructor(
+        val node: ElectricNode,
+        val face: BlockFace,
+        val radius: Double = 0.5,
+        val offset: Vector = Vectors.zero,
+        val material: Material = when (node) {
+            is ElectricNode.Connector -> Material.GRAY_CONCRETE
+            is ElectricNode.Consumer, is ElectricNode.Acceptor -> Material.LIME_CONCRETE
+            is ElectricNode.Producer -> Material.RED_CONCRETE
+        }
+    ) {
+        fun radius(radius: Double) = copy(radius = radius)
+        fun offset(offset: Vector) = copy(offset = offset)
+        fun material(material: Material) = copy(material = material)
+    }
 
     @ApiStatus.Internal
     companion object : Listener {
@@ -143,15 +144,7 @@ interface RebarElectricBlock : RebarEntityHolderBlock {
             val block = event.rebarBlock
             if (block !is RebarElectricBlock) return
             for (node in electricBlocks.remove(block).orEmpty()) {
-                when (node) {
-                    is ElectricNode.Connector -> {
-                        for (connection in node.connections) {
-                            ElectricityManager.getNodeById(connection)?.let { node.disconnectFrom(it) }
-                        }
-                    }
-
-                    is ElectricNode.Leaf -> node.disconnect()
-                }
+                node.disconnectAll()
                 ElectricityManager.removeNode(node)
             }
         }

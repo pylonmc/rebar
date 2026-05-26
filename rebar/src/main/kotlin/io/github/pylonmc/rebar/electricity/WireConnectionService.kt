@@ -66,19 +66,21 @@ internal object WireConnectionService : Listener {
                 return
             }
 
-            val existingConnection = when (thisNode) {
-                is ElectricNode.Leaf -> thisNode.connection
-                is ElectricNode.Connector -> thisNode.connections.firstOrNull {
-                    val node = ElectricityManager.getNodeById(it) ?: return@firstOrNull false
-                    thisBlock.isHeldEntityPresent(getConnectionName(thisNode, node))
-                }
+            val existingConnection = thisNode.connections.firstOrNull {
+                val node = ElectricityManager.getNodeById(it) ?: return@firstOrNull false
+                thisBlock.isHeldEntityPresent(getConnectionName(thisNode, node))
             }?.let(ElectricityManager::getNodeById)
 
             val playerLocation = player.eyeLocation.subtract(0.0, 0.5, 0.0)
             val (wireItem, node) = if (existingConnection != null) {
                 val wireEntity =
                     thisBlock.getHeldEntityOrThrow(getConnectionName(thisNode, existingConnection)) as ItemDisplay
-                val wireType = RebarRegistry.ITEMS.getOrThrow(wireEntity.persistentDataContainer.get(WIRE_TYPE_KEY, RebarSerializers.NAMESPACED_KEY)!!)
+                val wireType = RebarRegistry.ITEMS.getOrThrow(
+                    wireEntity.persistentDataContainer.get(
+                        WIRE_TYPE_KEY,
+                        RebarSerializers.NAMESPACED_KEY
+                    )!!
+                )
                 val wireItem = wireType.createNewItemStack()
 
                 if (player.gameMode != GameMode.CREATIVE) {
@@ -142,11 +144,6 @@ internal object WireConnectionService : Listener {
         if (!checkCanRunWire(player, connectingNode, thisLocation)) return
         player.sendActionBar(Component.empty())
 
-        if (thisNode is ElectricNode.Leaf && thisNode.connection != null) {
-            player.sendMessage(Component.translatable("rebar.message.electricity.already_connected"))
-            return
-        }
-
         val wireItem = playerInv.getItem(event.hand)
         val wire = RebarItem.from<RebarWire>(wireItem) ?: return
         connectingNode.connect(thisNode)
@@ -159,7 +156,11 @@ internal object WireConnectionService : Listener {
         thisBlock.addEntity(getConnectionName(thisNode, connectingNode), connectingEntity)
         connectingBlock.addEntity(getConnectionName(connectingNode, thisNode), connectingEntity)
 
-        connectingEntity.persistentDataContainer.set(WIRE_TYPE_KEY, RebarSerializers.NAMESPACED_KEY, (wire as RebarItem).key)
+        connectingEntity.persistentDataContainer.set(
+            WIRE_TYPE_KEY,
+            RebarSerializers.NAMESPACED_KEY,
+            (wire as RebarItem).key
+        )
         player.persistentDataContainer.remove(CONNECTING_KEY)
 
         if (player.gameMode != GameMode.CREATIVE) {

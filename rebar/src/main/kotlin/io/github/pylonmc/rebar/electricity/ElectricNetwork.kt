@@ -19,7 +19,7 @@ class ElectricNetwork {
     /**
      * A map of heuristics based on distance to consumers.
      */
-    private val heuristics = mutableMapOf<ElectricNode, Map<ElectricNode, Int>>()
+    private var heuristics: Map<ElectricNode, Map<ElectricNode, Int>>? = null
 
     fun addNode(node: ElectricNode) {
         nodeMap[node.id] = node
@@ -29,7 +29,7 @@ class ElectricNetwork {
             is ElectricNode.Acceptor -> acceptors.add(node)
             is ElectricNode.Connector -> {}
         }
-        heuristics.clear()
+        heuristics = null
     }
 
     fun removeNode(node: ElectricNode) {
@@ -37,21 +37,22 @@ class ElectricNetwork {
         producers.remove(node)
         consumers.remove(node)
         acceptors.remove(node)
-        heuristics.clear()
+        heuristics = null
     }
 
     fun isPartOfNetwork(node: ElectricNode): Boolean = node.id in nodeMap
 
+    // TODO memoization
     fun tick() {
         for (consumer in consumers) {
-            consumer.isPowered = false
+            consumer.isPowered = consumer.requiredPower roughlyEquals 0.0
         }
 
         val surplusPower = producers.associateWithTo(mutableMapOf()) { it.power }
 
         // First, we distribute power from producers to consumers
         val totalPowerProduced = producers.sumOf { it.power }
-        val validConsumers = consumers.associateWithTo(mutableMapOf()) { it.requiredPower }
+        val validConsumers = consumers.associateWith { it.requiredPower }.filterTo(mutableMapOf()) { it.value > 0 }
         var powerConsumedByConsumers = roundRobinFill(
             validConsumers,
             totalPowerProduced
@@ -69,7 +70,7 @@ class ElectricNetwork {
 
         // Then we invert that: knowing how much power was consumed, we calculate how much was taken from each producer
         val powerTakenFromProducers = roundRobinFill(
-            producers.associateWith { it.power },
+            producers.associateWith { it.power }.filterValues { it > 0 },
             powerConsumedByConsumers.values.sum()
         ).toMutableMap()
 
@@ -213,31 +214,20 @@ class ElectricNetwork {
     /**
      * Calculates the load for edges based on a greedy best first search from the producer to the consumer, using the graph distance to consumers as the heuristic.
      */
-// I would've used A*, but in this case, since the heuristic is perfect, greedy best first search is more efficient.
+    // I would've used A*, but in this case, since the heuristic is perfect, greedy best first search is more efficient.
     private fun findBestPath(
         producer: ElectricNode,
         consumer: ElectricNode,
         disconnectedEdges: Set<Edge>,
     ): List<Edge>? {
-        if (heuristics.isEmpty()) recalculateDistanceHeuristics()
-        val heuristic = heuristics[consumer]
-            ?: throw IllegalArgumentException("Target node is not a consumer in this network")
+        if (heuristics == null) heuristics = calculateDistanceHeuristics()
+        val heuristic =
+            heuristics!![consumer] ?: throw IllegalArgumentException("Target node is not a consumer in this network")
         val visited = mutableSetOf<ElectricNode>()
         val queue = PriorityQueue<ElectricNode>(compareBy { heuristic[it]!! })
         queue.add(producer)
         val inQueue = mutableSetOf(producer)
         val cameFrom = mutableMapOf<ElectricNode, ElectricNode>()
-
-        fun queueNeighbor(node: ElectricNode, neighborId: UUID) {
-            val neighbor = nodeMap[neighborId] ?: return
-            if (neighbor in visited) return
-            if (Edge(node, neighbor) in disconnectedEdges || Edge(neighbor, node) in disconnectedEdges) return
-            if (neighbor !in inQueue) {
-                queue.add(neighbor)
-                inQueue.add(neighbor)
-                cameFrom[neighbor] = node
-            }
-        }
 
         while (queue.isNotEmpty()) {
             val current = queue.poll()
@@ -254,14 +244,18 @@ class ElectricNetwork {
                 return path.asReversed()
             }
             visited.add(current)
-            when (current) {
-                is ElectricNode.Connector -> {
-                    for (neighborId in current.connections) {
-                        queueNeighbor(current, neighborId)
-                    }
+            for (neighborId in current.connections) {
+                val neighbor = nodeMap[neighborId] ?: continue
+                if (neighbor in visited) continue
+                if (
+                    Edge(current, neighbor) in disconnectedEdges ||
+                    Edge(neighbor, current) in disconnectedEdges
+                ) continue
+                if (neighbor !in inQueue) {
+                    queue.add(neighbor)
+                    inQueue.add(neighbor)
+                    cameFrom[neighbor] = current
                 }
-
-                is ElectricNode.Leaf -> current.connection?.let { queueNeighbor(current, it) }
             }
         }
         return null
@@ -293,36 +287,27 @@ class ElectricNetwork {
 
     private data class LoadResult(val currents: Map<Edge, Double>, val finalPower: Double)
 
-    private fun recalculateDistanceHeuristics() {
-        heuristics.clear()
+    private fun calculateDistanceHeuristics(): Map<ElectricNode, Map<ElectricNode, Int>> {
+        val heuristics = mutableMapOf<ElectricNode, Map<ElectricNode, Int>>()
         for (consumer in consumers + acceptors) {
-            val queue = ArrayDeque<Pair<ElectricNode, Int>>(listOf(consumer to 0))
+            val queue = ArrayDeque(listOf(consumer to 0))
             val visited = mutableSetOf<ElectricNode>()
             val distanceMap = mutableMapOf<ElectricNode, Int>()
-
-            fun queueNeighbor(node: ElectricNode, neighborId: UUID) {
-                val neighbor = nodeMap[neighborId] ?: return
-                if (neighbor in visited) return
-                queue.add(neighbor to (distanceMap[node]!! + 1))
-            }
 
             while (queue.isNotEmpty()) {
                 val (current, distance) = queue.removeFirst()
                 if (current in visited) continue
                 visited.add(current)
                 distanceMap[current] = distance
-                when (current) {
-                    is ElectricNode.Connector -> {
-                        for (neighborId in current.connections) {
-                            queueNeighbor(current, neighborId)
-                        }
-                    }
-
-                    is ElectricNode.Leaf -> current.connection?.let { queueNeighbor(current, it) }
+                for (neighborId in current.connections) {
+                    val neighbor = nodeMap[neighborId] ?: continue
+                    if (neighbor in visited) continue
+                    queue.add(neighbor to (distanceMap[current]!! + 1))
                 }
             }
             heuristics[consumer] = distanceMap
         }
+        return heuristics
     }
 
     private data class Edge(val from: ElectricNode, val to: ElectricNode)
@@ -355,11 +340,3 @@ class ElectricNetwork {
 }
 
 private infix fun Double.roughlyEquals(other: Double): Boolean = abs(this - other) < 1e-6
-
-private infix fun <K> Map<K, Double>.roughlyEquals(other: Map<K, Double>): Boolean {
-    if (this.keys != other.keys) return false
-    for (key in this.keys) {
-        if (!(this[key]!! roughlyEquals other[key]!!)) return false
-    }
-    return true
-}

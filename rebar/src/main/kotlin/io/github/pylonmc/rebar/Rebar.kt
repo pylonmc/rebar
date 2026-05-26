@@ -149,8 +149,6 @@ object Rebar : JavaPlugin(), RebarAddon {
         pm.registerEvents(PlayerScope, this)
         pm.registerEvents(CreativeActionTranslationHandler, this)
         pm.registerEvents(RebarElectricBlock, this)
-        pm.registerEvents(RebarElectricConsumerBlock, this)
-        pm.registerEvents(RebarElectricProducerBlock, this)
         pm.registerEvents(WireConnectionService, this)
         pm.registerEvents(PlayerInput, this)
         pm.registerEvents(RebarJoinHandler, this)

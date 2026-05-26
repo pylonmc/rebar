@@ -13,7 +13,6 @@ object ElectricityManager {
 
     private val nodes = mutableMapOf<UUID, ElectricNode>()
 
-    private val transformers = mutableMapOf<Pair<ElectricNode.Connector, ElectricNode.Connector>, Double>()
     private val maxCurrents = mutableMapOf<Pair<ElectricNode, ElectricNode>, Double>()
 
     init {
@@ -39,9 +38,7 @@ object ElectricityManager {
         nodes.remove(node.id)
         val network = node.network
         network.removeNode(node)
-        if (node is ElectricNode.Connector) {
-            refreshNetworks(network)
-        }
+        refreshNetworks(network)
     }
 
     @JvmStatic

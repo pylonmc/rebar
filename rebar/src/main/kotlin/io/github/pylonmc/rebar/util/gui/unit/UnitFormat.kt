@@ -125,6 +125,11 @@ class UnitFormat @JvmOverloads constructor(
         fun ignorePrefixes(vararg prefixes: MetricPrefix) = apply { badPrefixes.addAll(prefixes) }
 
         /**
+         * Ignores the prefixes in [MetricPrefix.COMMONLY_UNUSED_PREFIXES]
+         */
+        fun ignoreCommonlyUnusedPrefixes() = ignorePrefixes(MetricPrefix.COMMONLY_UNUSED_PREFIXES)
+
+        /**
          * Sets whether the prefix should be automatically selected instead of using the default
          * prefix (if set).
          */
