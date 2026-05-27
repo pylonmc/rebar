@@ -5,7 +5,7 @@ import io.github.pylonmc.rebar.block.RebarBlock.Companion.rebarBlockTextureEntit
 import io.github.pylonmc.rebar.block.RebarBlock.Companion.register
 import io.github.pylonmc.rebar.block.base.RebarDirectionalBlock
 import io.github.pylonmc.rebar.block.base.RebarEntityHolderBlock
-import io.github.pylonmc.rebar.block.base.RebarGuiBlock
+import io.github.pylonmc.rebar.block.base.RebarInventoryBlock
 import io.github.pylonmc.rebar.block.context.BlockBreakContext
 import io.github.pylonmc.rebar.block.context.BlockCreateContext
 import io.github.pylonmc.rebar.config.Config
@@ -118,7 +118,7 @@ open class RebarBlock private constructor(val block: Block) : Keyed {
     /**
      * Called after the load constructor.
      *
-     * This is necessary because "external" stuff like [RebarGuiBlock], [io.github.pylonmc.rebar.block.base.RebarFluidBufferBlock]
+     * This is necessary because "external" stuff like [RebarInventoryBlock], [io.github.pylonmc.rebar.block.base.RebarFluidBufferBlock]
      * and [RebarEntityHolderBlock] load their data *after* the load constructor is called.
      * If you need to use data from these interfaces (such as the amount of fluid stored in
      * a [io.github.pylonmc.rebar.block.base.RebarFluidBufferBlock], you must use this
@@ -181,9 +181,7 @@ open class RebarBlock private constructor(val block: Block) : Keyed {
      */
     fun refreshBlockTextureItem() {
         blockTextureEntity?.let {
-            val item = getBlockTextureItem() ?: ItemStack(Material.BARRIER)
-            item.setData(DataComponentTypes.ITEM_MODEL, Key.key("air"))
-            it.itemStack = item
+            it.itemStack = getBlockTextureItem() ?: ItemStack(Material.BARRIER)
         }
     }
 
@@ -228,6 +226,7 @@ open class RebarBlock private constructor(val block: Block) : Keyed {
         for ((property, value) in properties) {
             addCustomModelDataString("$property=$value")
         }
+        set(DataComponentTypes.ITEM_MODEL, Key.key("air"))
     }?.build()
 
     /**

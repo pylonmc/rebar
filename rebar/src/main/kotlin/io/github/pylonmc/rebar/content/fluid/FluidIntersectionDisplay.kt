@@ -129,7 +129,7 @@ class FluidIntersectionDisplay : RebarEntity<ItemDisplay>, RebarDeathEntity, Flu
                 .itemStack(ItemStackBuilder.of(FluidPointType.INTERSECTION.material)
                     .addCustomModelDataString("fluid_point_intersection:none")
                 )
-                .itemDisplayTransform(ItemDisplay.ItemDisplayTransform.FIXED)
+                .itemDisplayTransform(ItemDisplay.ItemDisplayTransform.HEAD)
                 .build(block.location.toCenterLocation())
         }
     }

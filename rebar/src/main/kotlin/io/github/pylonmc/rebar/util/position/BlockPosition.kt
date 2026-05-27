@@ -9,6 +9,7 @@ import org.bukkit.util.BoundingBox
 import org.bukkit.util.Vector
 import org.joml.Vector3i
 import java.util.UUID
+import io.papermc.paper.math.BlockPosition as PaperBlockPosition
 
 /**
  * Represents the position of a block (x, y, z, and world).
@@ -42,6 +43,9 @@ class BlockPosition(val worldId: UUID?, val x: Int, val y: Int, val z: Int) {
     constructor(world: World?, x: Int, y: Int, z: Int) : this(world?.uid, x, y, z)
 
     constructor(location: Location) : this(location.world?.uid, location.blockX, location.blockY, location.blockZ)
+
+    @Suppress("UnstableApiUsage")
+    constructor(world: World?, position: PaperBlockPosition) : this(world?.uid, position.blockX(), position.blockY(), position.blockZ())
 
     constructor(world: World?, position: Vector) : this(world?.uid, position.blockX, position.blockY, position.blockZ)
 

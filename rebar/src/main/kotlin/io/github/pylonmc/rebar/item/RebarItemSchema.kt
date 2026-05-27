@@ -46,7 +46,8 @@ class RebarItemSchema @JvmOverloads internal constructor(
     /**
      * Return's a clone of the [template] [ItemStack]
      */
-    fun getItemStack(): ItemStack = template.clone()
+    @JvmOverloads
+    fun getItemStack(count: Int = 1): ItemStack = template.asQuantity(count)
 
     /**
      * Return's a new instance of the [RebarItem] from the [itemClass] using a copy of the [template] [ItemStack]
@@ -86,7 +87,7 @@ class RebarItemSchema @JvmOverloads internal constructor(
      *
      * Does nothing if no block is associated with this item.
      */
-    fun place(context: BlockCreateContext): RebarBlock {
+    fun place(context: BlockCreateContext): RebarBlock? {
         check(rebarBlockKey != null) { "Item $key does not place a block" }
         val blockSchema = RebarRegistry.BLOCKS[rebarBlockKey]
         check(blockSchema != null) { "Block $rebarBlockKey not found" }

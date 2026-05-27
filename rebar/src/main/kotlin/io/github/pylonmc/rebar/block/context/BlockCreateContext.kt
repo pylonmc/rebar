@@ -14,6 +14,11 @@ import org.bukkit.plugin.Plugin
 interface BlockCreateContext {
 
     /**
+     * The player who placed/caused the block to be placed, if applicable
+     */
+    val player: Player?
+
+    /**
      * The direction in which this block was placed. NORTH, EAST, SOUTH, WEST.
      */
     val facing: BlockFace
@@ -45,10 +50,10 @@ interface BlockCreateContext {
      * A player has placed the block
      */
     data class PlayerPlace(
-        val player: Player,
         override val item: ItemStack,
         val event: BlockPlaceEvent
     ) : BlockCreateContext {
+        override val player: Player = event.player
         override val facing: BlockFace = TransformUtil.yawToCardinalFace(player.yaw)
         override val facingVertical: BlockFace = TransformUtil.yawAndPitchToFace(player.yaw, player.pitch)
         override val block = event.blockPlaced
@@ -65,6 +70,7 @@ interface BlockCreateContext {
     @JvmRecord
     data class PluginGenerate(
         val plugin: Plugin,
+        override val player: Player? = null,
         override val facing: BlockFace = BlockFace.NORTH,
         override val facingVertical: BlockFace = BlockFace.NORTH,
         override val block: Block,
@@ -77,6 +83,7 @@ interface BlockCreateContext {
      */
     @JvmRecord
     data class Default @JvmOverloads constructor(
+        override val player: Player? = null,
         override val block: Block,
         override val facing: BlockFace = BlockFace.NORTH,
         override val facingVertical: BlockFace = BlockFace.NORTH,
@@ -86,6 +93,7 @@ interface BlockCreateContext {
 
     @JvmRecord
     data class ManualLoading @JvmOverloads constructor(
+        override val player: Player? = null,
         override val block: Block,
         override val facing: BlockFace = BlockFace.NORTH,
         override val facingVertical: BlockFace = BlockFace.NORTH,

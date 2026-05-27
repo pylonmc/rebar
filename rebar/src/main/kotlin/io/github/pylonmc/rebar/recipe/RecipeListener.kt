@@ -4,16 +4,22 @@ import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.item.RebarItemSchema
 import io.github.pylonmc.rebar.item.base.*
 import io.github.pylonmc.rebar.item.research.Research.Companion.canCraft
+import io.github.pylonmc.rebar.nms.NmsAccessor
+import io.github.pylonmc.rebar.recipe.RecipeType.Companion.vanillaCraftingRecipes
+import io.github.pylonmc.rebar.recipe.vanilla.CookingRecipeWrapper
 import io.github.pylonmc.rebar.recipe.vanilla.CraftingRecipeWrapper
 import io.github.pylonmc.rebar.recipe.vanilla.VanillaRecipeType
+import io.github.pylonmc.rebar.recipe.vanilla.recipeType
 import io.github.pylonmc.rebar.util.hashIgnoreAmount
 import io.github.pylonmc.rebar.util.isRebarAndIsNot
 import io.github.pylonmc.rebar.util.plainText
+import io.github.pylonmc.rebar.util.rebarKey
 import io.papermc.paper.datacomponent.DataComponentTypes
 import io.papermc.paper.event.player.CartographyItemEvent
 import net.kyori.adventure.text.Component
 import org.bukkit.GameMode
 import org.bukkit.Keyed
+import org.bukkit.block.Block
 import org.bukkit.block.Crafter
 import org.bukkit.block.Furnace
 import org.bukkit.entity.Player
@@ -26,10 +32,13 @@ import org.bukkit.event.block.CrafterCraftEvent
 import org.bukkit.event.inventory.*
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.StonecutterInventory
+import org.bukkit.inventory.*
 import kotlin.math.max
 import kotlin.math.min
 
 internal object RebarRecipeListener : Listener {
+
+    private val crafterResultCorrector = rebarKey("crafter_result_corrector")
 
     @Suppress("UnstableApiUsage")
     @EventHandler(priority = EventPriority.LOWEST)
@@ -169,6 +178,30 @@ internal object RebarRecipeListener : Listener {
 
             if (input.isRebarAndIsNot<VanillaCraftingItem>()) {
                 e.isCancelled = true
+            }
+        }
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST)
+    private fun onStartCook(e: FurnaceStartSmeltEvent) {
+        if (RebarItemSchema.fromStack(e.source) == null) return
+
+        val originalRecipe = e.recipe
+        if (originalRecipe.key !in VanillaRecipeType.nonRebarRecipes) {
+            return
+        }
+
+        val originalType = originalRecipe.recipeType
+        if (originalType == null) {
+            e.totalCookTime = 0 // instantly complete so that it doesn't show progress bar, this will get canceled in BlockCookEvent
+            return
+        }
+
+        for (recipe in originalType.recipes) {
+            if (recipe is CookingRecipeWrapper && recipe.key !in VanillaRecipeType.nonRebarRecipes && recipe.recipe.inputChoice.test(e.source)) {
+                e.totalCookTime = recipe.recipe.cookingTime
+                NmsAccessor.instance.setFurnaceRecipeCache(e.block, recipe.key)
+                break
             }
         }
     }
@@ -414,5 +447,11 @@ internal object RebarRecipeListener : Listener {
                 && hasData(DataComponentTypes.MAX_DAMAGE)
                 && hasData(DataComponentTypes.DAMAGE)
                 && getData(DataComponentTypes.DAMAGE)!! > 0
+    }
+
+    internal object DummyRecipe : Recipe {
+        override fun getResult(): ItemStack {
+            return ItemStack.empty()
+        }
     }
 }

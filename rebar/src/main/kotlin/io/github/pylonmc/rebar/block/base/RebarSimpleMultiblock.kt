@@ -1,6 +1,7 @@
 package io.github.pylonmc.rebar.block.base
 
 import io.github.pylonmc.rebar.block.BlockStorage
+import io.github.pylonmc.rebar.block.context.BlockCreateContext
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.event.RebarBlockDeserializeEvent
 import io.github.pylonmc.rebar.event.RebarBlockPlaceEvent
@@ -47,8 +48,8 @@ interface RebarSimpleMultiblock : RebarMultiblock, RebarGhostBlockHolder, RebarE
      * Represents a single block of a multiblock.
      */
     open class MultiblockComponent protected constructor(
-        val vanillaBlocks: List<BlockData>,
-        val rebarBlocks: List<NamespacedKey>,
+        open val vanillaBlocks: List<BlockData>,
+        open val rebarBlocks: List<NamespacedKey>,
     ) {
 
         init {
@@ -71,15 +72,23 @@ interface RebarSimpleMultiblock : RebarMultiblock, RebarGhostBlockHolder, RebarE
          * For example, if a MultiblockComponent can be grass or dirt, this should set
          * the block to either grass or dirt
          */
-        fun placeDefaultBlock(block: Block) {
-            if (!block.type.isAir || BlockStorage.isRebarBlock(block)) {
-                return
+        fun placeDefaultBlock(player: Player?, block: Block): Boolean {
+            val location = block.location
+            if ((!block.type.isAir && !block.isReplaceable)
+                    || BlockStorage.isRebarBlock(block)
+                    || !block.world.isPositionLoaded(location)
+                    || !block.world.worldBorder.isInside(location)) {
+                return false
             }
 
             if (!vanillaBlocks.isEmpty()) {
                 block.blockData = vanillaBlocks.first().clone()
+                return true
             } else {
-                BlockStorage.placeBlock(block, rebarBlocks.first())
+                return BlockStorage.placeBlock(
+                    block, rebarBlocks.first(),
+                    BlockCreateContext.Default(player, block)
+                ) != null
             }
         }
 
@@ -88,7 +97,7 @@ interface RebarSimpleMultiblock : RebarMultiblock, RebarGhostBlockHolder, RebarE
          *
          * @see RebarGhostBlockHolder
          */
-        fun spawnGhostBlock(multiblock: RebarSimpleMultiblock, rotatedPosition: Vector3i) {
+        fun spawnGhostBlock(multiblock: RebarGhostBlockHolder, rotatedPosition: Vector3i) {
             multiblock.addGhostBlock(rotatedPosition, vanillaBlocks, rebarBlocks)
             updateGhostBlock(multiblock, rotatedPosition)
         }
@@ -96,17 +105,18 @@ interface RebarSimpleMultiblock : RebarMultiblock, RebarGhostBlockHolder, RebarE
         /**
          * Updates the corresponding ghost block's visuals
          */
-        fun updateGhostBlock(multiblock: RebarSimpleMultiblock, rotatedPosition: Vector3i) {
+        fun updateGhostBlock(multiblock: RebarGhostBlockHolder, rotatedPosition: Vector3i) {
             val block = multiblock.block.getRelative(rotatedPosition)
             val color = if (matches(block)) {
                 Color.LIME
-            } else if (block.isEmpty && !BlockStorage.isRebarBlock(block)) {
+            } else if (block.isReplaceable && !BlockStorage.isRebarBlock(block)) {
                 Color.ORANGE
             } else {
                 Color.RED
             }
             multiblock.getVanillaGhostBlockDisplay(rotatedPosition)?.entity?.glowColorOverride = color
             multiblock.getRebarGhostBlockDisplay(rotatedPosition)?.entity?.glowColorOverride = color
+            multiblock.getGhostBlockHitbox(rotatedPosition)?.apply { if (color == Color.LIME) hide() else show() }
         }
 
         companion object {

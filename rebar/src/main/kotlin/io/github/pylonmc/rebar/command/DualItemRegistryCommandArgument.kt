@@ -16,14 +16,14 @@ import org.bukkit.Registry
 import org.bukkit.inventory.ItemStack
 import java.util.concurrent.CompletableFuture
 
-object DualItemRegistryCommandArgument : CustomArgumentType.Converted<ItemStack, NamespacedKey> {
-    private val ERROR_UNKNOWN = DynamicCommandExceptionType {
+object DualItemRegistryCommandArgument : CustomArgumentType.Converted<ItemTypeWrapper, NamespacedKey> {
+    val ERROR_UNKNOWN = DynamicCommandExceptionType {
         MessageComponentSerializer.message().serialize(Component.text("Unknown item key: $it"))
     }
 
-    override fun convert(nativeType: NamespacedKey): ItemStack {
+    override fun convert(nativeType: NamespacedKey): ItemTypeWrapper {
         try {
-            return ItemTypeWrapper.invoke(nativeType).createItemStack()
+            return ItemTypeWrapper.invoke(nativeType)
         } catch (_: IllegalArgumentException) {
             // if no namespace is provided in the command execution, it uses the minecraft namespace
             if (nativeType.namespace == "minecraft") {
@@ -38,7 +38,7 @@ object DualItemRegistryCommandArgument : CustomArgumentType.Converted<ItemStack,
                 }
 
                 if (found != null) {
-                    return found.getItemStack()
+                    return ItemTypeWrapper.Rebar(found)
                 }
             }
             throw ERROR_UNKNOWN.create(nativeType)
@@ -51,13 +51,15 @@ object DualItemRegistryCommandArgument : CustomArgumentType.Converted<ItemStack,
     ): CompletableFuture<Suggestions> {
         val input = builder.remainingLowerCase
         for (key in Registry.ITEM.keyStream()) {
-            if (input in key.toString()) {
-                builder.suggest(key.toString())
+            val key = key.toString()
+            if (input in key) {
+                builder.suggest(key)
             }
         }
         for (key in RebarRegistry.ITEMS.getKeys()) {
-            if (input in key.toString()) {
-                builder.suggest(key.toString())
+            val key = key.toString()
+            if (input in key) {
+                builder.suggest(key)
             }
         }
         return builder.buildFuture()

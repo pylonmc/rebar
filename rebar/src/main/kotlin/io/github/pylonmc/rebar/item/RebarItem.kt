@@ -74,7 +74,7 @@ open class RebarItem(val stack: ItemStack) : Keyed {
     /**
      * Places the block associated with this item, if it exists.
      */
-    open fun place(context: BlockCreateContext): RebarBlock = schema.place(context)
+    open fun place(context: BlockCreateContext): RebarBlock? = schema.place(context)
 
     companion object {
 

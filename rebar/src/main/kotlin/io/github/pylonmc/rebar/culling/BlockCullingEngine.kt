@@ -10,6 +10,7 @@ import io.github.pylonmc.rebar.block.base.RebarGroupCulledBlock
 import io.github.pylonmc.rebar.config.RebarConfig
 import io.github.pylonmc.rebar.culling.PlayerCullingJob.Companion.cullingBoundingBox
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
+import io.github.pylonmc.rebar.nms.NmsAccessor
 import io.github.pylonmc.rebar.util.Octree
 import io.github.pylonmc.rebar.util.delayTicks
 import io.github.pylonmc.rebar.util.pdc
@@ -237,7 +238,7 @@ object BlockCullingEngine : Listener {
     @JvmSynthetic
     internal fun launchCullingJob(player: Player) {
         val playerId = player.uniqueId
-        if (!RebarConfig.CullingEngineConfig.ENABLED || jobs.containsKey(playerId)) return
+        if (!RebarConfig.CullingEngineConfig.ENABLED || jobs.containsKey(playerId) || !player.isValid) return
 
         jobs[playerId] = Rebar.scope.launch(Dispatchers.Default) {
             val job = PlayerCullingJob(playerId)
@@ -248,9 +249,12 @@ object BlockCullingEngine : Listener {
     }
 
     @JvmSynthetic
+    internal fun hasCullingJob(playerId: UUID): Boolean = jobs.containsKey(playerId)
+
+    @JvmSynthetic
     internal fun stopCullingJob(playerId: UUID) {
-        blockTextureOctrees.values.forEach { it.allEntries().forEach { b -> b.blockTextureEntity?.removeViewer(playerId) } }
         jobs.remove(playerId)?.cancel()
+        blockTextureOctrees.values.forEach { it.allEntries().forEach { b -> b.blockTextureEntity?.removeViewer(playerId) } }
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -278,7 +282,7 @@ object BlockCullingEngine : Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     private fun onPlayerJoin(event: PlayerJoinEvent) {
-        launchCullingJob(event.player)
+        Bukkit.getScheduler().runTaskLater(Rebar, { -> launchCullingJob(event.player) }, 20L)
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -342,13 +346,13 @@ object BlockCullingEngine : Listener {
             .expireAfterAccess(Duration.ofMinutes(1))
             .build()
     ) {
-        fun insert(block: Block, isOccluding: Boolean = block.blockData.isOccluding) {
+        fun insert(block: Block, isOccluding: Boolean = NmsAccessor.instance.isOccluding(block)) {
             occluding.put(BlockPosition.asLong(block.x, block.y, block.z), isOccluding)
         }
 
         fun isOccluding(world: World, blockX: Int, blockY: Int, blockZ: Int): Boolean {
             return occluding.get(BlockPosition.asLong(blockX, blockY, blockZ)) {
-                world.getBlockAt(blockX, blockY, blockZ).blockData.isOccluding
+                NmsAccessor.instance.isOccluding(world.getBlockAt(blockX, blockY, blockZ))
             }
         }
     }

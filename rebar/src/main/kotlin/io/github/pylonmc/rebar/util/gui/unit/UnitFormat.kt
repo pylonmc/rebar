@@ -237,6 +237,14 @@ class UnitFormat @JvmOverloads constructor(
         )
 
         @JvmField
+        val MILLIBUCKETS_PER_ITEM = UnitFormat(
+            "buckets_per_item",
+            TextColor.color(0xe3835f2),
+            abbreviate = true,
+            prefix = MetricPrefix.MILLI
+        )
+
+        @JvmField
         val DAYS = UnitFormat(
             "days",
             TextColor.color(0xc9c786),

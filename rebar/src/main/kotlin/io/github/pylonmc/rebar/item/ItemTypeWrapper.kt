@@ -10,17 +10,19 @@ import org.bukkit.inventory.ItemStack
  */
 sealed interface ItemTypeWrapper : Keyed {
 
-    fun createItemStack(): ItemStack
+    fun createItemStack() = createItemStack(1)
     fun matchesWithoutData(item: ItemStack, excludeTypes: Set<DataComponentType>, ignoreCount: Boolean = false): Boolean
     fun matchesWithoutData(item: ItemStack, excludeTypes: Set<DataComponentType>): Boolean = matchesWithoutData(item, excludeTypes, false)
     fun isEmpty(): Boolean
+
+    fun createItemStack(count: Int): ItemStack
 
     /**
      * The vanilla variant of [ItemTypeWrapper].
      */
     @JvmRecord
     data class Vanilla(val material: Material) : ItemTypeWrapper {
-        override fun createItemStack() = ItemStack(material)
+        override fun createItemStack(count: Int) = ItemStack(material, count)
         override fun matchesWithoutData(item: ItemStack, excludeTypes: Set<DataComponentType>, ignoreCount: Boolean) = createItemStack().matchesWithoutData(item, excludeTypes, ignoreCount)
         override fun getKey() = material.key
         override fun isEmpty() = material.isAir()
@@ -32,7 +34,7 @@ sealed interface ItemTypeWrapper : Keyed {
      */
     @JvmRecord
     data class Rebar(val item: RebarItemSchema) : ItemTypeWrapper {
-        override fun createItemStack() = item.getItemStack()
+        override fun createItemStack(count: Int) = item.getItemStack(count)
         override fun matchesWithoutData(item: ItemStack, excludeTypes: Set<DataComponentType>, ignoreCount: Boolean) = this.item.matchesWithoutData(item, excludeTypes, ignoreCount)
         override fun getKey() = item.key
         override fun isEmpty() = false

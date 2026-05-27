@@ -1,17 +1,22 @@
 package io.github.pylonmc.rebar.nms
 
 import com.destroystokyo.paper.event.player.PlayerRecipeBookClickEvent
+import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.async.PlayerScope
 import io.github.pylonmc.rebar.block.RebarBlock
 import io.github.pylonmc.rebar.entity.packet.BlockTextureEntity
 import io.github.pylonmc.rebar.i18n.PlayerTranslationHandler
 import io.github.pylonmc.rebar.i18n.packet.PlayerPacketHandler
 import io.github.pylonmc.rebar.nms.entity.BlockTextureEntityImpl
+import io.github.pylonmc.rebar.nms.inventory.KeyedContainerListener
+import io.github.pylonmc.rebar.nms.recipe.AccessibleCachedCheck
 import io.github.pylonmc.rebar.nms.recipe.HandlerRecipeBookClick
+import io.github.pylonmc.rebar.util.position.BlockPosition
 import io.papermc.paper.adventure.PaperAdventure
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import net.kyori.adventure.text.Component
+import net.minecraft.core.BlockPos
 import net.minecraft.core.registries.Registries
 import net.minecraft.nbt.TextComponentTagVisitor
 import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket
@@ -22,16 +27,19 @@ import net.minecraft.server.MinecraftServer
 import net.minecraft.world.inventory.AbstractCraftingMenu
 import net.minecraft.world.inventory.RecipeBookMenu.PostPlaceAction
 import net.minecraft.world.item.Item
+import net.minecraft.world.item.crafting.RecipeManager
+import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity
 import net.minecraft.world.level.block.state.properties.Property
 import org.bukkit.Material
+import org.bukkit.NamespacedKey
 import org.bukkit.World
 import org.bukkit.block.Block
 import org.bukkit.craftbukkit.CraftEquipmentSlot
 import org.bukkit.craftbukkit.CraftWorld
 import org.bukkit.craftbukkit.block.CraftBlock
-import org.bukkit.craftbukkit.entity.CraftEntity
 import org.bukkit.craftbukkit.entity.CraftLivingEntity
 import org.bukkit.craftbukkit.entity.CraftPlayer
+import org.bukkit.craftbukkit.inventory.CraftInventoryView
 import org.bukkit.craftbukkit.inventory.CraftItemStack
 import org.bukkit.craftbukkit.inventory.CraftItemType
 import org.bukkit.craftbukkit.persistence.CraftPersistentDataContainer
@@ -40,16 +48,43 @@ import org.bukkit.entity.Entity
 import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Player
 import org.bukkit.inventory.EquipmentSlot
+import org.bukkit.inventory.Inventory
+import org.bukkit.inventory.InventoryView
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataContainer
+import java.lang.invoke.MethodHandle
+import java.lang.invoke.MethodHandles
+import java.lang.invoke.VarHandle
+import java.lang.reflect.Field
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.math.max
+import kotlin.math.min
 import com.mojang.datafixers.util.Pair as NmsPair
 import net.minecraft.world.entity.EquipmentSlot as NmsEquipmentSlot
 
 @Suppress("unused")
 object NmsAccessorImpl : NmsAccessor {
+
+    // We use both the field and the handle because the handle will have significantly better performance
+    // getting the field value but cannot be used for setting so we still need the raw field.
+    // (even if we used a VarHandle, because the field is normally final, setting will not work)
+    private val furnaceQuickCheckField: Field
+    private val furnaceQuickCheckHandle: MethodHandle
+
+    init {
+        try {
+            furnaceQuickCheckField = AbstractFurnaceBlockEntity::class.java.getDeclaredField("quickCheck")
+            furnaceQuickCheckField.isAccessible = true
+
+            val methodHandles = MethodHandles.privateLookupIn(AbstractFurnaceBlockEntity::class.java, MethodHandles.lookup())
+            furnaceQuickCheckHandle = methodHandles.unreflectGetter(furnaceQuickCheckField)
+        } catch (e: Throwable) {
+            Rebar.logger.severe("Failed to access furnace quick check: ${e.message}")
+            throw RuntimeException(e)
+        }
+    }
 
     private val players = ConcurrentHashMap<UUID, PlayerPacketHandler>()
 
@@ -181,4 +216,40 @@ object NmsAccessorImpl : NmsAccessor {
     }
 
     override fun createBlockTextureEntity(block: RebarBlock): BlockTextureEntity = BlockTextureEntityImpl(block)
+
+    override fun addSlotChangedListener(key: NamespacedKey, inventoryView: InventoryView, listener: NmsAccessor.SlotListener) {
+        val inventoryView = inventoryView as CraftInventoryView<*, *>
+        inventoryView.handle.addSlotListener(KeyedContainerListener(CraftNamespacedKey.toMinecraft(key), listener))
+    }
+
+    override fun isOccluding(block: Block) = (block as CraftBlock).blockState.canOcclude()
+
+    override fun blocksBetween(from: BlockPosition, to: BlockPosition) = BlockPos.betweenClosedStream(
+        min(from.x, to.x), min(from.y, to.y), min(from.z, to.z),
+        max(from.x, to.x), max(from.y, to.y), max(from.z, to.z)
+    ).let {
+        val blocks = mutableListOf<Block>()
+        for (pos in it) {
+            blocks.add(from.world?.getBlockAt(pos.x, pos.y, pos.z) ?: continue)
+        }
+        blocks
+    }
+
+    override fun setFurnaceRecipeCache(block: Block, recipe: NamespacedKey) {
+        val block = block as CraftBlock
+        val blockEntity = block.level.getBlockEntity(block.position) as? AbstractFurnaceBlockEntity ?: return
+        try {
+            val currentQuickCheck = furnaceQuickCheckHandle.invoke(blockEntity) as? RecipeManager.CachedCheck<*, *> ?: return
+            if (currentQuickCheck is AccessibleCachedCheck<*, *>) {
+                currentQuickCheck.lastRecipe = CraftNamespacedKey.toResourceKey(Registries.RECIPE, recipe)
+            } else {
+                val newQuickCheck = AccessibleCachedCheck(blockEntity.recipeType)
+                newQuickCheck.lastRecipe = CraftNamespacedKey.toResourceKey(Registries.RECIPE, recipe)
+                furnaceQuickCheckField.set(blockEntity, newQuickCheck)
+            }
+        } catch (e: Throwable) {
+            Rebar.logger.severe("Failed to set furnace recipe cache: ${e.message}")
+            e.printStackTrace()
+        }
+    }
 }

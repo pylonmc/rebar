@@ -1,6 +1,7 @@
 package io.github.pylonmc.rebar.entity
 
 import io.github.pylonmc.rebar.Rebar
+import io.github.pylonmc.rebar.block.context.BlockBreakContext
 import io.github.pylonmc.rebar.config.Config
 import io.github.pylonmc.rebar.config.Settings
 import io.github.pylonmc.rebar.content.debug.DebugWaxedWeatheredCutCopperStairs
@@ -13,6 +14,7 @@ import io.github.pylonmc.rebar.waila.WailaDisplay
 import org.bukkit.NamespacedKey
 import org.bukkit.entity.Entity
 import org.bukkit.entity.Player
+import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataContainer
 
 
@@ -45,6 +47,15 @@ abstract class RebarEntity<out E: Entity>(val entity: E) {
      * @return the WAILA configuration, or null if WAILA should not be shown for this block.
      */
     open fun getWaila(player: Player): WailaDisplay? = null
+
+    /**
+     * Returns the item that should be given when the entity is middle clicked.
+     *
+     * By default, returns null
+     *
+     * @return the item the entity should give when middle clicked, or null if none
+     */
+    open fun getPickItem(): ItemStack? = null
 
     /**
      * Called when debug info is requested for the entity by someone
