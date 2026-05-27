@@ -84,25 +84,28 @@ class SmokingRecipeWrapper @JvmOverloads constructor(
     override val displayBlock = Material.SMOKER
 }
 
+private fun getCookingTime(config: ConfigSection, defaultCookingTime: Int): Int {
+    return config.get("cookingtime", ConfigAdapter.INTEGER, defaultCookingTime)
+}
+private fun getExperience(config: ConfigSection): Float {
+    return config.get("experience", ConfigAdapter.FLOAT, 0f)
+}
 @Suppress("UnstableApiUsage")
-private inline fun <T : CookingRecipe<T>, U : CookingRecipeWrapper> loadCookingRecipe(
-    key: NamespacedKey,
-    config: ConfigSection,
-    defaultCookingTime: Int,
-    recipeCons: (NamespacedKey, ItemStack, RecipeChoice, Float, Int) -> T,
-    wrapperCons: (T, RecipeInput.Item) -> U
-): U {
-    val cookingTime = config.get("cookingtime", ConfigAdapter.INTEGER, defaultCookingTime)
-    val experience = config.get("experience", ConfigAdapter.FLOAT, 0f)
+private fun getIngredient(config: ConfigSection): RecipeInput.Item {
     val ingredient = config.getOrThrow("ingredient", ConfigAdapter.RECIPE_INPUT_ITEM)
     if (ingredient.representativeItems.any{ it.hasData(DataComponentTypes.MAX_DAMAGE) }) {
         ingredient.ignoreComponents.add(DataComponentTypes.DAMAGE)
     }
-    val result = config.getOrThrow("result", ConfigAdapter.ITEM_STACK)
-    val recipe = recipeCons(key, result, ingredient.asRecipeChoice(), experience, cookingTime)
-    config.get("category", ConfigAdapter.ENUM.from<CookingBookCategory>())?.let { recipe.category = it }
-    config.get("group", ConfigAdapter.STRING)?.let { recipe.group = it }
-    return wrapperCons(recipe, ingredient)
+    return ingredient
+}
+private fun getResult(config: ConfigSection): ItemStack {
+    return config.getOrThrow("result", ConfigAdapter.ITEM_STACK)
+}
+private fun getCategory(config: ConfigSection): CookingBookCategory? {
+    return config.get("category", ConfigAdapter.ENUM.from<CookingBookCategory>())
+}
+private fun getGroup(config: ConfigSection): String? {
+    return config.get("group", ConfigAdapter.STRING)
 }
 
 /**
@@ -114,8 +117,16 @@ object BlastingRecipeType : VanillaRecipeType<BlastingRecipeWrapper>("blasting")
     fun addRecipe(recipe: BlastingRecipe, recipeInput: RecipeInput.Item = recipe.inputChoice.asRecipeInput()) =
         super.addRecipe(BlastingRecipeWrapper(recipe, recipeInput))
 
-    override fun loadRecipe(key: NamespacedKey, section: ConfigSection) =
-        loadCookingRecipe(key, section, 100, ::BlastingRecipe, ::BlastingRecipeWrapper)
+    override fun loadRecipe(key: NamespacedKey, section: ConfigSection): BlastingRecipeWrapper {
+        val cookingTime = getCookingTime(section, 100)
+        val experience = getExperience(section)
+        val ingredient = getIngredient(section)
+        val result = getResult(section)
+        val recipe = BlastingRecipe(key, result, ingredient.asRecipeChoice(), experience, cookingTime)
+        getCategory(section)?.let { recipe.category = it }
+        getGroup(section)?.let { recipe.group = it }
+        return BlastingRecipeWrapper(recipe, ingredient)
+    }
 }
 
 /**
@@ -130,8 +141,17 @@ object CampfireRecipeType : VanillaRecipeType<CampfireRecipeWrapper>("campfire_c
     fun addRecipe(recipe: CampfireRecipe, recipeInput: RecipeInput.Item = recipe.inputChoice.asRecipeInput()) =
         super.addRecipe(CampfireRecipeWrapper(recipe, recipeInput))
 
-    override fun loadRecipe(key: NamespacedKey, section: ConfigSection) =
-        loadCookingRecipe(key, section, 600, ::CampfireRecipe, ::CampfireRecipeWrapper)
+
+    override fun loadRecipe(key: NamespacedKey, section: ConfigSection): CampfireRecipeWrapper {
+        val cookingTime = getCookingTime(section, 600)
+        val experience = getExperience(section)
+        val ingredient = getIngredient(section)
+        val result = getResult(section)
+        val recipe = CampfireRecipe(key, result, ingredient.asRecipeChoice(), experience, cookingTime)
+        getCategory(section)?.let { recipe.category = it }
+        getGroup(section)?.let { recipe.group = it }
+        return CampfireRecipeWrapper(recipe, ingredient)
+    }
 }
 
 /**
@@ -143,8 +163,16 @@ object FurnaceRecipeType : VanillaRecipeType<FurnaceRecipeWrapper>("smelting") {
     fun addRecipe(recipe: FurnaceRecipe, recipeInput: RecipeInput.Item = recipe.inputChoice.asRecipeInput()) =
         super.addRecipe(FurnaceRecipeWrapper(recipe, recipeInput))
 
-    override fun loadRecipe(key: NamespacedKey, section: ConfigSection) =
-        loadCookingRecipe(key, section, 200, ::FurnaceRecipe, ::FurnaceRecipeWrapper)
+    override fun loadRecipe(key: NamespacedKey, section: ConfigSection) : FurnaceRecipeWrapper {
+        val cookingTime = getCookingTime(section, 200)
+        val experience = getExperience(section)
+        val ingredient = getIngredient(section)
+        val result = getResult(section)
+        val recipe = FurnaceRecipe(key, result, ingredient.asRecipeChoice(), experience, cookingTime)
+        getCategory(section)?.let { recipe.category = it }
+        getGroup(section)?.let { recipe.group = it }
+        return FurnaceRecipeWrapper(recipe, ingredient)
+    }
 }
 
 /**
@@ -156,6 +184,14 @@ object SmokingRecipeType : VanillaRecipeType<SmokingRecipeWrapper>("smoking") {
     fun addRecipe(recipe: SmokingRecipe, recipeInput: RecipeInput.Item = recipe.inputChoice.asRecipeInput()) =
         super.addRecipe(SmokingRecipeWrapper(recipe, recipeInput))
 
-    override fun loadRecipe(key: NamespacedKey, section: ConfigSection) =
-        loadCookingRecipe(key, section, 100, ::SmokingRecipe, ::SmokingRecipeWrapper)
+    override fun loadRecipe(key: NamespacedKey, section: ConfigSection) : SmokingRecipeWrapper {
+        val cookingTime = getCookingTime(section, 100)
+        val experience = getExperience(section)
+        val ingredient = getIngredient(section)
+        val result = getResult(section)
+        val recipe = SmokingRecipe(key, result, ingredient.asRecipeChoice(), experience, cookingTime)
+        getCategory(section)?.let { recipe.category = it }
+        getGroup(section)?.let { recipe.group = it }
+        return SmokingRecipeWrapper(recipe, ingredient)
+    }
 }
