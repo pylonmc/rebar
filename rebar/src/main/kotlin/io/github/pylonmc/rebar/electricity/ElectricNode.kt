@@ -301,28 +301,21 @@ sealed class ElectricNode(
         }
     }
 
+    data class Edge(val from: ElectricNode, val to: ElectricNode)
+
     companion object {
 
-        @get:JvmSynthetic
-        internal val ID_KEY = rebarKey("id")
-
-        @get:JvmSynthetic
-        internal val NAME_KEY = rebarKey("name")
-
-        @get:JvmSynthetic
-        internal val BLOCK_KEY = rebarKey("block")
-
-        @get:JvmSynthetic
-        internal val CONNECTIONS_KEY = rebarKey("connections")
-        @get:JvmSynthetic
-        internal val CONNECTIONS_TYPE = RebarSerializers.SET.setTypeFrom(RebarSerializers.UUID)
+        private val ID_KEY = rebarKey("id")
+        private val NAME_KEY = rebarKey("name")
+        private val BLOCK_KEY = rebarKey("block")
+        private val CONNECTIONS_KEY = rebarKey("connections")
+        private val CONNECTIONS_TYPE = RebarSerializers.SET.setTypeFrom(RebarSerializers.UUID)
 
         @get:JvmSynthetic
         internal val PDC_TYPE =
             RebarSerializers.POLYMORPHIC.of(Producer.PDC_TYPE, Consumer.PDC_TYPE, Connector.PDC_TYPE, Acceptor.PDC_TYPE)
 
-        @JvmSynthetic
-        internal fun deserializeCommon(pdc: PersistentDataContainer): FourTuple<UUID, String, BlockPosition, MutableSet<UUID>> {
+        private fun deserializeCommon(pdc: PersistentDataContainer): FourTuple<UUID, String, BlockPosition, MutableSet<UUID>> {
             val id = pdc.get(ID_KEY, RebarSerializers.UUID)!!
             val name = pdc.get(NAME_KEY, RebarSerializers.STRING)!!
             val block = pdc.get(BLOCK_KEY, RebarSerializers.BLOCK_POSITION)!!

@@ -1,6 +1,7 @@
 package io.github.pylonmc.rebar.electricity
 
 import io.github.pylonmc.rebar.config.RebarConfig
+import io.github.pylonmc.rebar.electricity.ElectricNode.Edge
 import java.util.PriorityQueue
 import java.util.UUID
 import kotlin.collections.ArrayDeque
@@ -42,7 +43,7 @@ class ElectricNetwork {
 
     fun isPartOfNetwork(node: ElectricNode): Boolean = node.id in nodeMap
 
-    // TODO memoization
+    // TODO memoization if performance is bad
     fun tick() {
         for (consumer in consumers) {
             consumer.isPowered = consumer.requiredPower roughlyEquals 0.0
@@ -97,7 +98,7 @@ class ElectricNetwork {
                     // Determine limits on edges if not already known
                     for (edge in path) {
                         if (edge in limits) continue
-                        limits[edge] = ElectricityManager.getMaxPower(edge.from, edge.to)
+                        limits[edge] = EdgeProperty.getProperty<EdgeProperty.PowerLimit>(edge)?.value ?: Double.POSITIVE_INFINITY
                     }
 
                     val loadResult = calculateLoadOnEdges(path, edgeLoads, limits, produced)
@@ -151,7 +152,7 @@ class ElectricNetwork {
                         // Determine limits on edges if not already known
                         for (edge in path) {
                             if (edge in limits) continue
-                            limits[edge] = ElectricityManager.getMaxPower(edge.from, edge.to)
+                            limits[edge] = EdgeProperty.getProperty<EdgeProperty.PowerLimit>(edge)?.value ?: Double.POSITIVE_INFINITY
                         }
 
                         val loadResult = calculateLoadOnEdges(path, edgeLoads, limits, surplus)
@@ -251,6 +252,7 @@ class ElectricNetwork {
                     Edge(current, neighbor) in disconnectedEdges ||
                     Edge(neighbor, current) in disconnectedEdges
                 ) continue
+                if (EdgeProperty.Unidirectional in EdgeProperty.getProperties(Edge(neighbor, current))) continue
                 if (neighbor !in inQueue) {
                     queue.add(neighbor)
                     inQueue.add(neighbor)
@@ -309,8 +311,6 @@ class ElectricNetwork {
         }
         return heuristics
     }
-
-    private data class Edge(val from: ElectricNode, val to: ElectricNode)
 
     companion object {
 

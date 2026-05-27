@@ -48,6 +48,7 @@ import io.github.pylonmc.rebar.util.delayTicks
 import io.github.pylonmc.rebar.util.mergeGlobalConfig
 import io.github.pylonmc.rebar.waila.Waila
 import io.github.pylonmc.rebar.waila.WailaPlaceholders
+import io.github.pylonmc.rebar.world.WorldStorage
 import io.papermc.paper.ServerBuildInfo
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents
 import kotlinx.coroutines.CoroutineScope
@@ -152,6 +153,7 @@ object Rebar : JavaPlugin(), RebarAddon {
         pm.registerEvents(WireConnectionService, this)
         pm.registerEvents(PlayerInput, this)
         pm.registerEvents(RebarJoinHandler, this)
+        pm.registerEvents(WorldStorage, this)
         ConfettiCreeperListener.register(this)
 
         // Rebar Blocks

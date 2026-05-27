@@ -40,6 +40,9 @@ object RebarConfig {
     val ENTITY_DATA_AUTOSAVE_INTERVAL_SECONDS = config.getOrThrow("entity-data-autosave-interval-seconds", ConfigAdapter.LONG)
 
     @JvmField
+    val WORLD_DATA_AUTOSAVE_INTERVAL_SECONDS = config.getOrThrow("world-data-autosave-interval-seconds", ConfigAdapter.LONG)
+
+    @JvmField
     val PIPE_PLACEMENT_TASK_INTERVAL_TICKS = config.getOrThrow("pipe-placement.tick-interval", ConfigAdapter.LONG)
 
     @JvmField

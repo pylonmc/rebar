@@ -13,8 +13,6 @@ object ElectricityManager {
 
     private val nodes = mutableMapOf<UUID, ElectricNode>()
 
-    private val maxCurrents = mutableMapOf<Pair<ElectricNode, ElectricNode>, Double>()
-
     init {
         Rebar.scope.launch {
             while (true) {
@@ -43,20 +41,6 @@ object ElectricityManager {
 
     @JvmStatic
     fun getNodeById(id: UUID): ElectricNode? = nodes[id]
-
-    @JvmStatic
-    fun setMaxPower(from: ElectricNode, to: ElectricNode, max: Double) {
-        maxCurrents[from to to] = max
-        from.onDisconnect { node, other ->
-            if (other == to) {
-                maxCurrents.remove(node to other)
-            }
-        }
-    }
-
-    @JvmStatic
-    fun getMaxPower(from: ElectricNode, to: ElectricNode): Double =
-        maxCurrents[from to to] ?: maxCurrents[to to from] ?: Double.MAX_VALUE
 
     @JvmSynthetic
     internal fun refreshNetworks(vararg networks: ElectricNetwork) {

@@ -147,7 +147,9 @@ internal object WireConnectionService : Listener {
         val wireItem = playerInv.getItem(event.hand)
         val wire = RebarItem.from<RebarWire>(wireItem) ?: return
         connectingNode.connect(thisNode)
-        ElectricityManager.setMaxPower(thisNode, connectingNode, wire.maxCurrent)
+        EdgeProperty.setProperty(ElectricNode.Edge(thisNode, connectingNode), EdgeProperty.PowerLimit(wire.maxPower))
+        EdgeProperty.setProperty(ElectricNode.Edge(connectingNode, thisNode), EdgeProperty.PowerLimit(wire.maxPower))
+
         val connectingLocation = locations[connectingNode] ?: return
         connectingEntity.setTransformationMatrix(getDisplayTransform(connectingLocation, thisLocation))
         connectingEntity.teleportAsync(getMidpoint(connectingLocation, thisLocation))
