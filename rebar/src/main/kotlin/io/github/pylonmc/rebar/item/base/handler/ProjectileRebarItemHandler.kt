@@ -45,14 +45,14 @@ interface ProjectileRebarItemHandler {
         val sourceItemKey = rebarKey("projectile_source_item")
 
         @EventHandler(priority = EventPriority.LOWEST)
-        fun onPlayerLaunched(event: PlayerLaunchProjectileEvent, priority: EventPriority) {
+        fun onPlayerLaunched(event: PlayerLaunchProjectileEvent) {
             if (event.projectile.sourceItem() == null) {
                 event.projectile.persistentDataContainer.set(sourceItemKey, RebarSerializers.ITEM_STACK, event.itemStack)
             }
         }
 
         @EventHandler(priority = EventPriority.LOWEST)
-        fun onShotFromBow(event: EntityShootBowEvent, priority: EventPriority) {
+        fun onShotFromBow(event: EntityShootBowEvent) {
             val projectile = event.projectile as? Projectile ?: return
             val sourceItem = event.consumable ?: return
             if (projectile.sourceItem() == null) {
