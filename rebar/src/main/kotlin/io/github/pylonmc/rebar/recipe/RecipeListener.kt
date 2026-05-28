@@ -36,6 +36,13 @@ import org.bukkit.inventory.*
 import kotlin.math.max
 import kotlin.math.min
 
+/**
+ * Rebar may add recipes with items that ignore certain components, but there is no
+ * RecipeChoice provided in vanilla that accomplishes this so it has to be
+ * broadened to MaterialChoice. This means that recipes returned by vanilla matching
+ * may be incorrect and will have to be verified manually. If it turns out MC was wrong,
+ * We will need to search manually as well.
+ */
 internal object RebarRecipeListener : Listener {
 
     private val crafterResultCorrector = rebarKey("crafter_result_corrector")
@@ -148,6 +155,12 @@ internal object RebarRecipeListener : Listener {
     @EventHandler(priority = EventPriority.LOWEST)
     private fun onCrafterCraft(e: CrafterCraftEvent) {
         val crafterState = e.block.state as? Crafter ?: return
+        val hasRebarItems = crafterState.inventory.any { it.isRebarAndIsNot<VanillaCraftingItem>() }
+
+        // If vanilla ingredients matched a vanilla recipe, we leave it
+        if (e.recipe.key in VanillaRecipeType.nonRebarRecipes && !hasRebarItems) {
+            return
+        }
         val contents = crafterState.inventory.contents.toList()
         var recipe: CraftingRecipeWrapper? = RecipeService.searchRecipes(
             RecipeType.VANILLA_SHAPED,
@@ -178,30 +191,6 @@ internal object RebarRecipeListener : Listener {
 
             if (input.isRebarAndIsNot<VanillaCraftingItem>()) {
                 e.isCancelled = true
-            }
-        }
-    }
-
-    @EventHandler(priority = EventPriority.LOWEST)
-    private fun onStartCook(e: FurnaceStartSmeltEvent) {
-        if (RebarItemSchema.fromStack(e.source) == null) return
-
-        val originalRecipe = e.recipe
-        if (originalRecipe.key !in VanillaRecipeType.nonRebarRecipes) {
-            return
-        }
-
-        val originalType = originalRecipe.recipeType
-        if (originalType == null) {
-            e.totalCookTime = 0 // instantly complete so that it doesn't show progress bar, this will get canceled in BlockCookEvent
-            return
-        }
-
-        for (recipe in originalType.recipes) {
-            if (recipe is CookingRecipeWrapper && recipe.key !in VanillaRecipeType.nonRebarRecipes && recipe.recipe.inputChoice.test(e.source)) {
-                e.totalCookTime = recipe.recipe.cookingTime
-                NmsAccessor.instance.setFurnaceRecipeCache(e.block, recipe.key)
-                break
             }
         }
     }
@@ -249,12 +238,11 @@ internal object RebarRecipeListener : Listener {
     @Suppress("UnstableApiUsage")
     @EventHandler(priority = EventPriority.LOWEST)
     private fun onStartCook(e: CampfireStartEvent) {
-        val recipeType = RecipeType.getCookingRecipeTypeByMaterial(e.block.type)
-        if (recipeType == null) {
-            e.totalCookTime = Int.MAX_VALUE
-            return
-        }
-        val recipe = RecipeService.searchRecipes(recipeType, e.recipe.key, e.source.hashIgnoreAmount()) {
+        val recipe = RecipeService.searchRecipes(
+            RecipeType.VANILLA_CAMPFIRE,
+            e.recipe.key,
+            e.source.hashIgnoreAmount()
+        ) {
             it.matches(e.source)
         }
         if (recipe == null) {
@@ -268,6 +256,7 @@ internal object RebarRecipeListener : Listener {
             e.isCancelled = true
             return
         }
+        // Doesn't provide the recipe being crafted so we need to search ourselves
         val furnace = (e.block.state as Furnace)
         val input = furnace.inventory.smelting
         if (input == null) {

@@ -15,19 +15,35 @@ object RecipeService {
      */
     @JvmStatic
     private fun cacheKeyFrom(hash: Int, recipeType: RecipeType<*>) = 31 * hash + recipeType.hashCode()
+
+    /**
+     * Returns the recipe (or null if not present) cached with specified input hash and recipe type
+     */
     @JvmStatic
     fun getCached(hash: Int, recipeType: RecipeType<*>) = cache[cacheKeyFrom(hash, recipeType)]
+
+    /**
+     * Returns if a recipe was cached with specified input hash and recipe type
+     */
     @JvmStatic
     fun isCached(hash: Int, recipeType: RecipeType<*>) = cacheKeyFrom(hash, recipeType) in cache
+
+    /**
+     * Caches a recipe or non-existence of a recipe crafted by specified input hash and recipe type
+     */
     @JvmStatic
     fun cache(hash: Int, recipeType: RecipeType<*>, recipe: RebarRecipe?) {
         cache[cacheKeyFrom(hash, recipeType)] = recipe
     }
+
+    /**
+     * Clears the recipe cache
+     */
     @JvmStatic
     fun clearCache() { cache.clear() }
 
     /**
-     * Hashes of a list of items. The order of the items will affect the hash
+     * Hashes of a list of items. The order of the items affects the hash
      */
     @JvmStatic
     fun hashShapedCraftingInput2D(items: Iterable<Iterable<ItemStack?>>): Int =
@@ -36,21 +52,21 @@ object RecipeService {
         }
 
     /**
-     * Hashes of a list of items. The order of the items will affect the hash
+     * Hashes of a list of items. The order of the items affects the hash
      */
     @JvmStatic
     fun hashShapedCraftingInput(items: Iterable<ItemStack?>): Int =
         items.fold(1) { hash, i -> 31 * hash + (i?.hashIgnoreAmount() ?: 0) }
 
     /**
-     * Hashes of a list of items. The hash will be the same regardless of the order
+     * Hashes of a list of items. The order of the items does not affect the hash
      */
     @JvmStatic
     fun hashShapelessCraftingInput2D(items: Iterable<Iterable<ItemStack?>>): Int =
         items.sumOf { row -> row.sumOf { it?.hashIgnoreAmount() ?: 0 } }
 
     /**
-     * Hashes of a list of items. The hash will be the same regardless of the order
+     * Hashes of a list of items. The order of the items does not affect the hash
      */
     @JvmStatic
     fun hashShapelessCraftingInput(items: Iterable<ItemStack?>): Int =
