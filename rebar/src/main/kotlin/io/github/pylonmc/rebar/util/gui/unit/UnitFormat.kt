@@ -18,10 +18,9 @@ import java.util.*
  * @param plural A component representing the long plural form of this unit (kilograms, meters, liters, etc)
  * @param abbreviation A component representing the abbreviated form of this unit (kg, m, L, etc)
  * @param defaultPrefix The prefix (kilo, nano, etc) used for this unit unless specified while formatting.
- * For example, if you create a 'grams' unit and specify 'kilo' as the default prefix, calling [format] with
- * 100 will return '100 kilograms'
- * @param defaultStyle The style to apply to the unit (not the value)
- * to the output.
+ * For example, if you create a 'grams' unit and specify [MetricPrefix.KILO] as the default prefix, calling
+ * [format] with 100 will return '100 kilograms'
+ * @param defaultStyle The style to apply to the unit (not the value) to the output.
  */
 class UnitFormat @JvmOverloads constructor(
     val name: String,
@@ -110,17 +109,17 @@ class UnitFormat @JvmOverloads constructor(
         fun unitStyle(style: Style) = apply { this.unitStyle = style }
 
         /**
-         * Overrides the default prefix (and adjusts the value shown accordingly).
+         * Overrides the default prefix. **This will not rescale the number like [selectPrefixAndRescale] does.**
          */
         fun prefix(prefix: MetricPrefix) = apply { this.prefix = prefix }
 
         /**
-         * Sets what prefixes should not be used.
+         * [selectPrefixAndRescale] will not use any prefixes in this collection when automatically selecting a prefix.
          */
         fun ignorePrefixes(prefixes: Collection<MetricPrefix>) = apply { badPrefixes.addAll(prefixes) }
 
         /**
-         * Sets what prefixes should not be used.
+         * [selectPrefixAndRescale] will not use any of these prefixes when automatically selecting a prefix.
          */
         fun ignorePrefixes(vararg prefixes: MetricPrefix) = apply { badPrefixes.addAll(prefixes) }
 
@@ -130,10 +129,10 @@ class UnitFormat @JvmOverloads constructor(
         fun ignoreCommonlyUnusedPrefixes() = ignorePrefixes(MetricPrefix.COMMONLY_UNUSED_PREFIXES)
 
         /**
-         * Sets whether the prefix should be automatically selected instead of using the default
-         * prefix (if set).
+         * Automatically selects an appropriate prefix based on the value and rescales the value accordingly.
+         * **Default prefix is ignored when using this method.**
          */
-        fun autoSelectPrefix() = apply { prefix = null }
+        fun selectPrefixAndRescale() = apply { prefix = null }
 
         /**
          * Builds a component representing the value and unit.
@@ -145,18 +144,17 @@ class UnitFormat @JvmOverloads constructor(
                 usedValue = usedValue.stripTrailingZeros()
             }
 
-            var usedPrefix = if (prefix == null) {
+            val usedPrefix = if (prefix == null) {
                 val exponent = value.precision() - value.scale() - if (value.signum() == 0) 0 else 1
-                val prefix = MetricPrefix.entries.firstOrNull { it.scale <= exponent }
-                prefix ?: defaultPrefix
+                var prefix = MetricPrefix.entries.firstOrNull { it.scale <= exponent } ?: defaultPrefix
+                while (prefix in badPrefixes) {
+                    prefix = MetricPrefix.entries[MetricPrefix.entries.indexOf(prefix) + 1]
+                }
+                usedValue = usedValue.movePointRight(prefix.scale)
+                prefix
             } else {
                 prefix!!
             }
-            while (usedPrefix in badPrefixes) {
-                usedPrefix = MetricPrefix.entries[MetricPrefix.entries.indexOf(usedPrefix) + 1]
-            }
-
-            usedValue = usedValue.movePointLeft(usedPrefix.scale - defaultPrefix.scale)
 
             val number = Component.text(usedValue.toPlainString())
             var unit = Component.empty().style(unitStyle)
