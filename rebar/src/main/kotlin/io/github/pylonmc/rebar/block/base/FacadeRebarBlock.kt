@@ -1,6 +1,6 @@
 package io.github.pylonmc.rebar.block.base
 
-import io.github.pylonmc.rebar.block.base.handler.InteractRebarBlockHandler
+import io.github.pylonmc.rebar.block.base.handler.InteractableRebarBlockHandler
 import io.github.pylonmc.rebar.event.api.annotation.MultiHandler
 import io.github.pylonmc.rebar.item.RebarItem
 import org.bukkit.Material
@@ -14,7 +14,7 @@ import org.bukkit.inventory.EquipmentSlot
  * Represents a block that takes the form of another block when right clicked, such as fluid
  * pipes and cargo ducts.
  */
-interface FacadeRebarBlock : InteractRebarBlockHandler {
+interface FacadeRebarBlock : InteractableRebarBlockHandler {
 
     /**
      * Implemented automatically by any class that extends PylonBlock

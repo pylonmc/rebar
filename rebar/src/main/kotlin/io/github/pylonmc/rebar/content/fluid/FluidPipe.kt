@@ -11,7 +11,7 @@ import io.github.pylonmc.rebar.fluid.placement.FluidPipePlacementService
 import io.github.pylonmc.rebar.fluid.tags.FluidTemperature
 import io.github.pylonmc.rebar.i18n.RebarArgument
 import io.github.pylonmc.rebar.item.RebarItem
-import io.github.pylonmc.rebar.item.base.handler.InteractRebarItemHandler
+import io.github.pylonmc.rebar.item.base.handler.InteractableRebarItemHandler
 import io.github.pylonmc.rebar.util.getTargetEntity
 import io.github.pylonmc.rebar.util.gui.unit.UnitFormat
 import io.github.pylonmc.rebar.util.position.BlockPosition
@@ -37,7 +37,7 @@ import org.bukkit.inventory.ItemStack
  * You should generally not need to extend this class. Instead, simply register an item with class
  * FluidPipe.class to create a new pipe type.
  */
-open class FluidPipe(stack: ItemStack) : RebarItem(stack), InteractRebarItemHandler {
+open class FluidPipe(stack: ItemStack) : RebarItem(stack), InteractableRebarItemHandler {
     val material = getSettings().getOrThrow("material", ConfigAdapter.MATERIAL)
     val fluidPerSecond = getSettings().getOrThrow("fluid-per-second", ConfigAdapter.DOUBLE)
     val allowedTemperatures = getSettings().get(

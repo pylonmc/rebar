@@ -5,7 +5,7 @@ import io.github.pylonmc.rebar.config.RebarConfig
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.entity.EntityStorage
 import io.github.pylonmc.rebar.entity.RebarEntity
-import io.github.pylonmc.rebar.entity.base.RebarInteractEntity
+import io.github.pylonmc.rebar.entity.base.handler.InteractableRebarEntityHandler
 import io.github.pylonmc.rebar.entity.display.BlockDisplayBuilder
 import io.github.pylonmc.rebar.entity.display.InteractionBuilder
 import io.github.pylonmc.rebar.entity.display.ItemDisplayBuilder
@@ -57,7 +57,7 @@ import java.util.*
  */
 interface GhostBlockHolderRebarBlock : EntityHolderRebarBlock {
 
-    class GhostBlockHitbox : RebarEntity<Interaction>, RebarInteractEntity {
+    class GhostBlockHitbox : RebarEntity<Interaction>, InteractableRebarEntityHandler {
         val rebarGhostBlockId: UUID?
         val vanillaGhostBlockId: UUID?
         var activeGhostBlockId: UUID? = null
