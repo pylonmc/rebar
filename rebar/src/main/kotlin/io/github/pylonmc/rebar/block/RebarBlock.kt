@@ -166,16 +166,6 @@ open class RebarBlock private constructor(val block: Block) : Keyed {
     }
 
     /**
-     * Schedules the block texture item to be refreshed on the next server tick.
-     * See [refreshBlockTextureItem].
-     */
-    fun scheduleBlockTextureItemRefresh() {
-        Bukkit.getScheduler().runTask(Rebar) { _ ->
-            refreshBlockTextureItem()
-        }
-    }
-
-    /**
      * Call this method to refresh the block texture entity's item to be the result of
      * [getBlockTextureItem], or a barrier if that returns null.
      */

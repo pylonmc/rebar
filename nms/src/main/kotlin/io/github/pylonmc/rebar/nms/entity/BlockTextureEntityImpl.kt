@@ -28,6 +28,7 @@ import net.minecraft.world.item.ItemDisplayContext
 import net.minecraft.world.phys.Vec3
 import org.bukkit.Bukkit
 import org.bukkit.Color
+import org.bukkit.craftbukkit.block.CraftBlock
 import org.bukkit.craftbukkit.entity.CraftPlayer
 import org.bukkit.craftbukkit.inventory.CraftItemStack
 import org.bukkit.entity.Display
@@ -48,6 +49,7 @@ class BlockTextureEntityImpl : BlockTextureEntity, SyncedDataHolder {
     override val viewers: MutableSet<UUID> = mutableSetOf()
 
     override var isSpawned: Boolean = false
+    var wasUpdated: Boolean = false
 
     private val entityData: SynchedEntityData
 
@@ -56,22 +58,24 @@ class BlockTextureEntityImpl : BlockTextureEntity, SyncedDataHolder {
      */
     private val refreshDataValues: List<SynchedEntityData.DataValue<*>>
 
+    /**
+     * The data value for the item of the [BlockTextureEntity]
+     */
+    internal val itemUpdateDataValue: SynchedEntityData.DataItem<NmsItemStack>
+
+    /**
+     * The packet used to update only the item of the [BlockTextureEntity]
+     */
+    internal val itemUpdatePacket: ClientboundSetEntityDataPacket
+        get() = ClientboundSetEntityDataPacket(id, listOf(itemUpdateDataValue.value()))
+
     private val lastScaleIncreases: MutableMap<UUID, Float> = mutableMapOf()
 
     /**
      * The transformation of the texture entity needs to be centered on the bounding box of the block instead of the block center.
      * This is needed so that the scaling of non-full blocks (like slabs) scales around the correct point to combat z-fighting.
-     * The bounding box is unlikely to change often, so we cache the translation and only recalculate it every 5 seconds when requested.
      */
-    private var centerTranslation = Vector3f()
-        get() {
-            if (System.currentTimeMillis() - translationTimestamp > 5000) {
-                field = calculateCenterTranslation()
-                translationTimestamp = System.currentTimeMillis()
-            }
-            return field
-        }
-    private var translationTimestamp = 0L
+    private var centerTranslation: Vector3f
 
     constructor(block: RebarBlock) {
         this.block = block
@@ -107,7 +111,9 @@ class BlockTextureEntityImpl : BlockTextureEntity, SyncedDataHolder {
             define(EntityDataAccess.ITEM_DISPLAY_DATA_ITEM_STACK_ID, NmsItemStack.EMPTY)
             define(EntityDataAccess.ITEM_DISPLAY_DATA_ITEM_DISPLAY_ID, ItemDisplayContext.NONE.id)
         }.build()
-        this.refreshDataValues = entityData.packAll().filter { it.id == EntityDataAccess.DISPLAY_DATA_SCALE_ID.id || it.id == EntityDataAccess.DISPLAY_DATA_TRANSLATION_ID.id}
+        this.refreshDataValues = entityData.packAll().filter { it.id == EntityDataAccess.DISPLAY_DATA_TRANSLATION_ID.id || it.id == EntityDataAccess.DISPLAY_DATA_LEFT_ROTATION_ID.id || it.id == EntityDataAccess.DISPLAY_DATA_SCALE_ID.id || it.id == EntityDataAccess.DISPLAY_DATA_RIGHT_ROTATION_ID.id  }
+        this.itemUpdateDataValue = entityData.getItem(EntityDataAccess.ITEM_DISPLAY_DATA_ITEM_STACK_ID)
+        this.centerTranslation = calculateCenterTranslation()
     }
 
     override var transformation: Transformation
@@ -185,32 +191,30 @@ class BlockTextureEntityImpl : BlockTextureEntity, SyncedDataHolder {
         set(value) = entityData.set(EntityDataAccess.ITEM_DISPLAY_DATA_ITEM_DISPLAY_ID, value.ordinal.toByte())
 
     private fun calculateCenterTranslation(): Vector3f {
-        val boundingBox = block.block.boundingBox
-        if (boundingBox.volume == 0.0) return ZERO_VECTOR
+        val block = (this.block.block as CraftBlock)
+        val shape = block.blockState.getShape(block.level, block.position)
+        if (shape.isEmpty) return ZERO_VECTOR
 
-        val blockX = block.block.x
-        val blockY = block.block.y
-        val blockZ = block.block.z
+        val blockX = block.x
+        val blockY = block.y
+        val blockZ = block.z
 
-        val bbCenterX = (boundingBox.minX + boundingBox.maxX) / 2.0 - blockX
-        val bbCenterY = (boundingBox.minY + boundingBox.maxY) / 2.0 - blockY
-        val bbCenterZ = (boundingBox.minZ + boundingBox.maxZ) / 2.0 - blockZ
-
+        val center = shape.bounds().center
         return Vector3f(
-            (bbCenterX - 0.5).toFloat(),
-            (bbCenterY - 0.5).toFloat(),
-            (bbCenterZ - 0.5).toFloat()
+            (center.x + blockX - 0.5).toFloat(),
+            (center.y + blockY - 0.5).toFloat(),
+            (center.z + blockZ - 0.5).toFloat()
         )
     }
 
     override fun onSyncedDataUpdated(p0: EntityDataAccessor<*>) {}
     override fun onSyncedDataUpdated(p0: List<SynchedEntityData.DataValue<*>>) {}
 
-    private fun createDataPacket(playerId: UUID, distanceSquared: Double, trackedData: List<SynchedEntityData.DataValue<*>>, refresh: Boolean) : ClientboundSetEntityDataPacket? {
+    private fun createDataPacket(playerId: UUID, distanceSquared: Double, trackedData: List<SynchedEntityData.DataValue<*>>, optional: Boolean) : ClientboundSetEntityDataPacket? {
         var trackedData = trackedData
         val scaleIncrease = min((distanceSquared * SCALE_DISTANCE_INCREASE).toFloat(), MAX_SCALE_INCREASE)
         val lastScaleIncrease = lastScaleIncreases[playerId] ?: 0f
-        if (abs(scaleIncrease - lastScaleIncrease) < SCALE_DISTANCE_THRESHOLD && refresh) {
+        if (abs(scaleIncrease - lastScaleIncrease) < SCALE_DISTANCE_THRESHOLD && optional) {
             return null
         }
 
@@ -285,6 +289,17 @@ class BlockTextureEntityImpl : BlockTextureEntity, SyncedDataHolder {
         }
     }
 
+    fun updateStateIfNot(): Boolean {
+        if (!wasUpdated) {
+            block.refreshBlockTextureItem()
+            wasUpdated = itemUpdateDataValue.isDirty
+            if (wasUpdated) {
+                centerTranslation = calculateCenterTranslation()
+            }
+        }
+        return wasUpdated
+    }
+
     companion object {
 
         private val ZERO_VECTOR = Vector3f()
@@ -298,6 +313,10 @@ class BlockTextureEntityImpl : BlockTextureEntity, SyncedDataHolder {
                     for (block in blockTextureOctree) {
                         val entity = block.blockTextureEntity as? BlockTextureEntityImpl ?: continue
                         if (entity.viewers.isEmpty()) continue
+
+                        if (entity.wasUpdated) {
+                            entity.wasUpdated = false
+                        }
 
                         val trackedData = entity.entityData.packDirty() ?: continue
                         for (playerId in entity.viewers) {

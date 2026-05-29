@@ -15,6 +15,7 @@ import io.github.pylonmc.rebar.culling.BlockCullingEngine.syncJobGroupTasks
 import io.github.pylonmc.rebar.culling.BlockCullingEngine.syncJobTasks
 import io.github.pylonmc.rebar.resourcepack.block.BlockTextureEngine.hasCustomBlockTextures
 import io.github.pylonmc.rebar.util.delayTicks
+import io.github.pylonmc.rebar.util.position.BlockPosition
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.currentCoroutineContext
 import org.bukkit.Bukkit
@@ -28,7 +29,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 class PlayerCullingJob(
     val playerId: UUID,
-    val visible: MutableSet<RebarBlock> = mutableSetOf(),
+    val visible: MutableMap<Long, RebarBlock> = ConcurrentHashMap(),
     var tick: Int = 0
 ) {
     suspend fun run() {
@@ -51,15 +52,15 @@ class PlayerCullingJob(
             if (player.hasCustomBlockTextures) {
                 // Send all entities within view distance and hide all others
                 val query = blockTextureOctree.query(cullBox)
-                visible.toSet().subtract(query.toSet()).forEach { it.blockTextureEntity?.removeViewer(playerId) }
+                visible.values.toSet().subtract(query.toSet()).forEach { it.blockTextureEntity?.removeViewer(playerId) }
                 visible.clear()
 
                 for (block in query) {
                     val entity = block.blockTextureEntity ?: continue
                     val distanceSquared = block.block.distanceSquared(feet)
                     entity.addOrRefreshViewer(playerId, distanceSquared)
+                    visible[BlockPosition.asLong(block.block.x, block.block.y, block.block.z)] = block
                 }
-                visible.addAll(query)
             }
             delayTicks(RebarConfig.CullingEngineConfig.DISABLED_UPDATE_INTERVAL.toLong())
             return
@@ -78,13 +79,13 @@ class PlayerCullingJob(
         if (player.hasCustomBlockTextures) {
             query.addAll(blockTextureOctree.query(cullBox))
         }
-        visible.toSet().subtract(query.toSet()).forEach {
+        visible.values.toSet().subtract(query.toSet()).forEach {
             it.blockTextureEntity?.removeViewer(playerId)
             if (it is RebarCulledBlock && it !is RebarGroupCulledBlock) {
                 syncTasks[it] = false
             }
         }
-        visible.retainAll(query)
+        visible.values.retainAll(query)
 
         val cullingGroups = mutableSetOf<RebarGroupCulledBlock.CullingGroup>()
 
@@ -99,7 +100,7 @@ class PlayerCullingJob(
                     syncTasks[block] = true
                 }
             }
-            visible.add(block)
+            visible[BlockPosition.asLong(block.block.x, block.block.y, block.block.z)] = block
         }
 
         fun makeBlockCulled(block: RebarBlock) {
@@ -113,7 +114,7 @@ class PlayerCullingJob(
                     syncTasks[block] = false
                 }
             }
-            visible.remove(block)
+            visible.values.remove(block)
         }
 
         // First step go through all blocks in the query and determine if they should be shown or hidden
@@ -179,7 +180,7 @@ class PlayerCullingJob(
         for (group in cullingGroups) {
             var anyVisible = false
             for (block in group.blocks) {
-                if (visible.contains(block as RebarBlock)) {
+                if (block as RebarBlock in visible.values) {
                     anyVisible = true
                     break
                 }
