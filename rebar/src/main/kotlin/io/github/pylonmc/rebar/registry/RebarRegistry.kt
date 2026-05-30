@@ -1,7 +1,7 @@
 package io.github.pylonmc.rebar.registry
 
 import io.github.pylonmc.rebar.addon.RebarAddon
-import io.github.pylonmc.rebar.advancements.Criteria
+import io.github.pylonmc.rebar.advancements.CriteriaType
 import io.github.pylonmc.rebar.advancements.RebarAdvancement
 import io.github.pylonmc.rebar.block.BlockTypeWrapper
 import io.github.pylonmc.rebar.block.RebarBlockSchema
@@ -136,6 +136,6 @@ class RebarRegistry<T : Keyed> : Iterable<T> {
         @JvmField val BLOCK_TAGS = RebarRegistry<Tag<BlockTypeWrapper>>()
         @JvmField val CONTEXTUAL_COMPONENT_RENDERERS = RebarRegistry<ContextualComponentRenderer>()
         @JvmField val ADVANCEMENTS = RebarRegistry<RebarAdvancement>()
-        @JvmField val CRITERIA = RebarRegistry<Criteria<*>>()
+        @JvmField val CRITERIA_TYPE = RebarRegistry<CriteriaType<*>>()
     }
 }

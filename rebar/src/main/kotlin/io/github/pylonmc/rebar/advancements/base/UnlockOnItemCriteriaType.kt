@@ -1,7 +1,7 @@
 package io.github.pylonmc.rebar.advancements.base
 
-import io.github.pylonmc.rebar.advancements.BasicCriterion
-import io.github.pylonmc.rebar.advancements.Criteria
+import io.github.pylonmc.rebar.advancements.EmptyCriterion
+import io.github.pylonmc.rebar.advancements.CriteriaType
 import io.github.pylonmc.rebar.config.ConfigSection
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter
 import io.github.pylonmc.rebar.item.RebarItem
@@ -13,7 +13,7 @@ import org.bukkit.NamespacedKey
 import org.bukkit.Registry
 import org.bukkit.inventory.ItemStack
 
-object UnlockOnItemCriteria : Criteria<UnlockOnItemCriterion> {
+object UnlockOnItemCriteriaType : CriteriaType<UnlockOnItemCriterion> {
     override fun createCriterion(
         criterionKey: NamespacedKey,
         config: ConfigSection
@@ -25,8 +25,7 @@ object UnlockOnItemCriteria : Criteria<UnlockOnItemCriterion> {
         return UnlockOnItemCriterion(
             criterionKey,
             itemKey,
-            config.get("count", ConfigAdapter.INTEGER) ?: 1,
-            config.get("remove-items", ConfigAdapter.BOOLEAN) ?: false
+            config.get("count", ConfigAdapter.INTEGER) ?: 1
         )
     }
 
@@ -64,13 +63,6 @@ object UnlockOnItemCriteria : Criteria<UnlockOnItemCriterion> {
                         }
                         if (sum >= criteria.itemCount) {
                             criteria.grant(player, advancement)
-                            if (criteria.removeItems){
-                                stacks.forEach {
-                                    val amountToRemove = sum.coerceAtMost(it.amount)
-                                    it.subtract(amountToRemove)
-                                    sum -= amountToRemove
-                                }
-                            }
                         }
                     }
                 }
@@ -80,7 +72,7 @@ object UnlockOnItemCriteria : Criteria<UnlockOnItemCriterion> {
     }
 }
 
-class UnlockOnItemCriterion(private val key: NamespacedKey, val itemKey: NamespacedKey, val itemCount: Int, val removeItems: Boolean) :
-    BasicCriterion(key) {
+class UnlockOnItemCriterion(private val key: NamespacedKey, val itemKey: NamespacedKey, val itemCount: Int) :
+    EmptyCriterion(key) {
 
 }

@@ -22,6 +22,19 @@ data class RebarAdvancement(
 
     fun register() {
         RebarRegistry.ADVANCEMENTS.register(this)
+        // TODO: way to get parent class from Criterion base class
+        criteria.forEach {
+            val criteriaType =
+                RebarRegistry.CRITERIA_TYPE.first { it.javaClass.typeParameters.first().javaClass.equals(criteria.javaClass) }
+            if(CriteriaType.criteriaTypesToAdvancements.contains(criteriaType)){
+                val currentList = CriteriaType.criteriaTypesToAdvancements[criteriaType]!!
+                if(!currentList.contains(this)){
+                    CriteriaType.criteriaTypesToAdvancements[criteriaType] =
+                }
+            } else {
+                CriteriaType.criteriaTypesToAdvancements[criteriaType] = listOf(this)
+            }
+        }
     }
 
     fun vanilla(): Advancement = Bukkit.getAdvancement(key)!!
