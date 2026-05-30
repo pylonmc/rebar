@@ -153,15 +153,6 @@ open class RebarBlock private constructor(val block: Block) : Keyed {
         item.setData(DataComponentTypes.ITEM_MODEL, Key.key("air"))
         itemStack = item
         itemDisplayTransform = ItemDisplay.ItemDisplayTransform.FIXED
-        brightness = Display.Brightness(15, 15)
-        transformation = transformation.let {
-            Transformation(
-                it.translation,
-                it.leftRotation,
-                Vector3f(1 + BlockTextureEntity.BLOCK_OVERLAP_INCREASE),
-                it.rightRotation
-            )
-        }
         entity.spawn()
     }
 

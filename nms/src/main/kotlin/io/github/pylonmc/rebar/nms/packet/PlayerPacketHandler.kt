@@ -144,13 +144,23 @@ class PlayerPacketHandler(private val player: ServerPlayer, val handler: PlayerT
 
             is ClientboundBlockUpdatePacket -> packet.let {
                 val cullingJob = BlockCullingEngine.getCullingJob(player.uuid) ?: return@let it
-                val block = cullingJob.visible[BlockPosition.asLong(it.pos.x, it.pos.y, it.pos.z)] ?: return@let it
-                if (!block.disableBlockTextureEntity && block.blockTextureEntity is BlockTextureEntityImpl) {
-                    val entity = block.blockTextureEntity as BlockTextureEntityImpl
-                    return@let if (entity.tryUpdateState()) ClientboundBundlePacket(mutableListOf(entity.itemUpdatePacket, it)) else it
-                } else {
+                val pos = BlockPosition.asLong(it.pos.x, it.pos.y, it.pos.z)
+
+                return@let cullingJob.visible[pos]?.let { block ->
+                    if (!block.disableBlockTextureEntity && block.blockTextureEntity is BlockTextureEntityImpl) {
+                        val entity = block.blockTextureEntity as BlockTextureEntityImpl
+                        return@let if (entity.tryUpdateState()) ClientboundBundlePacket(mutableListOf(entity.itemUpdatePacket, it)) else it
+                    } else {
+                        return@let it
+                    }
+                } ?: cullingJob.lightDelegates[pos]?.let { delegates ->
+                    for (delegate in delegates) {
+                        if (!delegate.disableBlockTextureEntity && delegate.blockTextureEntity is BlockTextureEntityImpl) {
+                            (delegate.blockTextureEntity as BlockTextureEntityImpl).updateLighting()
+                        }
+                    }
                     return@let it
-                }
+                } ?: it
             }
 
             is ClientboundSectionBlocksUpdatePacket -> packet.let {
