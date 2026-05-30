@@ -38,9 +38,9 @@ import org.bukkit.inventory.ItemStack
  * FluidPipe.class to create a new pipe type.
  */
 open class FluidPipe(stack: ItemStack) : RebarItem(stack), RebarInteractor {
-    val material = getSettings().getOrThrow("material", ConfigAdapter.MATERIAL)
-    val fluidPerSecond = getSettings().getOrThrow("fluid-per-second", ConfigAdapter.DOUBLE)
-    val allowedTemperatures = getSettings().get(
+    val material = getSettingOrThrow("material", ConfigAdapter.MATERIAL)
+    val fluidPerSecond = getSettingOrThrow("fluid-per-second", ConfigAdapter.DOUBLE)
+    val allowedTemperatures = getSetting(
         "allowed-temperatures",
         ConfigAdapter.LIST.from(ConfigAdapter.FLUID_TEMPERATURE)
     )

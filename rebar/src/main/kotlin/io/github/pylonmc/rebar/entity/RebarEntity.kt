@@ -2,6 +2,7 @@ package io.github.pylonmc.rebar.entity
 
 import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.config.ConfigSection
+import io.github.pylonmc.rebar.config.adapter.ConfigAdapter
 import io.github.pylonmc.rebar.content.debug.DebugWaxedWeatheredCutCopperStairs
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.entity.RebarEntity.Companion.register
@@ -87,7 +88,31 @@ abstract class RebarEntity<out E: Entity>(val entity: E) {
      * Shorthand for `ConfigSection.fromSettings(getKey())`
      */
     fun getSettings()
-            = ConfigSection.fromSettings(key)
+        = ConfigSection.fromSettings(key)
+
+    /**
+     * Shorthand for getSettings().get(...)
+     */
+    fun <T> getSetting(key: String, adapter: ConfigAdapter<T>)
+        = getSettings().get(key, adapter)
+
+    /**
+     * Shorthand for getSettings().get(...)
+     */
+    fun <T> getSetting(key: String, adapter: ConfigAdapter<T>, defaultValue: T)
+        = getSettings().get(key, adapter, defaultValue)
+
+    /**
+     * Shorthand for getSettings().get(...)
+     */
+    fun <T> getSetting(key: String, adapter: ConfigAdapter<T>, defaultValue: () -> T)
+        = getSettings().get(key, adapter, defaultValue)
+
+    /**
+     * Shorthand for getSettings().getOrThrow(...)
+     */
+    fun <T> getSettingOrThrow(key: String, adapter: ConfigAdapter<T>)
+        = getSettings().getOrThrow(key, adapter)
 
     companion object {
 
@@ -149,13 +174,5 @@ abstract class RebarEntity<out E: Entity>(val entity: E) {
                 return null
             }
         }
-
-        /**
-         * Returns settings associated with the entity.
-         *
-         * Shorthand for `ConfigSection.fromSettings(key)`
-         */
-        fun getSettings(key: NamespacedKey)
-                = ConfigSection.fromSettings(key)
     }
 }

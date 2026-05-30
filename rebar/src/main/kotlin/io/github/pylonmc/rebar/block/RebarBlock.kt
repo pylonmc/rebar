@@ -10,6 +10,7 @@ import io.github.pylonmc.rebar.block.context.BlockBreakContext
 import io.github.pylonmc.rebar.block.context.BlockCreateContext
 import io.github.pylonmc.rebar.config.ConfigSection
 import io.github.pylonmc.rebar.config.RebarConfig
+import io.github.pylonmc.rebar.config.adapter.ConfigAdapter
 import io.github.pylonmc.rebar.content.debug.DebugWaxedWeatheredCutCopperStairs
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.entity.packet.BlockTextureEntity
@@ -295,6 +296,30 @@ open class RebarBlock private constructor(val block: Block) : Keyed {
      */
     fun getSettings() = ConfigSection.fromSettings(key)
 
+    /**
+     * Shorthand for getSettings().get(...)
+     */
+    fun <T> getSetting(key: String, adapter: ConfigAdapter<T>)
+        = getSettings().get(key, adapter)
+
+    /**
+     * Shorthand for getSettings().get(...)
+     */
+    fun <T> getSetting(key: String, adapter: ConfigAdapter<T>, defaultValue: T)
+        = getSettings().get(key, adapter, defaultValue)
+
+    /**
+     * Shorthand for getSettings().get(...)
+     */
+    fun <T> getSetting(key: String, adapter: ConfigAdapter<T>, defaultValue: () -> T)
+        = getSettings().get(key, adapter, defaultValue)
+
+    /**
+     * Shorthand for getSettings().getOrThrow(...)
+     */
+    fun <T> getSettingOrThrow(key: String, adapter: ConfigAdapter<T>)
+        = getSettings().getOrThrow(key, adapter)
+
     companion object {
 
         @JvmStatic
@@ -404,13 +429,5 @@ open class RebarBlock private constructor(val block: Block) : Keyed {
                 }
             }
         }
-
-        /**
-         * Returns settings associated with the block.
-         *
-         * Shorthand for `ConfigSection.fromSettings(key)`
-         */
-        @JvmStatic
-        fun getSettings(key: NamespacedKey) = ConfigSection.fromSettings(key)
     }
 }
