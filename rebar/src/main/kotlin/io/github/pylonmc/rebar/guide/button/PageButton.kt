@@ -46,6 +46,12 @@ open class PageButton(val stack: ItemStack, val page: GuidePage) : GuideButton()
     override fun priority(): Double = 0.0
 
     companion object {
+        /**
+         * Page buttons are just icons in the guide, we don't want any random component data to be
+         * appended to the tooltip. (for ex: +5 attack damage)
+         *
+         * Here we specify all the components that may add to the tooltip that we want to hide.
+         */
         @Suppress("UnstableApiUsage")
         val hiddenComponents = setOf(
             DataComponentTypes.DAMAGE, DataComponentTypes.MAX_DAMAGE, DataComponentTypes.UNBREAKABLE,

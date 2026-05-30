@@ -289,7 +289,7 @@ class BlockTextureEntityImpl : BlockTextureEntity, SyncedDataHolder {
         }
     }
 
-    fun updateStateIfNot(): Boolean {
+    fun tryUpdateState(): Boolean {
         if (!stateWasUpdated) {
             val newState = (block.block as CraftBlock).blockState
             if (newState === lastState) return false

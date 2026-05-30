@@ -685,6 +685,7 @@ fun rebarTypeSimilar(item1: ItemStack, item2: ItemStack): Boolean {
     return item1.type == item2.type
 }
 
+@JvmSynthetic // java should just use RebarItem#isRebarItem
 fun ItemStack.isRebarItem(key: NamespacedKey) = RebarItem.isRebarItem(this, key)
 
 fun <T : Any> ItemStack.forceSetData(type: DataComponentType.Valued<T>, value: Any?) {

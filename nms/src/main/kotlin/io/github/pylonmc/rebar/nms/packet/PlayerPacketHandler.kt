@@ -1,6 +1,6 @@
 @file:Suppress("UnstableApiUsage")
 
-package io.github.pylonmc.rebar.i18n.packet
+package io.github.pylonmc.rebar.nms.packet
 
 import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.culling.BlockCullingEngine
@@ -147,7 +147,7 @@ class PlayerPacketHandler(private val player: ServerPlayer, val handler: PlayerT
                 val block = cullingJob.visible[BlockPosition.asLong(it.pos.x, it.pos.y, it.pos.z)] ?: return@let it
                 if (!block.disableBlockTextureEntity && block.blockTextureEntity is BlockTextureEntityImpl) {
                     val entity = block.blockTextureEntity as BlockTextureEntityImpl
-                    return@let if (entity.updateStateIfNot()) ClientboundBundlePacket(mutableListOf(entity.itemUpdatePacket, it)) else it
+                    return@let if (entity.tryUpdateState()) ClientboundBundlePacket(mutableListOf(entity.itemUpdatePacket, it)) else it
                 } else {
                     return@let it
                 }
@@ -160,7 +160,7 @@ class PlayerPacketHandler(private val player: ServerPlayer, val handler: PlayerT
                     val block = cullingJob.visible[BlockPosition.asLong(pos.x, pos.y, pos.z)] ?: return@runUpdates
                     if (!block.disableBlockTextureEntity && block.blockTextureEntity is BlockTextureEntityImpl) {
                         val entity = block.blockTextureEntity as BlockTextureEntityImpl
-                        if (entity.updateStateIfNot()) {
+                        if (entity.tryUpdateState()) {
                             packets.add(entity.itemUpdatePacket)
                         }
 
