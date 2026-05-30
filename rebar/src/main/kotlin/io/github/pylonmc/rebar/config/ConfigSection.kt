@@ -21,7 +21,7 @@ import java.util.WeakHashMap
  * @see ConfigAdapter
  * @see ConfigurationSection
  */
-open class ConfigSection private constructor(val internalSection: ConfigurationSection) {
+open class ConfigSection private constructor(val name: String?, val internalSection: ConfigurationSection) {
 
     private val cache: MutableMap<String, Any?> = WeakHashMap()
     private val sectionCache: MutableMap<String, ConfigSection> = WeakHashMap()
@@ -64,7 +64,7 @@ open class ConfigSection private constructor(val internalSection: ConfigurationS
         }
 
         val newConfig = internalSection.getConfigurationSection(key) ?: return null
-        val configSection = ConfigSection(newConfig)
+        val configSection = ConfigSection(name, newConfig)
         sectionCache[key] = configSection
         return configSection
     }
@@ -111,7 +111,7 @@ open class ConfigSection private constructor(val internalSection: ConfigurationS
                 return clazz.cast(cached)
             } catch (e: Exception) {
                 throw IllegalArgumentException(
-                    "(${getKeyPath(key)}) You have attempted to access $key with two different config adapters. Ensure you are using the same config adapater every time you read this value.",
+                    "You have attempted to access ${getKeyPath(key)} with two different config adapters. Ensure you are using the same config adapater every time you read this value.",
                     e
                 )
             }
@@ -121,12 +121,12 @@ open class ConfigSection private constructor(val internalSection: ConfigurationS
         val value = try {
             adapter.convert(rawValue)
         } catch (e: KeyNotFoundException) {
-            val exception = KeyNotFoundException("$key.${e.key.removePrefix("$key.")}")
+            val exception = KeyNotFoundException("$key.${e.keyPath.removePrefix("$key.")}")
             exception.stackTrace = e.stackTrace
             throw exception
         } catch (e: Exception) {
             throw IllegalArgumentException(
-                "(${getKeyPath(key)}) Failed to convert value '$rawValue' to type ${adapter.type}",
+                "Failed to convert value '$rawValue' to type ${adapter.type} at ${getKeyPath(key)}",
                 e
             )
         }
@@ -144,7 +144,7 @@ open class ConfigSection private constructor(val internalSection: ConfigurationS
     }
 
     fun createSection(key: String): ConfigSection =
-        ConfigSection(internalSection.createSection(key)).also { sectionCache[key] = it }
+        ConfigSection(name, internalSection.createSection(key)).also { sectionCache[key] = it }
 
     /**
      * 'Merges' [other] with this ConfigSection by copying all of its keys into this ConfigSection.
@@ -166,19 +166,36 @@ open class ConfigSection private constructor(val internalSection: ConfigurationS
         }
     }
 
-    private fun getKeyPath(key: String): String =
-        if (internalSection.currentPath.isNullOrEmpty()) key else "${internalSection.currentPath}.$key"
+    private fun getKeyPath(key: String): String {
+        var path = ""
+        if (name != null) {
+            path += "$name:"
+        }
+        if (!internalSection.currentPath.isNullOrEmpty()) {
+            path += "${internalSection.currentPath}."
+        }
+        path += key
+        return path
+    }
 
     /**
      * Thrown when a key is not found.
      */
-    class KeyNotFoundException(val key: String, message: String = "Config key not found: $key") : RuntimeException(message)
+    class KeyNotFoundException(
+        val keyPath: String,
+        message: String = "Config key not found: $keyPath"
+    ) : RuntimeException(message)
 
     companion object {
 
+        /**
+         * Loads a [ConfigSection] from a [ConfigurationSection].
+         *
+         * [name] is optional. It is used to identify the returned [ConfigSection] in errors.
+         */
         @JvmStatic
-        fun from(configSection: ConfigurationSection)
-                = ConfigSection(configSection)
+        fun from(name: String?, configSection: ConfigurationSection)
+                = ConfigSection(name, configSection)
 
         /**
          * Returns null if the file does not exist
@@ -188,7 +205,7 @@ open class ConfigSection private constructor(val internalSection: ConfigurationS
             if (!file.exists()) {
                 return null
             }
-            return from(YamlConfiguration.loadConfiguration(file))
+            return from(file.absolutePath, YamlConfiguration.loadConfiguration(file))
         }
 
         @JvmStatic
@@ -204,7 +221,7 @@ open class ConfigSection private constructor(val internalSection: ConfigurationS
 
         @JvmStatic
         fun fromOrThrow(path: Path)
-                = from(path) ?: throw IllegalArgumentException("$path does not exist")
+                = from(path) ?: throw IllegalArgumentException("${path.toFile().absolutePath} does not exist")
 
         /**
          * Loads a config from [plugin]'s data folder, e.g. plugins/pylon/ for Pylon.
@@ -224,7 +241,8 @@ open class ConfigSection private constructor(val internalSection: ConfigurationS
          **/
         @JvmStatic
         fun fromDataFolderOrThrow(plugin: Plugin, path: String)
-                = fromDataFolder(plugin, path) ?: throw IllegalArgumentException("${File(plugin.dataFolder, path).absolutePath} does not exist")
+                = fromDataFolder(plugin, path)
+            ?: throw IllegalArgumentException("Failed to load config from ${File(plugin.dataFolder, path).absolutePath} because it does not exist")
 
         /**
          * Loads a config from the resource embedded in your plugin, meaning
@@ -234,8 +252,15 @@ open class ConfigSection private constructor(val internalSection: ConfigurationS
          */
         @JvmStatic
         fun fromResource(plugin: Plugin, path: String): ConfigSection? {
-            val resource = plugin.getResource(path)
-            return resource?.let { from(YamlConfiguration.loadConfiguration(resource.reader())) }
+            val resource = plugin.getResource(path) ?: return null
+            val config = YamlConfiguration()
+            try {
+                // We cannot use YamlConfiguration.loadConfiguration because it catches all errors internally...
+                config.load(resource.reader())
+            } catch (e: Exception) {
+                throw RuntimeException("Failed to load config from resources/$path because it is not valid YAML", e)
+            }
+            return from("resources/$path", config)
         }
 
         /**
@@ -244,7 +269,7 @@ open class ConfigSection private constructor(val internalSection: ConfigurationS
          */
         @JvmStatic
         fun fromResourceOrThrow(plugin: Plugin, path: String)
-                = fromResource(plugin, path) ?: throw IllegalArgumentException("${File(plugin.dataFolder, path).absolutePath} does not exist")
+                = fromResource(plugin, path) ?: throw IllegalArgumentException("Failed to load config from resources/$path because it does not exist")
 
         /**
          * Retrieves the settings for the given [key] from the Rebar settings folder.
@@ -269,7 +294,8 @@ open class ConfigSection private constructor(val internalSection: ConfigurationS
          */
         @JvmStatic
         fun copyResource(plugin: Plugin, path: String): ConfigSection {
-            val config = fromResource(plugin, path) ?: throw IllegalArgumentException("${File(plugin.dataFolder, path).absolutePath} does not exist")
+            val config = fromResource(plugin, path)
+                ?: throw IllegalArgumentException("Failed to load config from ${File(plugin.dataFolder, path).absolutePath} because it does not exist")
             config.save(File(plugin.dataFolder, path))
             return fromDataFolder(plugin, path)!!
         }
