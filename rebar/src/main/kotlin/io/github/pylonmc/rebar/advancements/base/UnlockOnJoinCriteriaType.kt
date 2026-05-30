@@ -1,7 +1,7 @@
 package io.github.pylonmc.rebar.advancements.base
 
-import io.github.pylonmc.rebar.advancements.BasicCriterion
-import io.github.pylonmc.rebar.advancements.Criteria
+import io.github.pylonmc.rebar.advancements.EmptyCriterion
+import io.github.pylonmc.rebar.advancements.CriteriaType
 import io.github.pylonmc.rebar.config.ConfigSection
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.util.rebarKey
@@ -10,7 +10,7 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerJoinEvent
 
-object UnlockOnJoinCriteria : Criteria<UnlockOnJoinCriterion> {
+object UnlockOnJoinCriteriaType : CriteriaType<UnlockOnJoinCriterion> {
     override fun createCriterion(
         criterionKey: NamespacedKey,
         config: ConfigSection
@@ -36,6 +36,6 @@ object UnlockOnJoinCriteria : Criteria<UnlockOnJoinCriterion> {
     }
 }
 
-class UnlockOnJoinCriterion(private val key: NamespacedKey) : BasicCriterion(key) {
+class UnlockOnJoinCriterion(private val key: NamespacedKey) : EmptyCriterion(key) {
 
 }

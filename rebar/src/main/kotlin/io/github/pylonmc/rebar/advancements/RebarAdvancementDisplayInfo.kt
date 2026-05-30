@@ -1,6 +1,6 @@
 package io.github.pylonmc.rebar.advancements
 
-import net.kyori.adventure.key.Key
+import io.github.pylonmc.rebar.item.ItemTypeWrapper
 import net.kyori.adventure.text.Component
 import org.bukkit.NamespacedKey
 
@@ -8,4 +8,4 @@ data class RebarAdvancementDisplayInfo(val icon: RebarAdvancementIcon, val title
 
 }
 
-data class RebarAdvancementIcon(val id: NamespacedKey, val count: Int)
+data class RebarAdvancementIcon(val itemType: ItemTypeWrapper, val count: Int)

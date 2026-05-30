@@ -2,6 +2,7 @@ package io.github.pylonmc.rebar.advancements
 
 import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.addon.RebarAddon
+import io.github.pylonmc.rebar.config.Config
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter
 import io.github.pylonmc.rebar.nms.NmsAccessor
 import io.github.pylonmc.rebar.registry.RebarRegistry
@@ -27,10 +28,10 @@ object AdvancementsManager {
         if (!advancementsFile.exists()) return
 
         try {
-            val config = YamlConfiguration.loadConfiguration(advancementsFile)
-            config.getKeys(false).forEach { it ->
+            val config = Config(advancementsFile)
+            config.keys.forEach { it ->
                 NmsAccessor.instance.registerAdvancement(
-                    ConfigAdapter.ADVANCEMENT.convert(it, config.getConfigurationSection(it)!!)
+                    config.getOrThrow(it, ConfigAdapter.ADVANCEMENT)
                     , ConfigAdapter.NAMESPACED_KEY.convert(null, it)
                 )
             }
