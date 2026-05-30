@@ -98,6 +98,8 @@ class BlockTextureEntityImpl : BlockTextureEntity, SyncedDataHolder {
      * This is needed so that occluding blocks don't cause the entity to be rendered at 0 brightness
      */
     private var lightingOffset: Vector3f = ZERO_VECTOR
+    private var lightingUpdateCooldown: Long = 0
+    private var lightingUpdateScheduled: Boolean = false
 
     /**
      * The transformation of the texture entity needs to be centered on the bounding box of the block instead of the block center.
@@ -106,7 +108,7 @@ class BlockTextureEntityImpl : BlockTextureEntity, SyncedDataHolder {
     private var centerOffset: Vector3f
 
     var lastState: BlockState
-    var stateWasUpdated: Boolean = false
+    var stateUpdated: Boolean = false
 
     /**
      * A map of the last scale increase sent to each player, used to prevent sending unnecessary scale updates when the player is far enough away that the scale increase doesn't change anymore or when the change is by to small a margin
@@ -157,7 +159,7 @@ class BlockTextureEntityImpl : BlockTextureEntity, SyncedDataHolder {
         this.lastState = (block.block as CraftBlock).blockState
         this.lightingOffset = calculateLightingOffset()
         this.centerOffset = calculateCenterOffset()
-        updateLighting()
+        tryUpdateLighting()
     }
 
     val transformation: Transformation
@@ -300,7 +302,17 @@ class BlockTextureEntityImpl : BlockTextureEntity, SyncedDataHolder {
         }
     }
 
-    fun updateLighting(): Boolean {
+    fun tryUpdateLighting(): Boolean {
+        // Require at least 1 tick between lighting update attempts, we cannot just ignore
+        // all lighting update attempts within 1 tick because we are dealing with multiple possible
+        // light locations, so at the worst it gets scheduled to update the next tick.
+        if (lightingUpdateCooldown > System.currentTimeMillis()) {
+            lightingUpdateScheduled = true
+            return false
+        }
+        lightingUpdateCooldown = System.currentTimeMillis() + 50
+        lightingUpdateScheduled = false
+
         val originalDelegates = this.lightDelegatePositions
         val originalOffset = this.lightingOffset
         this.lightingOffset = calculateLightingOffset()
@@ -336,18 +348,18 @@ class BlockTextureEntityImpl : BlockTextureEntity, SyncedDataHolder {
     }
 
     fun tryUpdateState(): Boolean {
-        if (!stateWasUpdated) {
+        if (!stateUpdated) {
             val newState = (block.block as CraftBlock).blockState
             if (newState === lastState) return false
             lastState = newState
 
             block.refreshBlockTextureItem()
-            stateWasUpdated = updateLighting() || itemUpdateData.isDirty
-            if (stateWasUpdated) {
+            stateUpdated = tryUpdateLighting() || itemUpdateData.isDirty
+            if (stateUpdated) {
                 centerOffset = calculateCenterOffset()
             }
         }
-        return stateWasUpdated
+        return stateUpdated
     }
 
     private fun calculateLightingOffset(): Vector3f {
@@ -355,18 +367,18 @@ class BlockTextureEntityImpl : BlockTextureEntity, SyncedDataHolder {
             return ZERO_VECTOR
         }
 
-        // Check for the first direct neighboring block that has lighting data with the highest light
+        // Check for the direct neighboring block that has lighting data with the highest light
         var brightestFace: BlockFace? = null
         var brightest = lightingOffset
         var brightestLight = 0.toByte()
-        if (lightingOffset !== ZERO_VECTOR) {
-            val delegateBlock = block.block.getRelative(lightingOffset.x.toInt(), lightingOffset.y.toInt(), lightingOffset.z.toInt()) as? CraftBlock
+        if (brightest !== ZERO_VECTOR) {
+            val delegateBlock = block.block.getRelative(brightest.x.toInt(), brightest.y.toInt(), brightest.z.toInt()) as? CraftBlock
             if (delegateBlock?.blockState?.hasLightingData ?: false) {
                 brightestLight = delegateBlock.lightLevel
-                brightestFace = IMMEDIATE_FACES.firstOrNull { it.modX == lightingOffset.x.toInt() && it.modY == lightingOffset.y.toInt() && it.modZ == lightingOffset.z.toInt() }
+                if (brightestLight >= 15) return brightest
+                brightestFace = IMMEDIATE_FACES.firstOrNull { it.modX == brightest.x.toInt() && it.modY == brightest.y.toInt() && it.modZ == brightest.z.toInt() }
             }
         }
-
 
         for (face in IMMEDIATE_FACES) {
             if (brightestFace == face) continue
@@ -376,6 +388,7 @@ class BlockTextureEntityImpl : BlockTextureEntity, SyncedDataHolder {
                 if (light > brightestLight) {
                     brightestLight = light
                     brightest = Vector3f(face.modX.toFloat(), face.modY.toFloat(), face.modZ.toFloat())
+                    if (light >= 15) return brightest
                 }
             }
         }
@@ -422,8 +435,12 @@ class BlockTextureEntityImpl : BlockTextureEntity, SyncedDataHolder {
                         val entity = block.blockTextureEntity as? BlockTextureEntityImpl ?: continue
                         if (entity.viewers.isEmpty()) continue
 
-                        if (entity.stateWasUpdated) {
-                            entity.stateWasUpdated = false
+                        if (entity.stateUpdated) {
+                            entity.stateUpdated = false
+                        }
+
+                        if (entity.lightingUpdateScheduled) {
+                            entity.tryUpdateLighting()
                         }
 
                         if (entity.refreshesFrozen && entity.refreshesFrozenExpireTime < System.currentTimeMillis()) {

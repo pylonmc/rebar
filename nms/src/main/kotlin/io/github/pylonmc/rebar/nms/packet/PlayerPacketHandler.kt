@@ -149,7 +149,7 @@ class PlayerPacketHandler(private val player: ServerPlayer, val handler: PlayerT
                 cullingJob.lightDelegates[packedPos]?.let { delegates ->
                     for (delegate in delegates) {
                         if (!delegate.disableBlockTextureEntity && delegate.blockTextureEntity is BlockTextureEntityImpl) {
-                            (delegate.blockTextureEntity as BlockTextureEntityImpl).updateLighting()
+                            (delegate.blockTextureEntity as BlockTextureEntityImpl).tryUpdateLighting()
                         }
                     }
                 }
@@ -172,7 +172,7 @@ class PlayerPacketHandler(private val player: ServerPlayer, val handler: PlayerT
                     cullingJob.lightDelegates[packedPos]?.let { delegates ->
                         for (delegate in delegates) {
                             if (!delegate.disableBlockTextureEntity && delegate.blockTextureEntity is BlockTextureEntityImpl) {
-                                (delegate.blockTextureEntity as BlockTextureEntityImpl).updateLighting()
+                                (delegate.blockTextureEntity as BlockTextureEntityImpl).tryUpdateLighting()
                             }
                         }
                     }
