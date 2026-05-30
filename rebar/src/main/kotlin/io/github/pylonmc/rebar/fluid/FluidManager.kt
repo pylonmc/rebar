@@ -2,7 +2,7 @@ package io.github.pylonmc.rebar.fluid
 
 import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.block.BlockStorage
-import io.github.pylonmc.rebar.block.base.FluidRebarBlock
+import io.github.pylonmc.rebar.block.interfaces.FluidRebarBlock
 import io.github.pylonmc.rebar.config.RebarConfig
 import io.github.pylonmc.rebar.event.PreRebarFluidPointConnectEvent
 import io.github.pylonmc.rebar.event.PreRebarFluidPointDisconnectEvent

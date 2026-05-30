@@ -1,6 +1,6 @@
 package io.github.pylonmc.rebar.datatypes
 
-import io.github.pylonmc.rebar.block.base.ProcessorRebarBlock
+import io.github.pylonmc.rebar.block.interfaces.ProcessorRebarBlock
 import io.github.pylonmc.rebar.util.rebarKey
 import io.github.pylonmc.rebar.util.setNullable
 import org.bukkit.persistence.PersistentDataAdapterContext

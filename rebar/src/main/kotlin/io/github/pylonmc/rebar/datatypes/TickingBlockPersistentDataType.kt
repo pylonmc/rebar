@@ -1,6 +1,6 @@
 package io.github.pylonmc.rebar.datatypes
 
-import io.github.pylonmc.rebar.block.base.TickingRebarBlock
+import io.github.pylonmc.rebar.block.interfaces.TickingRebarBlock
 import io.github.pylonmc.rebar.util.rebarKey
 import org.bukkit.persistence.PersistentDataAdapterContext
 import org.bukkit.persistence.PersistentDataContainer

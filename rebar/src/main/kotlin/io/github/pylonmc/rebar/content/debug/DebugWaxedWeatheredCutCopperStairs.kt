@@ -2,17 +2,17 @@ package io.github.pylonmc.rebar.content.debug
 
 import io.github.pylonmc.rebar.block.BlockStorage
 import io.github.pylonmc.rebar.block.RebarBlock
-import io.github.pylonmc.rebar.block.base.TickingRebarBlock
+import io.github.pylonmc.rebar.block.interfaces.TickingRebarBlock
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.entity.EntityStorage
 import io.github.pylonmc.rebar.event.RebarBlockSerializeEvent
 import io.github.pylonmc.rebar.event.api.annotation.MultiHandler
 import io.github.pylonmc.rebar.i18n.RebarArgument
 import io.github.pylonmc.rebar.item.RebarItem
-import io.github.pylonmc.rebar.item.base.handler.BlockInteractRebarItemHandler
-import io.github.pylonmc.rebar.item.base.handler.EntityInteractRebarItemHandler
-import io.github.pylonmc.rebar.item.base.handler.EntityAttackRebarItemHandler
+import io.github.pylonmc.rebar.item.interfaces.BlockInteractRebarItemHandler
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
+import io.github.pylonmc.rebar.item.interfaces.EntityAttackRebarItemHandler
+import io.github.pylonmc.rebar.item.interfaces.EntityInteractRebarItemHandler
 import io.github.pylonmc.rebar.nms.NmsAccessor
 import io.github.pylonmc.rebar.util.position.position
 import io.github.pylonmc.rebar.util.rebarKey

@@ -1,6 +1,6 @@
 package io.github.pylonmc.rebar.datatypes
 
-import io.github.pylonmc.rebar.block.base.SimpleRebarMultiblock
+import io.github.pylonmc.rebar.block.interfaces.SimpleRebarMultiblock
 import io.github.pylonmc.rebar.util.rebarKey
 import io.github.pylonmc.rebar.util.setNullable
 import org.bukkit.persistence.PersistentDataAdapterContext

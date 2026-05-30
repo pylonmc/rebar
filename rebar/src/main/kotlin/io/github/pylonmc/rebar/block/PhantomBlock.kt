@@ -1,6 +1,6 @@
 package io.github.pylonmc.rebar.block
 
-import io.github.pylonmc.rebar.block.base.handler.BlockBreakRebarBlockHandler
+import io.github.pylonmc.rebar.block.interfaces.BlockBreakRebarBlockHandler
 import io.github.pylonmc.rebar.block.context.BlockBreakContext
 import io.github.pylonmc.rebar.block.context.BlockCreateContext
 import io.github.pylonmc.rebar.datatypes.RebarSerializers

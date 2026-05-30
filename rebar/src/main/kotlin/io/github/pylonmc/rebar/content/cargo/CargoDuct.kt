@@ -2,9 +2,12 @@ package io.github.pylonmc.rebar.content.cargo
 
 import io.github.pylonmc.rebar.block.BlockStorage
 import io.github.pylonmc.rebar.block.RebarBlock
-import io.github.pylonmc.rebar.block.base.*
-import io.github.pylonmc.rebar.block.base.EntityHolderRebarBlock.Companion.holders
-import io.github.pylonmc.rebar.block.base.handler.BlockBreakRebarBlockHandler
+import io.github.pylonmc.rebar.block.interfaces.EntityHolderRebarBlock.Companion.holders
+import io.github.pylonmc.rebar.block.interfaces.EntityGroupCulledRebarBlock
+import io.github.pylonmc.rebar.block.interfaces.EntityHolderRebarBlock
+import io.github.pylonmc.rebar.block.interfaces.BlockBreakRebarBlockHandler
+import io.github.pylonmc.rebar.block.interfaces.CargoRebarBlock
+import io.github.pylonmc.rebar.block.interfaces.FacadeRebarBlock
 import io.github.pylonmc.rebar.block.context.BlockBreakContext
 import io.github.pylonmc.rebar.block.context.BlockCreateContext
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
@@ -30,7 +33,8 @@ import org.bukkit.event.Listener
 import org.bukkit.event.entity.EntityRemoveEvent
 import org.bukkit.persistence.PersistentDataContainer
 
-class CargoDuct : RebarBlock, BlockBreakRebarBlockHandler, EntityHolderRebarBlock, EntityGroupCulledRebarBlock, FacadeRebarBlock {
+class CargoDuct : RebarBlock, BlockBreakRebarBlockHandler, EntityHolderRebarBlock, EntityGroupCulledRebarBlock,
+    FacadeRebarBlock {
     override val facadeDefaultBlockType = Material.STRUCTURE_VOID
 
     var connectedFaces = mutableListOf<BlockFace>()

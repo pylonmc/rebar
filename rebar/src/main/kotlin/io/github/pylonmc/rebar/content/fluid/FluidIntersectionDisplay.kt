@@ -4,7 +4,7 @@ import io.github.pylonmc.rebar.block.BlockStorage
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.entity.EntityStorage
 import io.github.pylonmc.rebar.entity.RebarEntity
-import io.github.pylonmc.rebar.entity.base.handler.DeathRebarEntityHandler
+import io.github.pylonmc.rebar.entity.interfaces.DeathRebarEntityHandler
 import io.github.pylonmc.rebar.entity.display.ItemDisplayBuilder
 import io.github.pylonmc.rebar.entity.display.transform.TransformBuilder
 import io.github.pylonmc.rebar.event.RebarEntityDeathEvent

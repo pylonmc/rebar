@@ -1,7 +1,6 @@
 package io.github.pylonmc.rebar.event.api.annotation
 
 import io.github.pylonmc.rebar.event.api.MultiListener
-import io.github.pylonmc.rebar.item.base.handler.InteractRebarItemHandler
 import io.github.pylonmc.rebar.util.isSubclassOf
 import org.bukkit.event.Cancellable
 import org.bukkit.event.Event

@@ -1,7 +1,7 @@
 package io.github.pylonmc.rebar.test.entity;
 
 import io.github.pylonmc.rebar.entity.RebarEntity;
-import io.github.pylonmc.rebar.entity.base.handler.DamageRebarEntityHandler;
+import io.github.pylonmc.rebar.entity.interfaces.DamageRebarEntityHandler;
 import io.github.pylonmc.rebar.test.RebarTest;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;

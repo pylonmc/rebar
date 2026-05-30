@@ -1,7 +1,7 @@
 package io.github.pylonmc.rebar.test.item;
 
 import io.github.pylonmc.rebar.item.RebarItem;
-import io.github.pylonmc.rebar.item.base.handler.BrewingStandFuelRebarItemHandler;
+import io.github.pylonmc.rebar.item.interfaces.BrewingStandFuelRebarItemHandler;
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder;
 import io.github.pylonmc.rebar.test.RebarTest;
 import org.bukkit.Material;

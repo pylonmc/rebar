@@ -1,7 +1,7 @@
 package io.github.pylonmc.rebar.test.test.block;
 
 import io.github.pylonmc.rebar.block.BlockStorage;
-import io.github.pylonmc.rebar.block.base.TickingRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.TickingRebarBlock;
 import io.github.pylonmc.rebar.config.RebarConfig;
 import io.github.pylonmc.rebar.gametest.GameTestConfig;
 import io.github.pylonmc.rebar.test.RebarTest;

@@ -4,7 +4,7 @@ package io.github.pylonmc.rebar.block
 import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.addon.RebarAddon
 import io.github.pylonmc.rebar.block.BlockStorage.breakBlock
-import io.github.pylonmc.rebar.block.base.handler.BlockBreakRebarBlockHandler
+import io.github.pylonmc.rebar.block.interfaces.BlockBreakRebarBlockHandler
 import io.github.pylonmc.rebar.block.context.BlockBreakContext
 import io.github.pylonmc.rebar.block.context.BlockCreateContext
 import io.github.pylonmc.rebar.config.RebarConfig

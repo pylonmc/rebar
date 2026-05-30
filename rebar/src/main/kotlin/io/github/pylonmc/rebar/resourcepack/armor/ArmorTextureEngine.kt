@@ -5,7 +5,7 @@ package io.github.pylonmc.rebar.resourcepack.armor
 import io.github.pylonmc.rebar.config.RebarConfig
 import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.item.RebarItemSchema
-import io.github.pylonmc.rebar.item.base.ArmorRebarItem
+import io.github.pylonmc.rebar.item.interfaces.ArmorRebarItem
 import io.github.pylonmc.rebar.util.rebarKey
 import io.papermc.paper.datacomponent.DataComponentTypes
 import io.papermc.paper.datacomponent.item.Equippable

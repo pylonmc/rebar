@@ -13,7 +13,7 @@ import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.i18n.customMiniMessage
 import io.github.pylonmc.rebar.item.ItemTypeWrapper
 import io.github.pylonmc.rebar.item.RebarItemSchema
-import io.github.pylonmc.rebar.item.base.handler.ProjectileRebarItemHandler
+import io.github.pylonmc.rebar.item.interfaces.ProjectileRebarItemHandler
 import io.github.pylonmc.rebar.nms.NmsAccessor
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.util.position.BlockPosition

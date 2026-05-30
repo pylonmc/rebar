@@ -1,8 +1,8 @@
 package io.github.pylonmc.rebar.test.block.fluid;
 
 import io.github.pylonmc.rebar.block.RebarBlock;
-import io.github.pylonmc.rebar.block.base.FluidRebarBlock;
-import io.github.pylonmc.rebar.block.base.handler.UnloadRebarBlockHandler;
+import io.github.pylonmc.rebar.block.interfaces.FluidRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.UnloadRebarBlockHandler;
 import io.github.pylonmc.rebar.block.context.BlockCreateContext;
 import io.github.pylonmc.rebar.config.RebarConfig;
 import io.github.pylonmc.rebar.datatypes.RebarSerializers;

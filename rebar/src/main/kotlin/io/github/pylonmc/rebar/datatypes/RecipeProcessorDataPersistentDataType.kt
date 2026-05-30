@@ -1,6 +1,6 @@
 package io.github.pylonmc.rebar.datatypes
 
-import io.github.pylonmc.rebar.block.base.RecipeProcessorRebarBlock
+import io.github.pylonmc.rebar.block.interfaces.RecipeProcessorRebarBlock
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.util.rebarKey
 import io.github.pylonmc.rebar.util.setNullable

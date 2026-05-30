@@ -5,8 +5,8 @@ import com.github.benmanes.caffeine.cache.Cache
 import com.github.benmanes.caffeine.cache.Caffeine
 import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.block.RebarBlock
-import io.github.pylonmc.rebar.block.base.CulledRebarBlock
-import io.github.pylonmc.rebar.block.base.GroupCulledRebarBLock
+import io.github.pylonmc.rebar.block.interfaces.CulledRebarBlock
+import io.github.pylonmc.rebar.block.interfaces.GroupCulledRebarBLock
 import io.github.pylonmc.rebar.config.RebarConfig
 import io.github.pylonmc.rebar.culling.PlayerCullingJob.Companion.cullingBoundingBox
 import io.github.pylonmc.rebar.datatypes.RebarSerializers

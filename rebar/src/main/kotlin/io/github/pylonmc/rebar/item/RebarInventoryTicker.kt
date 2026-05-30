@@ -1,6 +1,6 @@
 package io.github.pylonmc.rebar.item
 
-import io.github.pylonmc.rebar.item.base.InventoryTickerRebarItem
+import io.github.pylonmc.rebar.item.interfaces.InventoryTickerRebarItem
 import org.bukkit.Bukkit
 
 internal class RebarInventoryTicker : Runnable {

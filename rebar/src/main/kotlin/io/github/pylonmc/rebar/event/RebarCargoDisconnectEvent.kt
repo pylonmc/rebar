@@ -1,7 +1,7 @@
 package io.github.pylonmc.rebar.event
 
 import io.github.pylonmc.rebar.block.RebarBlock
-import io.github.pylonmc.rebar.block.base.CargoRebarBlock
+import io.github.pylonmc.rebar.block.interfaces.CargoRebarBlock
 import io.github.pylonmc.rebar.content.cargo.CargoDuct
 import org.bukkit.event.Event
 import org.bukkit.event.HandlerList

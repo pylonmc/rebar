@@ -2,7 +2,7 @@ package io.github.pylonmc.rebar.block
 
 import com.destroystokyo.paper.event.block.BlockDestroyEvent
 import io.github.pylonmc.rebar.Rebar
-import io.github.pylonmc.rebar.block.base.TickingRebarBlock
+import io.github.pylonmc.rebar.block.interfaces.TickingRebarBlock
 import io.github.pylonmc.rebar.block.context.BlockBreakContext
 import io.github.pylonmc.rebar.block.context.BlockCreateContext
 import io.github.pylonmc.rebar.config.RebarConfig

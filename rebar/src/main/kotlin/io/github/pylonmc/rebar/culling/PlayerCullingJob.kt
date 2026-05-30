@@ -1,8 +1,8 @@
 package io.github.pylonmc.rebar.culling
 
 import io.github.pylonmc.rebar.block.RebarBlock
-import io.github.pylonmc.rebar.block.base.CulledRebarBlock
-import io.github.pylonmc.rebar.block.base.GroupCulledRebarBLock
+import io.github.pylonmc.rebar.block.interfaces.CulledRebarBlock
+import io.github.pylonmc.rebar.block.interfaces.GroupCulledRebarBLock
 import io.github.pylonmc.rebar.config.RebarConfig
 import io.github.pylonmc.rebar.culling.BlockCullingEngine.ChunkData
 import io.github.pylonmc.rebar.culling.BlockCullingEngine.blockTextureOctrees

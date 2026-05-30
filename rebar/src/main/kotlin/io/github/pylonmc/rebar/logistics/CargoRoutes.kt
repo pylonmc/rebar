@@ -1,7 +1,7 @@
 package io.github.pylonmc.rebar.logistics
 
 import io.github.pylonmc.rebar.block.BlockStorage
-import io.github.pylonmc.rebar.block.base.CargoRebarBlock
+import io.github.pylonmc.rebar.block.interfaces.CargoRebarBlock
 import io.github.pylonmc.rebar.content.cargo.CargoDuct
 import io.github.pylonmc.rebar.event.RebarBlockBreakEvent
 import io.github.pylonmc.rebar.event.RebarBlockLoadEvent

@@ -1,7 +1,7 @@
 package io.github.pylonmc.rebar.test.block;
 
 import io.github.pylonmc.rebar.block.RebarBlock;
-import io.github.pylonmc.rebar.block.base.TickingRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.TickingRebarBlock;
 import io.github.pylonmc.rebar.block.context.BlockCreateContext;
 import io.github.pylonmc.rebar.test.RebarTest;
 import org.bukkit.NamespacedKey;

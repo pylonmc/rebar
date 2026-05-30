@@ -1,9 +1,9 @@
 package io.github.pylonmc.rebar.content.fluid
 
 import io.github.pylonmc.rebar.block.RebarBlock
-import io.github.pylonmc.rebar.block.base.handler.BlockBreakRebarBlockHandler
-import io.github.pylonmc.rebar.block.base.EntityHolderRebarBlock
-import io.github.pylonmc.rebar.block.base.FacadeRebarBlock
+import io.github.pylonmc.rebar.block.interfaces.BlockBreakRebarBlockHandler
+import io.github.pylonmc.rebar.block.interfaces.EntityHolderRebarBlock
+import io.github.pylonmc.rebar.block.interfaces.FacadeRebarBlock
 import io.github.pylonmc.rebar.block.context.BlockBreakContext
 import io.github.pylonmc.rebar.block.context.BlockBreakContext.PlayerBreak
 import io.github.pylonmc.rebar.block.context.BlockCreateContext
@@ -19,7 +19,7 @@ import org.bukkit.persistence.PersistentDataContainer
 /**
  * An invisible block (structure block) that exists purely to represent a pipe and prevent
  * blocks from being placed on top of them.
- * TODO: [io.github.pylonmc.rebar.block.base.EntityGroupCulledRebarBlock]
+ * TODO: [io.github.pylonmc.rebar.block.interfaces.EntityGroupCulledRebarBlock]
  */
 class FluidSectionMarker : RebarBlock, BlockBreakRebarBlockHandler, EntityHolderRebarBlock, FacadeRebarBlock {
     override val facadeDefaultBlockType = Material.STRUCTURE_VOID

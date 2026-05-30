@@ -19,8 +19,8 @@ import io.github.pylonmc.rebar.guide.pages.research.ResearchItemsPage
 import io.github.pylonmc.rebar.guide.pages.research.ResearchesPage
 import io.github.pylonmc.rebar.guide.pages.settings.MainSettingsPage
 import io.github.pylonmc.rebar.item.RebarItem
-import io.github.pylonmc.rebar.item.base.handler.InteractRebarItemHandler
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
+import io.github.pylonmc.rebar.item.interfaces.InteractRebarItemHandler
 import io.github.pylonmc.rebar.item.research.Research
 import io.github.pylonmc.rebar.recipe.FluidOrItem
 import io.github.pylonmc.rebar.registry.RebarRegistry

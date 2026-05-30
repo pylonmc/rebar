@@ -7,9 +7,7 @@ import io.github.pylonmc.rebar.async.BukkitMainThreadDispatcher
 import io.github.pylonmc.rebar.async.ChunkScope
 import io.github.pylonmc.rebar.async.PlayerScope
 import io.github.pylonmc.rebar.block.*
-import io.github.pylonmc.rebar.block.base.*
-import io.github.pylonmc.rebar.block.base.handler.FallingRebarBlockHandler.RebarFallingBlockEntity
-import io.github.pylonmc.rebar.block.base.handler.*
+import io.github.pylonmc.rebar.block.interfaces.*
 import io.github.pylonmc.rebar.command.ROOT_COMMAND
 import io.github.pylonmc.rebar.command.ROOT_COMMAND_RE_ALIAS
 import io.github.pylonmc.rebar.config.Config
@@ -24,8 +22,7 @@ import io.github.pylonmc.rebar.entity.ConfettiCreeperListener
 import io.github.pylonmc.rebar.entity.EntityListener
 import io.github.pylonmc.rebar.entity.EntityStorage
 import io.github.pylonmc.rebar.entity.RebarEntity
-import io.github.pylonmc.rebar.entity.base.*
-import io.github.pylonmc.rebar.entity.base.handler.*
+import io.github.pylonmc.rebar.entity.interfaces.*
 import io.github.pylonmc.rebar.event.RebarConfigurableRecipesLoadedEvent
 import io.github.pylonmc.rebar.fluid.placement.FluidPipePlacementService
 import io.github.pylonmc.rebar.guide.pages.base.PagedGuidePage
@@ -44,7 +41,7 @@ import io.github.pylonmc.rebar.recipe.RecipeCompletion
 import io.github.pylonmc.rebar.recipe.RecipeType
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.util.delayTicks
-import io.github.pylonmc.rebar.item.base.handler.*
+import io.github.pylonmc.rebar.item.interfaces.*
 import io.github.pylonmc.rebar.util.mergeGlobalConfig
 import io.github.pylonmc.rebar.waila.Waila
 import io.github.pylonmc.rebar.waila.WailaPlaceholders
@@ -315,7 +312,7 @@ object Rebar : JavaPlugin(), RebarAddon {
         RebarEntity.register<ItemDisplay, FluidIntersectionDisplay>(FluidIntersectionDisplay.KEY)
         RebarEntity.register<ItemDisplay, FluidPipeDisplay>(FluidPipeDisplay.KEY)
 
-        RebarEntity.register<FallingBlock, RebarFallingBlockEntity>(FallingRebarBlockHandler.KEY)
+        RebarEntity.register<FallingBlock, FallingRebarBlockHandler.RebarFallingBlockEntity>(FallingRebarBlockHandler.KEY)
 
         RebarBlock.register<FluidSectionMarker>(FluidSectionMarker.KEY, Material.STRUCTURE_VOID)
         RebarBlock.register<FluidIntersectionMarker>(FluidIntersectionMarker.KEY, Material.STRUCTURE_VOID)
