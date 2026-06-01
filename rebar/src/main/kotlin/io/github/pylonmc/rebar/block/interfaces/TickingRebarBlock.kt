@@ -175,6 +175,9 @@ interface TickingRebarBlock {
                     try {
                         tickingBlock.tick()
                     } catch (e: Exception) {
+                        if (e is CancellationException) {
+                            throw e
+                        }
                         withContext(Rebar.mainThreadDispatcher) {
                             BlockListener.logEventHandleErr(null, e, tickingBlock as RebarBlock)
                         }
