@@ -1,6 +1,7 @@
 package io.github.pylonmc.rebar.item
 
 import io.github.pylonmc.rebar.registry.RebarRegistry
+import io.papermc.paper.datacomponent.item.attribute.AttributeModifierDisplay.override
 import org.bukkit.*
 import org.bukkit.inventory.ItemStack
 
@@ -9,14 +10,16 @@ import org.bukkit.inventory.ItemStack
  */
 sealed interface ItemTypeWrapper : Keyed {
 
-    fun createItemStack(): ItemStack
+    fun createItemStack() = createItemStack(1)
+
+    fun createItemStack(count: Int): ItemStack
 
     /**
      * The vanilla variant of [ItemTypeWrapper].
      */
     @JvmRecord
     data class Vanilla(val material: Material) : ItemTypeWrapper {
-        override fun createItemStack() = ItemStack(material)
+        override fun createItemStack(count: Int) = ItemStack.of(material, count)
         override fun getKey() = material.key
     }
 
@@ -25,7 +28,7 @@ sealed interface ItemTypeWrapper : Keyed {
      */
     @JvmRecord
     data class Rebar(val item: RebarItemSchema) : ItemTypeWrapper {
-        override fun createItemStack() = item.createNewItemStack()
+        override fun createItemStack(count: Int) = item.createNewItemStack(count)
         override fun getKey() = item.key
     }
 

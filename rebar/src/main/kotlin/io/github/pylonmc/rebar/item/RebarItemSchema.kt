@@ -3,6 +3,7 @@ package io.github.pylonmc.rebar.item
 import io.github.pylonmc.rebar.block.BlockStorage
 import io.github.pylonmc.rebar.block.RebarBlock
 import io.github.pylonmc.rebar.block.context.BlockCreateContext
+import io.github.pylonmc.rebar.config.RebarConfig
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.event.PreRebarBlockPlaceEvent
 import io.github.pylonmc.rebar.item.research.Research
@@ -34,6 +35,7 @@ class RebarItemSchema @JvmOverloads internal constructor(
         ?: throw IllegalArgumentException("Provided item stack is not a Rebar item; make sure you are using ItemStackBuilder.defaultBuilder to create the item stack")
 
     val addon = getAddon(key)
+    val isDisabled = key in RebarConfig.DISABLED_ITEMS
 
     /**
      * Returns the raw [template] of the [RebarItemSchema], this is the template used
@@ -45,7 +47,8 @@ class RebarItemSchema @JvmOverloads internal constructor(
     /**
      * Return's a clone of the [template] [ItemStack]
      */
-    fun createNewItemStack(): ItemStack = template.clone()
+    @JvmOverloads
+    fun createNewItemStack(count: Int = 1): ItemStack = template.asQuantity(count)
 
     /**
      * Return's a new instance of the [RebarItem] from the [itemClass] using a copy of the [template] [ItemStack]
@@ -85,7 +88,7 @@ class RebarItemSchema @JvmOverloads internal constructor(
      *
      * Does nothing if no block is associated with this item.
      */
-    fun place(context: BlockCreateContext): RebarBlock {
+    fun place(context: BlockCreateContext): RebarBlock? {
         check(rebarBlockKey != null) { "Item $key does not place a block" }
         val blockSchema = RebarRegistry.BLOCKS[rebarBlockKey]
         check(blockSchema != null) { "Block $rebarBlockKey not found" }

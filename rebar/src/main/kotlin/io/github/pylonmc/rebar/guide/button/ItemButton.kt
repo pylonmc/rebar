@@ -5,6 +5,7 @@ import io.github.pylonmc.rebar.guide.pages.item.ItemUsagesPage
 import io.github.pylonmc.rebar.guide.pages.research.ResearchItemsPage
 import io.github.pylonmc.rebar.i18n.RebarArgument
 import io.github.pylonmc.rebar.item.RebarItem
+import io.github.pylonmc.rebar.item.RebarItemSchema
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
 import io.github.pylonmc.rebar.item.research.Research.Companion.canCraft
 import io.github.pylonmc.rebar.item.research.Research.Companion.canUse
@@ -69,18 +70,18 @@ class ItemButton @JvmOverloads constructor(
     override fun getItemProvider(player: Player): ItemProvider {
         try {
             val displayStack = preDisplayDecorator.invoke(currentStack.clone(), player)
-            val item = RebarItem.fromStack(displayStack) ?: return ItemStackBuilder.of(displayStack)
+            val itemSchema = RebarItemSchema.fromStack(displayStack) ?: return ItemStackBuilder.of(displayStack)
 
             val builder = ItemStackBuilder.of(displayStack)
-            if (item.isDisabled) {
+            if (itemSchema.isDisabled) {
                 builder.set(DataComponentTypes.ITEM_MODEL, Material.STRUCTURE_VOID.key)
             }
 
-            if (!player.canCraft(item, respectBypass = false)) {
+            if (!player.canCraft(itemSchema, respectBypass = false)) {
                 builder.set(DataComponentTypes.ITEM_MODEL, Material.BARRIER.key)
                     .set(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, false)
 
-                val research = item.research
+                val research = itemSchema.research
                 if (research != null) {
                     val loreLine = if (research.cost != null) {
                         val playerPoints = player.researchPoints
@@ -103,7 +104,7 @@ class ItemButton @JvmOverloads constructor(
             }
 
             if (player.guideHints) {
-                if (!player.canCraft(item, respectBypass = false)) {
+                if (!player.canCraft(itemSchema, respectBypass = false)) {
                     builder.lore(Component.translatable("rebar.guide.button.item.hints.unresearched"))
                 }
             }
@@ -127,9 +128,9 @@ class ItemButton @JvmOverloads constructor(
                 }
 
                 ClickType.SHIFT_LEFT -> {
-                    val item = RebarItem.fromStack(currentStack)
-                    val research = item?.research
-                    if (item != null && research != null) {
+                    val itemSchema = RebarItemSchema.fromStack(currentStack)
+                    val research = itemSchema?.research
+                    if (itemSchema != null && research != null) {
                         if (research.isResearchedBy(player) || research.cost == null || research.cost > player.researchPoints) {
                             return
                         }
@@ -152,9 +153,9 @@ class ItemButton @JvmOverloads constructor(
                 }
 
                 ClickType.SHIFT_RIGHT -> {
-                    val item = RebarItem.fromStack(currentStack)
-                    if (item != null && item.research != null && !player.canUse(item)) {
-                        ResearchItemsPage(item.research!!).open(player)
+                    val itemSchema = RebarItemSchema.fromStack(currentStack)
+                    if (itemSchema != null && itemSchema.research != null && !player.canUse(itemSchema)) {
+                        ResearchItemsPage(itemSchema.research!!).open(player)
                     }
                 }
 
@@ -218,7 +219,7 @@ class ItemButton @JvmOverloads constructor(
 
         @JvmStatic
         fun of(stack: ItemStack?): Item {
-            if (stack == null) {
+            if (stack == null || stack.isEmpty) {
                 return EMPTY
             }
 
@@ -227,7 +228,7 @@ class ItemButton @JvmOverloads constructor(
 
         @JvmStatic
         fun of(stack: ItemStack?, preDisplayDecorator: (ItemStack, Player) -> ItemStack): Item {
-            if (stack == null) {
+            if (stack == null || stack.isEmpty) {
                 return EMPTY
             }
 

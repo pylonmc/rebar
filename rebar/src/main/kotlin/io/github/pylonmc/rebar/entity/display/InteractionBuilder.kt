@@ -16,6 +16,10 @@ open class InteractionBuilder() {
 
     fun width(width: Float): InteractionBuilder = apply { this.width = width }
     fun height(height: Float): InteractionBuilder = apply { this.height = height }
+    fun size(size: Float): InteractionBuilder = apply {
+        this.width = size
+        this.height = size
+    }
 
     open fun build(location: Location): Interaction {
         val finalLocation = location.clone()

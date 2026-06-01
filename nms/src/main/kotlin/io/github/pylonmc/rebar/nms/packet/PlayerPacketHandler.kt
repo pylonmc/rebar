@@ -1,16 +1,18 @@
 @file:Suppress("UnstableApiUsage")
 
-package io.github.pylonmc.rebar.i18n.packet
+package io.github.pylonmc.rebar.nms.packet
 
 import io.github.pylonmc.rebar.Rebar
+import io.github.pylonmc.rebar.culling.BlockCullingEngine
 import io.github.pylonmc.rebar.i18n.PlayerTranslationHandler
 import io.github.pylonmc.rebar.resourcepack.armor.ArmorTextureEngine
 import io.github.pylonmc.rebar.item.RebarItemSchema
 import io.github.pylonmc.rebar.util.editData
+import io.github.pylonmc.rebar.nms.entity.BlockTextureEntityImpl
+import io.github.pylonmc.rebar.util.position.BlockPosition
 import io.netty.channel.ChannelDuplexHandler
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.ChannelPromise
-import net.minecraft.commands.arguments.SlotsArgument.slots
 import net.minecraft.network.HashedPatchMap
 import net.minecraft.network.HashedStack
 import net.minecraft.network.protocol.Packet
@@ -24,9 +26,7 @@ import net.minecraft.world.item.ItemStackTemplate
 import net.minecraft.world.item.crafting.Ingredient
 import net.minecraft.world.item.crafting.display.*
 import org.bukkit.craftbukkit.inventory.CraftItemStack
-import java.util.Optional
 import java.util.logging.Level
-import kotlin.jvm.optionals.getOrNull
 
 
 // Much inspiration has been taken from https://github.com/GuizhanCraft/SlimefunTranslation
@@ -143,6 +143,33 @@ class PlayerPacketHandler(private val player: ServerPlayer, val handler: PlayerT
                 slots.forEach { slot ->
                     translate(slot.second)
                 }
+            }
+
+            is ClientboundBlockUpdatePacket -> packet.let {
+                val cullingJob = BlockCullingEngine.getCullingJob(player.uuid) ?: return@let it
+                val block = cullingJob.visible[BlockPosition.asLong(it.pos.x, it.pos.y, it.pos.z)] ?: return@let it
+                if (!block.disableBlockTextureEntity && block.blockTextureEntity is BlockTextureEntityImpl) {
+                    val entity = block.blockTextureEntity as BlockTextureEntityImpl
+                    return@let if (entity.tryUpdateState()) ClientboundBundlePacket(mutableListOf(entity.itemUpdatePacket, it)) else it
+                } else {
+                    return@let it
+                }
+            }
+
+            is ClientboundSectionBlocksUpdatePacket -> packet.let {
+                val cullingJob = BlockCullingEngine.getCullingJob(player.uuid) ?: return@let it
+                val packets = mutableListOf<Packet<in ClientGamePacketListener>>()
+                it.runUpdates { pos, _ ->
+                    val block = cullingJob.visible[BlockPosition.asLong(pos.x, pos.y, pos.z)] ?: return@runUpdates
+                    if (!block.disableBlockTextureEntity && block.blockTextureEntity is BlockTextureEntityImpl) {
+                        val entity = block.blockTextureEntity as BlockTextureEntityImpl
+                        if (entity.tryUpdateState()) {
+                            packets.add(entity.itemUpdatePacket)
+                        }
+
+                    }
+                }
+                return@let if (packets.isEmpty()) it else ClientboundBundlePacket(packets.apply { add(it) })
             }
 
             else -> packet

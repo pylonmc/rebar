@@ -86,7 +86,7 @@ class PhantomBlock(
 
     override fun getDropItem(context: BlockBreakContext) = ErrorItem(erroredBlockKey).stack
 
-    override fun getPickItem() = ErrorItem(erroredBlockKey).stack
+    override fun getPickItem(player: Player) = ErrorItem(erroredBlockKey).stack
 
     companion object {
         @JvmSynthetic

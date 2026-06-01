@@ -128,8 +128,10 @@ interface BlockBreakContext {
      *
      * See [BlockDestroyEvent] for more details
      */
-    data class Destroyed(val event: BlockDestroyEvent) : BlockBreakContext {
+    data class Destroyed(
+        val event: BlockDestroyEvent,
+        override val normallyDrops: Boolean
+    ) : BlockBreakContext {
         override val block = event.block
-        override val normallyDrops = event.willDrop()
     }
 }

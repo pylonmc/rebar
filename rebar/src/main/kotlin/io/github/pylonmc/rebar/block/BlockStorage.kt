@@ -314,7 +314,7 @@ object BlockStorage : Listener {
     fun placeBlock(
         block: Block,
         key: NamespacedKey,
-        context: BlockCreateContext = BlockCreateContext.Default(block)
+        context: BlockCreateContext = BlockCreateContext.Default(block = block)
     ) = placeBlock(block.position, key, context)
 
     /**
@@ -331,7 +331,7 @@ object BlockStorage : Listener {
     fun placeBlock(
         location: Location,
         key: NamespacedKey,
-        context: BlockCreateContext = BlockCreateContext.Default(location.block)
+        context: BlockCreateContext = BlockCreateContext.Default(block = location.block)
     ) = placeBlock(BlockPosition(location), key, context)
 
     /**
@@ -348,7 +348,7 @@ object BlockStorage : Listener {
     fun placeBlock(
         blockPosition: BlockPosition,
         key: NamespacedKey,
-        context: BlockCreateContext = BlockCreateContext.Default(blockPosition.block)
+        context: BlockCreateContext = BlockCreateContext.Default(block = blockPosition.block)
     ): RebarBlock? {
         require(blockPosition.chunk.isLoaded) { "You can only place Rebar blocks in loaded chunks" }
         require(!isRebarBlock(blockPosition)) { "You cannot place a new Rebar block in place of an existing Rebar blocks" }
@@ -366,9 +366,10 @@ object BlockStorage : Listener {
         blockPosition: BlockPosition,
         schema: RebarBlockSchema,
         context: BlockCreateContext
-    ) : RebarBlock {
+    ) : RebarBlock? {
         if (context.shouldSetType) {
             blockPosition.block.type = schema.material
+            if (blockPosition.block.type != schema.material) return null
         }
 
         @Suppress("UNCHECKED_CAST") // The cast will work - this is checked in the schema constructor
@@ -403,7 +404,7 @@ object BlockStorage : Listener {
         schema: RebarBlockSchema,
         pdcData: PersistentDataContainer
     ): RebarBlock? {
-        val context = BlockCreateContext.ManualLoading(blockPosition.block)
+        val context = BlockCreateContext.ManualLoading(block = blockPosition.block)
         val block = blockPosition.block
         pdcData.set(RebarBlock.rebarBlockPositionKey, PersistentDataType.LONG, blockPosition.asLong)
 
@@ -435,7 +436,7 @@ object BlockStorage : Listener {
      * Does nothing if the block is not a Rebar block.
      * Only call on the main thread.
      *
-     * @return The items that were dropped by the block being broken
+     * @return The items that were dropped by the block being broken or null if the block was not broken.
      *
      * @throws IllegalArgumentException if the chunk of the given [blockPosition] is not
      * loaded.
@@ -507,7 +508,7 @@ object BlockStorage : Listener {
      * Does nothing if the block is not a Rebar block.
      * Only call on the main thread.
      *
-     * @return The items that were dropped by the block being broken
+     * @return The items that were dropped by the block being broken or null if the block was not broken.
      *
      * @throws IllegalArgumentException if the chunk of the given [block] is not
      * loaded.
@@ -522,7 +523,7 @@ object BlockStorage : Listener {
      * Does nothing if the block is not a Rebar block.
      * Only call on the main thread.
      *
-     * @return The items that were dropped by the block being broken
+     * @return The items that were dropped by the block being broken or null if the block was not broken.
      *
      * @throws IllegalArgumentException if the chunk of the given [block] is not
      * loaded.
@@ -537,7 +538,7 @@ object BlockStorage : Listener {
      * Does nothing if the block is not a Rebar block.
      * Only call on the main thread.
      *
-     * @return The items that were dropped by the block being broken
+     * @return The items that were dropped by the block being broken or null if the block was not broken.
      *
      * @throws IllegalArgumentException if the chunk of the given [location] is not
      * loaded.

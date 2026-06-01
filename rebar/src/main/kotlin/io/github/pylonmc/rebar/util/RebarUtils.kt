@@ -9,9 +9,10 @@ import io.github.pylonmc.rebar.config.Config
 import io.github.pylonmc.rebar.config.ConfigSection
 import io.github.pylonmc.rebar.config.ContributorConfig
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter
-import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.item.RebarItemSchema
 import io.github.pylonmc.rebar.i18n.customMiniMessage
+import io.github.pylonmc.rebar.item.ItemTypeWrapper
+import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.nms.NmsAccessor
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.util.position.BlockPosition
@@ -38,6 +39,7 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.persistence.PersistentDataHolder
 import org.bukkit.persistence.PersistentDataType
+import org.bukkit.util.BoundingBox
 import org.bukkit.util.Vector
 import org.joml.Matrix3f
 import org.joml.RoundingMode
@@ -307,16 +309,15 @@ fun Class<*>.isSubclassOf(other: Class<*>): Boolean = other.isAssignableFrom(thi
 fun fromMiniMessage(string: String): Component = customMiniMessage.deserialize(string)
 
 /**
- * Finds a Rebar item in an inventory. Use this to find Rebar items instead of traditional
+ * Finds a Rebar item in this inventory. Use this to find Rebar items instead of traditional
  * find methods, because this will compare Rebar IDs.
  *
- * @param inventory The inventory to search
  * @param targetItem The item to find. Items will be compared by their Rebar ID
  * @return The slot containing the item, or null if no item was found
  */
-fun findRebarItemInInventory(inventory: Inventory, targetItem: RebarItemSchema): Int? {
-    for (i in 0..<inventory.size) {
-        val item = inventory.getItem(i)?.let {
+fun Inventory.findRebar(targetItem: RebarItemSchema): Int? {
+    for (i in 0..<size) {
+        val item = getItem(i)?.let {
             RebarItemSchema.fromStack(it)
         }
         if (item == targetItem) {
@@ -324,6 +325,31 @@ fun findRebarItemInInventory(inventory: Inventory, targetItem: RebarItemSchema):
         }
     }
     return null
+}
+
+/**
+ * Finds an item of the right type in this inventory. Use this to find items purely based on Vanilla / Rebar IDs.
+ *
+ * @param targetType The type to find. Items will be compared by their Vanilla / Rebar ID
+ * @return The slot containing the item, or null if no item was found
+ */
+fun Inventory.findType(targetType: ItemTypeWrapper): Int? {
+    for (i in 0..<size) {
+        val item = getItem(i)?.let {
+            ItemTypeWrapper(it)
+        }
+        if (item == targetType) {
+            return i
+        }
+    }
+    return null
+}
+
+fun Inventory.swapItem(from: Int, to: Int) {
+    val fromItem = getItem(from)
+    val toItem = getItem(to)
+    setItem(from, toItem)
+    setItem(to, fromItem)
 }
 
 @JvmSynthetic
@@ -495,6 +521,13 @@ fun ItemStack.vanillaDisplayName(): Component
 val Component.plainText: String
     get() = PlainTextComponentSerializer.plainText().serialize(this)
 
+fun blocksWithin(world: World, boundingBox: BoundingBox) = blocksBetween(
+    BlockPosition(world, boundingBox.min),
+    BlockPosition(world, boundingBox.max)
+)
+
+fun blocksBetween(from: BlockPosition, to: BlockPosition): List<Block> = NmsAccessor.instance.blocksBetween(from, to)
+
 /**
  * Does not include first or last block
  */
@@ -636,5 +669,57 @@ fun CoroutineContext.createChildContext(): CoroutineContext = this + Job(this[Jo
  * @return Whether the entity has at least one tracking player, a tracking player is just a player who has & is receiving packets for the entity.
  */
 fun Entity.hasTracker() = NmsAccessor.instance.hasTracker(this)
+
+/**
+ * Checks whether two items are of the same type, comparing Rebar IDs if they are Rebar items and vanilla IDs if they are not.
+ */
+fun rebarTypeSimilar(item1: ItemStack, item2: ItemStack): Boolean {
+    // This does not use ItemTypeWrapper because that would be useless allocation
+    val schema1 = RebarItemSchema.fromStack(item1)
+    val schema2 = RebarItemSchema.fromStack(item2)
+    if ((schema1 != null && schema2 == null) || (schema1 == null && schema2 == null)) {
+        return false
+    } else if (schema1 != null && schema2 != null) {
+        return schema1 === schema2
+    }
+    return item1.type == item2.type
+}
+
+@JvmSynthetic // java should just use RebarItem#isRebarItem
+fun ItemStack.isRebarItem(key: NamespacedKey) = RebarItem.isRebarItem(this, key)
+
+fun <T : Any> ItemStack.forceSetData(type: DataComponentType.Valued<T>, value: Any?) {
+    if (value == null) {
+        unsetData(type)
+        return
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    setData(type, value as? T ?: return)
+}
+
+fun ItemStack.setComponents(components: Map<DataComponentType, Any?>) {
+    for (entry in components) {
+        when (val key = entry.key) {
+            is DataComponentType.NonValued -> setData(key)
+            is DataComponentType.Valued<*> -> forceSetData(key, entry.value)
+        }
+    }
+}
+
+fun ItemStack.overriddenDataTypes(): List<DataComponentType> {
+    val schema = RebarItemSchema.fromStack(this)
+    if (schema != null) {
+        val template = schema.getOriginalTemplate()
+        return dataTypes.filter {
+            return@filter when (it) {
+                is DataComponentType.NonValued -> hasData(it) != template.hasData(it)
+                is DataComponentType.Valued<*> -> getData(it) != template.getData(it)
+                else -> false
+            }
+        }
+    }
+    return dataTypes.filter { isDataOverridden(it) }
+}
 
 const val FLUID_EPSILON = 1.0e-6

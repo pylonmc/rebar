@@ -1,9 +1,7 @@
 package io.github.pylonmc.rebar.guide.pages.base
 
-import info.debatty.java.stringsimilarity.JaroWinkler
 import io.github.pylonmc.rebar.content.guide.RebarGuide
-import io.github.pylonmc.rebar.guide.button.FluidButton
-import io.github.pylonmc.rebar.item.RebarItem
+import io.github.pylonmc.rebar.fluid.RebarFluid
 import io.github.pylonmc.rebar.item.RebarItemSchema
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
 import io.github.pylonmc.rebar.registry.RebarRegistry
@@ -86,58 +84,35 @@ abstract class SearchPage(key: NamespacedKey) : SimpleStaticGuidePage(key) {
     open fun getItems(player: Player, search: String): List<Item> {
         if (search.isBlank()) {
             return getItemNamePairs(player, search)
-                .sortedBy { it.second }
                 .map { it.first }
         }
 
-        val specifiers = mutableListOf<SearchSpecifier>()
         val split = search.split(" ")
-
-        // Because name specifiers can contain spaces, we need to accumulate them until we hit a different specifier
-        val nameSearch = StringBuilder()
-        fun buildNameSearch() {
-            if (!nameSearch.isEmpty()) {
-                specifiers.add(SearchSpecifier.ItemName(nameSearch.toString()))
-            }
-        }
+        val entries = getItemNamePairs(player, search).toMutableList()
 
         for (piece in split) {
-            if (piece.isEmpty()) continue
-            val type = piece[0]
-            when(type) {
-                '@' -> {
-                    buildNameSearch()
-                    specifiers.add(SearchSpecifier.Namespace(piece.substring(1)))
+            if (piece.isEmpty() || (piece[0] == '@' || piece[0] == '$') && piece.length == 1) continue
+            val predicate = when(piece[0]) {
+                '@' -> { entry: Pair<Item, String> ->
+                    getDisplayNamespace(entry.first, player).contains(piece.substring(1), true)
                 }
-                '$' -> {
-                    buildNameSearch()
-                    specifiers.add(SearchSpecifier.Lore(piece.substring(1)))
+                '$' -> { entry: Pair<Item, String> ->
+                    entry.first.getItemProvider(player).get().lore()?.any { it.plainText.contains(piece.substring(1), true) } ?: false
                 }
-                else -> {
-                    if (nameSearch.isNotEmpty()) nameSearch.append(" ")
-                    nameSearch.append(piece)
+                else -> { entry: Pair<Item, String> ->
+                    entry.second.contains(piece, true)
                 }
             }
-        }
-        buildNameSearch()
-
-        val entries = getItemNamePairs(player, search).toMutableList()
-        for (specifier in specifiers) {
-            // Map each entry to its weight for this specifier, excluding non-matching entries
-            val weighted = entries.mapNotNull { entry ->
-                val weight = specifier.weight(player, entry) ?: return@mapNotNull null
-                Pair(entry.first, weight)
-            }
-            // Remove entries that didn't match this specifier (are not in the weighted list)
-            entries.removeIf { entry ->
-                weighted.none { it.first == entry.first }
-            }
-            // Sort remaining entries by their weight for this specifier
-            entries.sortBy { entry ->
-                weighted.first { it.first == entry.first }.second
-            }
+            entries.retainAll(predicate)
         }
         return entries.map { it.first }.toList()
+    }
+
+    fun getDisplayNamespace(item: Item, player: Player): String {
+        val itemStack = item.getItemProvider(player).get()
+        val key = RebarItemSchema.fromStack(itemStack)?.key ?: RebarFluid.fromStack(itemStack)?.key ?: itemStack.type.key
+        val addon = RebarRegistry.ADDONS[NamespacedKey(key.namespace, key.namespace)]
+        return addon?.let { GlobalTranslator.render(addon.footerName, player.locale()).plainText.lowercase() } ?: key.namespace
     }
 
     companion object {
@@ -145,51 +120,6 @@ abstract class SearchPage(key: NamespacedKey) : SimpleStaticGuidePage(key) {
             .name(Component.translatable("rebar.guide.button.search-specifiers.name"))
             .lore(Component.translatable("rebar.guide.button.search-specifiers.lore"))
 
-        private val searchAlgorithm = JaroWinkler()
         private val searches = mutableMapOf<UUID, String>()
-
-        private fun weight(search: String, text: String): Double? {
-            val distance = searchAlgorithm.distance(text, search)
-            val weight = when {
-                text == search -> 0.0
-                text.startsWith(search) -> 1.0 + distance
-                text.contains(search) -> 2.0 + distance
-                else -> 3.0 + distance
-            }
-            return weight.takeIf { weight < 3.15 }
-        }
-    }
-
-    private fun interface SearchSpecifier {
-        fun weight(player: Player, entry: Pair<Item, String>): Double?
-
-        data class ItemName(val filter: String) : SearchSpecifier {
-            override fun weight(player: Player, entry: Pair<Item, String>): Double? {
-                return weight(filter, entry.second)
-            }
-        }
-
-        data class Namespace(val filter: String) : SearchSpecifier {
-            override fun weight(player: Player, entry: Pair<Item, String>): Double? {
-                val item = entry.first
-                val key: NamespacedKey = if (item is FluidButton) {
-                    item.currentFluid.key
-                } else {
-                    RebarItemSchema.fromStack(item.getItemProvider(player).get())?.key ?: return null
-                }
-                val addon = RebarRegistry.ADDONS[NamespacedKey(key.namespace, key.namespace)] ?: return null
-                val compactName = GlobalTranslator.render(addon.displayName, player.locale()).plainText.replace(" ", "").lowercase(player.locale())
-                return if (key.namespace.startsWith(filter) || compactName.startsWith(filter)) 0.0 else null
-            }
-        }
-
-        data class Lore(val filter: String) : SearchSpecifier {
-            override fun weight(player: Player, entry: Pair<Item, String>): Double? {
-                val stack = entry.first.getItemProvider(player).get()
-                return stack.lore()?.map {
-                    weight(filter, it.plainText.lowercase(player.locale()))
-                }?.filterNotNull()?.minOrNull()
-            }
-        }
     }
 }

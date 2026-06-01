@@ -38,7 +38,7 @@ object RecipeInputItemAdapter : ConfigAdapter<RecipeInput.Item> {
                     RecipeInput.Item(ConfigAdapter.ITEM_TAG.convert(value), 1)
                 } else {
                     val nsKey = NamespacedKey.fromString(value) ?: throw IllegalArgumentException("'$value' is not a namespaced key")
-                    RecipeInput.Item(hashSetOf(ItemTypeWrapper.invoke(nsKey)), 1)
+                    RecipeInput.Item(listOf(ItemTypeWrapper.invoke(nsKey)), 1)
                 }
             }
             else -> throw IllegalArgumentException("Cannot convert $value to item recipe input")
