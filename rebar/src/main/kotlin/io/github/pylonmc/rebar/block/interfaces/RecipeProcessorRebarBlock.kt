@@ -12,7 +12,7 @@ import io.github.pylonmc.rebar.util.rebarKey
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.jetbrains.annotations.ApiStatus
-import java.util.IdentityHashMap
+import java.util.*
 
 /**
  * An interface that stores and progresses a recipe.
@@ -43,8 +43,12 @@ interface RecipeProcessorRebarBlock<T: RebarRecipe> {
 
     val currentRecipe: T?
         @ApiStatus.NonExtendable
-        // cast should always be safe due to type restriction when starting recipe
         get() = recipeProcessorData.currentRecipe
+
+    val recipeType: RecipeType<T>?
+        @ApiStatus.NonExtendable
+        @Suppress("UNCHECKED_CAST")
+        get() = recipeProcessorData.recipeType as RecipeType<T>?
 
     val recipeTicksRemaining: Int?
         @ApiStatus.NonExtendable
