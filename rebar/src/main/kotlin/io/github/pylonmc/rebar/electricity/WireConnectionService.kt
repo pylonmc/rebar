@@ -1,15 +1,15 @@
 package io.github.pylonmc.rebar.electricity
 
 import io.github.pylonmc.rebar.block.BlockStorage
-import io.github.pylonmc.rebar.block.base.RebarElectricBlock
+import io.github.pylonmc.rebar.block.interfaces.ElectricRebarBlock
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.entity.display.ItemDisplayBuilder
 import io.github.pylonmc.rebar.entity.display.transform.TransformBuilder
 import io.github.pylonmc.rebar.event.RebarBlockBreakEvent
 import io.github.pylonmc.rebar.i18n.RebarArgument
 import io.github.pylonmc.rebar.item.RebarItem
-import io.github.pylonmc.rebar.item.base.WireRebarItem
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
+import io.github.pylonmc.rebar.item.interfaces.WireRebarItem
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.util.rebarKey
 import net.kyori.adventure.text.Component
@@ -44,7 +44,7 @@ internal object WireConnectionService : Listener {
         interactions[interaction] = node
         locations[node] = interaction.location.add(0.0, interaction.height / 2, 0.0)
         node.onDisconnect { thisNode, otherNode ->
-            val block = BlockStorage.getAs<RebarElectricBlock>(thisNode.block) ?: return@onDisconnect
+            val block = BlockStorage.getAs<ElectricRebarBlock>(thisNode.block) ?: return@onDisconnect
             val connectionName = getConnectionName(thisNode, otherNode)
             block.tryRemoveEntity(connectionName)
         }
@@ -54,7 +54,7 @@ internal object WireConnectionService : Listener {
     private fun onInteract(event: PlayerInteractEntityEvent) {
         val thisNode = interactions[event.rightClicked] ?: return
         val thisLocation = locations[thisNode] ?: return
-        val thisBlock = BlockStorage.getAsOrThrow<RebarElectricBlock>(thisNode.block)
+        val thisBlock = BlockStorage.getAsOrThrow<ElectricRebarBlock>(thisNode.block)
         val player = event.player
         val playerPdc = player.persistentDataContainer
         val playerInv = player.inventory
@@ -154,7 +154,7 @@ internal object WireConnectionService : Listener {
         connectingEntity.setTransformationMatrix(getDisplayTransform(connectingLocation, thisLocation))
         connectingEntity.teleportAsync(getMidpoint(connectingLocation, thisLocation))
 
-        val connectingBlock = BlockStorage.getAsOrThrow<RebarElectricBlock>(connectingNode.block)
+        val connectingBlock = BlockStorage.getAsOrThrow<ElectricRebarBlock>(connectingNode.block)
         thisBlock.addEntity(getConnectionName(thisNode, connectingNode), connectingEntity)
         connectingBlock.addEntity(getConnectionName(connectingNode, thisNode), connectingEntity)
 
@@ -225,7 +225,7 @@ internal object WireConnectionService : Listener {
 
     @EventHandler(priority = EventPriority.LOW)
     private fun onElectricBlockBreak(event: RebarBlockBreakEvent) {
-        val block = event.block as? RebarElectricBlock ?: return
+        val block = event.block as? ElectricRebarBlock ?: return
         for (player in Bukkit.getOnlinePlayers()) {
             val connectingEntity = player.connectingEntity ?: continue
             val nodeId =

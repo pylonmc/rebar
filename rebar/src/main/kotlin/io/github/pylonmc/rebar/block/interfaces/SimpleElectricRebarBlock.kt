@@ -42,7 +42,7 @@ interface SimpleElectricRebarBlock : ElectricRebarBlock {
                 0.0
             )
         }
-        addElectricPort(RebarElectricBlock.ElectricPort(node, face))
+        addElectricPort(ElectricRebarBlock.ElectricPort(node, face))
     }
 
     @ApiStatus.NonExtendable
