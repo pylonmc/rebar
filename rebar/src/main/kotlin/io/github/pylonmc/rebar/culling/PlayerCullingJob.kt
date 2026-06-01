@@ -35,7 +35,6 @@ class PlayerCullingJob(
     suspend fun run() {
         val player = Bukkit.getPlayer(playerId)
         if (player == null || !BlockCullingEngine.hasCullingJob(playerId)) {
-            currentCoroutineContext().cancel()
             BlockCullingEngine.stopCullingJob(playerId)
             return
         }
