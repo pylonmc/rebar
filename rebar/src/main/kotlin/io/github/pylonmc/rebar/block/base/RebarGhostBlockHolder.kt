@@ -17,11 +17,7 @@ import io.github.pylonmc.rebar.item.ItemTypeWrapper
 import io.github.pylonmc.rebar.item.RebarItemSchema
 import io.github.pylonmc.rebar.nms.NmsAccessor
 import io.github.pylonmc.rebar.registry.RebarRegistry
-import io.github.pylonmc.rebar.util.findRebar
-import io.github.pylonmc.rebar.util.findType
-import io.github.pylonmc.rebar.util.rebarKey
-import io.github.pylonmc.rebar.util.setNullable
-import io.github.pylonmc.rebar.util.swapItem
+import io.github.pylonmc.rebar.util.*
 import io.github.pylonmc.rebar.waila.WailaDisplay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.time.delay
@@ -296,7 +292,7 @@ interface RebarGhostBlockHolder : RebarEntityHolderBlock {
                 firstSchema = currentSchema
                 val index = player.inventory.findRebar(currentSchema)
                 if (index != null) {
-                    return firstSchema.getItemStack()
+                    return firstSchema.createNewItemStack()
                 }
             }
 
@@ -305,11 +301,11 @@ interface RebarGhostBlockHolder : RebarEntityHolderBlock {
                 if (firstSchema == null) firstSchema = schema
                 val index = player.inventory.findRebar(schema)
                 if (index != null) {
-                    return schema.getItemStack()
+                    return schema.createNewItemStack()
                 }
             }
 
-            return firstSchema?.getItemStack()
+            return firstSchema?.createNewItemStack()
         }
 
         fun setSize(size: Double) {
