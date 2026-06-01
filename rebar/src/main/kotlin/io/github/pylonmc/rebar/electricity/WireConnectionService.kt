@@ -8,7 +8,7 @@ import io.github.pylonmc.rebar.entity.display.transform.TransformBuilder
 import io.github.pylonmc.rebar.event.RebarBlockBreakEvent
 import io.github.pylonmc.rebar.i18n.RebarArgument
 import io.github.pylonmc.rebar.item.RebarItem
-import io.github.pylonmc.rebar.item.base.RebarWire
+import io.github.pylonmc.rebar.item.base.WireRebarItem
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.util.rebarKey
@@ -61,7 +61,7 @@ internal object WireConnectionService : Listener {
 
         val connectingEntity = player.connectingEntity
         if (connectingEntity == null) {
-            if (RebarItem.fromStack(playerInv.getItem(event.hand)) !is RebarWire) {
+            if (RebarItem.fromStack(playerInv.getItem(event.hand)) !is WireRebarItem) {
                 player.sendMessage(Component.translatable("rebar.message.electricity.need_wire"))
                 return
             }
@@ -112,7 +112,7 @@ internal object WireConnectionService : Listener {
                 playerInv.getItem(event.hand) to thisNode
             }
 
-            val wire = RebarItem.from<RebarWire>(wireItem) ?: return
+            val wire = RebarItem.from<WireRebarItem>(wireItem) ?: return
             val otherEnd = locations[node] ?: return
             val display = ItemDisplayBuilder()
                 .transformation(getDisplayTransform(otherEnd, playerLocation))
@@ -145,7 +145,7 @@ internal object WireConnectionService : Listener {
         player.sendActionBar(Component.empty())
 
         val wireItem = playerInv.getItem(event.hand)
-        val wire = RebarItem.from<RebarWire>(wireItem) ?: return
+        val wire = RebarItem.from<WireRebarItem>(wireItem) ?: return
         connectingNode.connect(thisNode)
         EdgeProperty.setProperty(ElectricNode.Edge(thisNode, connectingNode), EdgeProperty.PowerLimit(wire.maxPower))
         EdgeProperty.setProperty(ElectricNode.Edge(connectingNode, thisNode), EdgeProperty.PowerLimit(wire.maxPower))
@@ -205,7 +205,7 @@ internal object WireConnectionService : Listener {
             return false
         }
         val wireItem = player.inventory.itemInMainHand
-        check(RebarItem.fromStack(wireItem) is RebarWire) { "Held item must be a wire" }
+        check(RebarItem.fromStack(wireItem) is WireRebarItem) { "Held item must be a wire" }
         val totalWires = player.inventory.sumOf { if (it != null && it.isSimilar(wireItem)) it.amount else 0 }
         val neededWires = ceil(connectingFromLocation.distance(connectionLocation)).toInt()
         val hasEnough = neededWires <= totalWires || player.gameMode == GameMode.CREATIVE
@@ -273,7 +273,7 @@ internal object WireConnectionService : Listener {
         val player = event.player
         if (!player.persistentDataContainer.has(CONNECTING_KEY)) return
         val item = player.inventory.getItem(event.newSlot)?.let(RebarItem::fromStack)
-        if (item !is RebarWire) {
+        if (item !is WireRebarItem) {
             deleteConnecting(player)
         } else {
             updateWireMaterial(player, item)
@@ -285,7 +285,7 @@ internal object WireConnectionService : Listener {
         val player = event.player
         if (!player.persistentDataContainer.has(CONNECTING_KEY)) return
         val item = RebarItem.fromStack(event.mainHandItem)
-        if (item !is RebarWire) {
+        if (item !is WireRebarItem) {
             deleteConnecting(player)
         } else {
             updateWireMaterial(player, item)
@@ -298,7 +298,7 @@ internal object WireConnectionService : Listener {
         player.sendActionBar(Component.empty())
     }
 
-    private fun updateWireMaterial(player: Player, item: RebarWire) {
+    private fun updateWireMaterial(player: Player, item: WireRebarItem) {
         val connectingEntity = player.connectingEntity ?: return
         val material = item.displayMaterial
         connectingEntity.setItemStack(ItemStackBuilder.of(material).addCustomModelDataString("wire").build())

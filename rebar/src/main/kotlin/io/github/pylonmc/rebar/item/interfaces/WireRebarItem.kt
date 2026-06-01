@@ -1,8 +1,8 @@
-package io.github.pylonmc.rebar.item.base
+package io.github.pylonmc.rebar.item.interfaces
 
 import org.bukkit.Material
 
-interface RebarWire {
+interface WireRebarItem {
     val maxPower: Double
     val displayMaterial: Material
 }

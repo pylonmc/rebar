@@ -1,12 +1,13 @@
-package io.github.pylonmc.rebar.block.base
+package io.github.pylonmc.rebar.block.interfaces
 
+import io.github.pylonmc.rebar.block.interfaces.ElectricRebarBlock
 import io.github.pylonmc.rebar.electricity.ElectricNode
 import io.github.pylonmc.rebar.util.position.position
 import org.bukkit.block.BlockFace
 import org.jetbrains.annotations.ApiStatus
 
 /**
- * In a [RebarSimpleElectricBlock], all electric nodes created are connected to each other. This allows the abstraction of the concept
+ * In a [SimpleElectricRebarBlock], all electric nodes created are connected to each other. This allows the abstraction of the concept
  * of "nodes" into a general "electric block" that can have any number of connectors, producers, and consumers without needing to worry
  * about full interactions, while also providing simple utility methods for interacting with the electricity system.
  *
@@ -16,7 +17,7 @@ import org.jetbrains.annotations.ApiStatus
  * this means the "producer_1" node produces 0 power by itself, but allows power to flow from "producer_0" into itself, thereby allowing
  * it to power other blocks as well.
  */
-interface RebarSimpleElectricBlock : RebarElectricBlock {
+interface SimpleElectricRebarBlock : ElectricRebarBlock {
 
     /**
      * Creates a port of the given [type] and on the given [face]. If you wish to customize the port further, create an [ElectricNode] and call [addElectricPort] directly instead.

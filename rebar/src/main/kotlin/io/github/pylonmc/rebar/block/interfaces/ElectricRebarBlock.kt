@@ -1,4 +1,4 @@
-package io.github.pylonmc.rebar.block.base
+package io.github.pylonmc.rebar.block.interfaces
 
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.electricity.ElectricNode
@@ -28,7 +28,7 @@ import org.bukkit.util.Vector
 import org.jetbrains.annotations.ApiStatus
 import java.util.*
 
-interface RebarElectricBlock : RebarEntityHolderBlock {
+interface ElectricRebarBlock : EntityHolderRebarBlock {
 
     @ApiStatus.NonExtendable
     fun <T : ElectricNode> addElectricNode(node: T): T {
@@ -105,11 +105,11 @@ interface RebarElectricBlock : RebarEntityHolderBlock {
         private val NODES_KEY = rebarKey("nodes")
         private val NODES_TYPE = RebarSerializers.LIST.listTypeFrom(ElectricNode.PDC_TYPE)
 
-        private val electricBlocks = IdentityHashMap<RebarElectricBlock, MutableList<ElectricNode>>()
+        private val electricBlocks = IdentityHashMap<ElectricRebarBlock, MutableList<ElectricNode>>()
 
         @EventHandler(priority = EventPriority.MONITOR)
         private fun onDeserialize(event: RebarBlockDeserializeEvent) {
-            val block = event.rebarBlock as? RebarElectricBlock ?: return
+            val block = event.rebarBlock as? ElectricRebarBlock ?: return
             val nodes = event.pdc.get(NODES_KEY, NODES_TYPE)!!.toMutableList()
             electricBlocks[block] = nodes
 
@@ -127,13 +127,13 @@ interface RebarElectricBlock : RebarEntityHolderBlock {
 
         @EventHandler
         private fun onSerialize(event: RebarBlockSerializeEvent) {
-            val block = event.rebarBlock as? RebarElectricBlock ?: return
+            val block = event.rebarBlock as? ElectricRebarBlock ?: return
             event.pdc.set(NODES_KEY, NODES_TYPE, electricBlocks[block].orEmpty())
         }
 
         @EventHandler
         private fun onUnload(event: RebarBlockUnloadEvent) {
-            if (event.rebarBlock !is RebarElectricBlock) return
+            if (event.rebarBlock !is ElectricRebarBlock) return
             for (node in electricBlocks.remove(event.rebarBlock).orEmpty()) {
                 ElectricityManager.removeNode(node)
             }
@@ -142,7 +142,7 @@ interface RebarElectricBlock : RebarEntityHolderBlock {
         @EventHandler
         private fun onBreak(event: RebarBlockBreakEvent) {
             val block = event.rebarBlock
-            if (block !is RebarElectricBlock) return
+            if (block !is ElectricRebarBlock) return
             for (node in electricBlocks.remove(block).orEmpty()) {
                 node.disconnectAll()
                 ElectricityManager.removeNode(node)
