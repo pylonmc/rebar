@@ -89,6 +89,13 @@ interface NmsAccessor {
     fun setFurnaceRecipeCache(block: Block, recipe: NamespacedKey)
 
     /**
+     * Returns the weapon item for the entity
+     *
+     * For ex: If a player is spinning with a riptide trident, returns the trident, otherwise it may return the sword in the main hand
+     */
+    fun getWeaponItem(entity: Entity): ItemStack?
+
+    /**
      * Identical to the [ItemFactory.createItemStack] method except it works with rebar ids
      */
     fun createItemStack(input: String): ItemStack

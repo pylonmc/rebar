@@ -1,6 +1,6 @@
 package io.github.pylonmc.rebar.block
 
-import io.github.pylonmc.rebar.block.base.RebarBreakHandler
+import io.github.pylonmc.rebar.block.interfaces.BlockBreakRebarBlockHandler
 import io.github.pylonmc.rebar.block.context.BlockBreakContext
 import io.github.pylonmc.rebar.block.context.BlockCreateContext
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
@@ -41,7 +41,7 @@ class PhantomBlock(
     val pdc: PersistentDataContainer,
     val erroredBlockKey: NamespacedKey,
     block: Block
-) : RebarBlock(block, pdc), RebarBreakHandler {
+) : RebarBlock(block, pdc), BlockBreakRebarBlockHandler {
 
     override var disableBlockTextureEntity: Boolean = true
     private var errorOutlineEntityId : UUID? = null
@@ -71,7 +71,7 @@ class PhantomBlock(
         }.uniqueId
     }
 
-    override fun postBreak(context: BlockBreakContext) {
+    override fun onPostBlockBreak(context: BlockBreakContext) {
         errorOutlineEntityId?.let { uuid ->
             block.world.getEntity(uuid)?.remove()
         }

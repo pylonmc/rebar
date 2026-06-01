@@ -1,7 +1,7 @@
 package io.github.pylonmc.rebar.test.block;
 
 import io.github.pylonmc.rebar.block.RebarBlock;
-import io.github.pylonmc.rebar.block.base.RebarSimpleMultiblock;
+import io.github.pylonmc.rebar.block.interfaces.SimpleRebarMultiblock;
 import io.github.pylonmc.rebar.block.context.BlockCreateContext;
 import io.github.pylonmc.rebar.test.RebarTest;
 import org.bukkit.NamespacedKey;
@@ -13,7 +13,7 @@ import org.joml.Vector3i;
 import java.util.Map;
 
 
-public class TestRebarSimpleMultiblock extends RebarBlock implements RebarSimpleMultiblock {
+public class TestRebarSimpleMultiblock extends RebarBlock implements SimpleRebarMultiblock {
 
     public static final NamespacedKey KEY = RebarTest.key("simple_multiblock");
 

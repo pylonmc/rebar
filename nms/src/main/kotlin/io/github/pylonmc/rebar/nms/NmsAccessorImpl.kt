@@ -44,6 +44,7 @@ import org.bukkit.craftbukkit.CraftEquipmentSlot
 import org.bukkit.craftbukkit.CraftRegistry
 import org.bukkit.craftbukkit.CraftWorld
 import org.bukkit.craftbukkit.block.CraftBlock
+import org.bukkit.craftbukkit.entity.CraftEntity
 import org.bukkit.craftbukkit.entity.CraftLivingEntity
 import org.bukkit.craftbukkit.entity.CraftPlayer
 import org.bukkit.craftbukkit.inventory.CraftInventory
@@ -259,6 +260,8 @@ object NmsAccessorImpl : NmsAccessor {
             e.printStackTrace()
         }
     }
+
+    override fun getWeaponItem(entity: Entity): ItemStack? = (entity as CraftEntity).handle.weaponItem?.asBukkitMirror()
 
     override fun createItemStack(input: String): ItemStack {
         var input = input

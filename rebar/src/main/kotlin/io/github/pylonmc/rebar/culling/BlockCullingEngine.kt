@@ -5,8 +5,8 @@ import com.github.benmanes.caffeine.cache.Cache
 import com.github.benmanes.caffeine.cache.Caffeine
 import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.block.RebarBlock
-import io.github.pylonmc.rebar.block.base.RebarCulledBlock
-import io.github.pylonmc.rebar.block.base.RebarGroupCulledBlock
+import io.github.pylonmc.rebar.block.interfaces.CulledRebarBlock
+import io.github.pylonmc.rebar.block.interfaces.GroupCulledRebarBLock
 import io.github.pylonmc.rebar.config.RebarConfig
 import io.github.pylonmc.rebar.culling.PlayerCullingJob.Companion.cullingBoundingBox
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
@@ -68,8 +68,8 @@ object BlockCullingEngine : Listener {
     internal val culledBlockOctrees = mutableMapOf<UUID, Octree<RebarBlock>>()
 
     private val jobs = mutableMapOf<UUID, Pair<PlayerCullingJob, Job>>()
-    internal val syncJobTasks = ConcurrentHashMap<UUID, MutableMap<RebarCulledBlock, Boolean>>()
-    internal val syncJobGroupTasks = ConcurrentHashMap<UUID, MutableMap<RebarGroupCulledBlock, MutableMap<RebarGroupCulledBlock.CullingGroup, Boolean>>>()
+    internal val syncJobTasks = ConcurrentHashMap<UUID, MutableMap<CulledRebarBlock, Boolean>>()
+    internal val syncJobGroupTasks = ConcurrentHashMap<UUID, MutableMap<GroupCulledRebarBLock, MutableMap<GroupCulledRebarBLock.CullingGroup, Boolean>>>()
 
     /**
      * Periodically invalidates a share of the occluding cache, to ensure stale data isn't perpetuated.
@@ -161,7 +161,7 @@ object BlockCullingEngine : Listener {
             this.pdc.set(cullingEnabledKey, RebarSerializers.BOOLEAN, actualValue)
             if (!actualValue) {
                 getOctree(this.world, culledBlockOctrees).query(cullingBoundingBox).forEach { block ->
-                    (block as? RebarCulledBlock)?.onVisible(this)
+                    (block as? CulledRebarBlock)?.onVisible(this)
                 }
             }
         }
@@ -196,7 +196,7 @@ object BlockCullingEngine : Listener {
         if (RebarConfig.BlockTextureConfig.ENABLED && !block.disableBlockTextureEntity) {
             getOctree(block.block.world, blockTextureOctrees).insert(block)
         }
-        if (block is RebarCulledBlock) {
+        if (block is CulledRebarBlock) {
             getOctree(block.block.world, culledBlockOctrees).insert(block)
         }
     }
@@ -208,7 +208,7 @@ object BlockCullingEngine : Listener {
             getOctree(block.block.world, blockTextureOctrees).remove(block)
             block.blockTextureEntity?.removeAllViewers()
         }
-        if (block is RebarCulledBlock) {
+        if (block is CulledRebarBlock) {
             getOctree(block.block.world, culledBlockOctrees).remove(block)
         }
     }

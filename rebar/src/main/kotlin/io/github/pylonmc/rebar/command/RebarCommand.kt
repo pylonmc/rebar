@@ -11,7 +11,7 @@ import com.mojang.brigadier.context.CommandContext
 import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.addon.RebarAddon
 import io.github.pylonmc.rebar.block.BlockStorage
-import io.github.pylonmc.rebar.block.base.RebarSimpleMultiblock
+import io.github.pylonmc.rebar.block.interfaces.SimpleRebarMultiblock
 import io.github.pylonmc.rebar.block.context.BlockCreateContext
 import io.github.pylonmc.rebar.content.debug.DebugWaxedWeatheredCutCopperStairs
 import io.github.pylonmc.rebar.content.guide.RebarGuide
@@ -610,7 +610,7 @@ private val fillMultiblock = buildCommand("fillmultiblock") {
         RebarMetrics.onCommandRun("/rb fillmultiblock")
 
         val multiblock = player.getTargetBlockExact(5)?.let {
-            BlockStorage.getAs<RebarSimpleMultiblock>(it)
+            BlockStorage.getAs<SimpleRebarMultiblock>(it)
         }
         if (multiblock == null) {
             player.sendFeedback("fillmultiblock.not-looking")
@@ -629,7 +629,7 @@ private val fillMultiblock = buildCommand("fillmultiblock") {
 
         // fill sub-multiblocks (e.g. hatches)
         for ((position, block) in multiblock.components) {
-            BlockStorage.getAs<RebarSimpleMultiblock>(multiblock.getMultiblockBlock(position))?.let { subMultiblock ->
+            BlockStorage.getAs<SimpleRebarMultiblock>(multiblock.getMultiblockBlock(position))?.let { subMultiblock ->
                 for ((position, component) in subMultiblock.components) {
                     val block = subMultiblock.getMultiblockBlock(position)
                     if (!component.matches(block) && component.placeDefaultBlock(player, block)) {

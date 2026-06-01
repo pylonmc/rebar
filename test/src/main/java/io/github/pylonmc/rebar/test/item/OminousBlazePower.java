@@ -1,7 +1,7 @@
 package io.github.pylonmc.rebar.test.item;
 
 import io.github.pylonmc.rebar.item.RebarItem;
-import io.github.pylonmc.rebar.item.base.RebarBrewingStandFuel;
+import io.github.pylonmc.rebar.item.interfaces.BrewingStandFuelRebarItemHandler;
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder;
 import io.github.pylonmc.rebar.test.RebarTest;
 import org.bukkit.Material;
@@ -12,7 +12,7 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 
-public class OminousBlazePower extends RebarItem implements RebarBrewingStandFuel {
+public class OminousBlazePower extends RebarItem implements BrewingStandFuelRebarItemHandler {
 
     public static final NamespacedKey KEY = RebarTest.key("ominous_blaze_powder");
     public static final ItemStack STACK = ItemStackBuilder.rebar(Material.DIAMOND_SWORD, KEY)
@@ -27,7 +27,7 @@ public class OminousBlazePower extends RebarItem implements RebarBrewingStandFue
     }
 
     @Override
-    public void onUsedAsBrewingStandFuel(@NotNull BrewingStandFuelEvent event, @NotNull EventPriority priority) {
+    public void onFuelBrewingStand(@NotNull BrewingStandFuelEvent event, @NotNull EventPriority priority) {
         event.setCancelled(true);
         handlerCalled = true;
     }

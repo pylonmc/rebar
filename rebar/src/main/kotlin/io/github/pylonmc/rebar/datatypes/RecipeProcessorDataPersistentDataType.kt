@@ -1,6 +1,6 @@
 package io.github.pylonmc.rebar.datatypes
 
-import io.github.pylonmc.rebar.block.base.RebarRecipeProcessor
+import io.github.pylonmc.rebar.block.interfaces.RecipeProcessorRebarBlock
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.util.rebarKey
 import io.github.pylonmc.rebar.util.setNullable
@@ -8,7 +8,7 @@ import org.bukkit.persistence.PersistentDataAdapterContext
 import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.persistence.PersistentDataType
 
-internal object RecipeProcessorDataPersistentDataType : PersistentDataType<PersistentDataContainer, RebarRecipeProcessor.RecipeProcessorData<*>> {
+internal object RecipeProcessorDataPersistentDataType : PersistentDataType<PersistentDataContainer, RecipeProcessorRebarBlock.RecipeProcessorData<*>> {
 
     private val RECIPE_TYPE_KEY = rebarKey("recipe_type")
     private val CURRENT_RECIPE_KEY = rebarKey("current_recipe")
@@ -21,12 +21,12 @@ internal object RecipeProcessorDataPersistentDataType : PersistentDataType<Persi
 
     override fun getPrimitiveType(): Class<PersistentDataContainer> = PersistentDataContainer::class.java
 
-    override fun getComplexType(): Class<RebarRecipeProcessor.RecipeProcessorData<*>> = RebarRecipeProcessor.RecipeProcessorData::class.java
+    override fun getComplexType(): Class<RecipeProcessorRebarBlock.RecipeProcessorData<*>> = RecipeProcessorRebarBlock.RecipeProcessorData::class.java
 
-    override fun fromPrimitive(primitive: PersistentDataContainer, context: PersistentDataAdapterContext): RebarRecipeProcessor.RecipeProcessorData<*> {
+    override fun fromPrimitive(primitive: PersistentDataContainer, context: PersistentDataAdapterContext): RecipeProcessorRebarBlock.RecipeProcessorData<*> {
         val recipeType = primitive.get(RECIPE_TYPE_KEY, RECIPE_TYPE_TYPE)!!
         val recipePDT = RebarSerializers.KEYED.keyedTypeFrom { recipeType.getRecipeOrThrow(it) }
-        return RebarRecipeProcessor.RecipeProcessorData(
+        return RecipeProcessorRebarBlock.RecipeProcessorData(
             recipeType,
             primitive.get(CURRENT_RECIPE_KEY, recipePDT),
             primitive.get(RECIPE_TIME_TICKS_KEY, RebarSerializers.INTEGER),
@@ -36,7 +36,7 @@ internal object RecipeProcessorDataPersistentDataType : PersistentDataType<Persi
         )
     }
 
-    override fun toPrimitive(complex: RebarRecipeProcessor.RecipeProcessorData<*>, context: PersistentDataAdapterContext): PersistentDataContainer {
+    override fun toPrimitive(complex: RecipeProcessorRebarBlock.RecipeProcessorData<*>, context: PersistentDataAdapterContext): PersistentDataContainer {
         val pdc = context.newPersistentDataContainer()
         val recipePDT = RebarSerializers.KEYED.keyedTypeFrom { complex.recipeType!!.getRecipeOrThrow(it) }
         pdc.setNullable(RECIPE_TYPE_KEY, RECIPE_TYPE_TYPE, complex.recipeType)

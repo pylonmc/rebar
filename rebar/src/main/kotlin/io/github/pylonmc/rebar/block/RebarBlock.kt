@@ -3,9 +3,9 @@ package io.github.pylonmc.rebar.block
 import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.block.RebarBlock.Companion.rebarBlockTextureEntityKey
 import io.github.pylonmc.rebar.block.RebarBlock.Companion.register
-import io.github.pylonmc.rebar.block.base.RebarDirectionalBlock
-import io.github.pylonmc.rebar.block.base.RebarEntityHolderBlock
-import io.github.pylonmc.rebar.block.base.RebarInventoryBlock
+import io.github.pylonmc.rebar.block.interfaces.DirectionalRebarBlock
+import io.github.pylonmc.rebar.block.interfaces.EntityHolderRebarBlock
+import io.github.pylonmc.rebar.block.interfaces.GuiRebarBlock
 import io.github.pylonmc.rebar.block.context.BlockBreakContext
 import io.github.pylonmc.rebar.block.context.BlockCreateContext
 import io.github.pylonmc.rebar.config.Config
@@ -120,10 +120,10 @@ open class RebarBlock private constructor(val block: Block) : Keyed {
     /**
      * Called after the load constructor.
      *
-     * This is necessary because "external" stuff like [RebarInventoryBlock], [io.github.pylonmc.rebar.block.base.RebarFluidBufferBlock]
-     * and [RebarEntityHolderBlock] load their data *after* the load constructor is called.
+     * This is necessary because "external" stuff like [GuiRebarBlock], [io.github.pylonmc.rebar.block.interfaces.FluidBufferRebarBlock]
+     * and [EntityHolderRebarBlock] load their data *after* the load constructor is called.
      * If you need to use data from these interfaces (such as the amount of fluid stored in
-     * a [io.github.pylonmc.rebar.block.base.RebarFluidBufferBlock], you must use this
+     * a [io.github.pylonmc.rebar.block.interfaces.FluidBufferRebarBlock], you must use this
      * instead of using the data in the load constructor.
      *
      * @param pdc the persistent data container used to load the block, in case you need to read any additional data from it
@@ -134,7 +134,7 @@ open class RebarBlock private constructor(val block: Block) : Keyed {
      * Called after both the create constructor and the load constructor.
      *
      * Use this to initialise stuff which must always be initialised, like creating logistics
-     * groups (see [io.github.pylonmc.rebar.block.base.RebarLogisticBlock]).
+     * groups (see [io.github.pylonmc.rebar.block.interfaces.LogisticRebarBlock]).
      *
      * Called before [postLoad], after [io.github.pylonmc.rebar.event.RebarBlockPlaceEvent],
      * after [RebarBlockDeserializeEvent], and
@@ -189,12 +189,12 @@ open class RebarBlock private constructor(val block: Block) : Keyed {
      *
      * When overriding this method you most likely want to work off the result of `super.getBlockTextureProperties()`
      * instead of returning a new map entirely, to ensure that any properties provided by superclasses
-     * are preserved. (e.g. [RebarDirectionalBlock])
+     * are preserved. (e.g. [DirectionalRebarBlock])
      */
     @MustBeInvokedByOverriders
     open fun getBlockTextureProperties(): MutableMap<String, Pair<String, Int>> {
         val properties = mutableMapOf<String, Pair<String, Int>>()
-        if (this is RebarDirectionalBlock) {
+        if (this is DirectionalRebarBlock) {
             properties["facing"] = facing.name.lowercase() to IMMEDIATE_FACES.size
         }
         return properties
@@ -279,8 +279,8 @@ open class RebarBlock private constructor(val block: Block) : Keyed {
      * *Do not assume that when this is called, the block is being unloaded.* This
      * may be called for other reasons, such as when a player right clicks with
      * [DebugWaxedWeatheredCutCopperStairs].
-     * Instead, implement [io.github.pylonmc.rebar.block.base.RebarUnloadBlock] and
-     * use [io.github.pylonmc.rebar.block.base.RebarUnloadBlock.onUnload].
+     * Instead, implement [io.github.pylonmc.rebar.block.interfaces.UnloadRebarBlockHandler] and
+     * use [io.github.pylonmc.rebar.block.interfaces.UnloadRebarBlockHandler.onUnload].
      */
     open fun write(pdc: PersistentDataContainer) {}
 

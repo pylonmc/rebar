@@ -2,7 +2,7 @@ package io.github.pylonmc.rebar.fluid
 
 import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.block.BlockStorage
-import io.github.pylonmc.rebar.block.base.RebarFluidBlock
+import io.github.pylonmc.rebar.block.interfaces.FluidRebarBlock
 import io.github.pylonmc.rebar.config.RebarConfig
 import io.github.pylonmc.rebar.event.PreRebarFluidPointConnectEvent
 import io.github.pylonmc.rebar.event.PreRebarFluidPointDisconnectEvent
@@ -277,10 +277,10 @@ internal object FluidManager {
     fun getPoints(segment: UUID): List<VirtualFluidPoint>
             = segments[segment]!!.points
 
-    data class FluidSupplyInfo(var amount: Double, val blocks: IdentityHashMap<RebarFluidBlock, Double>)
+    data class FluidSupplyInfo(var amount: Double, val blocks: IdentityHashMap<FluidRebarBlock, Double>)
 
     @JvmStatic
-    fun getSuppliedFluids(blocks: List<RebarFluidBlock>): Map<RebarFluid, FluidSupplyInfo> {
+    fun getSuppliedFluids(blocks: List<FluidRebarBlock>): Map<RebarFluid, FluidSupplyInfo> {
         val suppliedFluids: MutableMap<RebarFluid, FluidSupplyInfo> = mutableMapOf()
         for (block in blocks) {
             try {
@@ -307,8 +307,8 @@ internal object FluidManager {
      * Find how much of the fluid each input point on the block is requesting
      * Ignore input points requesting zero or effectively zero of the fluid
      */
-    fun getRequestedFluids(blocks: List<RebarFluidBlock>, fluid: RebarFluid): Pair<MutableMap<RebarFluidBlock, Double>, Double> {
-        val requesters: MutableMap<RebarFluidBlock, Double> = mutableMapOf()
+    fun getRequestedFluids(blocks: List<FluidRebarBlock>, fluid: RebarFluid): Pair<MutableMap<FluidRebarBlock, Double>, Double> {
+        val requesters: MutableMap<FluidRebarBlock, Double> = mutableMapOf()
         var totalRequested = 0.0
         for (block in blocks) {
             try {
@@ -327,11 +327,11 @@ internal object FluidManager {
     }
 
     private fun tick(segment: UUID) {
-        val supplierBlocks = mutableListOf<RebarFluidBlock>()
-        val requesterBlocks = mutableListOf<RebarFluidBlock>()
+        val supplierBlocks = mutableListOf<FluidRebarBlock>()
+        val requesterBlocks = mutableListOf<FluidRebarBlock>()
         for (point in getPoints(segment)) {
             if (point.position.chunk.isLoaded) {
-                BlockStorage.getAs<RebarFluidBlock>(point.position)?.let { fluidBlock ->
+                BlockStorage.getAs<FluidRebarBlock>(point.position)?.let { fluidBlock ->
                     if (point.type == FluidPointType.OUTPUT) {
                         supplierBlocks.add(fluidBlock)
                     }

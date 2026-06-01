@@ -62,10 +62,6 @@ interface BlockCreateContext {
 
     /**
      * A plugin generated the block
-     * ex:
-     * - Growing of Rebar Trees
-     * - Evolution of Rebar Sponges
-     * - Spread of Rebar Fire
      */
     @JvmRecord
     data class PluginGenerate(

@@ -3,7 +3,7 @@ package io.github.pylonmc.rebar.content.fluid
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.entity.EntityStorage
 import io.github.pylonmc.rebar.entity.RebarEntity
-import io.github.pylonmc.rebar.entity.base.RebarDeathEntity
+import io.github.pylonmc.rebar.entity.interfaces.DeathRebarEntityHandler
 import io.github.pylonmc.rebar.entity.display.ItemDisplayBuilder
 import io.github.pylonmc.rebar.entity.display.transform.TransformBuilder
 import io.github.pylonmc.rebar.event.RebarEntityDeathEvent
@@ -27,7 +27,7 @@ import kotlin.math.sqrt
 /**
  * A 'endpoint display' is one of the red/green displays that indicates a block's fluid input/output.
  */
-class FluidEndpointDisplay : RebarEntity<ItemDisplay>, RebarDeathEntity, FluidPointDisplay {
+class FluidEndpointDisplay : RebarEntity<ItemDisplay>, DeathRebarEntityHandler, FluidPointDisplay {
     override val point: VirtualFluidPoint
     var connectedPipeDisplay: UUID?
     override val connectedPipeDisplays: Set<UUID>

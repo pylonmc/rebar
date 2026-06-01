@@ -19,8 +19,8 @@ import io.github.pylonmc.rebar.guide.pages.research.ResearchItemsPage
 import io.github.pylonmc.rebar.guide.pages.research.ResearchesPage
 import io.github.pylonmc.rebar.guide.pages.settings.MainSettingsPage
 import io.github.pylonmc.rebar.item.RebarItem
-import io.github.pylonmc.rebar.item.base.RebarInteractor
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
+import io.github.pylonmc.rebar.item.interfaces.InteractRebarItemHandler
 import io.github.pylonmc.rebar.item.research.Research
 import io.github.pylonmc.rebar.recipe.FluidOrItem
 import io.github.pylonmc.rebar.registry.RebarRegistry
@@ -44,10 +44,10 @@ import java.util.UUID
 /**
  * The one and only Rebar guide.
  */
-class RebarGuide(stack: ItemStack) : RebarItem(stack), RebarInteractor {
+class RebarGuide(stack: ItemStack) : RebarItem(stack), InteractRebarItemHandler {
 
     @MultiHandler(priorities = [EventPriority.NORMAL, EventPriority.MONITOR])
-    override fun onUsedToClick(event: PlayerInteractEvent, priority: EventPriority) {
+    override fun onInteract(event: PlayerInteractEvent, priority: EventPriority) {
         if (!event.action.isRightClick || event.useItemInHand() == Event.Result.DENY) return
 
         if (priority == EventPriority.NORMAL) {

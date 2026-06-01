@@ -1,8 +1,8 @@
 package io.github.pylonmc.rebar.culling
 
 import io.github.pylonmc.rebar.block.RebarBlock
-import io.github.pylonmc.rebar.block.base.RebarCulledBlock
-import io.github.pylonmc.rebar.block.base.RebarGroupCulledBlock
+import io.github.pylonmc.rebar.block.interfaces.CulledRebarBlock
+import io.github.pylonmc.rebar.block.interfaces.GroupCulledRebarBLock
 import io.github.pylonmc.rebar.config.RebarConfig
 import io.github.pylonmc.rebar.culling.BlockCullingEngine.ChunkData
 import io.github.pylonmc.rebar.culling.BlockCullingEngine.blockTextureOctrees
@@ -81,19 +81,19 @@ class PlayerCullingJob(
         }
         visible.values.toSet().subtract(query.toSet()).forEach {
             it.blockTextureEntity?.removeViewer(playerId)
-            if (it is RebarCulledBlock && it !is RebarGroupCulledBlock) {
+            if (it is CulledRebarBlock && it !is GroupCulledRebarBLock) {
                 syncTasks[it] = false
             }
         }
         visible.values.retainAll(query)
 
-        val cullingGroups = mutableSetOf<RebarGroupCulledBlock.CullingGroup>()
+        val cullingGroups = mutableSetOf<GroupCulledRebarBLock.CullingGroup>()
 
         fun makeBlockVisible(block: RebarBlock, distanceSquared: Double) {
             block.blockTextureEntity?.addOrRefreshViewer(playerId, distanceSquared)
-            if (block is RebarGroupCulledBlock) {
+            if (block is GroupCulledRebarBLock) {
                 cullingGroups.addAll(block.cullingGroups)
-            } else if (block is RebarCulledBlock) {
+            } else if (block is CulledRebarBlock) {
                 if (block.isCulledAsync) {
                     block.onVisible(player)
                 } else {
@@ -105,9 +105,9 @@ class PlayerCullingJob(
 
         fun makeBlockCulled(block: RebarBlock) {
             block.blockTextureEntity?.removeViewer(playerId)
-            if (block is RebarGroupCulledBlock) {
+            if (block is GroupCulledRebarBLock) {
                 cullingGroups.addAll(block.cullingGroups)
-            } else if (block is RebarCulledBlock) {
+            } else if (block is CulledRebarBlock) {
                 if (block.isCulledAsync) {
                     block.onCulled(player)
                 } else {
@@ -123,7 +123,7 @@ class PlayerCullingJob(
         for (block in query) {
             val entity = block.blockTextureEntity
             val seen = when (block) {
-                is RebarCulledBlock -> block.isVisible(player)
+                is CulledRebarBlock -> block.isVisible(player)
                 else -> entity?.hasViewer(playerId) ?: false
             }
 

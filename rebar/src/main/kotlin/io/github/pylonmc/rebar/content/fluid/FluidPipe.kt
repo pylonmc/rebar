@@ -11,7 +11,7 @@ import io.github.pylonmc.rebar.fluid.placement.FluidPipePlacementService
 import io.github.pylonmc.rebar.fluid.tags.FluidTemperature
 import io.github.pylonmc.rebar.i18n.RebarArgument
 import io.github.pylonmc.rebar.item.RebarItem
-import io.github.pylonmc.rebar.item.base.RebarInteractor
+import io.github.pylonmc.rebar.item.interfaces.InteractRebarItemHandler
 import io.github.pylonmc.rebar.util.getTargetEntity
 import io.github.pylonmc.rebar.util.gui.unit.UnitFormat
 import io.github.pylonmc.rebar.util.position.BlockPosition
@@ -37,7 +37,7 @@ import org.bukkit.inventory.ItemStack
  * You should generally not need to extend this class. Instead, simply register an item with class
  * FluidPipe.class to create a new pipe type.
  */
-open class FluidPipe(stack: ItemStack) : RebarItem(stack), RebarInteractor {
+open class FluidPipe(stack: ItemStack) : RebarItem(stack), InteractRebarItemHandler {
     val material = getSettings().getOrThrow("material", ConfigAdapter.MATERIAL)
     val fluidPerSecond = getSettings().getOrThrow("fluid-per-second", ConfigAdapter.DOUBLE)
     val allowedTemperatures = getSettings().get(
@@ -62,7 +62,7 @@ open class FluidPipe(stack: ItemStack) : RebarItem(stack), RebarInteractor {
             || fluid.hasTag<FluidTemperature>() && fluid.getTag<FluidTemperature>() in allowedTemperatures
 
     @MultiHandler(priorities = [ EventPriority.LOW, EventPriority.MONITOR ])
-    override fun onUsedToClick(event: PlayerInteractEvent, priority: EventPriority) {
+    override fun onInteract(event: PlayerInteractEvent, priority: EventPriority) {
         if (!event.action.isRightClick
             || event.hand != EquipmentSlot.HAND
             || event.useItemInHand() == Event.Result.DENY) {

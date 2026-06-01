@@ -1,7 +1,7 @@
 package io.github.pylonmc.rebar.test.test.block;
 
 import io.github.pylonmc.rebar.block.BlockStorage;
-import io.github.pylonmc.rebar.block.base.RebarTickingBlock;
+import io.github.pylonmc.rebar.block.interfaces.TickingRebarBlock;
 import io.github.pylonmc.rebar.config.RebarConfig;
 import io.github.pylonmc.rebar.gametest.GameTestConfig;
 import io.github.pylonmc.rebar.test.RebarTest;
@@ -18,7 +18,7 @@ public class TickingBlockErrorTest extends GameTest {
                     RebarConfig.FULL_ERROR_STACK_TRACES = false;
                     BlockStorage.placeBlock(test.location(), TickingErrorBlock.KEY);
 
-                    test.succeedWhen(() -> !RebarTickingBlock.isTicking(BlockStorage.get(test.location().getBlock())));
+                    test.succeedWhen(() -> !TickingRebarBlock.isTicking(BlockStorage.get(test.location().getBlock())));
                 })
                 .cleanup(test -> {
                     BlockStorage.breakBlock(test.location());

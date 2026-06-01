@@ -1,7 +1,7 @@
 package io.github.pylonmc.rebar.logistics
 
 import io.github.pylonmc.rebar.block.BlockStorage
-import io.github.pylonmc.rebar.block.base.RebarCargoBlock
+import io.github.pylonmc.rebar.block.interfaces.CargoRebarBlock
 import io.github.pylonmc.rebar.content.cargo.CargoDuct
 import io.github.pylonmc.rebar.event.RebarBlockBreakEvent
 import io.github.pylonmc.rebar.event.RebarBlockLoadEvent
@@ -34,7 +34,7 @@ import org.jetbrains.annotations.ApiStatus
 @ApiStatus.Internal
 object CargoRoutes : Listener {
 
-    data class CargoRouteEndpoint(val block: RebarCargoBlock, val face: BlockFace)
+    data class CargoRouteEndpoint(val block: CargoRebarBlock, val face: BlockFace)
 
     private val routeCache: MutableMap<CargoRouteEndpoint, CargoRouteEndpoint?> = mutableMapOf()
 
@@ -60,7 +60,7 @@ object CargoRoutes : Listener {
         return routeCache[source]
     }
 
-    fun getCargoTarget(sourceBlock: RebarCargoBlock, sourceFace: BlockFace): CargoRouteEndpoint?
+    fun getCargoTarget(sourceBlock: CargoRebarBlock, sourceFace: BlockFace): CargoRouteEndpoint?
         = getCargoTarget(CargoRouteEndpoint(sourceBlock, sourceFace))
 
     private fun recalculateTarget(source: CargoRouteEndpoint): CargoRouteEndpoint? {
@@ -92,7 +92,7 @@ object CargoRoutes : Listener {
                 current = current.getRelative(nextFace)
                 lastFaceUsed = nextFace
 
-            } else if (currentBlock is RebarCargoBlock) {
+            } else if (currentBlock is CargoRebarBlock) {
                 // Route endpoint found
 
                 endpoint = CargoRouteEndpoint(currentBlock, lastFaceUsed.oppositeFace)

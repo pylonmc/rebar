@@ -1,7 +1,7 @@
 package io.github.pylonmc.rebar.test.block.fluid;
 
 import io.github.pylonmc.rebar.block.RebarBlock;
-import io.github.pylonmc.rebar.block.base.RebarUnloadBlock;
+import io.github.pylonmc.rebar.block.interfaces.UnloadRebarBlockHandler;
 import io.github.pylonmc.rebar.block.context.BlockCreateContext;
 import io.github.pylonmc.rebar.datatypes.RebarSerializers;
 import io.github.pylonmc.rebar.event.RebarBlockUnloadEvent;
@@ -16,7 +16,7 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.jetbrains.annotations.NotNull;
 
 
-public class FluidConnector extends RebarBlock implements RebarUnloadBlock {
+public class FluidConnector extends RebarBlock implements UnloadRebarBlockHandler {
 
     public static final NamespacedKey KEY = RebarTest.key("fluid_connector");
     private static final NamespacedKey POINT_KEY = RebarTest.key("point");
