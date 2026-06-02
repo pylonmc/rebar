@@ -8,9 +8,9 @@ import io.github.pylonmc.rebar.block.base.RebarEntityHolderBlock
 import io.github.pylonmc.rebar.block.base.RebarInventoryBlock
 import io.github.pylonmc.rebar.block.context.BlockBreakContext
 import io.github.pylonmc.rebar.block.context.BlockCreateContext
-import io.github.pylonmc.rebar.config.Config
+import io.github.pylonmc.rebar.config.ConfigSection
 import io.github.pylonmc.rebar.config.RebarConfig
-import io.github.pylonmc.rebar.config.Settings
+import io.github.pylonmc.rebar.config.adapter.ConfigAdapter
 import io.github.pylonmc.rebar.content.debug.DebugWaxedWeatheredCutCopperStairs
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.entity.packet.BlockTextureEntity
@@ -153,26 +153,7 @@ open class RebarBlock private constructor(val block: Block) : Keyed {
         item.setData(DataComponentTypes.ITEM_MODEL, Key.key("air"))
         itemStack = item
         itemDisplayTransform = ItemDisplay.ItemDisplayTransform.FIXED
-        brightness = Display.Brightness(15, 15)
-        transformation = transformation.let {
-            Transformation(
-                it.translation,
-                it.leftRotation,
-                Vector3f(1 + BlockTextureEntity.BLOCK_OVERLAP_INCREASE),
-                it.rightRotation
-            )
-        }
         entity.spawn()
-    }
-
-    /**
-     * Schedules the block texture item to be refreshed on the next server tick.
-     * See [refreshBlockTextureItem].
-     */
-    fun scheduleBlockTextureItemRefresh() {
-        Bukkit.getScheduler().runTask(Rebar) { _ ->
-            refreshBlockTextureItem()
-        }
     }
 
     /**
@@ -264,7 +245,7 @@ open class RebarBlock private constructor(val block: Block) : Keyed {
      *
      * @return the item the block should give when middle clicked, or null if none
      */
-    open fun getPickItem() = defaultItem?.getItemStack()
+    open fun getPickItem(player: Player) = defaultItem?.getItemStack()
 
     /**
      * Called when debug info is requested for the block by someone
@@ -292,9 +273,33 @@ open class RebarBlock private constructor(val block: Block) : Keyed {
     /**
      * Returns settings associated with the block.
      *
-     * Shorthand for `Settings.get(getKey())`
+     * Shorthand for `ConfigSection.fromSettings(getKey())`
      */
-    fun getSettings(): Config = Settings.get(key)
+    fun getSettings() = ConfigSection.fromSettings(key)
+
+    /**
+     * Shorthand for getSettings().get(...)
+     */
+    fun <T> getSetting(key: String, adapter: ConfigAdapter<T>)
+        = getSettings().get(key, adapter)
+
+    /**
+     * Shorthand for getSettings().get(...)
+     */
+    fun <T> getSetting(key: String, adapter: ConfigAdapter<T>, defaultValue: T)
+        = getSettings().get(key, adapter, defaultValue)
+
+    /**
+     * Shorthand for getSettings().get(...)
+     */
+    fun <T> getSetting(key: String, adapter: ConfigAdapter<T>, defaultValue: () -> T)
+        = getSettings().get(key, adapter, defaultValue)
+
+    /**
+     * Shorthand for getSettings().getOrThrow(...)
+     */
+    fun <T> getSettingOrThrow(key: String, adapter: ConfigAdapter<T>)
+        = getSettings().getOrThrow(key, adapter)
 
     companion object {
 

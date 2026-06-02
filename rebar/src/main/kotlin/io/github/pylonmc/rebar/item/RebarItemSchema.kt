@@ -3,6 +3,7 @@ package io.github.pylonmc.rebar.item
 import io.github.pylonmc.rebar.block.BlockStorage
 import io.github.pylonmc.rebar.block.RebarBlock
 import io.github.pylonmc.rebar.block.context.BlockCreateContext
+import io.github.pylonmc.rebar.config.RebarConfig
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.event.PreRebarBlockPlaceEvent
 import io.github.pylonmc.rebar.item.research.Research
@@ -18,6 +19,7 @@ import org.bukkit.NamespacedKey
 import org.bukkit.inventory.ItemStack
 import org.jetbrains.annotations.Contract
 import java.lang.invoke.MethodHandle
+import kotlin.math.min
 
 /**
  * Stores information about a Rebar item type, including its key, template [ItemStack], class, and
@@ -35,6 +37,7 @@ class RebarItemSchema @JvmOverloads internal constructor(
         ?: throw IllegalArgumentException("Provided item stack is not a Rebar item; make sure you are using ItemStackBuilder.defaultBuilder to create the item stack")
 
     val addon = getAddon(key)
+    val isDisabled = key in RebarConfig.DISABLED_ITEMS
 
     /**
      * Returns the raw [template] of the [RebarItemSchema], this is the template used
@@ -47,7 +50,7 @@ class RebarItemSchema @JvmOverloads internal constructor(
      * Return's a clone of the [template] [ItemStack]
      */
     @JvmOverloads
-    fun getItemStack(count: Int = 1): ItemStack = template.asQuantity(count)
+    fun getItemStack(count: Int = 1): ItemStack = template.asQuantity(min(count, template.maxStackSize))
 
     /**
      * Return's a new instance of the [RebarItem] from the [itemClass] using a copy of the [template] [ItemStack]

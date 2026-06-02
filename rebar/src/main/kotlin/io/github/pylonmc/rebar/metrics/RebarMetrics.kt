@@ -1,7 +1,7 @@
 package io.github.pylonmc.rebar.metrics
 
 import io.github.pylonmc.rebar.Rebar
-import io.github.pylonmc.rebar.config.Config
+import io.github.pylonmc.rebar.config.ConfigSection
 import io.github.pylonmc.rebar.config.RebarConfig
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter
 import io.github.pylonmc.rebar.item.research.Research
@@ -10,18 +10,24 @@ import org.bstats.bukkit.Metrics
 import org.bstats.charts.AdvancedPie
 import org.bstats.charts.SimplePie
 import org.bukkit.Bukkit
+import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 
 internal object RebarMetrics {
     val metrics = Metrics(Rebar, 27322)
-    val dataConfig = Config(Rebar, "data/metrics.yml")
+    val metricsDataFile = File(Rebar.dataFolder, "data/metrics.yml")
+    init {
+        metricsDataFile.parentFile.mkdirs()
+        metricsDataFile.createNewFile()
+    }
+    val metricsDataConfig = ConfigSection.fromOrThrow(metricsDataFile)
 
     var commandsRun = ConcurrentHashMap<String, Int>()
     init {
-        val dataSection = dataConfig.getSection("commandsRun")
+        val dataSection = metricsDataConfig.getSection("commandsRun")
         if (dataSection != null) {
             for (key in dataSection.keys) {
-                commandsRun.put(key, dataSection.getOrThrow(key, ConfigAdapter.INTEGER))
+                commandsRun[key] = dataSection.getOrThrow(key, ConfigAdapter.INTEGER)
             }
         }
     }
@@ -44,7 +50,7 @@ internal object RebarMetrics {
         metrics.addCustomChart(AdvancedPie("disabled_items") {
             val values = mutableMapOf<String, Int>()
             for (item in RebarConfig.DISABLED_ITEMS) {
-                values.put(item.toString(), 1)
+                values[item.toString()] = 1
             }
             values
         })
@@ -71,14 +77,14 @@ internal object RebarMetrics {
     }
 
     fun save() {
-        val dataSection = dataConfig.getSection("commandsRun") ?: dataConfig.createSection("commandsRun")
+        val dataSection = metricsDataConfig.getSection("commandsRun") ?: metricsDataConfig.createSection("commandsRun")
         for ((command, runs) in commandsRun) {
             dataSection.set(command, runs)
         }
-        dataConfig.save()
+        metricsDataConfig.save(metricsDataFile)
     }
 
     fun onCommandRun(name: String) {
-        commandsRun.put(name, commandsRun.getOrDefault(name, 0) + 1)
+        commandsRun[name] = commandsRun.getOrDefault(name, 0) + 1
     }
 }

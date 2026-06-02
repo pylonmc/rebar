@@ -1,12 +1,15 @@
 package io.github.pylonmc.rebar.nms
 
 import com.destroystokyo.paper.event.player.PlayerRecipeBookClickEvent
+import com.mojang.brigadier.StringReader
+import com.mojang.brigadier.exceptions.CommandSyntaxException
 import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.async.PlayerScope
 import io.github.pylonmc.rebar.block.RebarBlock
 import io.github.pylonmc.rebar.entity.packet.BlockTextureEntity
 import io.github.pylonmc.rebar.i18n.PlayerTranslationHandler
-import io.github.pylonmc.rebar.i18n.packet.PlayerPacketHandler
+import io.github.pylonmc.rebar.nms.packet.PlayerPacketHandler
+import io.github.pylonmc.rebar.item.ItemTypeWrapper
 import io.github.pylonmc.rebar.nms.entity.BlockTextureEntityImpl
 import io.github.pylonmc.rebar.nms.inventory.KeyedContainerListener
 import io.github.pylonmc.rebar.nms.recipe.AccessibleCachedCheck
@@ -16,6 +19,7 @@ import io.papermc.paper.adventure.PaperAdventure
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import net.kyori.adventure.text.Component
+import net.minecraft.commands.arguments.item.ItemParser
 import net.minecraft.core.BlockPos
 import net.minecraft.core.registries.Registries
 import net.minecraft.nbt.TextComponentTagVisitor
@@ -30,15 +34,19 @@ import net.minecraft.world.item.Item
 import net.minecraft.world.item.crafting.RecipeManager
 import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity
 import net.minecraft.world.level.block.state.properties.Property
+import net.minecraft.world.phys.BlockHitResult
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
 import org.bukkit.World
 import org.bukkit.block.Block
+import org.bukkit.block.BlockFace
 import org.bukkit.craftbukkit.CraftEquipmentSlot
+import org.bukkit.craftbukkit.CraftRegistry
 import org.bukkit.craftbukkit.CraftWorld
 import org.bukkit.craftbukkit.block.CraftBlock
 import org.bukkit.craftbukkit.entity.CraftLivingEntity
 import org.bukkit.craftbukkit.entity.CraftPlayer
+import org.bukkit.craftbukkit.inventory.CraftInventory
 import org.bukkit.craftbukkit.inventory.CraftInventoryView
 import org.bukkit.craftbukkit.inventory.CraftItemStack
 import org.bukkit.craftbukkit.inventory.CraftItemType
@@ -54,7 +62,6 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataContainer
 import java.lang.invoke.MethodHandle
 import java.lang.invoke.MethodHandles
-import java.lang.invoke.VarHandle
 import java.lang.reflect.Field
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
@@ -250,6 +257,53 @@ object NmsAccessorImpl : NmsAccessor {
         } catch (e: Throwable) {
             Rebar.logger.severe("Failed to set furnace recipe cache: ${e.message}")
             e.printStackTrace()
+        }
+    }
+
+    override fun createItemStack(input: String): ItemStack {
+        var input = input
+        var idEnd = input.indexOf('[')
+        if (idEnd == -1) idEnd = input.length
+
+        val typeString = input.substring(0, idEnd)
+        val type = ItemTypeWrapper(NamespacedKey.fromString(typeString) ?: throw IllegalArgumentException("Could not find item $typeString"))
+        if (type is ItemTypeWrapper.Rebar) {
+            input = "minecraft:air" + input.substring(idEnd)
+        }
+
+        try {
+            val reader = StringReader(input)
+            val itemInput = ItemParser(CraftRegistry.getMinecraftRegistry()).parse(reader);
+            if (reader.canRead()) {
+                throw IllegalArgumentException("Trailing input found when parsing ItemStack: " + reader.remaining);
+            } else {
+                val stack = type.createItemStack()
+                val nmsStack = (stack as CraftItemStack).handle
+                nmsStack.applyComponents(itemInput.components)
+                return nmsStack.asBukkitMirror()
+            }
+        } catch (ex: CommandSyntaxException) {
+            throw IllegalArgumentException("Could not parse ItemStack: $input", ex);
+        }
+    }
+
+    override fun setChanged(inventory: Inventory) {
+        val inventory = inventory as CraftInventory
+        inventory.inventory.setChanged()
+    }
+
+    override fun simulateInteract(player: Player, itemStack: ItemStack, hand: EquipmentSlot, block: Block?, blockFace: BlockFace?) {
+        val nmsPlayer = (player as CraftPlayer).handle
+        val level = nmsPlayer.level()
+        val nmsStack = (itemStack as CraftItemStack).handle
+        val nmsHand = CraftEquipmentSlot.getHand(hand)
+        if (block == null || blockFace == null) {
+            nmsPlayer.gameMode.useItem(nmsPlayer, level, nmsStack, nmsHand)
+        } else {
+            val nmsPos = (block as CraftBlock).position
+            val nmsDirection = CraftBlock.blockFaceToNotch(blockFace) ?: throw IllegalArgumentException("Invalid block face $blockFace")
+            val nmsLoc = nmsPos.center.add(nmsDirection.unitVec3.scale(0.5))
+            nmsPlayer.gameMode.useItemOn(nmsPlayer, level, nmsStack, nmsHand, BlockHitResult(nmsLoc, nmsDirection, nmsPos, false))
         }
     }
 }

@@ -20,26 +20,25 @@ import xyz.xenondevs.invui.gui.PagedGui
 open class FluidRecipesPage(fluidKey: NamespacedKey) : PagedGuidePage {
 
     val fluid = RebarRegistry.FLUIDS[fluidKey]!!
-    val pages: MutableList<Gui>
-        get() {
-            val pages = mutableListOf<Gui>()
-            val recipes = mutableListOf<RebarRecipe>()
-            for (type in RebarRegistry.RECIPE_TYPES) {
-                for (recipe in type.recipes) {
-                    if (!recipe.isHidden && recipe.isOutput(fluid)) {
-                        recipes.add(recipe)
-                    }
+    val pages: MutableList<Gui> by lazy {
+        val pages = mutableListOf<Gui>()
+        val recipes = mutableListOf<RebarRecipe>()
+        for (type in RebarRegistry.RECIPE_TYPES) {
+            for (recipe in type.recipes) {
+                if (!recipe.isHidden && recipe.isOutput(fluid)) {
+                    recipes.add(recipe)
                 }
             }
-            recipes.sortByDescending { it.priority }
-            for (recipe in recipes) {
-                val display = recipe.display()
-                if (display != null) {
-                    pages.add(display)
-                }
-            }
-            return pages
         }
+        recipes.sortByDescending { it.priority }
+        for (recipe in recipes) {
+            val display = recipe.display()
+            if (display != null) {
+                pages.add(display)
+            }
+        }
+        pages
+    }
 
     override fun getKey() = KEY
 

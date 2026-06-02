@@ -61,7 +61,7 @@ class FluidIntersectionMarker : RebarBlock, RebarEntityHolderBlock, RebarBreakHa
 
     override fun getDropItem(context: BlockBreakContext) = null
 
-    override fun getPickItem() = pipe.stack
+    override fun getPickItem(player: Player) = pipe.stack
 
     companion object {
         @JvmField

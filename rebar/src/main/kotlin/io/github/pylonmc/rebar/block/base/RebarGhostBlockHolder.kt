@@ -5,6 +5,7 @@ import io.github.pylonmc.rebar.config.RebarConfig
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.entity.EntityStorage
 import io.github.pylonmc.rebar.entity.RebarEntity
+import io.github.pylonmc.rebar.entity.base.RebarDamageableEntity
 import io.github.pylonmc.rebar.entity.base.RebarInteractEntity
 import io.github.pylonmc.rebar.entity.display.BlockDisplayBuilder
 import io.github.pylonmc.rebar.entity.display.InteractionBuilder
@@ -13,26 +14,33 @@ import io.github.pylonmc.rebar.entity.display.transform.TransformBuilder
 import io.github.pylonmc.rebar.event.RebarBlockLoadEvent
 import io.github.pylonmc.rebar.event.api.annotation.MultiHandler
 import io.github.pylonmc.rebar.item.ItemTypeWrapper
+import io.github.pylonmc.rebar.item.RebarItemSchema
+import io.github.pylonmc.rebar.nms.NmsAccessor
 import io.github.pylonmc.rebar.registry.RebarRegistry
+import io.github.pylonmc.rebar.util.findRebar
 import io.github.pylonmc.rebar.util.findType
 import io.github.pylonmc.rebar.util.rebarKey
 import io.github.pylonmc.rebar.util.setNullable
 import io.github.pylonmc.rebar.util.swapItem
 import io.github.pylonmc.rebar.waila.WailaDisplay
-import io.papermc.paper.command.brigadier.argument.ArgumentTypes.entity
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.time.delay
 import net.kyori.adventure.text.Component
 import org.bukkit.Color
 import org.bukkit.GameMode
+import org.bukkit.Material
 import org.bukkit.NamespacedKey
 import org.bukkit.block.Block
+import org.bukkit.block.BlockFace
 import org.bukkit.block.data.BlockData
 import org.bukkit.entity.*
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
+import org.bukkit.event.entity.EntityDamageByEntityEvent
+import org.bukkit.event.entity.EntityDamageEvent
 import org.bukkit.event.player.PlayerInteractEntityEvent
+import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.util.Vector
@@ -58,7 +66,7 @@ import java.util.*
  */
 interface RebarGhostBlockHolder : RebarEntityHolderBlock {
 
-    class GhostBlockHitbox : RebarEntity<Interaction>, RebarInteractEntity {
+    class GhostBlockHitbox : RebarEntity<Interaction>, RebarInteractEntity, RebarDamageableEntity {
         val rebarGhostBlockId: UUID?
         val vanillaGhostBlockId: UUID?
         var activeGhostBlockId: UUID? = null
@@ -83,26 +91,25 @@ interface RebarGhostBlockHolder : RebarEntityHolderBlock {
             pdc.setNullable(VANILLA_GHOST_BLOCK_ID_KEY, RebarSerializers.UUID, vanillaGhostBlockId)
         }
 
-        @MultiHandler(priorities = [ EventPriority.MONITOR ], ignoreCancelled = true)
-        override fun onInteract(event: PlayerInteractEntityEvent, priority: EventPriority) {
+        private fun handlePickItem(player: Player, giveItem: Boolean): Int? {
             if (System.currentTimeMillis() - lastInteract < 1000 || activeGhostBlockId == null) {
-                return
+                return null
             }
 
-            val player = event.player
             val inventory = player.inventory
-            val pickStack = EntityStorage.getAs(GhostBlock::class.java, activeGhostBlockId!!)?.getPickItem() ?: return
-            val pickType = ItemTypeWrapper(pickStack)
+            val ghostBlock = EntityStorage.getAs(GhostBlock::class.java, activeGhostBlockId!!) ?: return null
 
+            val pickStack = ghostBlock.getPickItem(player) ?: return null
+            val pickType = ItemTypeWrapper(pickStack)
             var foundIndex = inventory.findType(pickType)
             if (foundIndex == null) {
-                if (player.gameMode == GameMode.CREATIVE) {
+                if (giveItem) {
                     if (inventory.addItem(pickStack).isNotEmpty()) {
-                        return
+                        return null
                     }
-                    foundIndex = inventory.findType(pickType) ?: return
+                    foundIndex = inventory.findType(pickType) ?: return null
                 } else {
-                    return
+                    return null
                 }
             }
 
@@ -111,6 +118,28 @@ interface RebarGhostBlockHolder : RebarEntityHolderBlock {
             } else {
                 inventory.swapItem(foundIndex, inventory.heldItemSlot)
             }
+            return foundIndex
+        }
+
+        @MultiHandler(priorities = [ EventPriority.MONITOR ], ignoreCancelled = true)
+        override fun onDamage(event: EntityDamageEvent, priority: EventPriority) {
+            if (event !is EntityDamageByEntityEvent) return
+            val player = event.damager as? Player ?: return
+            handlePickItem(player, player.gameMode == GameMode.CREATIVE)
+        }
+
+        @MultiHandler(priorities = [ EventPriority.MONITOR ], ignoreCancelled = true)
+        override fun onInteract(event: PlayerInteractEntityEvent, priority: EventPriority) {
+            val player = event.player
+            handlePickItem(player, false) ?: return
+            val itemStack = player.inventory.itemInMainHand
+            NmsAccessor.instance.simulateInteract(
+                player,
+                itemStack,
+                EquipmentSlot.HAND,
+                entity.location.block,
+                BlockFace.UP
+            )
         }
 
         override fun getWaila(player: Player): WailaDisplay? {
@@ -193,8 +222,28 @@ interface RebarGhostBlockHolder : RebarEntityHolderBlock {
             return WailaDisplay(Component.translatable(entity.block.placementMaterial.let { it.itemTranslationKey ?: it.blockTranslationKey } ?: return null))
         }
 
-        override fun getPickItem(): ItemStack? {
-            return entity.block.placementMaterial.let { if (it.isItem) ItemStack(it) else null }
+        override fun getPickItem(player: Player): ItemStack? {
+            val currentType = entity.block.placementMaterial
+            var firstItem: Material? = null
+            if (currentType.isItem) {
+                firstItem = currentType
+                val index = player.inventory.first(currentType)
+                if (index != -1) {
+                    return ItemStack.of(currentType)
+                }
+            }
+
+            for (data in vanillaBlocks) {
+                val placementType = data.placementMaterial
+                if (!placementType.isItem) continue
+                if (firstItem == null) firstItem = placementType
+                val index = player.inventory.first(placementType)
+                if (index != -1) {
+                    return ItemStack.of(placementType)
+                }
+            }
+
+            return firstItem?.let { ItemStack.of(it) }
         }
 
         fun setSize(size: Double) {
@@ -240,8 +289,27 @@ interface RebarGhostBlockHolder : RebarEntityHolderBlock {
             return WailaDisplay(entity.itemStack.effectiveName())
         }
 
-        override fun getPickItem(): ItemStack {
-            return entity.itemStack.clone()
+        override fun getPickItem(player: Player): ItemStack? {
+            val currentSchema = RebarItemSchema.fromStack(entity.itemStack)
+            var firstSchema: RebarItemSchema? = null
+            if (currentSchema != null) {
+                firstSchema = currentSchema
+                val index = player.inventory.findRebar(currentSchema)
+                if (index != null) {
+                    return firstSchema.getItemStack()
+                }
+            }
+
+            for (key in rebarBlocks) {
+                val schema = RebarRegistry.ITEMS.getOrThrow(key)
+                if (firstSchema == null) firstSchema = schema
+                val index = player.inventory.findRebar(schema)
+                if (index != null) {
+                    return schema.getItemStack()
+                }
+            }
+
+            return firstSchema?.getItemStack()
         }
 
         fun setSize(size: Double) {

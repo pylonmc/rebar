@@ -131,6 +131,9 @@ interface RebarTickingEntity {
                     try {
                         tickingEntity.tick()
                     } catch (e: Exception) {
+                        if (e is CancellationException) {
+                            throw e
+                        }
                         withContext(Rebar.mainThreadDispatcher) {
                             EntityListener.logTickingErr(e, tickingEntity as RebarEntity<*>)
                         }

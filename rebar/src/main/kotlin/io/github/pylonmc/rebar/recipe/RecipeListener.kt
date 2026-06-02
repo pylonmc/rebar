@@ -314,7 +314,8 @@ internal object RebarRecipeListener : Listener {
         if (recipe !is Keyed) return
 
         // Prevent the erroneous smithing of vanilla items with Rebar ingredients
-        val hasRebarItem = inv.inputMineral.isRebarAndIsNot<VanillaSmithingMineral>()
+        val hasRebarItem = inv.inputEquipment.isRebarAndIsNot<VanillaSmithingBase>()
+                || inv.inputMineral.isRebarAndIsNot<VanillaSmithingMaterial>()
                 || inv.inputTemplate.isRebarAndIsNot<VanillaSmithingTemplate>()
         if (hasRebarItem && recipe.key in VanillaRecipeType.nonRebarRecipes) {
             e.result = null

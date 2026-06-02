@@ -11,7 +11,6 @@ import io.github.pylonmc.rebar.block.base.*
 import io.github.pylonmc.rebar.block.base.RebarFallingBlock.RebarFallingBlockEntity
 import io.github.pylonmc.rebar.command.ROOT_COMMAND
 import io.github.pylonmc.rebar.command.ROOT_COMMAND_RE_ALIAS
-import io.github.pylonmc.rebar.config.Config
 import io.github.pylonmc.rebar.config.ConfigSection
 import io.github.pylonmc.rebar.config.RebarConfig
 import io.github.pylonmc.rebar.content.cargo.CargoDuct
@@ -44,7 +43,7 @@ import io.github.pylonmc.rebar.recipe.RecipeType
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.util.delayTicks
 import io.github.pylonmc.rebar.item.base.VanillaAnvilItem
-import io.github.pylonmc.rebar.util.mergeGlobalConfig
+import io.github.pylonmc.rebar.util.mergeResource
 import io.github.pylonmc.rebar.waila.Waila
 import io.github.pylonmc.rebar.waila.WailaPlaceholders
 import io.papermc.paper.ServerBuildInfo
@@ -56,7 +55,6 @@ import kotlinx.coroutines.launch
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
-import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.BlockDisplay
 import org.bukkit.entity.FallingBlock
 import org.bukkit.entity.Interaction
@@ -107,10 +105,6 @@ object Rebar : JavaPlugin(), RebarAddon {
         InvUI.getInstance().setPlugin(this)
         Languages.getInstance().enableServerSideTranslations(false) // we do our own
 
-        saveDefaultConfig()
-        // Add any keys that are missing from global config - saveDefaultConfig will not do anything if config already present
-        mergeGlobalConfig(Rebar, "config.yml", "config.yml")
-
         val pm = Bukkit.getPluginManager()
         pm.registerEvents(RebarTranslator, this)
         pm.registerEvents(RebarAddon, this)
@@ -153,6 +147,7 @@ object Rebar : JavaPlugin(), RebarAddon {
         // Rebar Blocks
         BlockListener.register(this, pm)
         RebarBeacon.register(this, pm)
+        RebarBed.register(this, pm)
         RebarBell.register(this, pm)
         RebarTNT.register(this, pm)
         RebarNoteBlock.register(this, pm)
@@ -325,8 +320,7 @@ object Rebar : JavaPlugin(), RebarAddon {
         for (type in RebarRegistry.RECIPE_TYPES) {
             if (type !is ConfigurableRecipeType) continue
             for (addon in RebarRegistry.ADDONS) {
-                val configStream = addon.javaPlugin.getResource(type.filePath) ?: continue
-                val config = configStream.reader().use { ConfigSection(YamlConfiguration.loadConfiguration(it)) }
+                val config = ConfigSection.fromResource(addon.javaPlugin, type.filePath) ?: continue
                 type.loadFromConfig(config)
             }
         }
@@ -336,11 +330,11 @@ object Rebar : JavaPlugin(), RebarAddon {
             for (recipeDir in recipesDir.listDirectoryEntries()) {
                 if (!recipeDir.isDirectory()) continue
                 val namespace = recipeDir.nameWithoutExtension
-                for (recipe in recipeDir.listDirectoryEntries()) {
-                    if (!recipe.isRegularFile() || recipe.extension != "yml") continue
-                    val key = NamespacedKey(namespace, recipe.nameWithoutExtension)
+                for (recipePath in recipeDir.listDirectoryEntries()) {
+                    if (!recipePath.isRegularFile() || recipePath.extension != "yml" || recipePath.extension != "yaml") continue
+                    val key = NamespacedKey(namespace, recipePath.nameWithoutExtension)
                     val type = RebarRegistry.RECIPE_TYPES[key] as? ConfigurableRecipeType ?: continue
-                    type.loadFromConfig(Config(recipe))
+                    type.loadFromConfig(ConfigSection.fromOrThrow(recipePath))
                 }
             }
         }
@@ -355,7 +349,7 @@ object Rebar : JavaPlugin(), RebarAddon {
         val start = System.currentTimeMillis()
 
         for (addon in RebarRegistry.ADDONS) {
-            mergeGlobalConfig(addon, "researches.yml", "researches/${addon.key.namespace}.yml", false)
+            mergeResource(addon, "researches.yml", "researches/${addon.key.namespace}.yml", false)
         }
 
         val researchDir = dataPath.resolve("researches")
@@ -365,7 +359,7 @@ object Rebar : JavaPlugin(), RebarAddon {
 
                 if (!namespaceDir.isRegularFile()) continue
 
-                val mainResearchConfig = Config(namespaceDir)
+                val mainResearchConfig = ConfigSection.fromOrThrow(namespaceDir)
                 for (key in mainResearchConfig.keys) {
                     val nsKey = NamespacedKey(namespace, key)
                     val section = mainResearchConfig.getSection(key) ?: continue

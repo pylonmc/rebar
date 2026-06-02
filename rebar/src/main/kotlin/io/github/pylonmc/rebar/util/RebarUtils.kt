@@ -5,13 +5,13 @@ package io.github.pylonmc.rebar.util
 
 import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.addon.RebarAddon
-import io.github.pylonmc.rebar.config.Config
 import io.github.pylonmc.rebar.config.ConfigSection
 import io.github.pylonmc.rebar.config.ContributorConfig
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter
-import io.github.pylonmc.rebar.item.RebarItemSchema
 import io.github.pylonmc.rebar.i18n.customMiniMessage
 import io.github.pylonmc.rebar.item.ItemTypeWrapper
+import io.github.pylonmc.rebar.item.RebarItemSchema
+import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.nms.NmsAccessor
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.util.position.BlockPosition
@@ -28,7 +28,6 @@ import org.bukkit.*
 import org.bukkit.attribute.Attribute
 import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
-import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Entity
 import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Player
@@ -457,34 +456,39 @@ val Player.pdc: PersistentDataContainer
  * @return The merged config
  */
 @JvmSynthetic
-internal fun mergeGlobalConfig(addon: RebarAddon, from: String, to: String, warnMissing: Boolean = true): Config {
-    require(from.endsWith(".yml")) { "Config file must be a YAML file" }
-    require(to.endsWith(".yml")) { "Config file must be a YAML file" }
+internal fun mergeResource(fromAddon: RebarAddon, from: String, to: String, warnMissing: Boolean = true): ConfigSection {
+    require(from.endsWith(".yml") || from.endsWith(".yaml")) {
+        "Config file must be a YAML file (addon: ${fromAddon.javaClass.simpleName}, path: $from"
+    }
+    require(to.endsWith(".yml") || to.endsWith(".yaml")) {
+        "Config file must be a YAML file (addon: ${fromAddon.javaClass.simpleName}, path: $to"
+    }
+
     val cached = globalConfigCache[from to to]
     if (cached != null) {
         return cached
     }
-    val globalConfig = Rebar.dataFolder.resolve(to)
-    if (!globalConfig.exists()) {
-        globalConfig.parentFile.mkdirs()
-        globalConfig.createNewFile()
+
+    val toConfigFile = Rebar.javaPlugin.dataFolder.resolve(to)
+    if (!toConfigFile.exists()) {
+        toConfigFile.parentFile.mkdirs()
+        toConfigFile.createNewFile()
     }
-    val config = Config(globalConfig)
-    val resource = addon.javaPlugin.getResource(from)
-    if (resource == null) {
+
+    check(toConfigFile.exists()) { "Unable to create file ${toConfigFile.absolutePath}" }
+    val toConfig = ConfigSection.fromOrThrow(toConfigFile)
+    val fromConfig = ConfigSection.fromResource(fromAddon.javaPlugin, from)
+    if (fromConfig == null) {
         if (warnMissing) Rebar.logger.warning("Resource not found: $from")
     } else {
-        val newConfig = resource.reader().use(YamlConfiguration::loadConfiguration)
-        config.internalConfig.setDefaults(newConfig)
-        config.internalConfig.options().copyDefaults(true)
-        config.merge(ConfigSection(newConfig))
-        config.save()
+        toConfig.merge(fromConfig)
+        toConfig.save(toConfigFile)
     }
-    globalConfigCache[from to to] = config
-    return config
+    globalConfigCache[from to to] = toConfig
+    return toConfig
 }
 
-private val globalConfigCache: MutableMap<Pair<String, String>, Config> = mutableMapOf()
+private val globalConfigCache: MutableMap<Pair<String, String>, ConfigSection> = mutableMapOf()
 
 @JvmSynthetic
 internal fun getContributors(addon: RebarAddon): List<ContributorConfig> {
@@ -493,13 +497,12 @@ internal fun getContributors(addon: RebarAddon): List<ContributorConfig> {
         return cached
     }
 
-    val resource = addon.javaPlugin.getResource("contributors.yml")
-    val contributors = if (resource != null) {
-        val config = YamlConfiguration.loadConfiguration(resource.reader())
-        ConfigSection(config).get("contributors", ConfigAdapter.LIST.from(ConfigAdapter.CONTRIBUTOR), emptyList())
-    } else {
+    val config = ConfigSection.fromResource(Rebar, "contributors.yml")
+    val contributors = config?.get(
+        "contributors",
+        ConfigAdapter.LIST.from(ConfigAdapter.CONTRIBUTOR),
         emptyList()
-    }
+    ) ?: emptyList()
     contributorsCache[addon] = contributors
     return contributors
 }
@@ -673,6 +676,58 @@ fun Entity.hasTracker() = NmsAccessor.instance.hasTracker(this)
 @JvmName("colorToTextColor")
 fun Color.toTextColor(): TextColor {
     return TextColor.color(this.red, this.green, this.blue);
+}
+
+/**
+ * Checks whether two items are of the same type, comparing Rebar IDs if they are Rebar items and vanilla IDs if they are not.
+ */
+fun rebarTypeSimilar(item1: ItemStack, item2: ItemStack): Boolean {
+    // This does not use ItemTypeWrapper because that would be useless allocation
+    val schema1 = RebarItemSchema.fromStack(item1)
+    val schema2 = RebarItemSchema.fromStack(item2)
+    if ((schema1 != null && schema2 == null) || (schema1 == null && schema2 == null)) {
+        return false
+    } else if (schema1 != null && schema2 != null) {
+        return schema1 === schema2
+    }
+    return item1.type == item2.type
+}
+
+@JvmSynthetic // java should just use RebarItem#isRebarItem
+fun ItemStack.isRebarItem(key: NamespacedKey) = RebarItem.isRebarItem(this, key)
+
+fun <T : Any> ItemStack.forceSetData(type: DataComponentType.Valued<T>, value: Any?) {
+    if (value == null) {
+        unsetData(type)
+        return
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    setData(type, value as? T ?: return)
+}
+
+fun ItemStack.setComponents(components: Map<DataComponentType, Any?>) {
+    for (entry in components) {
+        when (val key = entry.key) {
+            is DataComponentType.NonValued -> setData(key)
+            is DataComponentType.Valued<*> -> forceSetData(key, entry.value)
+        }
+    }
+}
+
+fun ItemStack.overriddenDataTypes(): List<DataComponentType> {
+    val schema = RebarItemSchema.fromStack(this)
+    if (schema != null) {
+        val template = schema.getOriginalTemplate()
+        return dataTypes.filter {
+            return@filter when (it) {
+                is DataComponentType.NonValued -> hasData(it) != template.hasData(it)
+                is DataComponentType.Valued<*> -> getData(it) != template.getData(it)
+                else -> false
+            }
+        }
+    }
+    return dataTypes.filter { isDataOverridden(it) }
 }
 
 const val FLUID_EPSILON = 1.0e-6
