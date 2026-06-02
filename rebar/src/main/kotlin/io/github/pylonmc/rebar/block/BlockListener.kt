@@ -13,6 +13,7 @@ import io.github.pylonmc.rebar.item.research.Research.Companion.canUse
 import io.github.pylonmc.rebar.util.isFakeEvent
 import io.github.pylonmc.rebar.util.position.position
 import io.papermc.paper.event.block.BlockBreakBlockEvent
+import io.papermc.paper.event.block.BlockBreakProgressUpdateEvent
 import org.bukkit.ExplosionResult
 import org.bukkit.Material
 import org.bukkit.event.Event
@@ -262,6 +263,14 @@ internal object BlockListener : MultiListener {
         val rebarBlock = BlockStorage.get(event.block)
         if (rebarBlock != null && rebarBlock.schema.material == Material.STRUCTURE_VOID) {
             event.isCancelled = true
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    private fun onBlockBreakProgressUpdated(event: BlockBreakProgressUpdateEvent) {
+        val rebarBlock = BlockStorage.get(event.block)
+        if (rebarBlock != null) {
+            rebarBlock.breakProgress = event.progress
         }
     }
 

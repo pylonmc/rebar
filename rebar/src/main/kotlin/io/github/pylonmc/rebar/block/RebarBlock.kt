@@ -96,6 +96,9 @@ open class RebarBlock private constructor(val block: Block) : Keyed {
 
     val defaultItem = RebarRegistry.ITEMS[schema.key]
 
+    var breakProgress = 0.0F
+        internal set
+
     /**
      * This constructor is called when a *new* block is created in the world.
      */

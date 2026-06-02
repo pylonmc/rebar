@@ -102,6 +102,7 @@ class RebarTranslator private constructor(private val addon: RebarAddon) : Trans
                 .build()
             translation = translation.replaceText(replacer)
         }
+        translation = translation.append(component.children())
         return translation
             .children(translation.children().map { GlobalTranslator.render(it, locale) })
             .style(translation.style().merge(component.style(), Style.Merge.Strategy.IF_ABSENT_ON_TARGET))
