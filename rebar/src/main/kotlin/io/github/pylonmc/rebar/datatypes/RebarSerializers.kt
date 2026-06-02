@@ -136,10 +136,13 @@ object RebarSerializers {
     val REBAR_FLUID = KEYED.keyedTypeFrom<RebarFluid>(RebarRegistry.FLUIDS::getOrThrow)
 
     @JvmField
+    val FLUID_WITH_AMOUNT = FluidWithAmountPersistentDataType
+
+    @JvmField
     val FLUID_CONNECTION_POINT = FluidConnectionPointPersistentDataType
 
     @JvmField
-    val LOGISTIC_POINT_TYPE = EnumPersistentDataType(LogisticGroupType::class.java)
+    val LOGISTIC_POINT_TYPE = EnumPersistentDataType.enumTypeFrom<LogisticGroupType>()
 
     @JvmField
     val DURATION = DurationPersistentDataType
