@@ -11,6 +11,7 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.jetbrains.annotations.ApiStatus
 import java.util.IdentityHashMap
+import kotlin.math.roundToInt
 
 /**
  * An interface that tracks progress of some kind of process, such as processing a
@@ -37,9 +38,21 @@ interface ProcessorRebarBlock {
         @ApiStatus.NonExtendable
         get() = processorData.processTimeTicks
 
+    val processTimeSeconds: Int?
+        @ApiStatus.NonExtendable
+        get() = processTimeTicks?.toDouble()?.div(20)?.roundToInt()
+
     val processTicksRemaining: Int?
         @ApiStatus.NonExtendable
         get() = processorData.processTicksRemaining
+
+    val processSecondsRemaining: Int?
+        @ApiStatus.NonExtendable
+        get() = processTicksRemaining?.toDouble()?.div(20)?.roundToInt()
+
+    val processProgress: Double?
+        @ApiStatus.NonExtendable
+        get() = processTicksRemaining?.toDouble()?.div(processTimeTicks!!)
 
     val isProcessing: Boolean
         @ApiStatus.NonExtendable

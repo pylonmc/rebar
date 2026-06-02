@@ -32,7 +32,7 @@ import io.github.pylonmc.rebar.recipe.RecipeType
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.util.ConfettiParticle
 import io.github.pylonmc.rebar.util.blocksBetween
-import io.github.pylonmc.rebar.util.mergeGlobalConfig
+import io.github.pylonmc.rebar.util.mergeResource
 import io.github.pylonmc.rebar.util.position.BlockPosition
 import io.github.pylonmc.rebar.util.vanillaDisplayName
 import io.papermc.paper.ServerBuildInfo
@@ -504,7 +504,7 @@ private val exposeRecipeConfig = buildCommand("exposerecipeconfig") {
                     "exposerecipe.warning",
                     RebarArgument.of("file", "plugins/Rebar/${recipeType.filePath}")
                 )
-                mergeGlobalConfig(addon, recipeType.filePath, recipeType.filePath)
+                mergeResource(addon, recipeType.filePath, recipeType.filePath)
             }
         }
     }

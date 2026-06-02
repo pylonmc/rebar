@@ -74,6 +74,12 @@ interface FluidBufferRebarBlock : FluidRebarBlock {
             = fluidData(fluid).capacity
 
     /**
+     * Returns the proportion of a buffer that has been filled
+     */
+    fun fluidProportion(fluid: RebarFluid): Double
+        = fluidAmount(fluid) / fluidCapacity(fluid)
+
+    /**
      * Returns the amount of space remaining in a fluid buffer
      */
     fun fluidSpaceRemaining(fluid: RebarFluid): Double

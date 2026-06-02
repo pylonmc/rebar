@@ -350,7 +350,7 @@ object BlockCullingEngine : Listener {
             .build()
     ) {
         fun insert(block: Block, isOccluding: Boolean = NmsAccessor.instance.isOccluding(block)) {
-            occluding.put(BlockPosition.asLong(block.x, block.y, block.z), isOccluding)
+            occluding.put(BlockPosition.asLong(block), isOccluding)
         }
 
         fun isOccluding(world: World, blockX: Int, blockY: Int, blockZ: Int): Boolean {

@@ -5,24 +5,16 @@ import org.bukkit.Color
 import org.bukkit.entity.Display
 import org.bukkit.entity.ItemDisplay
 import org.bukkit.inventory.ItemStack
-import org.bukkit.util.Transformation
-import org.joml.Matrix4f
 import java.util.UUID
 
 interface BlockTextureEntity {
     val block: RebarBlock
+    val lightDelegatePositions: Iterable<Long>
     var id: Int
     var uuid: UUID
     val viewers: Set<UUID>
 
     val isSpawned: Boolean
-
-    var transformation: Transformation
-    var transformationMatrix: Matrix4f
-
-    var interpolationDelay: Int
-    var interpolationDuration: Int
-    var teleportDuration: Int
 
     var shadowRadius: Float
     var shadowStrength: Float
@@ -41,7 +33,7 @@ interface BlockTextureEntity {
     fun addOrRefreshViewer(playerId: UUID, distanceSquared: Double)
     fun refreshViewer(playerId: UUID, distanceSquared: Double)
     fun hasViewer(playerId: UUID): Boolean
-    fun removeViewer(playerId: UUID)
+    fun removeViewer(playerId: UUID): Boolean
     fun removeAllViewers()
 
     fun spawn()
@@ -71,8 +63,8 @@ interface BlockTextureEntity {
             BLOCK_OVERLAP_INCREASE / (DOUBLE_OVERLAP_INCREASE_DISTANCE * DOUBLE_OVERLAP_INCREASE_DISTANCE)
 
         /**
-         * If the difference between the new scale increase and the last scale increase sent to the viewer is less than 1/10th of the base BLOCK_OVERLAP_SCALE, we don't send a packet to avoid unnecessary packet spam.
+         * If the difference between the new scale increase and the last scale increase sent to the viewer is less than 1/3 of the base BLOCK_OVERLAP_SCALE, we don't send a packet to avoid unnecessary packet spam.
          */
-        const val SCALE_DISTANCE_THRESHOLD = BLOCK_OVERLAP_INCREASE / 10.0f
+        const val SCALE_DISTANCE_THRESHOLD = BLOCK_OVERLAP_INCREASE / 3.0f
     }
 }

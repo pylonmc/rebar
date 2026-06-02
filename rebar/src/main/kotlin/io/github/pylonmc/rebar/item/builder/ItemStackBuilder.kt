@@ -1,8 +1,7 @@
 package io.github.pylonmc.rebar.item.builder
 
 import io.github.pylonmc.rebar.addon.RebarAddon
-import io.github.pylonmc.rebar.config.Config
-import io.github.pylonmc.rebar.config.Settings
+import io.github.pylonmc.rebar.config.ConfigSection
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.item.RebarItem
@@ -464,13 +463,13 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
          * provided [key].
          *
          * The provided [consumer] is called with the created [ItemStackBuilder] and
-         * the [Settings][Settings.get] for the item, allowing you to further customize the item
+         * the [ConfigSection] for the item, allowing you to further customize the item
          * based on its config.
          */
         @JvmStatic
-        fun rebar(stack: ItemStack, key: NamespacedKey, consumer: (ItemStackBuilder, Config) -> Any): ItemStackBuilder {
+        fun rebar(stack: ItemStack, key: NamespacedKey, consumer: (ItemStackBuilder, ConfigSection) -> Any): ItemStackBuilder {
             val builder = rebar(stack, key)
-            val settings = Settings.get(key)
+            val settings = ConfigSection.fromSettings(key)
             consumer(builder, settings)
             return builder
         }
@@ -481,19 +480,19 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
          * provided [key].
          *
          * The provided [consumer] is called with the created [ItemStackBuilder] and
-         * the [Settings][Settings.get] for the item, allowing you to further customize the item
+         * the [ConfigSection] for the item, allowing you to further customize the item
          * based on its config.
          */
         @JvmStatic
-        fun rebar(material: Material, key: NamespacedKey, consumer: (ItemStackBuilder, Config) -> Any): ItemStackBuilder {
+        fun rebar(material: Material, key: NamespacedKey, consumer: (ItemStackBuilder, ConfigSection) -> Any): ItemStackBuilder {
             return rebar(ItemStack(material), key, consumer)
         }
 
         /**
          * Creates a new [ItemStack] for a [RebarItem] that can be worn in the [helmet][EquipmentSlotGroup.HEAD] slot.
-         * You must provide a value for `armor` and `armor-toughness` in the [Settings][Settings.get] for the item.
+         * You must provide a value for `armor` and `armor-toughness` in the [ConfigSection] for the item.
          *
-         * If [hasDurability] is true, gives the item a max durability defined by `durability` in the [Settings][Settings.get].
+         * If [hasDurability] is true, gives the item a max durability defined by `durability` in the [ConfigSection].
          * Otherwise, removes any existing durability.
          *
          * `settings/example-helmet.yml`
@@ -508,9 +507,9 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
 
         /**
          * Creates a new [ItemStack] for a [RebarItem] that can be worn in the [helmet][EquipmentSlotGroup.HEAD] slot.
-         * You must provide a value for `armor` and `armor-toughness` in the [Settings][Settings.get] for the item.
+         * You must provide a value for `armor` and `armor-toughness` in the [ConfigSection] for the item.
          *
-         * If [hasDurability] is true, gives the item a max durability defined by `durability` in the [Settings][Settings.get].
+         * If [hasDurability] is true, gives the item a max durability defined by `durability` in the [ConfigSection].
          * Otherwise, removes any existing durability.
          *
          * `settings/example-helmet.yml`
@@ -525,9 +524,9 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
 
         /**
          * Creates a new [ItemStack] for a [RebarItem] that can be worn in the [chestplate][EquipmentSlotGroup.CHEST] slot.
-         * You must provide a value for `armor` and `armor-toughness` in the [Settings][Settings.get] for the item.
+         * You must provide a value for `armor` and `armor-toughness` in the [ConfigSection] for the item.
          *
-         * If [hasDurability] is true, gives the item a max durability defined by `durability` in the [Settings][Settings.get].
+         * If [hasDurability] is true, gives the item a max durability defined by `durability` in the [ConfigSection].
          * Otherwise, removes any existing durability.
          *
          * `settings/example-chestplate.yml`
@@ -542,9 +541,9 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
 
         /**
          * Creates a new [ItemStack] for a [RebarItem] that can be worn in the [chestplate][EquipmentSlotGroup.CHEST] slot.
-         * You must provide a value for `armor` and `armor-toughness` in the [Settings][Settings.get] for the item.
+         * You must provide a value for `armor` and `armor-toughness` in the [ConfigSection] for the item.
          *
-         * If [hasDurability] is true, gives the item a max durability defined by `durability` in the [Settings][Settings.get].
+         * If [hasDurability] is true, gives the item a max durability defined by `durability` in the [ConfigSection].
          * Otherwise, removes any existing durability.
          *
          * `settings/example-chestplate.yml`
@@ -559,9 +558,9 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
 
         /**
          * Creates a new [ItemStack] for a [RebarItem] that can be worn in the [leggings][EquipmentSlotGroup.LEGS] slot.
-         * You must provide a value for `armor` and `armor-toughness` in the [Settings][Settings.get] for the item.
+         * You must provide a value for `armor` and `armor-toughness` in the [ConfigSection] for the item.
          *
-         * If [hasDurability] is true, gives the item a max durability defined by `durability` in the [Settings][Settings.get].
+         * If [hasDurability] is true, gives the item a max durability defined by `durability` in the [ConfigSection].
          * Otherwise, removes any existing durability.
          *
          * `settings/example-leggings.yml`
@@ -576,9 +575,9 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
 
         /**
          * Creates a new [ItemStack] for a [RebarItem] that can be worn in the [leggings][EquipmentSlotGroup.LEGS] slot.
-         * You must provide a value for `armor` and `armor-toughness` in the [Settings][Settings.get] for the item.
+         * You must provide a value for `armor` and `armor-toughness` in the [ConfigSection] for the item.
          *
-         * If [hasDurability] is true, gives the item a max durability defined by `durability` in the [Settings][Settings.get].
+         * If [hasDurability] is true, gives the item a max durability defined by `durability` in the [ConfigSection].
          * Otherwise, removes any existing durability.
          *
          * `settings/example-leggings.yml`
@@ -593,9 +592,9 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
 
         /**
          * Creates a new [ItemStack] for a [RebarItem] that can be worn in the [boots][EquipmentSlotGroup.FEET] slot.
-         * You must provide a value for `armor` and `armor-toughness` in the [Settings][Settings.get] for the item.
+         * You must provide a value for `armor` and `armor-toughness` in the [ConfigSection] for the item.
          *
-         * If [hasDurability] is true, gives the item a max durability defined by `durability` in the [Settings][Settings.get].
+         * If [hasDurability] is true, gives the item a max durability defined by `durability` in the [ConfigSection].
          * Otherwise, removes any existing durability.
          *
          * `settings/example-boots.yml`
@@ -610,9 +609,9 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
 
         /**
          * Creates a new [ItemStack] for a [RebarItem] that can be worn in the [boots][EquipmentSlotGroup.FEET] slot.
-         * You must provide a value for `armor` and `armor-toughness` in the [Settings][Settings.get] for the item.
+         * You must provide a value for `armor` and `armor-toughness` in the [ConfigSection] for the item.
          *
-         * If [hasDurability] is true, gives the item a max durability defined by `durability` in the [Settings][Settings.get].
+         * If [hasDurability] is true, gives the item a max durability defined by `durability` in the [ConfigSection].
          * Otherwise, removes any existing durability.
          *
          * `settings/example-boots.yml`
@@ -627,9 +626,9 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
 
         /**
          * Creates a new [ItemStack] for a [RebarItem] that can be worn in the specified [slot].
-         * You must provide a value for `armor` and `armor-toughness` in the [Settings][Settings.get] for the item.
+         * You must provide a value for `armor` and `armor-toughness` in the [ConfigSection] for the item.
          *
-         * If [hasDurability] is true, gives the item a max durability defined by `durability` in the [Settings][Settings.get].
+         * If [hasDurability] is true, gives the item a max durability defined by `durability` in the [ConfigSection].
          * Otherwise, removes any existing durability.
          *
          * `settings/example-armor.yml`
@@ -661,9 +660,9 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
 
         /**
          * Creates a new [ItemStack] for a [RebarItem] that can be worn in the specified [slot].
-         * You must provide a value for `armor` and `armor-toughness` in the [Settings][Settings.get] for the item.
+         * You must provide a value for `armor` and `armor-toughness` in the [ConfigSection] for the item.
          *
-         * If [hasDurability] is true, gives the item a max durability defined by `durability` in the [Settings][Settings.get].
+         * If [hasDurability] is true, gives the item a max durability defined by `durability` in the [ConfigSection].
          * Otherwise, removes any existing durability.
          *
          * `settings/example-armor.yml`
@@ -679,9 +678,9 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
 
         /**
          * Creates a new [ItemStack] for a [RebarItem] that can be used as a tool for the [mineable] blocks. (See [pickaxeMineable]
-         * and related for basic tools) You must provide a value for `mining-speed` and `mining-durability-damage` in the [Settings][Settings.get] for the item.
+         * and related for basic tools) You must provide a value for `mining-speed` and `mining-durability-damage` in the [ConfigSection] for the item.
          *
-         * If [hasDurability] is true, gives the item a max durability defined by `durability` in the [Settings][Settings.get].
+         * If [hasDurability] is true, gives the item a max durability defined by `durability` in the [ConfigSection].
          * Otherwise, removes any existing durability.
          *
          * `settings/example-tool.yml`
@@ -713,9 +712,9 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
 
         /**
          * Creates a new [ItemStack] for a [RebarItem] that can be used as a tool for the [mineable] blocks. (See [pickaxeMineable]
-         * and related for basic tools) You must provide a value for `mining-speed` and `mining-durability-damage` in the [Settings][Settings.get] for the item.
+         * and related for basic tools) You must provide a value for `mining-speed` and `mining-durability-damage` in the [ConfigSection] for the item.
          *
-         * If [hasDurability] is true, gives the item a max durability defined by `durability` in the [Settings][Settings.get].
+         * If [hasDurability] is true, gives the item a max durability defined by `durability` in the [ConfigSection].
          * Otherwise, removes any existing durability.
          *
          * `settings/example-tool.yml`
@@ -731,15 +730,15 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
 
         /**
          * Creates a new [ItemStack] for a [RebarItem] that can be used as a weapon.
-         * You must provide a value for `attack-damage`, `attack-speed` and `attack-durability-damage` in the [Settings][Settings.get] for the item.
+         * You must provide a value for `attack-damage`, `attack-speed` and `attack-durability-damage` in the [ConfigSection] for the item.
          *
-         * If [hasDurability] is true, gives the item a max durability defined by `durability` in the [Settings][Settings.get].
+         * If [hasDurability] is true, gives the item a max durability defined by `durability` in the [ConfigSection].
          * Otherwise, removes any existing durability.
          *
-         * If [hasKnockback] is true, gives the item knockback defined by `attack-knockback` in the [Settings][Settings.get].
+         * If [hasKnockback] is true, gives the item knockback defined by `attack-knockback` in the [ConfigSection].
          * Otherwise, removes any existing attack knockback.
          *
-         * If `disablesShield` is true, gives the item a shield disable time defined by `disable-shield-seconds` in the [Settings][Settings.get].
+         * If `disablesShield` is true, gives the item a shield disable time defined by `disable-shield-seconds` in the [ConfigSection].
          * If false, the item will not disable shields when used in attacking.
          *
          * `settings/example-weapon.yml`
@@ -781,15 +780,15 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
 
         /**
          * Creates a new [ItemStack] for a [RebarItem] that can be used as a weapon.
-         * You must provide a value for `attack-damage`, `attack-speed` and `attack-durability-damage` in the [Settings][Settings.get] for the item.
+         * You must provide a value for `attack-damage`, `attack-speed` and `attack-durability-damage` in the [ConfigSection] for the item.
          *
-         * If [hasDurability] is true, gives the item a max durability defined by `durability` in the [Settings][Settings.get].
+         * If [hasDurability] is true, gives the item a max durability defined by `durability` in the [ConfigSection].
          * Otherwise, removes any existing durability.
          *
-         * If [hasKnockback] is true, gives the item knockback defined by `attack-knockback` in the [Settings][Settings.get].
+         * If [hasKnockback] is true, gives the item knockback defined by `attack-knockback` in the [ConfigSection].
          * Otherwise, removes any existing attack knockback.
          *
-         * If `disablesShield` is true, gives the item a shield disable time defined by `disable-shield-seconds` in the [Settings][Settings.get].
+         * If `disablesShield` is true, gives the item a shield disable time defined by `disable-shield-seconds` in the [ConfigSection].
          * If false, the item will not disable shields when used in attacking.
          *
          * `settings/example-weapon.yml`
@@ -809,15 +808,15 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
         /**
          * Creates a new [ItemStack] for a [RebarItem] that can be used as a weapon and tool for the [mineable] blocks. (See [pickaxeMineable] and related for basic tools)
          * You must provide a value for `attack-damage`, `attack-speed`, `attack-durability-damage`, `mining-speed` and `mining-durability-damage`
-         * in the [Settings][Settings.get] for the item.
+         * in the [ConfigSection] for the item.
          *
-         * If [hasDurability] is true, gives the item a max durability defined by `durability` in the [Settings][Settings.get].
+         * If [hasDurability] is true, gives the item a max durability defined by `durability` in the [ConfigSection].
          * Otherwise, removes any existing durability.
          *
-         * If [hasDurability] is true, gives the item knockback defined by `attack-knockback` in the [Settings][Settings.get].
+         * If [hasDurability] is true, gives the item knockback defined by `attack-knockback` in the [ConfigSection].
          * Otherwise, removes any existing attack knockback.
          *
-         * If [hasKnockback] is true, gives the item a shield disable time defined by `disable-shield-seconds` in the [Settings][Settings.get].
+         * If [hasKnockback] is true, gives the item a shield disable time defined by `disable-shield-seconds` in the [ConfigSection].
          * If false, the item will not disable shields when used in attacking.
          *
          * `settings/example-tool-weapon.yml`
@@ -836,7 +835,7 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
          */
         @JvmStatic
         fun rebarToolWeapon(stack: ItemStack, key: NamespacedKey, mineable: RegistryKeySet<BlockType>, hasDurability: Boolean, hasKnockback: Boolean, disablesShield: Boolean): ItemStackBuilder {
-            val settings = Settings.get(key)
+            val settings = ConfigSection.fromSettings(key)
             return rebarWeapon(stack, key, hasDurability, hasKnockback, disablesShield).tool(
                 mineable,
                 settings.getOrThrow("mining-speed", ConfigAdapter.FLOAT),
@@ -847,15 +846,15 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
         /**
          * Creates a new [ItemStack] for a [RebarItem] that can be used as a weapon and tool for the [mineable] blocks. (See [pickaxeMineable] and related for basic tools)
          * You must provide a value for `attack-damage`, `attack-speed`, `attack-durability-damage`, `mining-speed` and `mining-durability-damage`
-         * in the [Settings][Settings.get] for the item.
+         * in the [ConfigSection] for the item.
          *
-         * If [hasDurability] is true, gives the item a max durability defined by `durability` in the [Settings][Settings.get].
+         * If [hasDurability] is true, gives the item a max durability defined by `durability` in the [ConfigSection].
          * Otherwise, removes any existing durability.
          *
-         * If [hasKnockback] is true, gives the item knockback defined by `attack-knockback` in the [Settings][Settings.get].
+         * If [hasKnockback] is true, gives the item knockback defined by `attack-knockback` in the [ConfigSection].
          * Otherwise, removes any existing attack knockback.
          *
-         * If `disablesShield` is true, gives the item a shield disable time defined by `disable-shield-seconds` in the [Settings][Settings.get].
+         * If `disablesShield` is true, gives the item a shield disable time defined by `disable-shield-seconds` in the [ConfigSection].
          * If false, the item will not disable shields when used in attacking.
          *
          * `settings/example-tool-weapon.yml`

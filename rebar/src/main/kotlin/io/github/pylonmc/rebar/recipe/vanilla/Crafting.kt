@@ -83,7 +83,7 @@ sealed class AShapelessRecipeWrapper(recipe: CraftingRecipe) : CraftingRecipeWra
         .addIngredient('6', getDisplaySlot(6))
         .addIngredient('7', getDisplaySlot(7))
         .addIngredient('8', getDisplaySlot(8))
-        .addIngredient('r', recipe.result)
+        .addIngredient('r', ItemButton.of(recipe.result))
         .build()
 
     private fun getDisplaySlot(index: Int): Item {
