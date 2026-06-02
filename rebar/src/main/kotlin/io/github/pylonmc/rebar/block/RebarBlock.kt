@@ -221,7 +221,7 @@ open class RebarBlock private constructor(val block: Block) : Keyed {
      * @return the WAILA configuration, or null if WAILA should not be shown for this block.
      */
     open fun getWaila(player: Player): WailaDisplay? {
-        return WailaDisplay(defaultWailaTranslationKey)
+        return WailaDisplay.of(this)
     }
 
     /**
