@@ -8,4 +8,7 @@ data class FluidWithAmount(val fluid: RebarFluid, val amount: Double) {
 
     fun withFluid(fluid: RebarFluid): FluidWithAmount = copy(fluid = fluid)
     fun withAmount(amount: Double): FluidWithAmount = copy(amount = amount)
+
+    fun addAmount(amount: Double): FluidWithAmount = copy(amount = this.amount + amount)
+    fun subtractAmount(amount: Double): FluidWithAmount = copy(amount = this.amount - amount)
 }
