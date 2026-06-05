@@ -5,9 +5,6 @@ package io.github.pylonmc.rebar.nms.packet
 import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.culling.BlockCullingEngine
 import io.github.pylonmc.rebar.i18n.PlayerTranslationHandler
-import io.github.pylonmc.rebar.resourcepack.armor.ArmorTextureEngine
-import io.github.pylonmc.rebar.item.RebarItemSchema
-import io.github.pylonmc.rebar.util.editData
 import io.github.pylonmc.rebar.nms.entity.BlockTextureEntityImpl
 import io.github.pylonmc.rebar.util.position.BlockPosition
 import io.netty.channel.ChannelDuplexHandler
