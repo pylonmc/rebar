@@ -92,13 +92,19 @@ abstract class SearchPage(key: NamespacedKey) : SimpleStaticGuidePage(key) {
 
         for (piece in split) {
             if (piece.isEmpty() || (piece[0] == '@' || piece[0] == '$') && piece.length == 1) continue
-            val predicate = when(piece[0]) {
+            val predicate = when (piece[0]) {
                 '@' -> { entry: Pair<Item, String> ->
-                    getDisplayNamespace(entry.first, player).contains(piece.substring(1), true)
+                    val searchTerm = piece.substring(1)
+                    val key = getItemKey(entry.first, player)
+                    key.namespace.contains(searchTerm, true) ||
+                            getDisplayNamespace(entry.first, player).contains(searchTerm, true)
                 }
+
                 '$' -> { entry: Pair<Item, String> ->
-                    entry.first.getItemProvider(player).get().lore()?.any { it.plainText.contains(piece.substring(1), true) } ?: false
+                    entry.first.getItemProvider(player).get().lore()
+                        ?.any { it.plainText.contains(piece.substring(1), true) } ?: false
                 }
+
                 else -> { entry: Pair<Item, String> ->
                     entry.second.contains(piece, true)
                 }
@@ -108,11 +114,18 @@ abstract class SearchPage(key: NamespacedKey) : SimpleStaticGuidePage(key) {
         return entries.map { it.first }.toList()
     }
 
-    fun getDisplayNamespace(item: Item, player: Player): String {
+    private fun getItemKey(item: Item, player: Player): NamespacedKey {
         val itemStack = item.getItemProvider(player).get()
-        val key = RebarItemSchema.fromStack(itemStack)?.key ?: RebarFluid.fromStack(itemStack)?.key ?: itemStack.type.key
+        return RebarItemSchema.fromStack(itemStack)?.key
+            ?: RebarFluid.fromStack(itemStack)?.key
+            ?: itemStack.type.key
+    }
+
+    fun getDisplayNamespace(item: Item, player: Player): String {
+        val key = getItemKey(item, player)
         val addon = RebarRegistry.ADDONS[NamespacedKey(key.namespace, key.namespace)]
-        return addon?.let { GlobalTranslator.render(addon.footerName, player.locale()).plainText.lowercase() } ?: key.namespace
+        return addon?.let { GlobalTranslator.render(addon.footerName, player.locale()).plainText.lowercase() }
+            ?: key.namespace
     }
 
     companion object {
