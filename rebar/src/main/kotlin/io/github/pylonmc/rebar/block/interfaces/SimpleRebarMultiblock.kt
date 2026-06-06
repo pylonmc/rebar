@@ -265,6 +265,7 @@ interface SimpleRebarMultiblock : RebarMultiblock, GhostBlockHolderRebarBlock, E
         private fun onPlace(event: RebarBlockPlaceEvent) {
             val block = event.rebarBlock
             if (block !is SimpleRebarMultiblock) return
+            block.setFacingIfAbsent(BlockFace.NORTH)
             for ((position, component) in block.components) {
                 component.spawnGhostBlock(block, block.getRotatedPosition(position))
             }
