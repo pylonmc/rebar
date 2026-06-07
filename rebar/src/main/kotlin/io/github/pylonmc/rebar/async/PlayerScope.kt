@@ -2,7 +2,10 @@ package io.github.pylonmc.rebar.async
 
 import com.google.common.collect.HashMultimap
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.job
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
@@ -29,7 +32,11 @@ class PlayerScope(override val coroutineContext: CoroutineContext, playerId: UUI
 
         @EventHandler(priority = EventPriority.MONITOR)
         private fun onPlayerQuit(event: PlayerQuitEvent) {
-            playerScopes.removeAll(event.player.uniqueId).forEach { it.cancel() }
+            playerScopes.removeAll(event.player.uniqueId).forEach {
+                if (it.coroutineContext[Job] != null) {
+                    it.cancel()
+                }
+            }
         }
     }
 }
