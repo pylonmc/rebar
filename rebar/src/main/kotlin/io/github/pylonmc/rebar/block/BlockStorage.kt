@@ -637,6 +637,8 @@ object BlockStorage : Listener {
         blocksByKey.computeIfAbsent(phantomBlock.key) { mutableListOf() }.add(phantomBlock)
         blocksByChunk[block.block.chunk.position]!!.remove(block)
         blocksByChunk[phantomBlock.block.chunk.position]!!.add(phantomBlock)
+
+        RebarBlockPhantomEvent(block.block, block, phantomBlock).callEvent()
     }
 
     @JvmSynthetic

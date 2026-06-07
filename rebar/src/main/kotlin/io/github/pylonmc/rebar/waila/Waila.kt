@@ -8,6 +8,7 @@ import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.entity.EntityStorage
 import io.github.pylonmc.rebar.entity.RebarEntity
 import io.github.pylonmc.rebar.event.RebarBlockBreakEvent
+import io.github.pylonmc.rebar.event.RebarBlockPhantomEvent
 import io.github.pylonmc.rebar.event.RebarBlockUnloadEvent
 import io.github.pylonmc.rebar.event.RebarBlockWailaEvent
 import io.github.pylonmc.rebar.event.RebarEntityDeathEvent
@@ -354,29 +355,40 @@ class Waila private constructor(private val player: Player, playerConfig: Player
             removePlayer(event.player)
         }
 
+        private fun removeOverrides(block: RebarBlock) {
+            blockOverrides.values.removeIf { supplier -> supplier is RebarBlockWailaSupplier && supplier.source == block }
+            entityOverrides.values.removeIf { supplier -> supplier is RebarBlockWailaSupplier && supplier.source == block }
+        }
+
+        private fun removeOverrides(entity: RebarEntity<*>) {
+            blockOverrides.values.removeIf { supplier -> supplier is RebarEntityWailaSupplier && supplier.source == entity }
+            entityOverrides.values.removeIf { supplier -> supplier is RebarEntityWailaSupplier && supplier.source == entity }
+        }
+
         @EventHandler(priority = EventPriority.MONITOR)
         private fun onBlockBreak(event: RebarBlockBreakEvent) {
-            blockOverrides.values.removeIf { supplier -> supplier is RebarBlockWailaSupplier && supplier.source == event.rebarBlock }
-            entityOverrides.values.removeIf { supplier -> supplier is RebarBlockWailaSupplier && supplier.source == event.rebarBlock }
+            removeOverrides(event.rebarBlock)
         }
 
         @EventHandler(priority = EventPriority.MONITOR)
         private fun onBlockUnload(event: RebarBlockUnloadEvent) {
-            blockOverrides.values.removeIf { supplier -> supplier is RebarBlockWailaSupplier && supplier.source == event.rebarBlock }
-            entityOverrides.values.removeIf { supplier -> supplier is RebarBlockWailaSupplier && supplier.source == event.rebarBlock }
+            removeOverrides(event.rebarBlock)
+        }
+
+        @EventHandler(priority = EventPriority.MONITOR)
+        private fun onBlockPhantom(event: RebarBlockPhantomEvent) {
+            removeOverrides(event.rebarBlock)
         }
 
         @EventHandler(priority = EventPriority.MONITOR)
         private fun onEntityRemove(event: RebarEntityDeathEvent) {
             // TODO: this will need changed to RebarEntityRemoveEvent when my other PR is opened & merged
-            blockOverrides.values.removeIf { supplier -> supplier is RebarEntityWailaSupplier && supplier.source == event.rebarEntity }
-            entityOverrides.values.removeIf { supplier -> supplier is RebarEntityWailaSupplier && supplier.source == event.rebarEntity }
+            removeOverrides(event.rebarEntity)
         }
 
         @EventHandler(priority = EventPriority.MONITOR)
         private fun onEntityUnload(event: RebarEntityUnloadEvent) {
-            blockOverrides.values.removeIf { supplier -> supplier is RebarEntityWailaSupplier && supplier.source == event.rebarEntity }
-            entityOverrides.values.removeIf { supplier -> supplier is RebarEntityWailaSupplier && supplier.source == event.rebarEntity }
+            removeOverrides(event.rebarEntity)
         }
     }
 }
