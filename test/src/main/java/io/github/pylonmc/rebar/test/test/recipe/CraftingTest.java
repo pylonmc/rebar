@@ -19,9 +19,9 @@ public class CraftingTest extends SyncTest {
     @Override
     protected void test() {
         ItemStack stickyStick = TestItems.STICKY_STICK_STACK;
-        ItemStack diamond = new ItemStack(Material.DIAMOND);
-        ItemStack nothing = new ItemStack(Material.AIR);
-        ItemStack normalStick = new ItemStack(Material.STICK);
+        ItemStack diamond = ItemStack.of(Material.DIAMOND);
+        ItemStack nothing = ItemStack.of(Material.AIR);
+        ItemStack normalStick = ItemStack.of(Material.STICK);
 
         // Shaped
         {
@@ -51,7 +51,7 @@ public class CraftingTest extends SyncTest {
                             .addIngredient(Material.DIAMOND)
                             .addIngredient(stickyStick)
             );
-            ItemStack[] crafting = new ItemStack[9];
+            ItemStack[] crafting = ItemStack.of[9];
             Arrays.fill(crafting, nothing);
             crafting[0] = stickyStick;
             crafting[1] = diamond;

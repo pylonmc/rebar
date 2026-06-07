@@ -26,7 +26,7 @@ open class ResearchButton(val research: Research) : AbstractBoundItem() {
 
     override fun getItemProvider(player: Player): ItemProvider = try {
         val playerHasResearch = Research.getResearches(player).contains(research)
-        val item = ItemStackBuilder.gui(if (playerHasResearch) ItemStack(Material.LIME_STAINED_GLASS_PANE) else research.item, "${rebarKey("research")}:${research.key}:$playerHasResearch")
+        val item = ItemStackBuilder.gui(if (playerHasResearch) ItemStack.of(Material.LIME_STAINED_GLASS_PANE) else research.item, "${rebarKey("research")}:${research.key}:$playerHasResearch")
             .name(research.name)
 
         if (playerHasResearch) {
