@@ -103,12 +103,6 @@ message:
       not-looking: "<red>You are not looking at a multiblock"
       failed: "No blocks were filled"
       success: "Filled %filled%/%total% blocks"
-    forceload:
-      add: "Force loaded chunk at %x%, %z%"
-      query:
-        true: "Chunk at %x%, %z% is force loaded"
-        false: "Chunk at %x%, %z% is not force loaded"
-      remove: "Stopped force loading chunk at %x%, %z%"
     versions: |-
       <gray>This server uses the following setup of Rebar:</gray>
       <green>%server_implementation% <dark_green>%server_version%</dark_green> <gray>(API: %api_version%)</gray>
