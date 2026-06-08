@@ -169,6 +169,8 @@ class Waila private constructor(
 
         rayTraceResult?.hitEntity?.let { entity -> this.targetEntity = entity.uniqueId }
         rayTraceResult?.hitBlock?.let { block -> this.targetBlock = block.position }
+
+        updateContents()
     }
 
     private fun updateContents() {
