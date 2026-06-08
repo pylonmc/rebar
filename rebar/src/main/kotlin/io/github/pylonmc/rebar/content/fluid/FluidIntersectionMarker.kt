@@ -49,19 +49,23 @@ class FluidIntersectionMarker : RebarBlock, EntityHolderRebarBlock, BlockBreakRe
         }
     }
 
-    override fun getWaila(player: Player): WailaDisplay?
-        = WailaDisplay(defaultWailaTranslationKey.arguments(RebarArgument.of("pipe", this.pipe.stack.effectiveName())))
+    override fun getWaila(player: Player): WailaDisplay? {
+        val pipeItem = pipeOrNull() ?: return null
+        return WailaDisplay(defaultWailaTranslationKey.arguments(RebarArgument.of("pipe", pipeItem.stack.effectiveName())))
+    }
 
     val pipe: RebarItem
-        get() {
-            check(fluidIntersectionDisplay.connectedPipeDisplays.isNotEmpty())
-            val uuid = fluidIntersectionDisplay.connectedPipeDisplays.iterator().next()
-            return EntityStorage.getAs<FluidPipeDisplay?>(uuid)!!.pipe
-        }
+        get() = pipeOrNull() ?: error("FluidIntersectionMarker has no resolvable pipe display")
+
+    private fun pipeOrNull(): RebarItem? {
+        val display = getHeldRebarEntity(FluidIntersectionDisplay::class.java, "intersection") ?: return null
+        val uuid = display.connectedPipeDisplays.firstOrNull() ?: return null
+        return EntityStorage.getAs<FluidPipeDisplay?>(uuid)?.pipe
+    }
 
     override fun getDropItem(context: BlockBreakContext) = null
 
-    override fun getPickItem(player: Player) = pipe.stack
+    override fun getPickItem(player: Player) = pipeOrNull()?.stack
 
     companion object {
         @JvmField

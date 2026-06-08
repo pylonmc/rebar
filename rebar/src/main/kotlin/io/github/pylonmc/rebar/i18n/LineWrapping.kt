@@ -90,18 +90,44 @@ private fun wrapLine(
         // which are handled clientside) but this is fine, it can't be perfect.
         var content = component.content()
         while (currentLineLength + content.length > RebarConfig.TRANSLATION_WRAP_LIMIT) {
+            // How many more characters fit on the current line
+            val remaining = RebarConfig.TRANSLATION_WRAP_LIMIT - currentLineLength
 
-            // Make sure we snap to the end of a word (i.e. don't cut words in half)
-            var endIndex = RebarConfig.TRANSLATION_WRAP_LIMIT - currentLineLength
-            while (endIndex != 0 && content[endIndex] != ' ') {
+            // Current line is already full — flush it and restart on a fresh line
+            if (remaining <= 0) {
+                lines.add(currentLine)
+                currentLine = DEFAULT_COMPONENT
+                currentLineLength = 0
+                continue
+            }
+
+            // Try to snap to the end of a word so we don't cut words in half.
+            // (content.length > remaining here, so content[endIndex] is always in bounds.)
+            var endIndex = remaining
+            while (endIndex > 0 && content[endIndex] != ' ') {
                 endIndex -= 1
             }
 
-            currentLine = currentLine.append(Component.text(content.substring(0, endIndex)).style(style))
+            // The amount of text to put on this line, and whether to skip a delimiter space.
+            val cut: Int
+            val skipDelimiter: Boolean
+            if (endIndex == 0) {
+                // No space within the limit: either a single word longer than the wrap
+                // limit, or a language without spaces (e.g. Chinese/Japanese). Hard-break
+                // at the limit so we keep making progress instead of looping forever and
+                // silently dropping characters.
+                cut = remaining
+                skipDelimiter = false
+            } else {
+                cut = endIndex
+                skipDelimiter = true
+            }
+
+            currentLine = currentLine.append(Component.text(content.substring(0, cut)).style(style))
             lines.add(currentLine)
             currentLine = DEFAULT_COMPONENT
             currentLineLength = 0
-            content = if (endIndex+1 == content.length) "" else content.substring(endIndex+1)
+            content = content.substring(if (skipDelimiter) cut + 1 else cut)
         }
         currentLine = currentLine.append(Component.text(content).style(style))
         currentLineLength += content.length
