@@ -70,6 +70,11 @@ class Research(
     )
 
     fun register() {
+        for (itemId in unlocks) {
+            if (itemId !in RebarRegistry.ITEMS) {
+                Rebar.logger.warning("Research ${this.key} includes non-existent item id $itemId")
+            }
+        }
         RebarRegistry.RESEARCHES.register(this)
     }
 
@@ -195,6 +200,12 @@ class Research(
         fun Player.canCraft(item: RebarItem, sendMessage: Boolean = false, respectBypass: Boolean = true): Boolean
             = canCraft(item.schema, sendMessage, respectBypass)
 
+        @JvmStatic
+        @JvmOverloads
+        @JvmName("canPlayerCraft")
+        fun Player.canCraft(key: NamespacedKey, sendMessage: Boolean = false, respectBypass: Boolean = true): Boolean
+                = RebarRegistry.ITEMS[key]?.let { canCraft(it, sendMessage, respectBypass) } ?: false
+
         /**
          * Checks whether a player can craft an item (ie has the associated research, or
          * has permission to bypass research.
@@ -250,6 +261,18 @@ class Research(
         fun Player.canPickUp(item: RebarItem, sendMessage: Boolean = false): Boolean = canCraft(item, sendMessage)
 
         /**
+         * Checks whether a player can pick up an item based off its key (ie has the associated
+         * research, or has permission to bypass research.
+         *
+         * @param sendMessage Whether, if the player cannot pick up the item, a message should be sent to them
+         * to notify them of this fact
+         */
+        @JvmStatic
+        @JvmOverloads
+        @JvmName("canPlayerPickUp")
+        fun Player.canPickUp(key: NamespacedKey, sendMessage: Boolean = false): Boolean = canCraft(key, sendMessage)
+
+        /**
          * Checks whether a player can pick up an item (ie has the associated research, or
          * has permission to bypass research.
          *
@@ -266,6 +289,12 @@ class Research(
         @JvmName("canPlayerUse")
         fun Player.canUse(item: RebarItem, sendMessage: Boolean = false): Boolean
             = canUse(item.schema, sendMessage)
+
+        @JvmStatic
+        @JvmOverloads
+        @JvmName("canPlayerUse")
+        fun Player.canUse(key: NamespacedKey, sendMessage: Boolean = false): Boolean
+                = RebarRegistry.ITEMS[key]?.let { canUse(it, sendMessage) } ?: false
 
         /**
          * Checks whether a player can use an item (ie has the associated research, or

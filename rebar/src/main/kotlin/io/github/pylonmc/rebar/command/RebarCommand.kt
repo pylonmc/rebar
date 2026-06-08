@@ -11,14 +11,15 @@ import com.mojang.brigadier.context.CommandContext
 import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.addon.RebarAddon
 import io.github.pylonmc.rebar.block.BlockStorage
-import io.github.pylonmc.rebar.block.RebarBlockSchema
 import io.github.pylonmc.rebar.block.base.RebarSimpleMultiblock
+import io.github.pylonmc.rebar.block.context.BlockCreateContext
 import io.github.pylonmc.rebar.content.debug.DebugWaxedWeatheredCutCopperStairs
 import io.github.pylonmc.rebar.content.guide.RebarGuide
 import io.github.pylonmc.rebar.entity.display.transform.Rotation
 import io.github.pylonmc.rebar.gametest.GameTestConfig
 import io.github.pylonmc.rebar.i18n.RebarArgument
 import io.github.pylonmc.rebar.i18n.customMiniMessage
+import io.github.pylonmc.rebar.item.ItemTypeWrapper
 import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.item.research.Research
 import io.github.pylonmc.rebar.item.research.Research.Companion.researchPoints
@@ -30,6 +31,7 @@ import io.github.pylonmc.rebar.recipe.ConfigurableRecipeType
 import io.github.pylonmc.rebar.recipe.RecipeType
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.util.ConfettiParticle
+import io.github.pylonmc.rebar.util.blocksBetween
 import io.github.pylonmc.rebar.util.mergeGlobalConfig
 import io.github.pylonmc.rebar.util.position.BlockPosition
 import io.github.pylonmc.rebar.util.vanillaDisplayName
@@ -52,13 +54,15 @@ import net.kyori.adventure.text.event.ClickEvent
 import net.kyori.adventure.text.event.HoverEvent
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import org.bukkit.Bukkit
+import org.bukkit.NamespacedKey
+import org.bukkit.Registry
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Entity
 import org.bukkit.entity.Player
 import org.bukkit.inventory.EquipmentSlot
-import org.bukkit.inventory.ItemStack
 import kotlin.math.min
 import org.bukkit.util.Vector
+import kotlin.collections.forEach
 import kotlin.reflect.typeOf
 import io.papermc.paper.math.BlockPosition as PaperBlockPosition
 
@@ -94,7 +98,7 @@ private val give = buildCommand("give") {
             // https://github.com/Mojang/brigadier/issues/110
 
             fun givePlayers(context: CommandContext<CommandSourceStack>, amount: Int) {
-                val item = context.getArgument<ItemStack>("item")
+                val item = context.getArgument<ItemTypeWrapper>("item").createItemStack()
                 val players = context.getArgument<List<Player>>("players")
                 val singular = players.size == 1
                 for (player in players) {
@@ -156,7 +160,7 @@ private val key = buildCommand("key") {
 
 private val setblock = buildCommand("setblock") {
     argument("pos", ArgumentTypes.blockPosition()) {
-        argument("block", RegistryCommandArgument(RebarRegistry.BLOCKS)) {
+        argument("block", DualBlockRegistryCommandArgument) {
             permission("rebar.command.setblock")
             executes {
                 RebarMetrics.onCommandRun("/rb setblock")
@@ -169,14 +173,96 @@ private val setblock = buildCommand("setblock") {
                     return@executes
                 }
 
-                val block = getArgument<RebarBlockSchema>("block")
-                val failed = BlockStorage.isRebarBlock(location)
-                        || BlockStorage.placeBlock(location, block.key) == null
+                val block = location.block
+                val type = getArgument<NamespacedKey>("block")
+                val vanilla = Registry.BLOCK[type]?.asMaterial()
+                val rebar = RebarRegistry.BLOCKS[type]
+                if (vanilla == null && rebar == null) {
+                    throw DualBlockRegistryCommandArgument.ERROR_UNKNOWN.create(type)
+                } else if (vanilla != null && block.type == vanilla && !BlockStorage.isRebarBlock(block)) {
+                    source.sender.sendVanillaFeedback("setblock.failed")
+                    return@executes
+                } else if (rebar != null && BlockStorage.get(block)?.schema == rebar) {
+                    source.sender.sendVanillaFeedback("setblock.failed")
+                    return@executes
+                }
+
+                if (BlockStorage.isRebarBlock(location)) {
+                    val drops = BlockStorage.breakBlock(location)
+                    if (drops == null) {
+                        source.sender.sendVanillaFeedback("setblock.failed")
+                        return@executes
+                    }
+                    drops.forEach { it.remove() }
+                }
+
+                val failed = if (vanilla != null) {
+                    block.type = vanilla
+                    false
+                } else {
+                    BlockStorage.placeBlock(location, rebar!!.key, BlockCreateContext.Default(
+                        source.sender as? Player,
+                        location.block
+                    )) == null
+                }
                 
                 source.sender.sendVanillaFeedback(
                     if (failed) "setblock.failed" else "setblock.success",
                     Component.text(location.blockX), Component.text(location.blockY), Component.text(location.blockZ)
                 )
+            }
+        }
+    }
+}
+
+private val fill = buildCommand("fill") {
+    argument("from", ArgumentTypes.blockPosition()) {
+        argument("to", ArgumentTypes.blockPosition()) {
+            argument("block", DualBlockRegistryCommandArgument) {
+                permission("rebar.command.fill")
+                executes {
+                    RebarMetrics.onCommandRun("/rb fill")
+                    val world = source.location.world
+                    val worldBorder = world.worldBorder
+                    val from = BlockPosition(world, getArgument<PaperBlockPosition>("from"))
+                    val to = BlockPosition(world, getArgument<PaperBlockPosition>("to"))
+                    val type = getArgument<NamespacedKey>("block")
+                    val vanilla = Registry.BLOCK[type]?.asMaterial()
+                    val rebar = RebarRegistry.BLOCKS[type]
+                    if (vanilla == null && rebar == null) {
+                        throw DualBlockRegistryCommandArgument.ERROR_UNKNOWN.create(type)
+                    }
+
+                    var filled = 0
+                    var total = 0
+
+                    for (block in blocksBetween(from, to)) {
+                        total++
+                        val location = block.location
+                        if (!world.isPositionLoaded(location) || !worldBorder.isInside(location)
+                            || (rebar != null && BlockStorage.get(block)?.schema == rebar)
+                            || (vanilla != null && block.type == vanilla && !BlockStorage.isRebarBlock(block))) {
+                            continue
+                        }
+
+                        BlockStorage.breakBlock(block)?.forEach { it.remove() }
+                        if (BlockStorage.isRebarBlock(block)) {
+                            continue
+                        }
+
+                        if (rebar != null && BlockStorage.placeBlock(block, rebar.key, BlockCreateContext.Default(source.sender as? Player, block)) != null) {
+                            filled++
+                        } else if (vanilla != null) {
+                            block.type = vanilla
+                            filled++
+                        }
+                    }
+
+                    source.sender.sendVanillaFeedback(
+                        if (filled == 0) "fill.failed" else "fill.success",
+                        Component.text("$filled/$total")
+                    )
+                }
             }
         }
     }
@@ -372,7 +458,7 @@ private val researchPointsSubtract = buildCommand("subtract") {
     }
 }
 
-private val researchPointQuery = buildCommand("get") {
+private val researchPointGet = buildCommand("get") {
     argument("player", ArgumentTypes.player()) {
         permission("rebar.command.research.points.get")
         executes { sender ->
@@ -392,7 +478,7 @@ private val researchPoints = buildCommand("points") {
     then(researchPointsSet)
     then(researchPointsAdd)
     then(researchPointsSubtract)
-    then(researchPointQuery)
+    then(researchPointGet)
 }
 
 private val research = buildCommand("research") {
@@ -518,33 +604,46 @@ private val setphantom = buildCommand("setphantom") {
     }
 }
 
-private val finishMultiblock = buildCommand("finishmultiblock") {
-    permission("rebar.command.finishmultiblock")
+private val fillMultiblock = buildCommand("fillmultiblock") {
+    permission("rebar.command.fillmultiblock")
     executesWithPlayer { player ->
-        RebarMetrics.onCommandRun("/rb finishmultiblock")
+        RebarMetrics.onCommandRun("/rb fillmultiblock")
 
         val multiblock = player.getTargetBlockExact(5)?.let {
             BlockStorage.getAs<RebarSimpleMultiblock>(it)
         }
         if (multiblock == null) {
-            player.sendFeedback("finishmultiblock.failed")
+            player.sendFeedback("fillmultiblock.not-looking")
             return@executesWithPlayer
         }
 
-        for ((position, block) in multiblock.components) {
-            block.placeDefaultBlock(multiblock.getMultiblockBlock(position))
+        var filled = 0
+        var total = 0
+        for ((position, component) in multiblock.components) {
+            val block = multiblock.getMultiblockBlock(position)
+            if (!component.matches(block) && component.placeDefaultBlock(player, block)) {
+                filled++
+            }
+            total++
         }
 
-        // finish sub-multiblocks (e.g. hatches)
+        // fill sub-multiblocks (e.g. hatches)
         for ((position, block) in multiblock.components) {
             BlockStorage.getAs<RebarSimpleMultiblock>(multiblock.getMultiblockBlock(position))?.let { subMultiblock ->
-                for ((position, block) in subMultiblock.components) {
-                    block.placeDefaultBlock(subMultiblock.getMultiblockBlock(position))
+                for ((position, component) in subMultiblock.components) {
+                    val block = subMultiblock.getMultiblockBlock(position)
+                    if (!component.matches(block) && component.placeDefaultBlock(player, block)) {
+                        filled++
+                    }
+                    total++
                 }
             }
         }
 
-        player.sendFeedback("finishmultiblock.success")
+        player.sendFeedback("fillmultiblock.${if (filled == 0) "failed" else "success"}",
+            RebarArgument.of("filled", filled),
+            RebarArgument.of("total", total)
+        )
     }
 }
 
@@ -615,12 +714,13 @@ internal val ROOT_COMMAND = buildCommand("rebar") {
     then(debug)
     then(key)
     then(setblock)
+    then(fill)
     then(setphantom)
     then(gametest)
     then(research)
     then(exposeRecipeConfig)
     then(confetti)
-    then(finishMultiblock)
+    then(fillMultiblock)
     then(forceload)
     then(versions)
 }

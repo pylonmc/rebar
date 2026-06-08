@@ -3,12 +3,12 @@ package io.github.pylonmc.rebar.fluid
 import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.i18n.RebarTranslator.Companion.translator
-import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.util.getAddon
 import io.github.pylonmc.rebar.util.rebarKey
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.TextColor
 import org.bukkit.Keyed
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
@@ -23,13 +23,18 @@ import org.bukkit.inventory.ItemStack
  */
 open class RebarFluid(
     private val key: NamespacedKey,
-    val name: Component,
+    val color: TextColor,
+    val nameWithoutColor: Component,
     material: Material,
     /**
      * @see RebarFluidTag
      */
     private val tags: MutableList<RebarFluidTag>,
 ) : Keyed {
+
+    val addon = getAddon(key)
+
+    val name = nameWithoutColor.color(color)
 
     private val internalItem by lazy {
         val builder = ItemStackBuilder.of(material)
@@ -41,16 +46,15 @@ open class RebarFluid(
             builder.lore(tag.displayText)
         }
 
-        builder.lore(getAddon(key).footerName)
-
         builder.build()
     }
 
     val item
         get() = internalItem.clone()
 
-    constructor(key: NamespacedKey, material: Material, vararg tags: RebarFluidTag) : this(
+    constructor(key: NamespacedKey, color: TextColor, material: Material, vararg tags: RebarFluidTag) : this(
         key,
+        color,
         Component.translatable("${key.namespace}.fluid.${key.key}"),
         material,
         tags.toMutableList()
@@ -58,7 +62,6 @@ open class RebarFluid(
 
     init {
         if (key !in nameWarningsSuppressed) {
-            val addon = RebarRegistry.ADDONS[NamespacedKey(key.namespace, key.namespace)]!!
             for (locale in addon.languages) {
                 val translationKey = "${key.namespace}.fluid.${key.key}"
                 if (!addon.translator.canTranslate(translationKey, locale)) {

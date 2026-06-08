@@ -96,8 +96,8 @@ dokka {
             packageListUrl("https://javadoc.io/doc/net.kyori/adventure-api/latest/element-list")
         }
         externalDocumentationLinks.register("InvUI") {
-            url("https://invui.javadoc.xenondevs.xyz/")
-            packageListUrl("https://invui.javadoc.xenondevs.xyz/element-list")
+            url("https://repo.xenondevs.xyz/javadoc/releases/xyz/xenondevs/invui/invui/2.1.0/raw/")
+            packageListUrl("https://repo.xenondevs.xyz/javadoc/releases/xyz/xenondevs/invui/invui/2.1.0/raw/element-list")
         }
         sourceLink {
             localDirectory.set(file("src/main/kotlin"))

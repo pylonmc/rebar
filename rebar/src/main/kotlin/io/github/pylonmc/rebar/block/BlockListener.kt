@@ -18,9 +18,7 @@ import io.papermc.paper.event.block.BlockBreakBlockEvent
 import org.bukkit.ExplosionResult
 import org.bukkit.Material
 import org.bukkit.block.Block
-import org.bukkit.entity.EntityType
 import org.bukkit.entity.FallingBlock
-import org.bukkit.entity.Item
 import org.bukkit.event.Event
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
@@ -32,8 +30,7 @@ import org.bukkit.event.entity.EntityRemoveEvent
 import org.bukkit.event.player.PlayerBucketEmptyEvent
 import org.bukkit.event.world.StructureGrowEvent
 import org.bukkit.inventory.ItemStack
-import java.util.UUID
-import java.util.WeakHashMap
+import java.util.*
 
 
 /**
@@ -50,7 +47,6 @@ internal object BlockListener : MultiListener {
     @MultiHandler(priorities = [ EventPriority.LOWEST, EventPriority.MONITOR ], ignoreCancelled = true)
     private fun blockPlace(event: BlockPlaceEvent, priority: EventPriority) {
         val item = event.itemInHand
-        val player = event.player
 
         if (!item.type.isBlock) {
             return
@@ -72,7 +68,7 @@ internal object BlockListener : MultiListener {
             }
         }
 
-        val context = BlockCreateContext.PlayerPlace(player, item, event)
+        val context = BlockCreateContext.PlayerPlace(item, event)
         if (priority == EventPriority.LOWEST && !rebarItem.prePlace(context)) {
             event.isCancelled = true
         } else if (priority == EventPriority.MONITOR) {
@@ -288,18 +284,28 @@ internal object BlockListener : MultiListener {
     // Event added by paper, not really documented when it's called so two separate handlers might
     // fire for some block breaks but this shouldn't be an issue
     // Primarily added to handle sensitive blocks
-    @MultiHandler(priorities = [ EventPriority.LOWEST, EventPriority.MONITOR ], ignoreCancelled = true)
+
+    // We need to remember if the event was going to drop originally or not
+    private var destroyWillDrop: Boolean? = null
+
+    @MultiHandler(priorities = [ EventPriority.LOWEST, EventPriority.MONITOR ])
     private fun blockRemove(event: BlockDestroyEvent, priority: EventPriority) {
         val block = BlockStorage.get(event.block) ?: return
-        val context = BlockBreakContext.Destroyed(event);
+        val context = BlockBreakContext.Destroyed(event, destroyWillDrop ?: event.willDrop())
         if (priority == EventPriority.LOWEST) {
+            if (event.isCancelled) return
             if (!BlockStorage.preBreakBlock(block, context)) {
                 event.isCancelled = true
                 return
             }
+            this.destroyWillDrop = event.willDrop()
+            event.expToDrop = 0
             event.setWillDrop(false)
         } else {
-            BlockStorage.removeBlock(block, event.block.position, context)
+            this.destroyWillDrop = null
+            if (!event.isCancelled) {
+                BlockStorage.removeBlock(block, event.block.position, context)
+            }
         }
     }
 

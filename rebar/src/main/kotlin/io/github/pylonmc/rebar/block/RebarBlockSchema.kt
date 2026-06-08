@@ -74,6 +74,10 @@ class RebarBlockSchema(
         return loadConstructor.invoke(block, pdc) as RebarBlock
     }
 
+    fun <T> isType(clazz: Class<T>): Boolean {
+        return clazz.isAssignableFrom(blockClass)
+    }
+
     override fun getKey(): NamespacedKey = key
 
     override fun equals(other: Any?): Boolean = key == (other as? RebarBlockSchema)?.key

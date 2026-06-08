@@ -13,12 +13,14 @@ import io.github.pylonmc.rebar.fluid.VirtualFluidPoint
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
 import io.github.pylonmc.rebar.util.rebarKey
 import io.github.pylonmc.rebar.util.setNullable
+import io.papermc.paper.datacomponent.DataComponentTypes
+import io.papermc.paper.datacomponent.item.CustomModelData
 import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
 import org.bukkit.entity.ItemDisplay
 import org.bukkit.event.EventPriority
 import org.bukkit.persistence.PersistentDataContainer
-import java.util.UUID
+import java.util.*
 import kotlin.math.pow
 import kotlin.math.sqrt
 
@@ -66,11 +68,23 @@ class FluidEndpointDisplay : RebarEntity<ItemDisplay>, RebarDeathEntity, FluidPo
 
     override fun connectPipeDisplay(uuid: UUID) {
         this.connectedPipeDisplay = uuid
+        updateItemDisplay()
     }
 
     override fun disconnectPipeDisplay(uuid: UUID) {
         check(this.connectedPipeDisplay == uuid) { "$uuid is not connected" }
         this.connectedPipeDisplay = null
+        updateItemDisplay()
+    }
+
+    @Suppress("UnstableApiUsage")
+    fun updateItemDisplay() {
+        val modelData = CustomModelData.customModelData()
+        modelData.addString("fluid_point_${point.type.name.lowercase()}:${pipeDisplay?.pipe?.key ?: "none"}")
+        modelData.addString("face=${face.oppositeFace.name.lowercase()}")
+        this.entity.setItemStack(this.entity.itemStack.apply {
+            setData(DataComponentTypes.CUSTOM_MODEL_DATA, modelData)
+        })
     }
 
     override fun onDeath(event: RebarEntityDeathEvent, priority: EventPriority) {
@@ -102,8 +116,10 @@ class FluidEndpointDisplay : RebarEntity<ItemDisplay>, RebarDeathEntity, FluidPo
                     .scale(POINT_SIZE)
                 )
                 .itemStack(ItemStackBuilder.of(type.material)
-                    .addCustomModelDataString("fluid_point_display:${type.name.lowercase()}")
+                    .addCustomModelDataString("fluid_point_${type.name.lowercase()}:none")
+                    .addCustomModelDataString("face=${face.oppositeFace.name.lowercase()}")
                 )
+                .itemDisplayTransform(ItemDisplay.ItemDisplayTransform.HEAD)
                 // add a little bit to ensure the point is not obscured by the block itself
                 .build(block.location.toCenterLocation().add(face.direction.multiply(radius + 0.001)))
         }

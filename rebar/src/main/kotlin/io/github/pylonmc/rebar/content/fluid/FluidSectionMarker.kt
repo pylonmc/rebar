@@ -51,7 +51,7 @@ class FluidSectionMarker : RebarBlock, RebarBreakHandler, RebarEntityHolderBlock
 
     override fun getDropItem(context: BlockBreakContext) = null
 
-    override fun getPickItem() = pipe!!.stack
+    override fun getPickItem(player: Player) = pipe!!.stack
 
     companion object {
         val KEY = rebarKey("fluid_pipe_section_marker")

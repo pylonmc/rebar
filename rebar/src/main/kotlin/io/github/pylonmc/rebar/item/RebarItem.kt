@@ -43,7 +43,7 @@ open class RebarItem(val stack: ItemStack) : Keyed {
     val researchBypassPermission = schema.researchBypassPermission
     val addon = schema.addon
     val rebarBlock = schema.rebarBlockKey
-    val isDisabled = key in RebarConfig.DISABLED_ITEMS
+    val isDisabled = schema.isDisabled
     val research get() = schema.research
 
     /**
@@ -74,7 +74,7 @@ open class RebarItem(val stack: ItemStack) : Keyed {
     /**
      * Places the block associated with this item, if it exists.
      */
-    open fun place(context: BlockCreateContext): RebarBlock = schema.place(context)
+    open fun place(context: BlockCreateContext): RebarBlock? = schema.place(context)
 
     companion object {
 
@@ -177,6 +177,16 @@ open class RebarItem(val stack: ItemStack) : Keyed {
         fun isRebarItem(stack: ItemStack?, clazz: Class<*>): Boolean {
             val schema = RebarItemSchema.fromStack(stack) ?: return false
             return schema.isType(clazz)
+        }
+
+        /**
+         * Checks if [stack] is a Rebar item with the id [key].
+         */
+        @JvmStatic
+        @Contract("null -> false")
+        fun isRebarItem(stack: ItemStack?, key: NamespacedKey): Boolean {
+            val schema = RebarItemSchema.fromStack(stack) ?: return false
+            return schema.key == key
         }
 
         /**

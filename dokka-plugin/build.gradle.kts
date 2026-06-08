@@ -3,8 +3,8 @@ plugins {
 }
 
 dependencies {
-    compileOnly("org.jetbrains.dokka:dokka-core:2.0.0")
-    implementation("org.jetbrains.dokka:dokka-base:2.0.0")
+    compileOnly("org.jetbrains.dokka:dokka-core:2.2.0")
+    implementation("org.jetbrains.dokka:dokka-base:2.2.0")
 }
 
 tasks.test {

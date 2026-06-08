@@ -1,7 +1,7 @@
 package io.github.pylonmc.rebar.logistics
 
 import io.github.pylonmc.rebar.block.BlockStorage
-import io.github.pylonmc.rebar.block.base.RebarNoVanillaContainerBlock
+import io.github.pylonmc.rebar.block.base.RebarNoVanillaInventoryBlock
 import io.github.pylonmc.rebar.logistics.slot.*
 import org.bukkit.block.*
 import org.bukkit.inventory.ItemStack
@@ -39,46 +39,46 @@ class LogisticGroup(
 
         @JvmStatic
         fun getVanillaLogisticSlots(block: Block?): Map<String, LogisticGroup> {
-            if (block == null || BlockStorage.get(block) is RebarNoVanillaContainerBlock) {
+            if (block == null || BlockStorage.get(block) is RebarNoVanillaInventoryBlock) {
                 return mapOf()
             }
 
-            return when (val blockData = block.getState(false)) {
+            return when (val blockState = block.getState(false)) {
                 is Furnace -> mapOf(
-                    "input" to LogisticGroup(LogisticGroupType.INPUT, VanillaInventoryLogisticSlot(blockData.inventory, 0)),
-                    "fuel" to LogisticGroup(LogisticGroupType.INPUT, FurnaceFuelLogisticSlot(blockData.inventory, 1)),
-                    "output" to LogisticGroup(LogisticGroupType.OUTPUT, VanillaInventoryLogisticSlot(blockData.inventory, 2)),
+                    "input" to LogisticGroup(LogisticGroupType.INPUT, VanillaInventoryLogisticSlot(block, blockState.inventory, 0)),
+                    "fuel" to LogisticGroup(LogisticGroupType.INPUT, FurnaceFuelLogisticSlot(block, blockState.inventory, 1)),
+                    "output" to LogisticGroup(LogisticGroupType.OUTPUT, VanillaInventoryLogisticSlot(block, blockState.inventory, 2)),
                 )
                 is BrewingStand -> mapOf(
                     "output" to LogisticGroup(LogisticGroupType.BOTH,
-                        BrewingStandPotionLogisticSlot(blockData.inventory, 0),
-                        BrewingStandPotionLogisticSlot(blockData.inventory, 1),
-                        BrewingStandPotionLogisticSlot(blockData.inventory, 2),
+                        BrewingStandPotionLogisticSlot(block, blockState.inventory, 0),
+                        BrewingStandPotionLogisticSlot(block, blockState.inventory, 1),
+                        BrewingStandPotionLogisticSlot(block, blockState.inventory, 2),
                     ),
-                    "input" to LogisticGroup(LogisticGroupType.INPUT, VanillaInventoryLogisticSlot(blockData.inventory, 3)),
-                    "fuel" to LogisticGroup(LogisticGroupType.INPUT, BrewingStandFuelLogisticSlot(blockData.inventory, 4)),
+                    "input" to LogisticGroup(LogisticGroupType.INPUT, VanillaInventoryLogisticSlot(block, blockState.inventory, 3)),
+                    "fuel" to LogisticGroup(LogisticGroupType.INPUT, BrewingStandFuelLogisticSlot(block, blockState.inventory, 4)),
                 )
                 is ChiseledBookshelf -> {
                     val slots = mutableListOf<LogisticSlot>()
-                    for (slot in 0..<blockData.inventory.size) {
-                        slots.add(ChiseledBookshelfFuelLogisticSlot(blockData.inventory, slot))
+                    for (slot in 0..<blockState.inventory.size) {
+                        slots.add(ChiseledBookshelfFuelLogisticSlot(block, blockState.inventory, slot))
                     }
                     mapOf("inventory" to LogisticGroup(LogisticGroupType.BOTH, slots))
                 }
                 is Jukebox -> mapOf(
-                    "inventory" to LogisticGroup(LogisticGroupType.BOTH, JukeboxLogisticSlot(blockData.inventory, 0)),
+                    "inventory" to LogisticGroup(LogisticGroupType.BOTH, JukeboxLogisticSlot(block, blockState.inventory, 0)),
                 )
                 is Dispenser, is Dropper, is Hopper, is Barrel, is DoubleChest, is Chest, is Shelf, is ShulkerBox -> {
                     val slots = mutableListOf<LogisticSlot>()
-                    for (slot in 0..<blockData.inventory.size) {
-                        slots.add(VanillaInventoryLogisticSlot(blockData.inventory, slot))
+                    for (slot in 0..<blockState.inventory.size) {
+                        slots.add(VanillaInventoryLogisticSlot(block, blockState.inventory, slot))
                     }
                     mapOf("inventory" to LogisticGroup(LogisticGroupType.BOTH, slots))
                 }
                 is Crafter -> {
                     val slots = mutableListOf<LogisticSlot>()
-                    for (slot in 0..<blockData.inventory.size) {
-                        slots.add(CrafterLogisticSlot(block, blockData.inventory, slot))
+                    for (slot in 0..<blockState.inventory.size) {
+                        slots.add(CrafterLogisticSlot(block, blockState.inventory, slot))
                     }
                     mapOf("inventory" to LogisticGroup(LogisticGroupType.INPUT, slots))
                 }

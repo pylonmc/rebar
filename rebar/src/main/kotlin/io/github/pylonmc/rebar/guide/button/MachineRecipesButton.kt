@@ -8,14 +8,13 @@ import net.kyori.adventure.text.Component
 import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.event.inventory.ClickType
-import org.bukkit.inventory.ItemStack
 import xyz.xenondevs.invui.Click
 import xyz.xenondevs.invui.item.AbstractBoundItem
 
 /**
- * A button that takes you to the recipes of something.
+ * A button that takes you to the recipes of a recipe type
  */
-class MachineRecipesButton(val stack: ItemStack, val recipeType: RecipeType<*>) : AbstractBoundItem() {
+class MachineRecipesButton(val recipeType: RecipeType<*>) : AbstractBoundItem() {
 
     override fun getItemProvider(player: Player) =
         ItemStackBuilder.gui(Material.CRAFTER, rebarKey("guide_machine_recipes"))

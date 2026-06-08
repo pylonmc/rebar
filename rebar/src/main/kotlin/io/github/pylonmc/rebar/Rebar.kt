@@ -61,6 +61,7 @@ import org.bukkit.NamespacedKey
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.BlockDisplay
 import org.bukkit.entity.FallingBlock
+import org.bukkit.entity.Interaction
 import org.bukkit.entity.ItemDisplay
 import org.bukkit.permissions.Permission
 import org.bukkit.permissions.PermissionDefault
@@ -126,7 +127,7 @@ object Rebar : JavaPlugin(), RebarAddon {
         pm.registerEvents(EntityStorage, this)
         pm.registerEvents(Research, this)
         pm.registerEvents(RebarVirtualInventoryBlock, this)
-        pm.registerEvents(RebarGuiBlock, this)
+        pm.registerEvents(RebarInventoryBlock, this)
         pm.registerEvents(RebarEntityHolderBlock, this)
         pm.registerEvents(RebarSimpleMultiblock, this)
         pm.registerEvents(RebarProcessor, this)
@@ -158,6 +159,7 @@ object Rebar : JavaPlugin(), RebarAddon {
         // Rebar Blocks
         BlockListener.register(this, pm)
         RebarBeacon.register(this, pm)
+        RebarBed.register(this, pm)
         RebarBell.register(this, pm)
         RebarTNT.register(this, pm)
         RebarNoteBlock.register(this, pm)
@@ -185,7 +187,7 @@ object Rebar : JavaPlugin(), RebarAddon {
         RebarJumpBlock.register(this, pm)
         RebarUnloadBlock.register(this, pm)
         RebarFlowerPot.register(this, pm)
-        RebarVanillaContainerBlock.register(this, pm)
+        RebarVanillaInventoryBlock.register(this, pm)
         RebarHopper.register(this, pm)
         RebarFire.register(this, pm)
         RebarCargoBlock.register(this, pm)
@@ -195,6 +197,7 @@ object Rebar : JavaPlugin(), RebarAddon {
         // Rebar Items
         RebarArrow.register(this, pm)
         RebarBlockInteractor.register(this, pm)
+        RebarBottle.register(this, pm)
         RebarBow.register(this, pm)
         RebarBrewingStandFuel.register(this, pm)
         RebarBucket.register(this, pm)
@@ -205,6 +208,7 @@ object Rebar : JavaPlugin(), RebarAddon {
         RebarItemEntityInteractor.register(this, pm)
         RebarJoinHandler.register(this, pm)
         RebarLingeringPotion.register(this, pm)
+        RebarProjectileItem.register(this, pm)
         RebarSplashPotion.register(this, pm)
         RebarTool.register(this, pm)
         RebarWeapon.register(this, pm)
@@ -289,12 +293,16 @@ object Rebar : JavaPlugin(), RebarAddon {
         RebarItem.register<RebarGuide>(RebarGuide.STACK)
         RebarGuide.hideItem(RebarGuide.KEY)
 
+        RebarEntity.register<Interaction, RebarGhostBlockHolder.GhostBlockHitbox>(
+            RebarGhostBlockHolder.GhostBlockHitbox.KEY
+        )
+
         RebarEntity.register<BlockDisplay, RebarGhostBlockHolder.VanillaGhostBlock>(
-            RebarGhostBlockHolder.VanillaGhostBlock.KEY,
+            RebarGhostBlockHolder.VanillaGhostBlock.KEY
         )
 
         RebarEntity.register<ItemDisplay, RebarGhostBlockHolder.RebarGhostBlock>(
-            RebarGhostBlockHolder.RebarGhostBlock.KEY,
+            RebarGhostBlockHolder.RebarGhostBlock.KEY
         )
 
         RebarEntity.register<ItemDisplay, FluidEndpointDisplay>(FluidEndpointDisplay.KEY)

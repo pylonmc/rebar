@@ -1,7 +1,6 @@
 package io.github.pylonmc.rebar.config.adapter
 
-import io.github.pylonmc.rebar.item.ItemTypeWrapper
-import org.bukkit.NamespacedKey
+import io.github.pylonmc.rebar.nms.NmsAccessor
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.inventory.ItemStack
 
@@ -14,16 +13,11 @@ object ItemStackConfigAdapter : ConfigAdapter<ItemStack> {
             is Pair<*, *> -> {
                 val itemKey = ConfigAdapter.STRING.convert(key, value.first!!)
                 val amount = ConfigAdapter.INTEGER.convert(key, value.second!!)
-                convert(key, itemKey).asQuantity(amount)
+                convert(key, itemKey).apply { this.amount = amount }
             }
 
-            is ConfigurationSection, is Map<*, *> -> convert(
-                key,
-                MapConfigAdapter.STRING_TO_ANY.convert(key, value).toList().single()
-            )
-            is String -> ItemTypeWrapper(
-                NamespacedKey.fromString(value) ?: throw IllegalArgumentException("Could not find item '$value'")
-            ).createItemStack()
+            is ConfigurationSection, is Map<*, *> -> convert(key, MapConfigAdapter.STRING_TO_ANY.convert(key, value).toList().single())
+            is String -> NmsAccessor.instance.createItemStack(value)
             else -> throw IllegalArgumentException("Cannot convert $value to ItemStack")
         }
     }
