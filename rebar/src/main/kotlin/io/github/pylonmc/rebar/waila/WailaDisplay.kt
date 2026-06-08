@@ -69,11 +69,17 @@ class WailaDisplay @JvmOverloads constructor(
         fun of(component: Component) = WailaDisplay(component)
 
         /**
-         * Constructs a new WAILA builder which begins with the name of the provided [block] and
-         * has progress equal to the break progress of the block.
+         * Constructs a new WAILA for the given block.
+         *
+         * If the block has a preferred tool, the WAILA starts with said tool and a + or - depending on
+         * whether the block will drop when broken or not.
+         *
+         * The WAILA will then contain the given [name].
+         *
+         * The returned WAILA has progress equal to the break progress of the block.
          */
         @JvmStatic
-        fun of(block: RebarBlock, player: Player): WailaDisplay {
+        fun of(block: RebarBlock, player: Player, name: Component): WailaDisplay {
             val name = Component.translatable("${block.key.namespace}.item.${block.key.key}.name")
             val prefix = getWailaBlockPrefix(block.block, player)
             val display = if (prefix != null) {
@@ -83,5 +89,24 @@ class WailaDisplay @JvmOverloads constructor(
             }
             return display.progress(1.0F - block.block.breakProgress)
         }
+
+        /**
+         * Constructs a new WAILA for the given block.
+         *
+         * If the block has a preferred tool, the WAILA starts with said tool and a + or - depending on
+         * whether the block will drop when broken or not.
+         *
+         * The WAILA will then contain the name of the block. This assumes the block has a corresponding
+         * item, from which the name is obtained. If this is not the case, use the overload which takes
+         * a component instead.
+         *
+         * The returned WAILA has progress equal to the break progress of the block.
+         */
+        @JvmStatic
+        fun of(block: RebarBlock, player: Player): WailaDisplay = of(
+            block,
+            player,
+            Component.translatable("${block.key.namespace}.item.${block.key.key}.name")
+        )
     }
 }
