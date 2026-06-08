@@ -273,14 +273,14 @@ object NmsAccessorImpl : NmsAccessor {
         }
 
         try {
-            val reader = StringReader(input)
-            val itemInput = ItemParser(CraftRegistry.getMinecraftRegistry()).parse(reader);
-            if (reader.canRead()) {
+            val reader = if (input.isBlank()) null else StringReader(input)
+            val itemInput = if (input.isBlank()) null else ItemParser(CraftRegistry.getMinecraftRegistry()).parse(reader!!);
+            if (reader != null && reader.canRead()) {
                 throw IllegalArgumentException("Trailing input found when parsing ItemStack: " + reader.remaining);
             } else {
                 val stack = type.createItemStack()
                 val nmsStack = (stack as CraftItemStack).handle
-                nmsStack.applyComponents(itemInput.components)
+                itemInput?.let { nmsStack.applyComponents(it.components) }
                 return nmsStack.asBukkitMirror()
             }
         } catch (ex: CommandSyntaxException) {
