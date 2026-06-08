@@ -19,9 +19,9 @@ public class CraftingTest extends SyncTest {
     @Override
     protected void test() {
         ItemStack stickyStick = TestItems.STICKY_STICK_STACK;
-        ItemStack diamond = new ItemStack(Material.DIAMOND);
-        ItemStack nothing = new ItemStack(Material.AIR);
-        ItemStack normalStick = new ItemStack(Material.STICK);
+        ItemStack diamond = ItemStack.of(Material.DIAMOND);
+        ItemStack nothing = ItemStack.of(Material.AIR);
+        ItemStack normalStick = ItemStack.of(Material.STICK);
 
         // Shaped
         {

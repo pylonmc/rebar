@@ -149,7 +149,7 @@ open class RebarBlock private constructor(val block: Block) : Keyed {
      */
     protected open fun setupBlockTexture(entity: BlockTextureEntity): BlockTextureEntity = entity.apply {
         // TODO: Add a way to easily just change the transformation of the entity, without having to override this method entirely
-        val item = getBlockTextureItem() ?: ItemStack(Material.BARRIER)
+        val item = getBlockTextureItem() ?: ItemStack.of(Material.BARRIER)
         item.setData(DataComponentTypes.ITEM_MODEL, Key.key("air"))
         itemStack = item
         itemDisplayTransform = ItemDisplay.ItemDisplayTransform.FIXED
@@ -162,7 +162,7 @@ open class RebarBlock private constructor(val block: Block) : Keyed {
      */
     fun refreshBlockTextureItem() {
         blockTextureEntity?.let {
-            it.itemStack = getBlockTextureItem() ?: ItemStack(Material.BARRIER)
+            it.itemStack = getBlockTextureItem() ?: ItemStack.of(Material.BARRIER)
         }
     }
 
