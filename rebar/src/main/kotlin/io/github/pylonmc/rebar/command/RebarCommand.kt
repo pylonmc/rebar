@@ -8,13 +8,11 @@ import com.mojang.brigadier.arguments.DoubleArgumentType
 import com.mojang.brigadier.arguments.IntegerArgumentType
 import com.mojang.brigadier.arguments.LongArgumentType
 import com.mojang.brigadier.context.CommandContext
-import com.mojang.brigadier.tree.CommandNode
-import com.mojang.brigadier.tree.LiteralCommandNode
 import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.addon.RebarAddon
 import io.github.pylonmc.rebar.block.BlockStorage
-import io.github.pylonmc.rebar.block.interfaces.SimpleRebarMultiblock
 import io.github.pylonmc.rebar.block.context.BlockCreateContext
+import io.github.pylonmc.rebar.block.interfaces.SimpleRebarMultiblock
 import io.github.pylonmc.rebar.content.debug.DebugWaxedWeatheredCutCopperStairs
 import io.github.pylonmc.rebar.content.guide.RebarGuide
 import io.github.pylonmc.rebar.entity.display.transform.Rotation
@@ -63,10 +61,8 @@ import org.bukkit.command.CommandSender
 import org.bukkit.entity.Entity
 import org.bukkit.entity.Player
 import org.bukkit.inventory.EquipmentSlot
-import kotlin.math.min
 import org.bukkit.util.Vector
-import xyz.xenondevs.invui.gui.PagedGui
-import kotlin.collections.forEach
+import kotlin.math.min
 import kotlin.reflect.typeOf
 import io.papermc.paper.math.BlockPosition as PaperBlockPosition
 
@@ -666,67 +662,6 @@ private fun forceLoadSub(subCommand: String, operator: (player: Player, center: 
     }
 }
 
-private val addForceLoad = forceLoadSub("add") { player, center, x, z ->
-    player.world.getChunkAt(center.x + x, center.z + z).isForceLoaded = true
-    player.sendFeedback("forceload.add",
-        RebarArgument.of("x", center.x + x),
-        RebarArgument.of("z", center.z + z)
-    )
-}
-
-private val queryForceLoad = forceLoadSub("query") { player, center, x, z ->
-    val forceLoaded = player.world.getChunkAt(center.x + x, center.z + z).isForceLoaded
-    player.sendFeedback("forceload.query.$forceLoaded",
-        RebarArgument.of("x", center.x + x),
-        RebarArgument.of("z", center.z + z)
-    )
-}
-
-private val removeForceLoad = forceLoadSub("remove") { player, center, x, z ->
-    player.world.getChunkAt(center.x + x, center.z + z).isForceLoaded = false
-    player.sendFeedback("forceload.remove",
-        RebarArgument.of("x", center.x + x),
-        RebarArgument.of("z", center.z + z)
-    )
-}
-
-private val forceload = buildCommand("forceload") {
-    then(addForceLoad)
-    then(queryForceLoad)
-    then(removeForceLoad)
-}
-
-private val findInGuide = buildCommand("jumptoguide") {
-    executesWithPlayer { player ->
-        RebarMetrics.onCommandRun("/rb jumptoguide")
-        var itemTypeWrapper = ItemTypeWrapper(player.inventory.itemInMainHand)
-        if (itemTypeWrapper == ItemTypeWrapper.AIR) {
-            itemTypeWrapper = ItemTypeWrapper(player.inventory.itemInOffHand)
-            if (itemTypeWrapper == ItemTypeWrapper.AIR) {
-                player.sendFeedback("jumptoguide.no-item")
-                return@executesWithPlayer
-            }
-        }
-
-        val pageWithNumber = RebarGuide.rootPage.findPage(player, itemTypeWrapper)
-        val page = pageWithNumber.first
-        if (page == null) {
-            player.sendFeedback("jumptoguide.not-found")
-            return@executesWithPlayer
-        }
-
-        // If the player hasn't opened the guide before running the command, set the base history to be the root page
-        RebarGuide.history.computeIfAbsent(player.uniqueId) { mutableListOf(RebarGuide.rootPage) }
-
-        val window = page.open(player) ?: return@executesWithPlayer
-        for (gui in window.guis) {
-            if (gui is PagedGui<*>) {
-                gui.page = pageWithNumber.second
-            }
-        }
-    }
-}
-
 private val versions = buildCommand("versions") {
     executes { sender ->
         RebarMetrics.onCommandRun("/rb versions")
@@ -779,8 +714,6 @@ internal val ROOT_COMMAND = buildCommand("rebar") {
     then(exposeRecipeConfig)
     then(confetti)
     then(fillMultiblock)
-    then(forceload)
-    then(findInGuide)
     then(versions)
 }
 
