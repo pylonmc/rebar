@@ -372,6 +372,15 @@ guide:
         name: "<white>Guide Hints: <red>Disabled <dark_gray>(Click to toggle)"
         lore: |-
           <guidearrow> Whether to show <guideinsn>hints</guideinsn> in the guide
+    toggle-guide-sounds:
+      enabled:
+        name: "<white>Guide Sounds: <green>Enabled <dark_gray>(Click to toggle)"
+        lore: |-
+          <guidearrow> Whether to play <guideinsn>sounds</guideinsn> in the guide
+      disabled:
+        name: "<white>Guide Sounds: <red>Disabled <dark_gray>(Click to toggle)"
+        lore: |-
+          <guidearrow> Whether to play <guideinsn>sounds</guideinsn> in the guide
     info:
       discord:
         name: "<white>Discord"

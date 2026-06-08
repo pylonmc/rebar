@@ -1,6 +1,7 @@
 package io.github.pylonmc.rebar.guide.button
 
 import io.github.pylonmc.rebar.config.RebarConfig
+import io.github.pylonmc.rebar.content.guide.RebarGuide.Companion.playGuideSound
 import io.github.pylonmc.rebar.guide.pages.MachineRecipesPage
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
 import io.github.pylonmc.rebar.recipe.RecipeType
@@ -25,7 +26,7 @@ class MachineRecipesButton(val recipeType: RecipeType<*>) : AbstractBoundItem() 
         val page = MachineRecipesPage(recipeType)
         if (page.pages.isNotEmpty()) {
             page.open(player)
-            RebarConfig.GuideConfig.CLICK_BUTTON_SOUND.playTo(player)
+            player.playGuideSound(RebarConfig.GuideConfig.CLICK_BUTTON_SOUND)
         }
     }
 }

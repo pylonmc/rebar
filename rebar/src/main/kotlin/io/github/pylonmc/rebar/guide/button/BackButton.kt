@@ -4,7 +4,8 @@ import io.github.pylonmc.rebar.config.RebarConfig
 import io.github.pylonmc.rebar.content.guide.RebarGuide
 import io.github.pylonmc.rebar.guide.pages.base.PagedGuidePage
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
-import io.github.pylonmc.rebar.item.research.Research.Companion.guideHints
+import io.github.pylonmc.rebar.content.guide.RebarGuide.Companion.guideHints
+import io.github.pylonmc.rebar.content.guide.RebarGuide.Companion.playGuideSound
 import io.github.pylonmc.rebar.util.rebarKey
 import io.papermc.paper.datacomponent.DataComponentTypes
 import net.kyori.adventure.text.Component
@@ -42,6 +43,6 @@ class BackButton : AbstractItem() {
 
             history.removeLast().open(player)
         }
-        RebarConfig.GuideConfig.CLICK_BUTTON_SOUND.playTo(player)
+        player.playGuideSound(RebarConfig.GuideConfig.CLICK_BUTTON_SOUND)
     }
 }

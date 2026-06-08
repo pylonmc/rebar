@@ -3,6 +3,7 @@
 package io.github.pylonmc.rebar.util.gui
 
 import io.github.pylonmc.rebar.config.RebarConfig
+import io.github.pylonmc.rebar.content.guide.RebarGuide.Companion.playGuideSound
 import io.github.pylonmc.rebar.i18n.RebarArgument
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
 import io.github.pylonmc.rebar.util.gui.GuiItems.background
@@ -151,7 +152,7 @@ private class RebarScrollItem(private val direction: Int, private val key: Strin
     override fun handleClick(clickType: ClickType, player: Player, click: Click) {
         if (gui.canScroll) {
             gui.line += direction
-            RebarConfig.GuideConfig.CLICK_BUTTON_SOUND.playTo(player)
+            player.playGuideSound(RebarConfig.GuideConfig.CLICK_BUTTON_SOUND)
         }
     }
 
@@ -179,7 +180,7 @@ private class RebarPageItem(private val forward: Boolean) : AbstractPagedGuiBoun
     override fun handleClick(clickType: ClickType, player: Player, click: Click) {
         if (gui.canPage) {
             if (forward) gui.page++ else gui.page--
-            RebarConfig.GuideConfig.CLICK_BUTTON_SOUND.playTo(player)
+            player.playGuideSound(RebarConfig.GuideConfig.CLICK_BUTTON_SOUND)
         }
     }
 
@@ -200,7 +201,7 @@ private class RebarTabItem(private val item: ItemStackBuilder, private val tab: 
     override fun handleClick(clickType: ClickType, player: Player, click: Click) {
         if (gui.tab != tab) {
             gui.tab = tab
-            RebarConfig.GuideConfig.CLICK_BUTTON_SOUND.playTo(player)
+            player.playGuideSound(RebarConfig.GuideConfig.CLICK_BUTTON_SOUND)
         }
     }
 }
