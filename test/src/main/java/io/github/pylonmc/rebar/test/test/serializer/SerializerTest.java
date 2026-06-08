@@ -23,7 +23,7 @@ public abstract class SerializerTest<T> extends SyncTest {
     public void test() {
         NamespacedKey key = new NamespacedKey(RebarTest.instance(), "key");
 
-        ItemStack stack = new ItemStack(Material.ACACIA_BOAT);
+        ItemStack stack = ItemStack.of(Material.ACACIA_BOAT);
         stack.editMeta(meta -> meta.getPersistentDataContainer()
                 .set(key, type, value));
         assertThat(stack.getPersistentDataContainer().get(key, type))

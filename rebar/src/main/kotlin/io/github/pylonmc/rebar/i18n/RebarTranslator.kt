@@ -2,7 +2,7 @@ package io.github.pylonmc.rebar.i18n
 
 import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.addon.RebarAddon
-import io.github.pylonmc.rebar.config.Config
+import io.github.pylonmc.rebar.config.ConfigSection
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.event.RebarRegisterEvent
@@ -12,7 +12,7 @@ import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
 import io.github.pylonmc.rebar.nms.NmsAccessor
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.util.editData
-import io.github.pylonmc.rebar.util.mergeGlobalConfig
+import io.github.pylonmc.rebar.util.mergeResource
 import io.github.pylonmc.rebar.util.plainText
 import io.github.pylonmc.rebar.util.rebarKey
 import io.github.pylonmc.rebar.util.withArguments
@@ -52,17 +52,16 @@ class RebarTranslator private constructor(private val addon: RebarAddon) : Trans
 
     private val addonNamespace = addon.key.namespace
 
-    private val translations: Map<Locale, Config>
+    private val translations: Map<Locale, ConfigSection>
 
     val languages: Set<Locale>
         get() = translations.keys
 
     private val translationCache = mutableMapOf<Pair<Locale, String>, Component>()
-    private val warned = mutableSetOf<Locale>()
 
     init {
         for (lang in addon.languages) {
-            mergeGlobalConfig(addon, "lang/$lang.yml", "lang/$addonNamespace/$lang.yml")
+            mergeResource(addon, "lang/$lang.yml", "lang/$addonNamespace/$lang.yml")
         }
         val langsDir = Rebar.dataPath.resolve("lang").resolve(addonNamespace)
         translations = if (!langsDir.exists()) {
@@ -70,7 +69,11 @@ class RebarTranslator private constructor(private val addon: RebarAddon) : Trans
         } else {
             langsDir.listDirectoryEntries("*.yml").associate {
                 val split = it.nameWithoutExtension.split('_', limit = 3)
-                Locale.of(split.first(), split.getOrNull(1).orEmpty(), split.getOrNull(2).orEmpty()) to Config(it)
+                Locale.of(
+                    split.first(),
+                    split.getOrNull(1).orEmpty(),
+                    split.getOrNull(2).orEmpty()
+                ) to ConfigSection.fromOrThrow(it)
             }
         }
     }
@@ -116,7 +119,7 @@ class RebarTranslator private constructor(private val addon: RebarAddon) : Trans
         }
     }
 
-    private fun findTranslations(locale: Locale): Config? {
+    private fun findTranslations(locale: Locale): ConfigSection? {
         val languageRange = languageRanges.getOrPut(locale) {
             val lookupList = LocaleUtils.localeLookupList(locale)
             lookupList.reversed()
@@ -136,8 +139,6 @@ class RebarTranslator private constructor(private val addon: RebarAddon) : Trans
         private val languageRanges = WeakHashMap<Locale, List<Locale.LanguageRange>>()
 
         private val translators = mutableMapOf<NamespacedKey, RebarTranslator>()
-
-        private val wordStartRegex = Regex("""(?<=\s)""")
 
         private val originalNameKey = rebarKey("translation_original_name")
         private val originalLoreKey = rebarKey("translation_original_lore")

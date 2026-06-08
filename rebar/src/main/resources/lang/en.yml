@@ -30,6 +30,7 @@ item:
     waila: "%pipe%"
 
 fluid:
+  none: "<#ce9d98>None"
   temperature:
     display-text: "<arrow> <attr>Temperature:</attr> %temperature%"
     cold: "<#1cb3d8>cold"

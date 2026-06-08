@@ -28,7 +28,7 @@ open class PageButton(val stack: ItemStack, val page: GuidePage) : GuideButton()
 
     constructor(builder: ItemStackBuilder, page: GuidePage) : this(builder.build(), page)
 
-    constructor(material: Material, page: GuidePage) : this(ItemStack(material), page)
+    constructor(material: Material, page: GuidePage) : this(ItemStack.of(material), page)
 
     @Suppress("UnstableApiUsage")
     override fun getItemProvider(viewer: Player): ItemProvider = ItemStackBuilder.gui(stack.clone(), "${rebarKey("guide_page")}:${page.key}")

@@ -4,7 +4,7 @@ package io.github.pylonmc.rebar.block
 import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.addon.RebarAddon
 import io.github.pylonmc.rebar.block.BlockStorage.breakBlock
-import io.github.pylonmc.rebar.block.base.RebarBreakHandler
+import io.github.pylonmc.rebar.block.interfaces.BlockBreakRebarBlockHandler
 import io.github.pylonmc.rebar.block.context.BlockBreakContext
 import io.github.pylonmc.rebar.block.context.BlockCreateContext
 import io.github.pylonmc.rebar.config.RebarConfig
@@ -388,7 +388,7 @@ object BlockStorage : Listener {
         block: RebarBlock,
         context: BlockBreakContext
     ) : Boolean {
-        if (block is RebarBreakHandler && !block.preBreak(context)) {
+        if (block is BlockBreakRebarBlockHandler && !block.onPreBlockBreak(context)) {
             return false
         }
         return PreRebarBlockBreakEvent(block.block, block, context).callEvent()
@@ -404,8 +404,8 @@ object BlockStorage : Listener {
         if (context.normallyDrops) {
             block.getDropItem(context)?.let { drops.add(it.clone()) }
         }
-        if (block is RebarBreakHandler) {
-            block.onBreak(drops, context)
+        if (block is BlockBreakRebarBlockHandler) {
+            block.onBlockBreak(drops, context)
         }
 
         lockBlockWrite {
@@ -417,8 +417,8 @@ object BlockStorage : Listener {
         if (context.shouldSetToAir) {
             blockPosition.block.type = Material.AIR
         }
-        if (block is RebarBreakHandler) {
-            block.postBreak(context)
+        if (block is BlockBreakRebarBlockHandler) {
+            block.onPostBlockBreak(context)
         }
 
         BlockCullingEngine.remove(block)
@@ -492,8 +492,8 @@ object BlockStorage : Listener {
         val block = get(blockPosition) ?: return
 
         val context = BlockBreakContext.Delete(block.block)
-        if (block is RebarBreakHandler) {
-            block.onBreak(mutableListOf(), context)
+        if (block is BlockBreakRebarBlockHandler) {
+            block.onBlockBreak(mutableListOf(), context)
         }
 
         lockBlockWrite {
@@ -503,8 +503,8 @@ object BlockStorage : Listener {
         }
 
         block.block.type = Material.AIR
-        if (block is RebarBreakHandler) {
-            block.postBreak(context)
+        if (block is BlockBreakRebarBlockHandler) {
+            block.onPostBlockBreak(context)
         }
 
         BlockCullingEngine.remove(block)

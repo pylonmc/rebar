@@ -1,7 +1,7 @@
 package io.github.pylonmc.rebar.block
 
 import com.destroystokyo.paper.event.block.BlockDestroyEvent
-import io.github.pylonmc.rebar.block.base.RebarMultiblock
+import io.github.pylonmc.rebar.block.interfaces.RebarMultiblock
 import io.github.pylonmc.rebar.event.*
 import io.github.pylonmc.rebar.util.position.BlockPosition
 import io.github.pylonmc.rebar.util.position.ChunkPosition

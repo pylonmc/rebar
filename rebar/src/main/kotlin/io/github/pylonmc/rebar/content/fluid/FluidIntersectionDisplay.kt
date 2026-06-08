@@ -4,7 +4,7 @@ import io.github.pylonmc.rebar.block.BlockStorage
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.entity.EntityStorage
 import io.github.pylonmc.rebar.entity.RebarEntity
-import io.github.pylonmc.rebar.entity.base.RebarDeathEntity
+import io.github.pylonmc.rebar.entity.interfaces.DeathRebarEntityHandler
 import io.github.pylonmc.rebar.entity.display.ItemDisplayBuilder
 import io.github.pylonmc.rebar.entity.display.transform.TransformBuilder
 import io.github.pylonmc.rebar.event.RebarEntityDeathEvent
@@ -25,7 +25,7 @@ import java.util.*
 /**
  * A 'intersection display' is one of the gray displays that indicates one or more pipes being joined together.
  */
-class FluidIntersectionDisplay : RebarEntity<ItemDisplay>, RebarDeathEntity, FluidPointDisplay {
+class FluidIntersectionDisplay : RebarEntity<ItemDisplay>, DeathRebarEntityHandler, FluidPointDisplay {
     override val point: VirtualFluidPoint
     override val connectedPipeDisplays: MutableSet<UUID>
 

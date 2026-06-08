@@ -1,8 +1,8 @@
 package io.github.pylonmc.rebar.test.block.fluid;
 
 import io.github.pylonmc.rebar.block.RebarBlock;
-import io.github.pylonmc.rebar.block.base.RebarFluidTank;
-import io.github.pylonmc.rebar.block.base.RebarUnloadBlock;
+import io.github.pylonmc.rebar.block.interfaces.FluidTankRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.UnloadRebarBlockHandler;
 import io.github.pylonmc.rebar.block.context.BlockCreateContext;
 import io.github.pylonmc.rebar.datatypes.RebarSerializers;
 import io.github.pylonmc.rebar.event.RebarBlockUnloadEvent;
@@ -18,7 +18,7 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.jetbrains.annotations.NotNull;
 
 
-public class FluidLimiter extends RebarBlock implements RebarFluidTank, RebarUnloadBlock {
+public class FluidLimiter extends RebarBlock implements FluidTankRebarBlock, UnloadRebarBlockHandler {
 
     public static final NamespacedKey KEY = RebarTest.key("fluid_limiter");
     private static final NamespacedKey INPUT_KEY = RebarTest.key("input");

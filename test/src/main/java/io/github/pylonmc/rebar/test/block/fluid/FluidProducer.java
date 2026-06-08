@@ -1,8 +1,8 @@
 package io.github.pylonmc.rebar.test.block.fluid;
 
 import io.github.pylonmc.rebar.block.RebarBlock;
-import io.github.pylonmc.rebar.block.base.RebarFluidBlock;
-import io.github.pylonmc.rebar.block.base.RebarUnloadBlock;
+import io.github.pylonmc.rebar.block.interfaces.FluidRebarBlock;
+import io.github.pylonmc.rebar.block.interfaces.UnloadRebarBlockHandler;
 import io.github.pylonmc.rebar.block.context.BlockCreateContext;
 import io.github.pylonmc.rebar.config.RebarConfig;
 import io.github.pylonmc.rebar.datatypes.RebarSerializers;
@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 
-public class FluidProducer extends RebarBlock implements RebarFluidBlock, RebarUnloadBlock {
+public class FluidProducer extends RebarBlock implements FluidRebarBlock, UnloadRebarBlockHandler {
 
     public static final NamespacedKey LAVA_PRODUCER_KEY = RebarTest.key("lava_producer");
     public static final NamespacedKey WATER_PRODUCER_KEY = RebarTest.key("water_producer");

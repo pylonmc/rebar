@@ -93,7 +93,12 @@ class ItemButton @JvmOverloads constructor(
                             RebarArgument.of("unlock_cost", UnitFormat.RESEARCH_POINTS.format(research.cost))
                         )
                     } else {
-                        Component.translatable("rebar.guide.button.item.not-researched")
+                        // Null-cost research uses a custom unlock flow defined by the addon.
+                        // Delegate to the addon's unlock-instructions key, mirroring
+                        // ResearchButton's handling of the same case.
+                        Component.translatable(
+                            "${research.key.namespace}.researches.${research.key.key}.unlock-instructions"
+                        )
                     }
 
                     val lore = builder.lore()?.lines()?.toMutableList() ?: mutableListOf()
@@ -199,20 +204,22 @@ class ItemButton @JvmOverloads constructor(
     }
 
     companion object {
+        @Suppress("UnstableApiUsage")
         private fun getCheatItemStack(currentStack: ItemStack, click: Click): ItemStack {
-            val clonedUnknown = currentStack.clone()
-            val rebarItem = RebarItem.fromStack(clonedUnknown)
-
-            if (rebarItem == null) {
+            val itemSchema = RebarItemSchema.fromStack(currentStack)
+            if (itemSchema == null) {
                 // Item is not Rebar
-                val type = Registry.MATERIAL.get(clonedUnknown.type.key)!!
-                val amount = if (click.clickType.isShiftClick) { type.maxStackSize } else { 1 }
-                val clonedNotRebar = ItemStack(type, amount)
+                val type = Registry.MATERIAL.get(currentStack.type.key)!!
+                val amount = if (click.clickType.isShiftClick) type.maxStackSize else 1
+                val clonedNotRebar = ItemStack.of(type, amount)
+                clonedNotRebar.copyDataFrom(currentStack) {
+                    it != DataComponentTypes.ITEM_NAME && it != DataComponentTypes.LORE
+                }
                 return clonedNotRebar
             } else {
                 // Rebar item handling
-                val clonedRebar = rebarItem.schema.getItemStack()
-                clonedRebar.amount = if (click.clickType.isShiftClick) { clonedRebar.maxStackSize } else { 1 }
+                val amount = if (click.clickType.isShiftClick) 99 else 1 // the schema will automatically cap the amount to the max stack size
+                val clonedRebar = itemSchema.getItemStack(amount)
                 return clonedRebar
             }
         }

@@ -2,6 +2,7 @@ package io.github.pylonmc.rebar.config
 
 import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter
+import io.github.pylonmc.rebar.util.mergeResource
 import io.github.pylonmc.rebar.waila.Waila
 import net.kyori.adventure.bossbar.BossBar
 
@@ -10,7 +11,7 @@ import net.kyori.adventure.bossbar.BossBar
  */
 object RebarConfig {
 
-    private val config = Config(Rebar, "config.yml")
+    private val config = ConfigSection.copyResource(Rebar, "config.yml")
 
     @JvmField
     val REBAR_GUIDE_ON_FIRST_JOIN = config.getOrThrow("rebar-guide-on-first-join", ConfigAdapter.BOOLEAN)

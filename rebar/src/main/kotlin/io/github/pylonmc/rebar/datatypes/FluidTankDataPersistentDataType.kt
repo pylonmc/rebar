@@ -1,13 +1,13 @@
 package io.github.pylonmc.rebar.datatypes
 
-import io.github.pylonmc.rebar.block.base.RebarFluidTank
+import io.github.pylonmc.rebar.block.interfaces.FluidTankRebarBlock
 import io.github.pylonmc.rebar.util.rebarKey
 import io.github.pylonmc.rebar.util.setNullable
 import org.bukkit.persistence.PersistentDataAdapterContext
 import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.persistence.PersistentDataType
 
-internal object FluidTankDataPersistentDataType : PersistentDataType<PersistentDataContainer, RebarFluidTank.Companion.FluidTankData> {
+internal object FluidTankDataPersistentDataType : PersistentDataType<PersistentDataContainer, FluidTankRebarBlock.Companion.FluidTankData> {
     val fluidKey = rebarKey("fluid")
     val amountKey = rebarKey("amount")
     val capacityKey = rebarKey("capacity")
@@ -16,22 +16,22 @@ internal object FluidTankDataPersistentDataType : PersistentDataType<PersistentD
 
     override fun getPrimitiveType(): Class<PersistentDataContainer> = PersistentDataContainer::class.java
 
-    override fun getComplexType(): Class<RebarFluidTank.Companion.FluidTankData> = RebarFluidTank.Companion.FluidTankData::class.java
+    override fun getComplexType(): Class<FluidTankRebarBlock.Companion.FluidTankData> = FluidTankRebarBlock.Companion.FluidTankData::class.java
 
     override fun fromPrimitive(
         primitive: PersistentDataContainer,
         context: PersistentDataAdapterContext
-    ): RebarFluidTank.Companion.FluidTankData {
+    ): FluidTankRebarBlock.Companion.FluidTankData {
         val fluid = primitive.get(fluidKey, RebarSerializers.REBAR_FLUID)
         val amount = primitive.get(amountKey, RebarSerializers.DOUBLE)!!
         val capacity = primitive.get(capacityKey, RebarSerializers.DOUBLE)!!
         val input = primitive.get(inputKey, RebarSerializers.BOOLEAN)!!
         val output = primitive.get(outputKey, RebarSerializers.BOOLEAN)!!
-        return RebarFluidTank.Companion.FluidTankData(fluid, amount, capacity, input, output)
+        return FluidTankRebarBlock.Companion.FluidTankData(fluid, amount, capacity, input, output)
     }
 
     override fun toPrimitive(
-        complex: RebarFluidTank.Companion.FluidTankData,
+        complex: FluidTankRebarBlock.Companion.FluidTankData,
         context: PersistentDataAdapterContext
     ): PersistentDataContainer {
         val pdc = context.newPersistentDataContainer()

@@ -37,7 +37,7 @@ class ShapedRecipeWrapper(override val recipe: ShapedRecipe) : CraftingRecipeWra
                 "# # # # # # # # #",
             )
             .addIngredient('#', GuiItems.backgroundBlack())
-            .addIngredient('b', ItemButton.of(ItemStack(Material.CRAFTING_TABLE)))
+            .addIngredient('b', ItemButton.of(ItemStack.of(Material.CRAFTING_TABLE)))
             .addIngredient('r', ItemButton.of(recipe.result))
             .build()
 
@@ -73,7 +73,7 @@ sealed class AShapelessRecipeWrapper(recipe: CraftingRecipe) : CraftingRecipeWra
             "# # # # # # # # #",
         )
         .addIngredient('#', GuiItems.backgroundBlack())
-        .addIngredient('b', ItemButton.of(ItemStack(Material.CRAFTING_TABLE)))
+        .addIngredient('b', ItemButton.of(ItemStack.of(Material.CRAFTING_TABLE)))
         .addIngredient('0', getDisplaySlot(0))
         .addIngredient('1', getDisplaySlot(1))
         .addIngredient('2', getDisplaySlot(2))
@@ -83,7 +83,7 @@ sealed class AShapelessRecipeWrapper(recipe: CraftingRecipe) : CraftingRecipeWra
         .addIngredient('6', getDisplaySlot(6))
         .addIngredient('7', getDisplaySlot(7))
         .addIngredient('8', getDisplaySlot(8))
-        .addIngredient('r', recipe.result)
+        .addIngredient('r', ItemButton.of(recipe.result))
         .build()
 
     private fun getDisplaySlot(index: Int): Item {

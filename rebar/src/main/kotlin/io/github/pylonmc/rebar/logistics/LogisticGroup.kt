@@ -1,7 +1,7 @@
 package io.github.pylonmc.rebar.logistics
 
 import io.github.pylonmc.rebar.block.BlockStorage
-import io.github.pylonmc.rebar.block.base.RebarNoVanillaInventoryBlock
+import io.github.pylonmc.rebar.block.interfaces.NoVanillaInventoryRebarBlock
 import io.github.pylonmc.rebar.logistics.slot.*
 import org.bukkit.block.*
 import org.bukkit.inventory.ItemStack
@@ -39,7 +39,7 @@ class LogisticGroup(
 
         @JvmStatic
         fun getVanillaLogisticSlots(block: Block?): Map<String, LogisticGroup> {
-            if (block == null || BlockStorage.get(block) is RebarNoVanillaInventoryBlock) {
+            if (block == null || BlockStorage.get(block) is NoVanillaInventoryRebarBlock) {
                 return mapOf()
             }
 

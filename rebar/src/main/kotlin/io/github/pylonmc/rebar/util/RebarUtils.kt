@@ -5,13 +5,14 @@ package io.github.pylonmc.rebar.util
 
 import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.addon.RebarAddon
-import io.github.pylonmc.rebar.config.Config
 import io.github.pylonmc.rebar.config.ConfigSection
 import io.github.pylonmc.rebar.config.ContributorConfig
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter
-import io.github.pylonmc.rebar.item.RebarItemSchema
+import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.i18n.customMiniMessage
 import io.github.pylonmc.rebar.item.ItemTypeWrapper
+import io.github.pylonmc.rebar.item.RebarItemSchema
+import io.github.pylonmc.rebar.item.interfaces.ProjectileRebarItemHandler
 import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.nms.NmsAccessor
 import io.github.pylonmc.rebar.registry.RebarRegistry
@@ -23,15 +24,16 @@ import kotlinx.coroutines.delay
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.TranslatableComponent
 import net.kyori.adventure.text.TranslationArgumentLike
+import net.kyori.adventure.text.format.TextColor
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import org.bukkit.*
 import org.bukkit.attribute.Attribute
 import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
-import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Entity
 import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Player
+import org.bukkit.entity.*
 import org.bukkit.event.Event
 import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.Inventory
@@ -457,34 +459,39 @@ val Player.pdc: PersistentDataContainer
  * @return The merged config
  */
 @JvmSynthetic
-internal fun mergeGlobalConfig(addon: RebarAddon, from: String, to: String, warnMissing: Boolean = true): Config {
-    require(from.endsWith(".yml")) { "Config file must be a YAML file" }
-    require(to.endsWith(".yml")) { "Config file must be a YAML file" }
+internal fun mergeResource(fromAddon: RebarAddon, from: String, to: String, warnMissing: Boolean = true): ConfigSection {
+    require(from.endsWith(".yml") || from.endsWith(".yaml")) {
+        "Config file must be a YAML file (addon: ${fromAddon.javaClass.simpleName}, path: $from"
+    }
+    require(to.endsWith(".yml") || to.endsWith(".yaml")) {
+        "Config file must be a YAML file (addon: ${fromAddon.javaClass.simpleName}, path: $to"
+    }
+
     val cached = globalConfigCache[from to to]
     if (cached != null) {
         return cached
     }
-    val globalConfig = Rebar.dataFolder.resolve(to)
-    if (!globalConfig.exists()) {
-        globalConfig.parentFile.mkdirs()
-        globalConfig.createNewFile()
+
+    val toConfigFile = Rebar.javaPlugin.dataFolder.resolve(to)
+    if (!toConfigFile.exists()) {
+        toConfigFile.parentFile.mkdirs()
+        toConfigFile.createNewFile()
     }
-    val config = Config(globalConfig)
-    val resource = addon.javaPlugin.getResource(from)
-    if (resource == null) {
+
+    check(toConfigFile.exists()) { "Unable to create file ${toConfigFile.absolutePath}" }
+    val toConfig = ConfigSection.fromOrThrow(toConfigFile)
+    val fromConfig = ConfigSection.fromResource(fromAddon.javaPlugin, from)
+    if (fromConfig == null) {
         if (warnMissing) Rebar.logger.warning("Resource not found: $from")
     } else {
-        val newConfig = resource.reader().use(YamlConfiguration::loadConfiguration)
-        config.internalConfig.setDefaults(newConfig)
-        config.internalConfig.options().copyDefaults(true)
-        config.merge(ConfigSection(newConfig))
-        config.save()
+        toConfig.merge(fromConfig)
+        toConfig.save(toConfigFile)
     }
-    globalConfigCache[from to to] = config
-    return config
+    globalConfigCache[from to to] = toConfig
+    return toConfig
 }
 
-private val globalConfigCache: MutableMap<Pair<String, String>, Config> = mutableMapOf()
+private val globalConfigCache: MutableMap<Pair<String, String>, ConfigSection> = mutableMapOf()
 
 @JvmSynthetic
 internal fun getContributors(addon: RebarAddon): List<ContributorConfig> {
@@ -493,13 +500,12 @@ internal fun getContributors(addon: RebarAddon): List<ContributorConfig> {
         return cached
     }
 
-    val resource = addon.javaPlugin.getResource("contributors.yml")
-    val contributors = if (resource != null) {
-        val config = YamlConfiguration.loadConfiguration(resource.reader())
-        ConfigSection(config).get("contributors", ConfigAdapter.LIST.from(ConfigAdapter.CONTRIBUTOR), emptyList())
-    } else {
+    val config = ConfigSection.fromResource(Rebar, "contributors.yml")
+    val contributors = config?.get(
+        "contributors",
+        ConfigAdapter.LIST.from(ConfigAdapter.CONTRIBUTOR),
         emptyList()
-    }
+    ) ?: emptyList()
     contributorsCache[addon] = contributors
     return contributors
 }
@@ -669,6 +675,25 @@ fun CoroutineContext.createChildContext(): CoroutineContext = this + Job(this[Jo
  * @return Whether the entity has at least one tracking player, a tracking player is just a player who has & is receiving packets for the entity.
  */
 fun Entity.hasTracker() = NmsAccessor.instance.hasTracker(this)
+
+fun Projectile.sourceItem(): ItemStack? {
+    return when(this) {
+        is ThrowableProjectile -> this.item
+        is SizedFireball -> this.displayItem
+        is AbstractArrow -> this.itemStack
+        is Firework -> this.item
+        else -> persistentDataContainer.get(ProjectileRebarItemHandler.sourceItemKey, RebarSerializers.ITEM_STACK)
+    }
+}
+
+fun Entity.getWeaponItem(): ItemStack? {
+    return NmsAccessor.instance.getWeaponItem(this)
+}
+
+@JvmName("colorToTextColor")
+fun Color.toTextColor(): TextColor {
+    return TextColor.color(this.red, this.green, this.blue);
+}
 
 /**
  * Checks whether two items are of the same type, comparing Rebar IDs if they are Rebar items and vanilla IDs if they are not.

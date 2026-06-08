@@ -32,8 +32,8 @@ sealed class SmithingRecipeWrapper(recipe: SmithingRecipe) : VanillaRecipeWrappe
             "# # # # # # # # #",
         )
         .addIngredient('#', GuiItems.backgroundBlack())
-        .addIngredient('b', ItemButton.of(ItemStack(Material.SMITHING_TABLE)))
-        .addIngredient('0', ItemStack(Material.NETHERITE_UPGRADE_SMITHING_TEMPLATE))
+        .addIngredient('b', ItemButton.of(ItemStack.of(Material.SMITHING_TABLE)))
+        .addIngredient('0', ItemStack.of(Material.NETHERITE_UPGRADE_SMITHING_TEMPLATE))
         .addIngredient('1', ItemButton.of(recipe.base))
         .addIngredient('2', ItemButton.of(recipe.addition))
         .addIngredient('r', ItemButton.of(recipe.result))

@@ -33,7 +33,7 @@ sealed class CookingRecipeWrapper(final override val recipe: CookingRecipe<*>) :
             "# # # # # # # # #",
         )
         .addIngredient('#', GuiItems.backgroundBlack())
-        .addIngredient('b', ItemStack(displayBlock))
+        .addIngredient('b', ItemStack.of(displayBlock))
         .addIngredient('i', ItemButton.of(recipe.inputChoice))
         .addIngredient(
             'f', GuiItems.progressCyclingItem(

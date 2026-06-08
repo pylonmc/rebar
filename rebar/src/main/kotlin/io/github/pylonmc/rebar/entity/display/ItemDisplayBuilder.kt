@@ -44,7 +44,7 @@ open class ItemDisplayBuilder() {
         this.persistent = other.persistent
     }
 
-    fun material(material: Material) = apply { this.itemStack = ItemStack(material) }
+    fun material(material: Material) = apply { this.itemStack = ItemStack.of(material) }
     fun itemStack(itemStack: ItemStack?) = apply { this.itemStack = itemStack }
     fun itemStack(builder: ItemStackBuilder) = apply { this.itemStack = builder.build() }
     fun itemDisplayTransform(itemDisplayTransform: ItemDisplay.ItemDisplayTransform?) = apply { this.itemDisplayTransform = itemDisplayTransform }

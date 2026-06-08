@@ -19,6 +19,7 @@ import org.bukkit.NamespacedKey
 import org.bukkit.inventory.ItemStack
 import org.jetbrains.annotations.Contract
 import java.lang.invoke.MethodHandle
+import kotlin.math.min
 
 /**
  * Stores information about a Rebar item type, including its key, template [ItemStack], class, and
@@ -49,7 +50,7 @@ class RebarItemSchema @JvmOverloads internal constructor(
      * Return's a clone of the [template] [ItemStack]
      */
     @JvmOverloads
-    fun getItemStack(count: Int = 1): ItemStack = template.asQuantity(count)
+    fun getItemStack(count: Int = 1): ItemStack = template.asQuantity(min(count, template.maxStackSize))
 
     /**
      * Return's a new instance of the [RebarItem] from the [itemClass] using a copy of the [template] [ItemStack]

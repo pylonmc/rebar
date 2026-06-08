@@ -1,8 +1,8 @@
 package io.github.pylonmc.rebar.culling
 
 import io.github.pylonmc.rebar.block.RebarBlock
-import io.github.pylonmc.rebar.block.base.RebarCulledBlock
-import io.github.pylonmc.rebar.block.base.RebarGroupCulledBlock
+import io.github.pylonmc.rebar.block.interfaces.CulledRebarBlock
+import io.github.pylonmc.rebar.block.interfaces.GroupCulledRebarBLock
 import io.github.pylonmc.rebar.config.RebarConfig
 import io.github.pylonmc.rebar.culling.BlockCullingEngine.ChunkData
 import io.github.pylonmc.rebar.culling.BlockCullingEngine.blockTextureOctrees
@@ -26,16 +26,17 @@ import org.bukkit.util.BoundingBox
 import org.bukkit.util.Vector
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.CopyOnWriteArraySet
 
 class PlayerCullingJob(
     val playerId: UUID,
     val visible: MutableMap<Long, RebarBlock> = ConcurrentHashMap(),
+    val lightDelegates: MutableMap<Long, MutableSet<RebarBlock>> = ConcurrentHashMap(),
     var tick: Int = 0
 ) {
     suspend fun run() {
         val player = Bukkit.getPlayer(playerId)
         if (player == null || !BlockCullingEngine.hasCullingJob(playerId)) {
-            currentCoroutineContext().cancel()
             BlockCullingEngine.stopCullingJob(playerId)
             return
         }
@@ -59,7 +60,8 @@ class PlayerCullingJob(
                     val entity = block.blockTextureEntity ?: continue
                     val distanceSquared = block.block.distanceSquared(feet)
                     entity.addOrRefreshViewer(playerId, distanceSquared)
-                    visible[BlockPosition.asLong(block.block.x, block.block.y, block.block.z)] = block
+                    visible[BlockPosition.asLong(block.block)] = block
+                    entity.lightDelegatePositions.forEach { lightDelegates.getOrPut(it) { CopyOnWriteArraySet() }.add(block) }
                 }
             }
             delayTicks(RebarConfig.CullingEngineConfig.DISABLED_UPDATE_INTERVAL.toLong())
@@ -81,33 +83,46 @@ class PlayerCullingJob(
         }
         visible.values.toSet().subtract(query.toSet()).forEach {
             it.blockTextureEntity?.removeViewer(playerId)
-            if (it is RebarCulledBlock && it !is RebarGroupCulledBlock) {
+            if (it is CulledRebarBlock && it !is GroupCulledRebarBLock) {
                 syncTasks[it] = false
             }
         }
         visible.values.retainAll(query)
 
-        val cullingGroups = mutableSetOf<RebarGroupCulledBlock.CullingGroup>()
+        val cullingGroups = mutableSetOf<GroupCulledRebarBLock.CullingGroup>()
 
         fun makeBlockVisible(block: RebarBlock, distanceSquared: Double) {
-            block.blockTextureEntity?.addOrRefreshViewer(playerId, distanceSquared)
-            if (block is RebarGroupCulledBlock) {
+            block.blockTextureEntity?.apply {
+                addOrRefreshViewer(playerId, distanceSquared)
+                lightDelegatePositions.forEach { lightDelegates.getOrPut(it) { CopyOnWriteArraySet() }.add(block) }
+            }
+
+            if (block is GroupCulledRebarBLock) {
                 cullingGroups.addAll(block.cullingGroups)
-            } else if (block is RebarCulledBlock) {
+            } else if (block is CulledRebarBlock) {
                 if (block.isCulledAsync) {
                     block.onVisible(player)
                 } else {
                     syncTasks[block] = true
                 }
             }
-            visible[BlockPosition.asLong(block.block.x, block.block.y, block.block.z)] = block
+            visible[BlockPosition.asLong(block.block)] = block
         }
 
         fun makeBlockCulled(block: RebarBlock) {
-            block.blockTextureEntity?.removeViewer(playerId)
-            if (block is RebarGroupCulledBlock) {
+            block.blockTextureEntity?.apply {
+                removeViewer(playerId)
+                for (delegate in lightDelegatePositions) {
+                    lightDelegates[delegate]?.apply {
+                        remove(block)
+                        if (isEmpty()) lightDelegates.remove(delegate)
+                    }
+                }
+            }
+
+            if (block is GroupCulledRebarBLock) {
                 cullingGroups.addAll(block.cullingGroups)
-            } else if (block is RebarCulledBlock) {
+            } else if (block is CulledRebarBlock) {
                 if (block.isCulledAsync) {
                     block.onCulled(player)
                 } else {
@@ -123,9 +138,13 @@ class PlayerCullingJob(
         for (block in query) {
             val entity = block.blockTextureEntity
             val seen = when (block) {
-                is RebarCulledBlock -> block.isVisible(player)
+                is CulledRebarBlock -> block.isVisible(player)
                 else -> entity?.hasViewer(playerId) ?: false
             }
+
+            // If its visible & we are on a visibleInterval tick, or if its hidden & we are on a hiddenInterval tick, do a culling check
+            val shouldCheck = (seen && tick % config.visibleInterval == 0) || (!seen && tick % config.hiddenInterval == 0)
+            if (!shouldCheck) continue
 
             // If we are within the always show radius, show, if we are outside cull radius, hide
             // (our query is a cube not a sphere, so blocks in the corners can still be outside the cull radius)
@@ -138,39 +157,36 @@ class PlayerCullingJob(
                 continue
             }
 
-            // If its visible & we are on a visibleInterval tick, or if its hidden & we are on a hiddenInterval tick, do a culling check
-            if ((seen && (tick % config.visibleInterval) == 0) || (!seen && (tick % config.hiddenInterval) == 0)) {
-                // TODO: Later if necessary, have a 3d scan using bounding boxes rather than a line
-                // Ray traces from the players eye to the center of the block, counting occluding blocks in between
-                // if its greater than the maxOccludingCount, hide the entity, otherwise show it
-                var occluding = 0
-                val end = Vector(block.block.x + 0.5, block.block.y + 0.5, block.block.z + 0.5)
-                val totalDistance = eye.distanceSquared(end)
-                val current = eye.clone()
-                val direction = end.clone().subtract(eye).normalize()
-                while (current.distanceSquared(eye) < totalDistance) {
-                    current.add(direction)
-                    if (current.distanceSquared(eye) > totalDistance) {
-                        current.copy(end)
-                    }
-
-                    val x = current.blockX
-                    val y = current.blockY
-                    val z = current.blockZ
-
-                    val chunkPos = Chunk.getChunkKey(x shr 4, z shr 4)
-                    val occludes = occludingCache.getOrPut(chunkPos) { ChunkData() }.isOccluding(world, x, y, z)
-                    if (occludes && ++occluding > config.maxOccludingCount) {
-                        break
-                    }
+            // TODO: Later if necessary, have a 3d scan using bounding boxes rather than a line
+            // Ray traces from the players eye to the center of the block, counting occluding blocks in between
+            // if its greater than the maxOccludingCount, hide the entity, otherwise show it
+            var occluding = 0
+            val end = Vector(block.block.x + 0.5, block.block.y + 0.5, block.block.z + 0.5)
+            val totalDistance = eye.distanceSquared(end)
+            val current = eye.clone()
+            val direction = end.clone().subtract(eye).normalize()
+            while (current.distanceSquared(eye) < totalDistance) {
+                current.add(direction)
+                if (current.distanceSquared(eye) > totalDistance) {
+                    current.copy(end)
                 }
 
-                val shouldSee = occluding <= config.maxOccludingCount
-                if (shouldSee) {
-                    makeBlockVisible(block, distanceSquared)
-                } else {
-                    makeBlockCulled(block)
+                val x = current.blockX
+                val y = current.blockY
+                val z = current.blockZ
+
+                val chunkPos = Chunk.getChunkKey(x shr 4, z shr 4)
+                val occludes = occludingCache.getOrPut(chunkPos) { ChunkData() }.isOccluding(world, x, y, z)
+                if (occludes && ++occluding > config.maxOccludingCount) {
+                    break
                 }
+            }
+
+            val shouldSee = occluding <= config.maxOccludingCount
+            if (shouldSee) {
+                makeBlockVisible(block, distanceSquared)
+            } else {
+                makeBlockCulled(block)
             }
         }
 
