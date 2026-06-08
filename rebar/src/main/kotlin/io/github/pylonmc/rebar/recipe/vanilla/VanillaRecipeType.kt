@@ -71,11 +71,6 @@ internal fun RecipeChoice.asRecipeInput(): RecipeInput {
     }
 }
 
-@JvmSynthetic
-internal fun RecipeInput.Item.asRecipeChoice(): RecipeChoice {
-    return RecipeChoice.ExactChoice(representativeItems.mapTo(mutableListOf()) { it.clone() })
-}
-
 @get:JvmSynthetic
 val CookingRecipe<*>.recipeType: RecipeType<*>?
     get() = when (this) {
