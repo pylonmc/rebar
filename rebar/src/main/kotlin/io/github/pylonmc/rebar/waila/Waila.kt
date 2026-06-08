@@ -177,7 +177,6 @@ class Waila private constructor(
                 val entity = Bukkit.getEntity(targetEntity!!)
                 if (entity == null || !entity.isValid) {
                     targetEntity = null
-                    playerEyeLocationAtLastTargetUpdate = null // Force WAILA target to update
                     updateTarget()
                     hide()
                     return
@@ -215,7 +214,6 @@ class Waila private constructor(
 
                 if (block.isEmpty) {
                     targetBlock = null
-                    playerEyeLocationAtLastTargetUpdate = null // Force WAILA target to update
                     updateTarget()
                     hide()
                     return
@@ -224,7 +222,7 @@ class Waila private constructor(
                 var display = blockOverrides[targetBlock]?.invoke(player)
                     ?: block.let(BlockStorage::get)?.getWaila(player)
 
-                if (display == null && player.wailaConfig.vanillaWailaEnabled) {
+                if (!BlockStorage.isRebarBlock(block) && display == null && player.wailaConfig.vanillaWailaEnabled) {
                     val name = Component.translatable(block.type.translationKey())
                     val prefix = WailaDisplay.getWailaBlockPrefix(block, player)
                     display = if (prefix != null) {
