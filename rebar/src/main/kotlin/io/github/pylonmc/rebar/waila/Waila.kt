@@ -67,7 +67,7 @@ class Waila private constructor(
         RebarConfig.WailaConfig.DEFAULT_DISPLAY.overlay
     )
 
-    private var previousPlayerEyeLocation: Location? = null
+    private var playerEyeLocationAtLastTargetUpdate: Location? = null
 
     // always null if targetEntity is not null
     private var targetBlock: BlockPosition? = null
@@ -139,12 +139,10 @@ class Waila private constructor(
         updateTargetJob.cancel()
     }
 
+    // Note: Raytracing is quite expensive especially when done frequently, so we try to
+    // limit target recalculation as much as possible
     private fun updateTarget() {
-        if (player.eyeLocation == previousPlayerEyeLocation) {
-            return
-        }
-
-        previousPlayerEyeLocation = player.eyeLocation
+        playerEyeLocationAtLastTargetUpdate = player.eyeLocation
 
         val entityReach = player.getAttribute(Attribute.ENTITY_INTERACTION_RANGE)?.value ?: 3.0
         val blockReach = player.getAttribute(Attribute.BLOCK_INTERACTION_RANGE)?.value ?: 4.5
@@ -179,7 +177,7 @@ class Waila private constructor(
                 val entity = Bukkit.getEntity(targetEntity!!)
                 if (entity == null || !entity.isValid) {
                     targetEntity = null
-                    previousPlayerEyeLocation = null // Force WAILA target to update
+                    playerEyeLocationAtLastTargetUpdate = null // Force WAILA target to update
                     updateTarget()
                     hide()
                     return
@@ -217,7 +215,7 @@ class Waila private constructor(
 
                 if (block.isEmpty) {
                     targetBlock = null
-                    previousPlayerEyeLocation = null // Force WAILA target to update
+                    playerEyeLocationAtLastTargetUpdate = null // Force WAILA target to update
                     updateTarget()
                     hide()
                     return
@@ -298,7 +296,15 @@ class Waila private constructor(
                 val waila = wailas[player.uniqueId]!!
                 while (true) {
                     waila.updateTarget()
-                    delayTicks(RebarConfig.WailaConfig.TARGET_TICK_INTERVAL.toLong())
+
+                    // Delay for at most TARGET_TICK_INTERVAL * STATIONARY_TARGET_TICK_INTERVAL_MULTIPLIER ticks,
+                    // until the player moves their eyes
+                    for (i in 0..<RebarConfig.WailaConfig.STATIONARY_TARGET_TICK_INTERVAL_MULTIPLIER) {
+                        delayTicks(RebarConfig.WailaConfig.TARGET_TICK_INTERVAL.toLong())
+                        if (waila.playerEyeLocationAtLastTargetUpdate != player.eyeLocation) {
+                            break
+                        }
+                    }
                 }
             }
 

@@ -45,6 +45,10 @@ waila:
   # The interval (in Minecraft ticks), between the player's target block/entity being updated
   target-tick-interval: 6
 
+  # When the player is standing completely still, the interval between WAILA updated is
+  # multiplied by this much
+  stationary-target-tick-interval-multiplier: 4
+
   # The interval (in Minecraft ticks), between the WAILA display being updated for the player's target block/entity
   # This can generally be kept low without any performance issues
   contents-tick-interval: 2
