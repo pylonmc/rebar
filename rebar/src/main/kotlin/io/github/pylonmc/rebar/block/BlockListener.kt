@@ -43,8 +43,13 @@ internal object BlockListener : MultiListener {
     
     @MultiHandler(priorities = [ EventPriority.LOWEST, EventPriority.MONITOR ], ignoreCancelled = true)
     private fun blockPlace(event: BlockPlaceEvent, priority: EventPriority) {
-        val item = event.itemInHand
+        val rebarBlock = BlockStorage.get(event.block)
+        if (rebarBlock != null) {
+            event.isCancelled = true
+            return
+        }
 
+        val item = event.itemInHand
         if (!item.type.isBlock) {
             return
         }
@@ -255,17 +260,9 @@ internal object BlockListener : MultiListener {
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    private fun preventReplacingStructureVoids(event: BlockPlaceEvent) {
-        val rebarBlock = BlockStorage.get(event.block)
-        if (rebarBlock != null && rebarBlock.schema.material == Material.STRUCTURE_VOID) {
-            event.isCancelled = true
-        }
-    }
-
-    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     private fun onFluidPlace(event: PlayerBucketEmptyEvent) {
         val rebarBlock = BlockStorage.get(event.block)
-        if (rebarBlock != null && rebarBlock.schema.material == Material.STRUCTURE_VOID) {
+        if (rebarBlock != null) {
             event.isCancelled = true
         }
     }
