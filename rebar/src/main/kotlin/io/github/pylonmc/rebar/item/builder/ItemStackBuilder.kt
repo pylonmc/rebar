@@ -378,7 +378,7 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
          * ItemStackBuilder will **NOT** be made to [stack].
          */
         @JvmStatic
-        fun singleton(stack: ItemStack): ItemStackBuilder {
+        fun asOne(stack: ItemStack): ItemStackBuilder {
             return ItemStackBuilder(stack.asOne())
         }
 
