@@ -81,7 +81,7 @@ object GuiItems {
         var i = 0
         while (i < timeTicks) {
             states.add(
-                ItemStackBuilder.of(template.build().clone())
+                template.clone()
                     .set(DataComponentTypes.MAX_DAMAGE, timeTicks)
                     .set(DataComponentTypes.DAMAGE, i)
                     .set(
