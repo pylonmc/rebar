@@ -9,6 +9,7 @@ import io.github.pylonmc.rebar.block.RebarBlock
 import io.github.pylonmc.rebar.entity.packet.BlockTextureEntity
 import io.github.pylonmc.rebar.i18n.PlayerTranslationHandler
 import io.github.pylonmc.rebar.item.ItemTypeWrapper
+import io.github.pylonmc.rebar.item.RebarItemSchema
 import io.github.pylonmc.rebar.nms.entity.BlockTextureEntityImpl
 import io.github.pylonmc.rebar.nms.inventory.KeyedContainerListener
 import io.github.pylonmc.rebar.nms.packet.PlayerPacketHandler
@@ -17,6 +18,8 @@ import io.github.pylonmc.rebar.nms.recipe.HandlerRecipeBookClick
 import io.github.pylonmc.rebar.nms.recipe.RecipeMapper
 import io.github.pylonmc.rebar.util.position.BlockPosition
 import io.papermc.paper.adventure.PaperAdventure
+import io.papermc.paper.datacomponent.DataComponentType
+import io.papermc.paper.datacomponent.PaperDataComponentType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import net.kyori.adventure.text.Component
@@ -267,14 +270,15 @@ object NmsAccessorImpl : NmsAccessor {
         if (idEnd == -1) idEnd = input.length
 
         val typeString = input.substring(0, idEnd)
+        val data = input.substring(idEnd)
         val type = ItemTypeWrapper(NamespacedKey.fromString(typeString) ?: throw IllegalArgumentException("Could not find item $typeString"))
         if (type is ItemTypeWrapper.Rebar) {
-            input = "minecraft:air" + input.substring(idEnd)
+            input = "minecraft:air$data"
         }
 
         try {
-            val reader = if (input.isBlank()) null else StringReader(input)
-            val itemInput = if (input.isBlank()) null else ItemParser(CraftRegistry.getMinecraftRegistry()).parse(reader!!);
+            val reader = if (data.isBlank()) null else StringReader(input)
+            val itemInput = if (data.isBlank()) null else ItemParser(CraftRegistry.getMinecraftRegistry()).parse(reader!!);
             if (reader != null && reader.canRead()) {
                 throw IllegalArgumentException("Trailing input found when parsing ItemStack: " + reader.remaining);
             } else {
@@ -335,5 +339,21 @@ object NmsAccessorImpl : NmsAccessor {
         if (finalize && anyRemoved) {
             recipeManager.finalizeRecipeLoading()
         }
+    }
+
+    override fun getOverriddenTypes(itemStack: ItemStack): List<DataComponentType> {
+        val schema = RebarItemSchema.fromStack(itemStack)
+        val nmsStack = (itemStack as CraftItemStack).handle
+        if (schema != null) {
+            val template = schema.getOriginalTemplate()
+            val nmsTemplate = (template as CraftItemStack).handle
+            val types = mutableListOf<DataComponentType>()
+            for (type in nmsTemplate.components.keySet()) {
+                if (nmsTemplate.get(type) != nmsStack.get(type)) {
+                    types.add(PaperDataComponentType.minecraftToBukkit(type))
+                }
+            }
+        }
+        return nmsStack.componentsPatch.entrySet().map { PaperDataComponentType.minecraftToBukkit(it.key) }
     }
 }

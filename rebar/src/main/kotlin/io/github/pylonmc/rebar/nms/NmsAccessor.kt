@@ -7,6 +7,7 @@ import io.github.pylonmc.rebar.entity.packet.BlockTextureEntity
 import io.github.pylonmc.rebar.i18n.PlayerTranslationHandler
 import io.github.pylonmc.rebar.util.delayTicks
 import io.github.pylonmc.rebar.util.position.BlockPosition
+import io.papermc.paper.datacomponent.DataComponentType
 import kotlinx.coroutines.launch
 import net.kyori.adventure.text.Component
 import org.bukkit.Material
@@ -125,6 +126,8 @@ interface NmsAccessor {
     fun registerRecipes(recipes: Iterable<Recipe>, finalize: Boolean)
 
     fun unregisterRecipes(recipes: Iterable<NamespacedKey>, finalize: Boolean)
+
+    fun getOverriddenTypes(itemStack: ItemStack): List<DataComponentType>
 
     companion object {
         val instance = Class.forName("io.github.pylonmc.rebar.nms.NmsAccessorImpl")
