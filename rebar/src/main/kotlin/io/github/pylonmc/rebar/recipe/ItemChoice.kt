@@ -10,6 +10,7 @@ import io.github.pylonmc.rebar.util.matchesComponents
 import io.github.pylonmc.rebar.util.overriddenComponents
 import io.github.pylonmc.rebar.util.overriddenDataTypes
 import io.papermc.paper.datacomponent.DataComponentType
+import jdk.vm.ci.code.Location.stack
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.RecipeChoice
 import java.util.function.Predicate
@@ -31,14 +32,14 @@ class ItemChoice internal constructor(
         val wrapper: ItemTypeWrapper,
         val predicate: Predicate<ItemStack>? = null,
     ) {
-        fun matches(stack: ItemStack): Boolean
-                = wrapper.matches(stack) && predicate?.test(stack) ?: true
+        fun matches(stack: ItemStack?): Boolean
+                = stack != null && wrapper.matches(stack) && predicate?.test(stack) ?: true
 
-        fun matches(slot: LogisticSlot) = slot.getItemStack()?.let { matches(it) } ?: false
+        fun matches(slot: LogisticSlot) = matches(slot.getItemStack())
     }
 
-    fun matchesIgnoringAmount(stack: ItemStack)
-            = internalChoices.any { it.matches(stack) }
+    fun matchesIgnoringAmount(stack: ItemStack?)
+            = stack != null && internalChoices.any { it.matches(stack) }
 
     fun matchesIgnoringAmount(slot: LogisticSlot) = slot.getItemStack()?.let { stack ->
         internalChoices.any { choice -> choice.matches(stack) }
