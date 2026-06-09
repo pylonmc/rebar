@@ -6,7 +6,6 @@ import io.github.pylonmc.rebar.item.interfaces.*
 import io.github.pylonmc.rebar.item.research.Research.Companion.canCraft
 import io.github.pylonmc.rebar.nms.NmsAccessor
 import io.github.pylonmc.rebar.recipe.vanilla.AbstractCraftingRebarRecipe
-import io.github.pylonmc.rebar.recipe.vanilla.CookingRebarRecipe
 import io.github.pylonmc.rebar.recipe.vanilla.CraftingInput
 import io.github.pylonmc.rebar.recipe.vanilla.DummyVanillaRebarRecipe
 import io.github.pylonmc.rebar.recipe.vanilla.VanillaRecipeType
@@ -14,6 +13,7 @@ import io.github.pylonmc.rebar.recipe.vanilla.rebarRecipeType
 import io.github.pylonmc.rebar.util.isRebarAndIsNot
 import io.github.pylonmc.rebar.util.plainText
 import io.github.pylonmc.rebar.util.rebarKey
+import io.papermc.paper.command.brigadier.argument.ArgumentTypes.blockState
 import io.papermc.paper.datacomponent.DataComponentTypes
 import io.papermc.paper.event.player.CartographyItemEvent
 import net.kyori.adventure.text.Component
@@ -21,6 +21,7 @@ import org.bukkit.GameMode
 import org.bukkit.Keyed
 import org.bukkit.Material
 import org.bukkit.block.Block
+import org.bukkit.block.Campfire
 import org.bukkit.block.Crafter
 import org.bukkit.block.Furnace
 import org.bukkit.entity.Player
@@ -136,7 +137,7 @@ internal object RebarRecipeListener : Listener {
 
     private fun checkCrafterRecipe(block: Block, possibleRecipe: Recipe? = null): Pair<Boolean, AbstractCraftingRebarRecipe?>? {
         val crafter = block.getState(false) as? Crafter ?: return null
-        val inventory = crafter.inventory as CrafterInventory
+        val inventory = crafter.inventory
 
         val hasRebarItems = inventory.any { it.isRebarAndIsNot<VanillaCraftingIngredientItem>() }
         if (!hasRebarItems && possibleRecipe != null && !RecipeType.isDummyRecipe(possibleRecipe)) {
@@ -245,16 +246,22 @@ internal object RebarRecipeListener : Listener {
         }
 
         val block = e.block
-        val furnace = block.getState(false) as? Furnace
-        if (furnace == null) {
-            e.isCancelled = true
-            return
+        val blockState = block.getState(false)
+        val result = when(blockState) {
+            is Furnace -> blockState.inventory.result
+            is Campfire -> null
+            else -> {
+                e.isCancelled = true
+                return
+            }
         }
 
-        val matchedRecipe = RecipeMatchingService.matchCookingRecipe(rebarType, e.source, furnace.inventory.result, originalRecipe)
+        val matchedRecipe = RecipeMatchingService.matchCookingRecipe(rebarType, e.source, result, originalRecipe)
         if (matchedRecipe != null) {
             e.result = matchedRecipe.result.item.clone()
-            NmsAccessor.instance.setFurnaceRecipeCache(e.block, DummyVanillaRebarRecipe.recipeKey(matchedRecipe.key))
+            if (blockState is Furnace) {
+                NmsAccessor.instance.setFurnaceRecipeCache(e.block, DummyVanillaRebarRecipe.recipeKey(matchedRecipe.key))
+            }
             return
         }
 

@@ -35,7 +35,7 @@ class ItemChoice internal constructor(
     }
 
     fun matches(stack: ItemStack)
-            = stack.amount > amount && internalChoices.any { it.matches(stack) }
+            = stack.amount >= amount && internalChoices.any { it.matches(stack) }
 
     fun matchesIgnoringAmount(stack: ItemStack)
             = internalChoices.any { it.matches(stack) }
