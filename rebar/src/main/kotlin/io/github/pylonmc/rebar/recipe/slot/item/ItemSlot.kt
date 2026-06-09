@@ -1,11 +1,11 @@
-package io.github.pylonmc.rebar.logistics.slot
+package io.github.pylonmc.rebar.recipe.slot.item
 
 import org.bukkit.inventory.ItemStack
 
 /**
  * Represents a slot in an interface which can have items added or removed.
  */
-interface LogisticSlot {
+interface ItemSlot {
 
     /**
      * The amount of the returned [ItemStack] does not matter and will not

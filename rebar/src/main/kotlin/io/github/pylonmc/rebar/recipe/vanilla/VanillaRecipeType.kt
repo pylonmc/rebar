@@ -3,7 +3,7 @@ package io.github.pylonmc.rebar.recipe.vanilla
 import io.github.pylonmc.rebar.item.ItemTypeWrapper
 import io.github.pylonmc.rebar.nms.NmsAccessor
 import io.github.pylonmc.rebar.recipe.ConfigurableRecipeType
-import io.github.pylonmc.rebar.recipe.ItemChoice
+import io.github.pylonmc.rebar.recipe.ingredients.ItemChoice
 import io.github.pylonmc.rebar.recipe.RebarRecipe
 import io.github.pylonmc.rebar.recipe.RecipeType
 import org.bukkit.NamespacedKey

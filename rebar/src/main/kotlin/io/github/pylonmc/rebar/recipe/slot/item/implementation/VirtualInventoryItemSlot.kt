@@ -1,13 +1,14 @@
-package io.github.pylonmc.rebar.logistics.slot
+package io.github.pylonmc.rebar.recipe.slot.item.implementation
 
+import io.github.pylonmc.rebar.recipe.slot.item.ItemSlot
 import org.bukkit.inventory.ItemStack
 import xyz.xenondevs.invui.inventory.VirtualInventory
 import xyz.xenondevs.invui.inventory.event.UpdateReason
 
-open class VirtualInventoryLogisticSlot(
+open class VirtualInventoryItemSlot(
     val inventory: VirtualInventory,
     val slot: Int
-) : LogisticSlot {
+) : ItemSlot {
 
     override fun getItemStack() = inventory.getUnsafeItem(slot)
 

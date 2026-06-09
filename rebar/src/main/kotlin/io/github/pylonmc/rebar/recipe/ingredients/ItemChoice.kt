@@ -1,8 +1,8 @@
-package io.github.pylonmc.rebar.recipe
+package io.github.pylonmc.rebar.recipe.ingredients
 
 import io.github.pylonmc.rebar.guide.button.ItemButton
 import io.github.pylonmc.rebar.item.ItemTypeWrapper
-import io.github.pylonmc.rebar.logistics.slot.LogisticSlot
+import io.github.pylonmc.rebar.recipe.slot.item.ItemSlot
 import io.github.pylonmc.rebar.util.componentsEqual
 import io.github.pylonmc.rebar.util.hasDefaultComponents
 import io.github.pylonmc.rebar.util.isDefaultComponents
@@ -10,7 +10,6 @@ import io.github.pylonmc.rebar.util.matchesComponents
 import io.github.pylonmc.rebar.util.overriddenComponents
 import io.github.pylonmc.rebar.util.overriddenDataTypes
 import io.papermc.paper.datacomponent.DataComponentType
-import jdk.vm.ci.code.Location.stack
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.RecipeChoice
 import java.util.function.Predicate
@@ -35,20 +34,20 @@ class ItemChoice internal constructor(
         fun matches(stack: ItemStack?): Boolean
                 = stack != null && wrapper.matches(stack) && predicate?.test(stack) ?: true
 
-        fun matches(slot: LogisticSlot) = matches(slot.getItemStack())
+        fun matches(slot: ItemSlot) = matches(slot.getItemStack())
     }
 
     fun matchesIgnoringAmount(stack: ItemStack?)
             = stack != null && internalChoices.any { it.matches(stack) }
 
-    fun matchesIgnoringAmount(slot: LogisticSlot) = slot.getItemStack()?.let { stack ->
+    fun matchesIgnoringAmount(slot: ItemSlot) = slot.getItemStack()?.let { stack ->
         internalChoices.any { choice -> choice.matches(stack) }
     } ?: false
 
     fun matches(stack: ItemStack?)
             = stack != null && stack.amount >= amount && matchesIgnoringAmount(stack)
 
-    fun matches(slot: LogisticSlot)
+    fun matches(slot: ItemSlot)
             = slot.getAmount() >= amount && matchesIgnoringAmount(slot)
 
     override fun button() = ItemButton.of(this)
@@ -59,7 +58,7 @@ class ItemChoice internal constructor(
      * This is not directly used to match recipes because it cannot represent all the possible
      * inputs that [ItemChoice] can.
      *
-     * @see RecipeCompletion
+     * @see io.github.pylonmc.rebar.recipe.logic.RecipeCompletion
      */
     @JvmSynthetic
     internal fun toRepresentativeRecipeChoice(): RecipeChoice {
@@ -145,7 +144,7 @@ class ItemChoice internal constructor(
          */
         fun addFuzzy(stack: ItemStack) = apply {
             val components = stack.overriddenComponents(false)
-            addFuzzy(ItemTypeWrapper(stack), components)
+            addFuzzy(ItemTypeWrapper.Companion(stack), components)
         }
 
         /**
@@ -181,9 +180,9 @@ class ItemChoice internal constructor(
         fun addExact(stack: ItemStack, componentsToIgnore: Set<DataComponentType> = emptySet()) = apply {
             val components = stack.overriddenComponents(true).filterKeys { it !in componentsToIgnore }
             if (components.isEmpty()) {
-                addFuzzy(ItemTypeWrapper(stack))
+                addFuzzy(ItemTypeWrapper.Companion(stack))
             } else {
-                add(ItemTypeWrapper(stack)) { stack ->
+                add(ItemTypeWrapper.Companion(stack)) { stack ->
                     stack.componentsEqual(components)
                 }
             }

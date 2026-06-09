@@ -23,7 +23,7 @@ import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
 import io.github.pylonmc.rebar.item.interfaces.InteractRebarItemHandler
 import io.github.pylonmc.rebar.item.research.Research
-import io.github.pylonmc.rebar.recipe.FluidOrItem
+import io.github.pylonmc.rebar.recipe.ingredients.FluidOrItem
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.util.RandomizedSound
 import io.github.pylonmc.rebar.util.findRebar

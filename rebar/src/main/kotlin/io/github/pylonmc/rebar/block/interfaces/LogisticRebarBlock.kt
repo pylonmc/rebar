@@ -2,10 +2,10 @@ package io.github.pylonmc.rebar.block.interfaces
 
 import io.github.pylonmc.rebar.event.RebarBlockBreakEvent
 import io.github.pylonmc.rebar.event.RebarBlockUnloadEvent
-import io.github.pylonmc.rebar.logistics.LogisticGroup
+import io.github.pylonmc.rebar.recipe.slot.item.ItemSlotGroup
 import io.github.pylonmc.rebar.logistics.LogisticGroupType
-import io.github.pylonmc.rebar.logistics.slot.LogisticSlot
-import io.github.pylonmc.rebar.logistics.slot.VirtualInventoryLogisticSlot
+import io.github.pylonmc.rebar.recipe.slot.item.ItemSlot
+import io.github.pylonmc.rebar.recipe.slot.item.implementation.VirtualInventoryItemSlot
 import org.bukkit.block.Block
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
@@ -35,39 +35,39 @@ interface LogisticRebarBlock {
      */
     val block: Block
 
-    fun createLogisticGroup(groupName: String, group: LogisticGroup) {
+    fun createLogisticGroup(groupName: String, group: ItemSlotGroup) {
         val logisticBlockData = (logisticBlocks.getOrPut(this) { mutableMapOf() })
         check(!logisticBlockData.contains(groupName)) { "The slot group $groupName already exists" }
         logisticBlockData.put(groupName, group)
     }
 
-    fun createLogisticGroup(groupName: String, slotType: LogisticGroupType, vararg slots: LogisticSlot)
-        = createLogisticGroup(groupName, LogisticGroup(slotType, *slots))
+    fun createLogisticGroup(groupName: String, slotType: LogisticGroupType, vararg slots: ItemSlot)
+        = createLogisticGroup(groupName, ItemSlotGroup(slotType, *slots))
 
-    fun createLogisticGroup(groupName: String, slotType: LogisticGroupType, slots: List<LogisticSlot>)
-        = createLogisticGroup(groupName, LogisticGroup(slotType, *slots.toTypedArray()))
+    fun createLogisticGroup(groupName: String, slotType: LogisticGroupType, slots: List<ItemSlot>)
+        = createLogisticGroup(groupName, ItemSlotGroup(slotType, *slots.toTypedArray()))
 
     fun createLogisticGroup(groupName: String, slotType: LogisticGroupType, inventory: VirtualInventory) {
-        val slots = mutableListOf<LogisticSlot>()
+        val slots = mutableListOf<ItemSlot>()
         for (slot in 0..<inventory.size) {
-            slots.add(VirtualInventoryLogisticSlot(inventory, slot))
+            slots.add(VirtualInventoryItemSlot(inventory, slot))
         }
         createLogisticGroup(groupName, slotType, slots)
     }
 
-    fun getLogisticGroup(groupName: String): LogisticGroup?
+    fun getLogisticGroup(groupName: String): ItemSlotGroup?
         = getLogisticGroups()[groupName]
 
-    fun getLogisticGroupOrThrow(groupName: String): LogisticGroup
+    fun getLogisticGroupOrThrow(groupName: String): ItemSlotGroup
         = getLogisticGroup(groupName) ?: error("Group $groupName does not exist")
 
-    fun getLogisticGroups(): Map<String, LogisticGroup>
+    fun getLogisticGroups(): Map<String, ItemSlotGroup>
         = logisticBlocks.getOrPut(this) { mutableMapOf() }
 
     @ApiStatus.Internal
     companion object : Listener {
 
-        private val logisticBlocks = IdentityHashMap<LogisticRebarBlock, MutableMap<String, LogisticGroup>>()
+        private val logisticBlocks = IdentityHashMap<LogisticRebarBlock, MutableMap<String, ItemSlotGroup>>()
 
         @EventHandler
         private fun onBreak(event: RebarBlockBreakEvent) {

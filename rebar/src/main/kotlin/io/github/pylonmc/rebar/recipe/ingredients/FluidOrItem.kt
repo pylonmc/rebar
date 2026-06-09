@@ -1,4 +1,4 @@
-package io.github.pylonmc.rebar.recipe
+package io.github.pylonmc.rebar.recipe.ingredients
 
 import io.github.pylonmc.rebar.fluid.RebarFluid
 import io.github.pylonmc.rebar.guide.button.ItemButton
@@ -10,7 +10,7 @@ import org.bukkit.inventory.ItemStack
 import xyz.xenondevs.invui.item.Item as UIItem
 
 /**
- * A wrapper which is either a [FluidOrItem.Item] wrapping an [ItemStack], or a [FluidWithAmount].
+ * A wrapper which is either a [FluidOrItem.Item] wrapping an [org.bukkit.inventory.ItemStack], or a [FluidWithAmount].
  */
 sealed interface FluidOrItem : Keyed {
 
@@ -18,7 +18,7 @@ sealed interface FluidOrItem : Keyed {
     fun button(): UIItem
 
     /**
-     * A simple wrapper around [ItemStack]
+     * A simple wrapper around [org.bukkit.inventory.ItemStack]
      */
     @JvmRecord
     data class Item(val item: ItemStack) : FluidOrItem {

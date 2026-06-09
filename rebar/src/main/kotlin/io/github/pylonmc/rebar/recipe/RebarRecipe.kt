@@ -2,6 +2,11 @@ package io.github.pylonmc.rebar.recipe
 
 import com.google.common.collect.MapMaker
 import io.github.pylonmc.rebar.fluid.RebarFluid
+import io.github.pylonmc.rebar.recipe.ingredients.FluidChoice
+import io.github.pylonmc.rebar.recipe.ingredients.FluidOrItem
+import io.github.pylonmc.rebar.recipe.ingredients.FluidOrItemChoice
+import io.github.pylonmc.rebar.recipe.ingredients.FluidWithAmount
+import io.github.pylonmc.rebar.recipe.ingredients.ItemChoice
 import org.bukkit.Keyed
 import org.bukkit.inventory.ItemStack
 import xyz.xenondevs.invui.gui.Gui

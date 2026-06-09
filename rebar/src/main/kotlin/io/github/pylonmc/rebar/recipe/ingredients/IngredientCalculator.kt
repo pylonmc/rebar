@@ -1,7 +1,8 @@
-package io.github.pylonmc.rebar.recipe
+package io.github.pylonmc.rebar.recipe.ingredients
 
 import io.github.pylonmc.rebar.fluid.RebarFluid
 import io.github.pylonmc.rebar.item.ItemTypeWrapper
+import io.github.pylonmc.rebar.recipe.RebarRecipe
 import io.github.pylonmc.rebar.recipe.RebarRecipe.Companion.priority
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import org.bukkit.NamespacedKey

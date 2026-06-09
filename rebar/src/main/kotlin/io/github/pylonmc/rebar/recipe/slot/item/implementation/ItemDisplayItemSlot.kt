@@ -1,9 +1,10 @@
-package io.github.pylonmc.rebar.logistics.slot
+package io.github.pylonmc.rebar.recipe.slot.item.implementation
 
+import io.github.pylonmc.rebar.recipe.slot.item.ItemSlot
 import org.bukkit.entity.ItemDisplay
 import org.bukkit.inventory.ItemStack
 
-open class ItemDisplayLogisticSlot(val display: ItemDisplay) : LogisticSlot {
+open class ItemDisplayItemSlot(val display: ItemDisplay) : ItemSlot {
     override fun getItemStack(): ItemStack? = display.itemStack
     override fun getAmount(): Long = getItemStack()?.amount?.toLong() ?: 0
     override fun getMaxAmount(stack: ItemStack): Long = stack.maxStackSize.toLong()
