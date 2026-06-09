@@ -60,6 +60,19 @@ class ItemChoice internal constructor(
     }
 
     /**
+     * TODO
+     */
+    @JvmSynthetic
+    internal fun toDummyRecipeChoice(): RecipeChoice {
+        return RecipeChoice.MaterialChoice(internalChoices.map {
+            when(val type = it.wrapper) {
+                is ItemTypeWrapper.Vanilla -> type.material
+                is ItemTypeWrapper.Rebar -> type.item.getOriginalTemplate().type
+            }
+        })
+    }
+
+    /**
      * Builds an [ItemChoice] which requires [amount] items. Accepts nothing by default.
      */
     class Builder {
@@ -169,7 +182,7 @@ class ItemChoice internal constructor(
     }
 
     companion object {
-        fun validate(stack: ItemStack?, choice: ItemChoice?): Boolean {
+        fun matches(stack: ItemStack?, choice: ItemChoice?): Boolean {
             if (choice == null) {
                 return stack == null || stack.isEmpty
             } else if (stack == null) {

@@ -4,9 +4,12 @@ import io.github.pylonmc.rebar.config.ConfigSection
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter
 import io.github.pylonmc.rebar.guide.button.ItemButton
 import io.github.pylonmc.rebar.recipe.FluidOrItem
+import io.github.pylonmc.rebar.recipe.FluidOrItemChoice
 import io.github.pylonmc.rebar.recipe.ItemChoice
+import io.github.pylonmc.rebar.recipe.vanilla.DummyVanillaRebarRecipe.Companion.dummyKey
 import io.github.pylonmc.rebar.util.gui.GuiItems
 import io.github.pylonmc.rebar.util.isSymmetrical
+import io.github.pylonmc.rebar.util.rebarKey
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
 import org.bukkit.inventory.*
@@ -113,7 +116,7 @@ data class CraftingRecipeShape private constructor(
                 }
 
                 val actual = input.getItem(x, y)
-                if (!ItemChoice.validate(actual, expected)) {
+                if (!ItemChoice.matches(actual, expected)) {
                     return false
                 }
             }
@@ -174,6 +177,16 @@ data class CraftingRecipeShape private constructor(
             return ingredients
         }
     }
+}
+
+class DummyCraftingRebarRecipe(
+    val realRecipe: AbstractCraftingRebarRecipe,
+    override val recipe: CraftingRecipe
+) : DummyVanillaRebarRecipe {
+    override val inputs = emptyList<FluidOrItemChoice>()
+    override val results = emptyList<FluidOrItem>()
+    override fun display() = null
+    override fun getKey() = recipe.key
 }
 
 sealed class AbstractCraftingRebarRecipe(
@@ -360,6 +373,8 @@ class TransmuteRebarRecipe(
 
 private val CRAFTING_BOOK_CATEGORY_ADAPTER = ConfigAdapter.ENUM.from<CraftingBookCategory>()
 
+object DummyCraftingRecipeType : DummyRecipeType<DummyCraftingRebarRecipe>(rebarKey("dummy_crafting"))
+
 /**
  * Key: `minecraft:crafting_shaped`
  */
@@ -374,6 +389,26 @@ object ShapedRecipeType : VanillaRecipeType<ShapedRebarRecipe>("crafting_shaped"
         val group = section.get("group", ConfigAdapter.STRING, "")
         return ShapedRebarRecipe(shape, result, category, group, key)
     }
+
+    override fun addRecipe(recipe: ShapedRebarRecipe) {
+        super.addRecipe(recipe)
+        DummyCraftingRecipeType.addRecipe(DummyCraftingRebarRecipe(
+            recipe,
+            ShapedRecipe(dummyKey(recipe.key), recipe.recipe.result).apply {
+                this.category = recipe.category
+                this.group = recipe.group
+                this.shape(*recipe.recipe.shape)
+                for (ingredient in recipe.shape.key) {
+                    this.setIngredient(ingredient.key, ingredient.value.toDummyRecipeChoice())
+                }
+            }
+        ))
+    }
+
+    override fun removeRecipe(recipe: NamespacedKey) {
+        super.removeRecipe(recipe)
+        DummyCraftingRecipeType.removeDummyRecipeFor(recipe)
+    }
 }
 
 /**
@@ -386,6 +421,25 @@ object ShapelessRecipeType : VanillaRecipeType<ShapelessRebarRecipe>("crafting_s
         val category = section.get("category", CRAFTING_BOOK_CATEGORY_ADAPTER, CraftingBookCategory.MISC)
         val group = section.get("group", ConfigAdapter.STRING, "")
         return ShapelessRebarRecipe(ingredients, result, category, group, key)
+    }
+
+    override fun addRecipe(recipe: ShapelessRebarRecipe) {
+        super.addRecipe(recipe)
+        DummyCraftingRecipeType.addRecipe(DummyCraftingRebarRecipe(
+            recipe,
+            ShapelessRecipe(dummyKey(recipe.key), recipe.recipe.result).apply {
+                this.category = recipe.category
+                this.group = recipe.group
+                for (ingredient in recipe.ingredients) {
+                    this.addIngredient(ingredient.toDummyRecipeChoice())
+                }
+            }
+        ))
+    }
+
+    override fun removeRecipe(recipe: NamespacedKey) {
+        super.removeRecipe(recipe)
+        DummyCraftingRecipeType.removeDummyRecipeFor(recipe)
     }
 }
 

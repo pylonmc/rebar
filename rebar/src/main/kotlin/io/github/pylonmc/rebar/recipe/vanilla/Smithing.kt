@@ -4,23 +4,36 @@ import io.github.pylonmc.rebar.config.ConfigSection
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter
 import io.github.pylonmc.rebar.guide.button.ItemButton
 import io.github.pylonmc.rebar.recipe.FluidOrItem
+import io.github.pylonmc.rebar.recipe.FluidOrItemChoice
 import io.github.pylonmc.rebar.recipe.ItemChoice
+import io.github.pylonmc.rebar.recipe.vanilla.DummyVanillaRebarRecipe.Companion.dummyKey
 import io.github.pylonmc.rebar.util.gui.GuiItems
+import io.github.pylonmc.rebar.util.rebarKey
 import io.papermc.paper.registry.RegistryAccess
 import io.papermc.paper.registry.RegistryKey
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
 import org.bukkit.inventory.ItemStack
+import org.bukkit.inventory.SmithingRecipe
 import org.bukkit.inventory.SmithingTransformRecipe
 import org.bukkit.inventory.SmithingTrimRecipe
 import org.bukkit.inventory.meta.trim.TrimPattern
 import xyz.xenondevs.invui.gui.Gui
 
+class DummySmithingRebarRecipe(
+    val realRecipe: SmithingRebarRecipe,
+    override val recipe: SmithingRecipe
+) : DummyVanillaRebarRecipe {
+    override val inputs = emptyList<FluidOrItemChoice>()
+    override val results = emptyList<FluidOrItem>()
+    override fun display() = null
+    override fun getKey() = recipe.key
+}
 
 sealed class SmithingRebarRecipe(
-    val template: ItemChoice?,
-    val base: ItemChoice?,
-    val addition: ItemChoice?,
+    open val template: ItemChoice?,
+    open val base: ItemChoice?,
+    open val addition: ItemChoice?,
     val result: FluidOrItem.Item,
     val copyDataComponents: Boolean,
     @JvmField val key: NamespacedKey,
@@ -33,6 +46,12 @@ sealed class SmithingRebarRecipe(
 
     override val inputs = listOfNotNull(template, base, addition)
     override val results = listOf(result)
+
+    fun matches(templateInput: ItemStack?, baseInput: ItemStack?, addition: ItemStack?): Boolean {
+        return ItemChoice.matches(templateInput, template)
+            && ItemChoice.matches(baseInput, base)
+            && ItemChoice.matches(addition, this.addition)
+    }
 
     override fun display() = Gui.builder()
         .setStructure(
@@ -54,9 +73,9 @@ sealed class SmithingRebarRecipe(
 }
 
 class SmithingTransformRebarRecipe(
-    template: ItemChoice,
-    base: ItemChoice,
-    addition: ItemChoice,
+    override val template: ItemChoice,
+    override val base: ItemChoice,
+    override val addition: ItemChoice,
     result: FluidOrItem.Item,
     copyDataComponents: Boolean,
     key: NamespacedKey,
@@ -77,9 +96,9 @@ class SmithingTransformRebarRecipe(
     }
 }
 class SmithingTrimRebarRecipe(
-    template: ItemChoice,
-    base: ItemChoice,
-    addition: ItemChoice,
+    override val template: ItemChoice,
+    override val base: ItemChoice,
+    override val addition: ItemChoice,
     val trimPattern: TrimPattern,
     key: NamespacedKey,
     override val recipe: SmithingTrimRecipe = SmithingTrimRecipe(key, template.toRepresentativeRecipeChoice(), base.toRepresentativeRecipeChoice(), addition.toRepresentativeRecipeChoice(), trimPattern)
@@ -98,6 +117,8 @@ class SmithingTrimRebarRecipe(
     }
 }
 
+object DummySmithingRecipeType : DummyRecipeType<DummySmithingRebarRecipe>(rebarKey("dummy_smithing"))
+
 /**
  * Key: `minecraft:smithing_transform`
  */
@@ -109,6 +130,24 @@ object SmithingTransformRecipeType : VanillaRecipeType<SmithingTransformRebarRec
         val result = FluidOrItem.of(section.getOrThrow("result", ConfigAdapter.ITEM_STACK))
         val copyData = section.get("copydata", ConfigAdapter.BOOLEAN, true)
         return SmithingTransformRebarRecipe(template, base, addition, result, copyData, key)
+    }
+
+    override fun addRecipe(recipe: SmithingTransformRebarRecipe) {
+        super.addRecipe(recipe)
+        DummySmithingRecipeType.addRecipe(DummySmithingRebarRecipe(
+            recipe, SmithingTransformRecipe(
+                dummyKey(recipe.key), recipe.recipe.result,
+                recipe.template.toDummyRecipeChoice(),
+                recipe.base.toDummyRecipeChoice(),
+                recipe.addition.toDummyRecipeChoice(),
+                recipe.copyDataComponents
+            )
+        ))
+    }
+
+    override fun removeRecipe(recipe: NamespacedKey) {
+        super.removeRecipe(recipe)
+        DummySmithingRecipeType.removeDummyRecipeFor(recipe)
     }
 }
 
@@ -126,5 +165,22 @@ object SmithingTrimRecipeType : VanillaRecipeType<SmithingTrimRebarRecipe>("smit
         val addition = section.getOrThrow("addition", ConfigAdapter.ITEM_CHOICE)
         val pattern = section.getOrThrow("pattern", TRIM_PATTERN_ADAPTER)
         return SmithingTrimRebarRecipe(template, base, addition, pattern, key)
+    }
+
+    override fun addRecipe(recipe: SmithingTrimRebarRecipe) {
+        super.addRecipe(recipe)
+        DummySmithingRecipeType.addRecipe(DummySmithingRebarRecipe(
+            recipe, SmithingTrimRecipe(
+                dummyKey(recipe.key), recipe.template.toRepresentativeRecipeChoice(),
+                recipe.base.toRepresentativeRecipeChoice(),
+                recipe.addition.toRepresentativeRecipeChoice(),
+                recipe.trimPattern
+            )
+        ))
+    }
+
+    override fun removeRecipe(recipe: NamespacedKey) {
+        super.removeRecipe(recipe)
+        DummySmithingRecipeType.removeDummyRecipeFor(recipe)
     }
 }

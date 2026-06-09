@@ -6,6 +6,7 @@ import org.bukkit.Bukkit
 import org.bukkit.Keyed
 import org.bukkit.NamespacedKey
 import org.bukkit.inventory.*
+import kotlin.collections.union
 
 /**
  * Serves as a registry and container for recipes of a specific type.
@@ -18,6 +19,8 @@ open class RecipeType<T : RebarRecipe>(private val key: NamespacedKey) : Keyed, 
     protected open val registeredRecipes = LinkedHashMap<NamespacedKey, T>()
     val recipes: Collection<T>
         get() = registeredRecipes.values
+
+    fun hasRecipe(key: NamespacedKey) = registeredRecipes.containsKey(key)
 
     fun getRecipe(key: NamespacedKey): T? = registeredRecipes[key]
 
@@ -98,6 +101,15 @@ open class RecipeType<T : RebarRecipe>(private val key: NamespacedKey) : Keyed, 
         @JvmField
         val VANILLA_SMOKING = SmokingRecipeType
 
+        @JvmField
+        val DUMMY_CRAFTING = DummyCraftingRecipeType
+
+        @JvmField
+        val DUMMY_COOKING = DummyCookingRecipeType
+
+        @JvmField
+        val DUMMY_SMITHING = DummySmithingRecipeType
+
         init {
             VANILLA_BLASTING.register()
             VANILLA_CAMPFIRE.register()
@@ -107,6 +119,7 @@ open class RecipeType<T : RebarRecipe>(private val key: NamespacedKey) : Keyed, 
             VANILLA_SMITHING_TRANSFORM.register()
             VANILLA_SMITHING_TRIM.register()
             VANILLA_SMOKING.register()
+            DUMMY_CRAFTING.register()
         }
 
         @JvmStatic
@@ -119,6 +132,19 @@ open class RecipeType<T : RebarRecipe>(private val key: NamespacedKey) : Keyed, 
             .union(VANILLA_CAMPFIRE.recipes)
             .union(VANILLA_FURNACE.recipes)
             .union(VANILLA_SMOKING.recipes)
+
+        @JvmStatic
+        fun vanillaSmithingRecipes() = VANILLA_SMITHING_TRANSFORM.recipes
+            .union(VANILLA_SMITHING_TRIM.recipes)
+
+        @JvmStatic
+        fun isDummyRecipe(recipe: Recipe?) =
+            recipe is Keyed && isDummyRecipe(recipe.key)
+
+        @JvmStatic
+        fun isDummyRecipe(key: NamespacedKey) = DUMMY_CRAFTING.hasRecipe(key)
+                || DUMMY_COOKING.hasRecipe(key)
+                || DUMMY_SMITHING.hasRecipe(key)
 
         @JvmSynthetic
         internal fun addVanillaRecipes() {

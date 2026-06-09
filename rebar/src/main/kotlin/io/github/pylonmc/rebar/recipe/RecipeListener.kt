@@ -8,8 +8,9 @@ import io.github.pylonmc.rebar.nms.NmsAccessor
 import io.github.pylonmc.rebar.recipe.vanilla.AbstractCraftingRebarRecipe
 import io.github.pylonmc.rebar.recipe.vanilla.CookingRebarRecipe
 import io.github.pylonmc.rebar.recipe.vanilla.CraftingInput
+import io.github.pylonmc.rebar.recipe.vanilla.DummyVanillaRebarRecipe
 import io.github.pylonmc.rebar.recipe.vanilla.VanillaRecipeType
-import io.github.pylonmc.rebar.recipe.vanilla.recipeType
+import io.github.pylonmc.rebar.recipe.vanilla.rebarRecipeType
 import io.github.pylonmc.rebar.util.isRebarAndIsNot
 import io.github.pylonmc.rebar.util.plainText
 import io.github.pylonmc.rebar.util.rebarKey
@@ -18,6 +19,7 @@ import io.papermc.paper.event.player.CartographyItemEvent
 import net.kyori.adventure.text.Component
 import org.bukkit.GameMode
 import org.bukkit.Keyed
+import org.bukkit.Material
 import org.bukkit.block.Block
 import org.bukkit.block.Crafter
 import org.bukkit.block.Furnace
@@ -28,7 +30,9 @@ import org.bukkit.event.Listener
 import org.bukkit.event.block.BlockCookEvent
 import org.bukkit.event.block.CrafterCraftEvent
 import org.bukkit.event.inventory.*
+import org.bukkit.event.player.PlayerRecipeDiscoverEvent
 import org.bukkit.inventory.*
+import sun.jvm.hotspot.HelloWorld.e
 import kotlin.math.max
 import kotlin.math.min
 
@@ -47,6 +51,10 @@ internal object RebarRecipeListener : Listener {
 
         // Prevent the erroneous crafting of vanilla items with Rebar ingredients
         if (hasRebarItems && isNotRebarCraftingRecipe) {
+            inventory.result = null
+        }
+        // Prevent crafting dummy recipes
+        else if (RecipeType.isDummyRecipe(recipe)) {
             inventory.result = null
         }
 
@@ -132,7 +140,7 @@ internal object RebarRecipeListener : Listener {
         val inventory = crafter.inventory as CrafterInventory
 
         val hasRebarItems = inventory.any { it.isRebarAndIsNot<VanillaCraftingIngredientItem>() }
-        if (!hasRebarItems) {
+        if (!hasRebarItems && possibleRecipe != null && !RecipeType.isDummyRecipe(possibleRecipe)) {
             return true to null
         }
 
@@ -174,7 +182,7 @@ internal object RebarRecipeListener : Listener {
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
-    private fun itemInsertEvent(e: InventoryClickEvent) {
+    private fun onInsertIntoStonecutter(e: InventoryClickEvent) {
         val inventory = e.inventory;
         if (inventory is StonecutterInventory) {
             val input = inventory.inputItem ?: return
@@ -187,31 +195,40 @@ internal object RebarRecipeListener : Listener {
 
     @EventHandler(priority = EventPriority.LOWEST)
     private fun onStartCook(e: FurnaceStartSmeltEvent) {
-        if (!RebarItem.isRebarItem(e.source)) return
+        val rebarSource = e.source.isRebarAndIsNot<VanillaFurnaceIngredientItem>()
 
         val originalRecipe = e.recipe
-        if (originalRecipe.key !in VanillaRecipeType.nonRebarRecipes) {
-            return
-        }
-
-        val originalType = originalRecipe.recipeType
-        if (originalType == null) {
+        val rebarType = originalRecipe.rebarRecipeType
+        if (rebarType == null && rebarSource) {
             e.totalCookTime = 0 // instantly complete so that it doesn't show progress bar, this will get canceled in BlockCookEvent
             return
+        } else if (rebarType == null) {
+            // We don't need to handle this recipe type
+            return
         }
 
-        for (recipe in originalType.recipes) {
-            if (recipe is CookingRebarRecipe && recipe.key !in VanillaRecipeType.nonRebarRecipes && recipe.ingredient.matches(e.source)) {
-                e.totalCookTime = recipe.cookingTime
-                NmsAccessor.instance.setFurnaceRecipeCache(e.block, recipe.key)
-                break
-            }
+        // Prevent crafting dummy recipes by default
+        if (RecipeType.isDummyRecipe(originalRecipe)) {
+            e.totalCookTime = 0
+        }
+
+        val block = e.block
+        val furnace = block.getState(false) as? Furnace
+        if (furnace == null) {
+            e.totalCookTime = 0
+            return
+        }
+
+        val matchedRecipe = RecipeMatchingService.matchCookingRecipe(rebarType, e.source, furnace.inventory.result, originalRecipe)
+        if (matchedRecipe != null) {
+            e.totalCookTime = matchedRecipe.cookingTime
+            NmsAccessor.instance.setFurnaceRecipeCache(block, DummyVanillaRebarRecipe.recipeKey(matchedRecipe.key))
         }
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
     private fun onCook(e: BlockCookEvent) {
-        if (RebarItemSchema.fromStack(e.source) == null) return
+        val rebarSource = e.source.isRebarAndIsNot<VanillaFurnaceIngredientItem>()
 
         val originalRecipe = e.recipe
         if (originalRecipe == null) {
@@ -219,24 +236,30 @@ internal object RebarRecipeListener : Listener {
             return
         }
 
-        if (originalRecipe.key !in VanillaRecipeType.nonRebarRecipes) {
-            // already handled correctly
+        val rebarType = originalRecipe.rebarRecipeType
+        if (rebarType == null && rebarSource) {
+            e.isCancelled = true
+            return
+        } else if (rebarType == null) {
+            // We don't need to handle this
             return
         }
 
-        val originalType = originalRecipe.recipeType
-        if (originalType == null) {
+        val block = e.block
+        val furnace = block.getState(false) as? Furnace
+        if (furnace == null) {
             e.isCancelled = true
             return
         }
 
-        for (recipe in originalType.recipes) {
-            if (recipe is CookingRebarRecipe && recipe.key !in VanillaRecipeType.nonRebarRecipes && recipe.ingredient.matches(e.source)) {
-                e.result = recipe.result.item.clone()
-                NmsAccessor.instance.setFurnaceRecipeCache(e.block, recipe.key)
-                break
-            }
+        val matchedRecipe = RecipeMatchingService.matchCookingRecipe(rebarType, e.source, furnace.inventory.result, originalRecipe)
+        if (matchedRecipe != null) {
+            e.result = matchedRecipe.result.item.clone()
+            NmsAccessor.instance.setFurnaceRecipeCache(e.block, DummyVanillaRebarRecipe.recipeKey(matchedRecipe.key))
+            return
         }
+
+        e.isCancelled = true
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
@@ -246,46 +269,66 @@ internal object RebarRecipeListener : Listener {
             return
         }
 
-        val furnace = (e.block.state as Furnace)
-        val input = furnace.inventory.smelting
-        if (input != null && input.isRebarAndIsNot<VanillaFurnaceIngredientItem>()) {
-            var rebarRecipe: CookingRebarRecipe? = null
-            for (recipe in RecipeType.vanillaCookingRecipes()) {
-                if (recipe.key !in VanillaRecipeType.nonRebarRecipes && recipe.ingredient.matches(input)) {
-                    rebarRecipe = recipe
-                    break
-                }
-            }
-            val isFurnaceOutputValidToPutRecipeResultIn = rebarRecipe != null
-                    && (furnace.inventory.result == null || rebarRecipe.isOutput(furnace.inventory.result!!))
-            if (rebarRecipe == null || !isFurnaceOutputValidToPutRecipeResultIn) {
+        val block = e.block
+        val furnace = block.getState(false) as? Furnace
+        if (furnace == null) {
+            e.isCancelled = true
+            return
+        }
+
+        val rebarType = when(block.type) {
+            Material.FURNACE -> RecipeType.VANILLA_FURNACE
+            Material.SMOKER -> RecipeType.VANILLA_SMOKING
+            Material.BLAST_FURNACE -> RecipeType.VANILLA_BLASTING
+            else -> {
                 e.isCancelled = true
+                return
             }
         }
+
+        val source = furnace.inventory.smelting
+        val result = furnace.inventory.result
+        val matchedRecipe = RecipeMatchingService.matchCookingRecipe(rebarType, source, result, null)
+        if (matchedRecipe == null) {
+            e.isCancelled = true
+            return
+        }
+
+        NmsAccessor.instance.setFurnaceRecipeCache(block, DummyVanillaRebarRecipe.recipeKey(matchedRecipe.key))
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
     private fun onSmith(e: PrepareSmithingEvent) {
         val inv = e.inventory
         val recipe = inv.recipe
-        if (recipe !is Keyed) return
 
-        // Prevent the erroneous smithing of vanilla items with Rebar ingredients
-        val hasRebarItem = inv.inputEquipment.isRebarAndIsNot<VanillaSmithingBase>()
+        // Prevent the erroneous smithing of with Rebar ingredients in place of vanilla items
+        val hasRebarItem = inv.inputTemplate.isRebarAndIsNot<VanillaSmithingTemplate>()
+                || inv.inputEquipment.isRebarAndIsNot<VanillaSmithingBase>()
                 || inv.inputMineral.isRebarAndIsNot<VanillaSmithingMaterial>()
-                || inv.inputTemplate.isRebarAndIsNot<VanillaSmithingTemplate>()
-        if (hasRebarItem && recipe.key in VanillaRecipeType.nonRebarRecipes) {
+        if (hasRebarItem && (recipe !is Keyed || recipe.key in VanillaRecipeType.nonRebarRecipes)) {
             e.result = null
-            return
+        }
+         // Prevent crafting dummy recipes
+         else if (RecipeType.isDummyRecipe(recipe)) {
+            e.result = null
+        }
+
+        // Custom recipe matching
+        if (recipe == null || e.result == null) {
+            val matchedRecipe = RecipeMatchingService.matchSmithingRecipe(inv.inputTemplate, inv.inputEquipment, inv.inputMineral, recipe)
+            if (matchedRecipe != null) {
+                e.result = matchedRecipe.result.item.clone()
+            }
         }
 
         // Prevent crafting of unresearched items
-        val schemaResult = RebarItemSchema.fromStack(recipe.result)
+        val schemaResult = RebarItemSchema.fromStack(e.result)
         val anyViewerDoesNotHaveResearch = schemaResult != null && e.viewers.none {
             it is Player && it.canCraft(schemaResult, true)
         }
         if (anyViewerDoesNotHaveResearch) {
-            inv.result = null
+            e.result = null
         }
     }
 
@@ -414,17 +457,16 @@ internal object RebarRecipeListener : Listener {
         }
     }
 
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    private fun onDiscoverDummyRecipe(event: PlayerRecipeDiscoverEvent) {
+        event.isCancelled = RecipeType.isDummyRecipe(event.recipe)
+    }
+
     @Suppress("UnstableApiUsage")
     private fun ItemStack.isRepairable(): Boolean {
         return !hasData(DataComponentTypes.UNBREAKABLE)
                 && hasData(DataComponentTypes.MAX_DAMAGE)
                 && hasData(DataComponentTypes.DAMAGE)
                 && getData(DataComponentTypes.DAMAGE)!! > 0
-    }
-
-    internal object DummyRecipe : Recipe {
-        override fun getResult(): ItemStack {
-            return ItemStack.empty()
-        }
     }
 }
