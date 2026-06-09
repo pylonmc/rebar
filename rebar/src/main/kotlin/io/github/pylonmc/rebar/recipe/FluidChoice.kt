@@ -6,9 +6,11 @@ import io.github.pylonmc.rebar.guide.button.FluidButton
 /**
  * Represents a fluid input to a recipe.
  */
-class FluidChoice private constructor(val fluids: Map<RebarFluid, Double>) : FluidOrItemChoice {
+class FluidChoice private constructor(val fluids: Set<RebarFluid>, val amount: Double) : FluidOrItemChoice {
 
-    fun matches(fluid: RebarFluid, amount: Double) = fluids[fluid]?.let { amount >= it } ?: false
+    fun matches(fluid: RebarFluid, amount: Double) = amount >= this.amount && fluids.contains(fluid)
+
+    fun matchesIgnoringAmount(fluid: RebarFluid) = fluids.contains(fluid)
 
     override fun button() = FluidButton.of(this)
 
@@ -18,16 +20,13 @@ class FluidChoice private constructor(val fluids: Map<RebarFluid, Double>) : Flu
          * Creates a [FluidChoice] which accepts the corresponding amount of fluid for each fluid
          * in the provided [fluids] map.
          */
-        fun of(fluids: Map<RebarFluid, Double>) = FluidChoice(fluids)
+        @JvmStatic
+        fun of(fluids: Set<RebarFluid>, amount: Double) = FluidChoice(fluids, amount)
 
         /**
          * Creates a [FluidChoice] which accepts [amount] (or greater) of the given [fluid].
          */
-        fun of(fluid: RebarFluid, amount: Double) = of(mapOf(fluid to amount))
-
-        /**
-         * Creates a [FluidChoice] which accepts [amount] (or greater) of any of the given [fluids].
-         */
-        fun of(fluids: List<RebarFluid>, amount: Double) = of(fluids.associateWith { amount })
+        @JvmStatic
+        fun of(fluid: RebarFluid, amount: Double) = of(setOf(fluid), amount)
     }
 }

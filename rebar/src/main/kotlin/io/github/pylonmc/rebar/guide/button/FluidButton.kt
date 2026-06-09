@@ -118,11 +118,11 @@ open class FluidButton private constructor(
         @JvmStatic
         @JvmOverloads
         fun of(fluidChoice: FluidChoice, preDisplayDecorator: Decorator? = null)
-                = FluidButton(fluidChoice.fluids.map { it.key to it.value }, preDisplayDecorator ?: { it })
+                = of(fluidChoice.fluids.toList(), fluidChoice.amount, preDisplayDecorator ?: { it })
 
         @JvmStatic
         @JvmOverloads
         fun of(fluid: FluidWithAmount, preDisplayDecorator: Decorator? = null)
-            = FluidButton(listOf(fluid.fluid to fluid.amountMillibuckets), preDisplayDecorator ?: { it })
+            = of(listOf(fluid.fluid), fluid.amountMillibuckets, preDisplayDecorator ?: { it })
     }
 }

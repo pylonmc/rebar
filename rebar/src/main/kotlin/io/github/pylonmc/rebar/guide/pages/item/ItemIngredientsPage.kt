@@ -9,6 +9,7 @@ import io.github.pylonmc.rebar.guide.pages.base.TabbedGuidePage
 import io.github.pylonmc.rebar.i18n.RebarArgument
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
 import io.github.pylonmc.rebar.recipe.FluidOrItem
+import io.github.pylonmc.rebar.recipe.FluidWithAmount
 import io.github.pylonmc.rebar.recipe.IngredientCalculator
 import io.github.pylonmc.rebar.util.gui.GuiItems
 import io.github.pylonmc.rebar.util.rebarKey
@@ -57,7 +58,7 @@ open class ItemIngredientsPage(val input: FluidOrItem) : TabbedGuidePage {
 
     private val ingredientsTab = ItemListDisplayTab(calculation.inputs.sortedByDescending {
         when (it) {
-            is FluidOrItem.Fluid -> it.amountMillibuckets
+            is FluidWithAmount -> it.amountMillibuckets
             is FluidOrItem.Item -> it.item.amount.toDouble()
         }
     }.map(::fluidOrItemButton))
@@ -67,7 +68,7 @@ open class ItemIngredientsPage(val input: FluidOrItem) : TabbedGuidePage {
 
     private val byproductsTab = ItemListDisplayTab(calculation.byproducts.sortedByDescending {
         when (it) {
-            is FluidOrItem.Fluid -> it.amountMillibuckets
+            is FluidWithAmount -> it.amountMillibuckets
             is FluidOrItem.Item -> it.item.amount.toDouble()
         }
     }.map(::fluidOrItemButton))
@@ -88,7 +89,7 @@ open class ItemIngredientsPage(val input: FluidOrItem) : TabbedGuidePage {
         .addIngredient(
             'r',
             when (input) {
-                is FluidOrItem.Fluid -> FluidButton.of(input.amountMillibuckets, input.fluid)
+                is FluidWithAmount -> FluidButton.of(input)
                 is FluidOrItem.Item -> ItemButton.of(input.item)
             }
         )
@@ -107,7 +108,7 @@ private val AMOUNT_KEY = rebarKey("actual_amount")
 
 @Suppress("UnstableApiUsage")
 private fun fluidOrItemButton(fluidOrItem: FluidOrItem) = when (fluidOrItem) {
-    is FluidOrItem.Fluid -> FluidButton.of(fluidOrItem) { stack ->
+    is FluidWithAmount -> FluidButton.of(fluidOrItem) { stack ->
         stack.editPdc { pdc ->
             pdc.set(AMOUNT_KEY, RebarSerializers.DOUBLE, fluidOrItem.amountMillibuckets)
         }

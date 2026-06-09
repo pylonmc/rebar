@@ -58,7 +58,7 @@ internal fun RecipeChoice.toItemChoice(): ItemChoice {
     return when (this) {
         is RecipeChoice.ExactChoice -> ItemChoice.Builder().apply {
             for (choice in this@toItemChoice.choices) {
-                addExact(choice, 1)
+                addExact(choice)
             }
         }.build()
 

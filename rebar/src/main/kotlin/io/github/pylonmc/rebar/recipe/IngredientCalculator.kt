@@ -43,7 +43,7 @@ class IngredientCalculator private constructor() {
         var recipe: RebarRecipe?
         do {
             recipe = when (input) {
-                is FluidOrItem.Fluid -> findRecipeFor(input.fluid)
+                is FluidWithAmount -> findRecipeFor(input.fluid)
                 is FluidOrItem.Item -> findRecipeFor(input.item)
             }
 
@@ -80,9 +80,10 @@ class IngredientCalculator private constructor() {
         for (recipeInput in recipe.inputs) {
             val inputItem = when (recipeInput) {
                 is FluidChoice -> {
-                    val (fluid, amount) = recipeInput.fluids.entries.first()
+                    val fluid = recipeInput.fluids.first()
+                    val amount = recipeInput.amount
                     // TODO make this not just use the first fluid it finds (require some prioritisation algorithm)
-                    FluidOrItem.Fluid(fluid, amount * outputMulti)
+                    FluidWithAmount(fluid, amount * outputMulti)
                 }
 
                 is ItemChoice -> {
@@ -132,7 +133,7 @@ class IngredientCalculator private constructor() {
             .sortedWith(compareByDescending<RebarRecipe> { it.priority }.thenByDescending { recipe ->
                 recipe.inputs.distinctBy {
                     when (it) {
-                        is FluidChoice -> it.fluids.keys
+                        is FluidChoice -> it.fluids
                         is ItemChoice -> it.representativeItems
                     }
                 }.size
@@ -150,7 +151,7 @@ class IngredientCalculator private constructor() {
             .sortedWith(compareByDescending<RebarRecipe> { it.priority }.thenByDescending { recipe ->
                 recipe.inputs.distinctBy {
                     when (it) {
-                        is FluidChoice -> it.fluids.keys
+                        is FluidChoice -> it.fluids
                         is ItemChoice -> it.representativeItems
                     }
                 }.size
@@ -175,7 +176,7 @@ class IngredientCalculator private constructor() {
          */
         @JvmStatic
         fun addBaseIngredient(fluid: RebarFluid) {
-            baseIngredients.add(FluidOrItem.Fluid(fluid, 1.0))
+            baseIngredients.add(FluidWithAmount(fluid, 1.0))
         }
 
         /**
@@ -203,8 +204,8 @@ class IngredientCalculator private constructor() {
             calculator.calculate(input.asOne(), input.amount)
 
             fun transformEntry(entry: Map.Entry<FluidOrItem, Double>) = when (entry.key) {
-                is FluidOrItem.Fluid -> FluidOrItem.of(
-                    fluid = (entry.key as FluidOrItem.Fluid).fluid,
+                is FluidWithAmount -> FluidOrItem.of(
+                    fluid = (entry.key as FluidWithAmount).fluid,
                     amountMillibuckets = entry.value
                 )
 
@@ -230,12 +231,12 @@ class IngredientCalculator private constructor() {
 data class IngredientCalculation(val inputs: List<FluidOrItem>, val byproducts: List<FluidOrItem>)
 
 private fun FluidOrItem.asOne(): FluidOrItem = when (this) {
-    is FluidOrItem.Fluid -> this.copy(amountMillibuckets = 1.0)
+    is FluidWithAmount -> FluidOrItem.of(fluid, amountMillibuckets = 1.0)
     is FluidOrItem.Item -> this.copy(item = this.item.asQuantity(1))
 }
 
 private val FluidOrItem.amount: Double
     get() = when (this) {
-        is FluidOrItem.Fluid -> this.amountMillibuckets
+        is FluidWithAmount -> this.amountMillibuckets
         is FluidOrItem.Item -> this.item.amount.toDouble()
     }

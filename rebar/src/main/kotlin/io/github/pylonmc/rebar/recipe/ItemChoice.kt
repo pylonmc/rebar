@@ -18,23 +18,28 @@ import java.util.function.Predicate
  *
  * @see ItemChoice.Builder
  */
-class ItemChoice private constructor() : FluidOrItemChoice {
-
+class ItemChoice internal constructor(
     @JvmSynthetic
-    internal val internalChoices: MutableList<InternalItemChoice> = mutableListOf()
+    internal val internalChoices: List<InternalItemChoice>,
+    val amount: Int,
+) : FluidOrItemChoice {
+
+    val representativeItems: List<ItemStack> = internalChoices.map { it.wrapper.createItemStack(amount) }
 
     internal class InternalItemChoice(
         val wrapper: ItemTypeWrapper,
-        val amount: Int,
         val predicate: Predicate<ItemStack>? = null,
-        val representativeItem: ItemStack = wrapper.createItemStack(amount)
     ) {
         fun matches(stack: ItemStack): Boolean
-                = stack.amount >= amount && wrapper.matches(stack) && predicate?.test(stack) ?: true
+                = wrapper.matches(stack) && predicate?.test(stack) ?: true
     }
 
     fun matches(stack: ItemStack)
+            = stack.amount > amount && internalChoices.any { it.matches(stack) }
+
+    fun matchesIgnoringAmount(stack: ItemStack)
             = internalChoices.any { it.matches(stack) }
+
     override fun button() = ItemButton.of(this)
 
     /**
@@ -51,17 +56,20 @@ class ItemChoice private constructor() : FluidOrItemChoice {
         if (allUnmodifiedMaterials) {
             return RecipeChoice.MaterialChoice(internalChoices.map { (it.wrapper as ItemTypeWrapper.Vanilla).material })
         }
-        return RecipeChoice.ExactChoice(internalChoices.map { it.representativeItem })
+        return RecipeChoice.ExactChoice(representativeItems)
     }
 
-    val representativeItems: List<ItemStack> = internalChoices.map { it.representativeItem }
-
     /**
-     * Builds an [ItemChoice]. Accepts nothing by default.
+     * Builds an [ItemChoice] which requires [amount] items. Accepts nothing by default.
      */
-    class Builder(private val choice: ItemChoice = ItemChoice()) {
+    class Builder {
 
-        private fun add(internalChoice: InternalItemChoice) = apply { choice.internalChoices.add(internalChoice) }
+        internal val internalChoices = mutableListOf<InternalItemChoice>()
+        private var amount: Int = 1
+
+        fun amount(amount: Int) = apply { this.amount = amount }
+
+        private fun add(internalChoice: InternalItemChoice) = apply { internalChoices.add(internalChoice) }
 
         /**
          * Matches stacks of [type] which match the given [predicate]
@@ -69,36 +77,26 @@ class ItemChoice private constructor() : FluidOrItemChoice {
          * Checks that the components of any item being compared are the default ones for this [type].
          */
         private fun add(type: ItemTypeWrapper, predicate: Predicate<ItemStack>? = null) = add(
-            InternalItemChoice(type, 1, predicate)
+            InternalItemChoice(type, predicate)
         )
 
         /**
-         * Matches stacks of [type] containing at least [amount] which match the given [predicate]
-         *
-         * Checks that the components of any item being compared are the default ones for this [type].
-         */
-        private fun add(type: ItemTypeWrapper, amount: Int, predicate: Predicate<ItemStack>? = null) = add(
-            InternalItemChoice(type, amount, predicate)
-        )
-
-        /**
-         * Matches stacks containing at least [amount] of the given [type] or 1 if not provided.
+         * Matches stacks of the given [type].
          *
          * Does not check that the components of any item being compared are the default ones for this [type].
          */
-        @JvmOverloads
-        fun addFuzzy(type: ItemTypeWrapper, amount: Int = 1) = add(type, amount)
+        fun addFuzzy(type: ItemTypeWrapper) = add(type)
 
         /**
-         * Matches stacks containing at least [amount] of the given [type].
+         * Matches stacks of the given [type].
          *
          * Only checks that the provided [components] of any item being compared match the [type]'s default
          * values.
          */
-        fun addFuzzy(type: ItemTypeWrapper, amount: Int, components: Set<DataComponentType>) = if (components.isEmpty()) {
-            addFuzzy(type, amount)
+        fun addFuzzy(type: ItemTypeWrapper, components: Set<DataComponentType>) = if (components.isEmpty()) {
+            addFuzzy(type)
         } else {
-            add(type, amount) { stack ->
+            add(type) { stack ->
                 stack.hasDefaultComponents(components)
             }
         }
@@ -108,10 +106,10 @@ class ItemChoice private constructor() : FluidOrItemChoice {
          *
          * Checks that the provided [components] of any item being compared match the corresponding value.
          */
-        fun addFuzzy(type: ItemTypeWrapper, amount: Int, components: Map<DataComponentType, Any?>) = if (components.isEmpty()) {
-            addFuzzy(type, amount)
+        fun addFuzzy(type: ItemTypeWrapper, components: Map<DataComponentType, Any?>) = if (components.isEmpty()) {
+            addFuzzy(type)
         } else {
-            add(type, amount) { stack ->
+            add(type) { stack ->
                 stack.matchesComponents(components)
             }
         }
@@ -121,10 +119,9 @@ class ItemChoice private constructor() : FluidOrItemChoice {
          *
          * Only checks the provided [stack]'s overriden components of any item being compared
          */
-        @JvmOverloads
-        fun addFuzzy(stack: ItemStack, amount: Int = 1) = apply {
+        fun addFuzzy(stack: ItemStack) = apply {
             val components = stack.overriddenComponents(false)
-            addFuzzy(ItemTypeWrapper(stack), amount, components)
+            addFuzzy(ItemTypeWrapper(stack), components)
         }
 
         /**
@@ -132,8 +129,7 @@ class ItemChoice private constructor() : FluidOrItemChoice {
          *
          * Checks that the components of any item being compared are the default ones for this [type].
          */
-        @JvmOverloads
-        fun addExact(type: ItemTypeWrapper, amount: Int = 1) = add(type, amount) {
+        fun addExact(type: ItemTypeWrapper) = add(type) {
             stack -> stack.isDefaultComponents
         }
 
@@ -143,10 +139,10 @@ class ItemChoice private constructor() : FluidOrItemChoice {
          * Checks that the components of any item being compared are the default ones for this [type], except for
          * the provided [componentsToIgnore].
          */
-        fun addExact(type: ItemTypeWrapper, amount: Int, componentsToIgnore: Set<DataComponentType>) = if (componentsToIgnore.isEmpty()) {
-            addExact(type, amount)
+        fun addExact(type: ItemTypeWrapper, componentsToIgnore: Set<DataComponentType>) = if (componentsToIgnore.isEmpty()) {
+            addExact(type)
         } else {
-            add(type, amount) {
+            add(type) {
                     stack -> stack.overriddenDataTypes().subtract(componentsToIgnore).isEmpty()
             }
         }
@@ -158,18 +154,18 @@ class ItemChoice private constructor() : FluidOrItemChoice {
          * the provided [componentsToIgnore].
          */
         @JvmOverloads
-        fun addExact(stack: ItemStack, amount: Int = 1, componentsToIgnore: Set<DataComponentType> = emptySet()) = apply {
+        fun addExact(stack: ItemStack, componentsToIgnore: Set<DataComponentType> = emptySet()) = apply {
             val components = stack.overriddenComponents(true).filterKeys { it !in componentsToIgnore }
             if (components.isEmpty()) {
-                addFuzzy(ItemTypeWrapper(stack), amount)
+                addFuzzy(ItemTypeWrapper(stack))
             } else {
                 add(ItemTypeWrapper(stack)) { stack ->
-                    stack.amount >= amount && stack.componentsEqual(components)
+                    stack.componentsEqual(components)
                 }
             }
         }
 
-        fun build() = choice
+        fun build() = ItemChoice(internalChoices, amount)
     }
 
     companion object {

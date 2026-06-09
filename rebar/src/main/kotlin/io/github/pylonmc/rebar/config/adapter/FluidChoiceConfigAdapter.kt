@@ -8,13 +8,17 @@ object FluidChoiceConfigAdapter : ConfigAdapter<FluidChoice> {
     override val type = FluidChoice::class.java
 
     override fun convert(value: Any): FluidChoice = when (value) {
-        is ConfigurationSection, is Map<*, *> -> FluidChoice.of(
-            MapConfigAdapter.STRING_TO_ANY.convert(value).toList().associate {
-                val fluid = ConfigAdapter.REBAR_FLUID.convert(it.first)
-                val amount = ConfigAdapter.DOUBLE.convert(it.second)
-                fluid to amount
-            }
+        is Pair<*, *> -> FluidChoice.of(
+            ConfigAdapter.REBAR_FLUID.convert(value.first!!),
+            ConfigAdapter.DOUBLE.convert(value.second!!)
         )
+        is ConfigurationSection, is Map<*, *> -> {
+            val map = MapConfigAdapter.STRING_TO_ANY.convert(value)
+            val fluids = ConfigAdapter.SET.from(ConfigAdapter.REBAR_FLUID)
+                .convert(map["fluids"] ?: error("A list of fluids must be provided e.g. 'fluids: [pylon:water]'"))
+            val amount = ConfigAdapter.DOUBLE.convert(map["amount"] ?: error("A fluid amount must be specified e.g. 'amount: 500'"))
+            FluidChoice.of(fluids, amount)
+        }
         else -> throw IllegalArgumentException("Cannot convert $value to FluidChoice")
     }
 }

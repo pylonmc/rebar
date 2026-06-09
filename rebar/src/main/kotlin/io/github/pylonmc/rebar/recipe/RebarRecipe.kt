@@ -57,7 +57,7 @@ interface RebarRecipe : Keyed {
      */
     fun isOutput(fluid: RebarFluid) = results.any {
         when (it) {
-            is FluidOrItem.Fluid -> it.fluid == fluid
+            is FluidWithAmount -> it.fluid == fluid
             else -> false
         }
     }
