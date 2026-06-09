@@ -10,6 +10,9 @@ import io.github.pylonmc.rebar.util.position.BlockPosition
 import io.netty.channel.ChannelDuplexHandler
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.ChannelPromise
+import net.minecraft.core.component.DataComponentExactPredicate
+import net.minecraft.core.component.DataComponentMap
+import net.minecraft.core.component.PatchedDataComponentMap
 import net.minecraft.network.HashedPatchMap
 import net.minecraft.network.HashedStack
 import net.minecraft.network.protocol.Packet
@@ -22,6 +25,9 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.ItemStackTemplate
 import net.minecraft.world.item.crafting.Ingredient
 import net.minecraft.world.item.crafting.display.*
+import net.minecraft.world.item.trading.ItemCost
+import net.minecraft.world.item.trading.MerchantOffer
+import net.minecraft.world.item.trading.MerchantOffers
 import org.bukkit.craftbukkit.inventory.CraftItemStack
 import java.util.logging.Level
 
@@ -101,15 +107,29 @@ class PlayerPacketHandler(private val player: ServerPlayer, val handler: PlayerT
                 packet.replace
             )
 
-            is ClientboundMerchantOffersPacket -> packet.apply {
-                for (offer in offers) {
-                    translate(offer.baseCostA.itemStack)
-                    offer.costB.ifPresent {
-                        translate(it.itemStack)
+            is ClientboundMerchantOffersPacket -> ClientboundMerchantOffersPacket(
+                packet.containerId,
+                MerchantOffers().apply { addAll(packet.offers.map { offer ->
+                    MerchantOffer(
+                        translate(offer.baseCostA),
+                        offer.costB.map(::translate),
+                        translate(offer.result.copy()),
+                        offer.uses,
+                        offer.maxUses,
+                        offer.xp,
+                        offer.priceMultiplier,
+                        offer.demand
+                    ).apply {
+                        rewardExp = offer.rewardExp
+                        specialPriceDiff = offer.specialPriceDiff
+                        ignoreDiscounts = offer.ignoreDiscounts
                     }
-                    translate(offer.result)
-                }
-            }
+                }) },
+                packet.villagerLevel,
+                packet.villagerXp,
+                packet.showProgress(),
+                packet.canRestock()
+            )
 
             is ClientboundPlaceGhostRecipePacket -> ClientboundPlaceGhostRecipePacket(
                 packet.containerId,
@@ -294,6 +314,12 @@ class PlayerPacketHandler(private val player: ServerPlayer, val handler: PlayerT
 
             else -> throw IllegalArgumentException("Unknown slot display type: ${display::class.simpleName}")
         }
+    }
+
+    private fun translate(itemCost: ItemCost): ItemCost {
+        val costStack = translate(itemCost.itemStack)
+        val costPredicate = DataComponentExactPredicate.allOf(PatchedDataComponentMap.fromPatch(DataComponentMap.EMPTY, costStack.componentsPatch))
+        return ItemCost(costStack.typeHolder(), costStack.count, costPredicate, costStack)
     }
 
     private fun translate(item: ItemStack): ItemStack {

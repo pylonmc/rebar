@@ -2,7 +2,6 @@ package io.github.pylonmc.rebar.config
 
 import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter
-import io.github.pylonmc.rebar.util.mergeResource
 import io.github.pylonmc.rebar.waila.Waila
 import net.kyori.adventure.bossbar.BossBar
 
@@ -12,9 +11,6 @@ import net.kyori.adventure.bossbar.BossBar
 object RebarConfig {
 
     private val config = ConfigSection.copyResource(Rebar, "config.yml")
-
-    @JvmField
-    val REBAR_GUIDE_ON_FIRST_JOIN = config.getOrThrow("rebar-guide-on-first-join", ConfigAdapter.BOOLEAN)
 
     @JvmField
     val DEFAULT_TICK_INTERVAL = config.getOrThrow("default-tick-interval", ConfigAdapter.INTEGER)
@@ -70,6 +66,22 @@ object RebarConfig {
     @JvmField
     val GHOST_BLOCK_TICK_INTERVAL = config.getOrThrow("ghost-block-tick-interval", ConfigAdapter.INTEGER)
 
+    object GuideConfig {
+
+        @JvmField
+        val GIVE_ON_FIRST_JOIN = config.getOrThrow("rebar-guide.give-on-first-join", ConfigAdapter.BOOLEAN)
+
+        @JvmField
+        val DISCORD_BUTTON = config.getOrThrow("rebar-guide.discord-button", ConfigAdapter.BOOLEAN)
+
+        @JvmField
+        val OPEN_SOUND = config.getOrThrow("rebar-guide.open-sound", ConfigAdapter.RANDOMIZED_SOUND)
+
+        @JvmField
+        val CLICK_BUTTON_SOUND = config.getOrThrow("rebar-guide.click-button-sound", ConfigAdapter.RANDOMIZED_SOUND)
+
+    }
+
     object ConfettiCreeperConfig {
 
         @JvmField
@@ -105,11 +117,22 @@ object RebarConfig {
     object WailaConfig {
 
         @JvmStatic
-        val ENABLED
-            get() = TICK_INTERVAL > 0 && ENABLED_TYPES.isNotEmpty()
+        val ENABLED = config.getOrThrow("waila.enabled", ConfigAdapter.BOOLEAN)
 
         @JvmField
-        val TICK_INTERVAL = config.getOrThrow("waila.tick-interval", ConfigAdapter.INTEGER)
+        val CONTENTS_TICK_INTERVAL = config.getOrThrow("waila.contents-tick-interval", ConfigAdapter.INTEGER)
+
+        @JvmField
+        val TARGET_TICK_INTERVAL = config.getOrThrow("waila.target-tick-interval", ConfigAdapter.INTEGER)
+
+        @JvmField
+        val STATIONARY_TARGET_TICK_INTERVAL_MULTIPLIER = config.getOrThrow("waila.stationary-target-tick-interval-multiplier", ConfigAdapter.INTEGER)
+
+        init {
+            check(CONTENTS_TICK_INTERVAL > 0) { "waila.content-tick-interval must be greater than zero" }
+            check(TARGET_TICK_INTERVAL > 0) { "waila.fast-target-tick-interval must be greater than zero" }
+            check(STATIONARY_TARGET_TICK_INTERVAL_MULTIPLIER > 0) { "waila.stationary-target-tick-interval-multiplier must be greater than zero" }
+        }
 
         @JvmField
         val ENABLED_TYPES = config.getOrThrow("waila.enabled-types", ConfigAdapter.LIST.from(ConfigAdapter.ENUM.from(Waila.Type::class.java)))
@@ -136,13 +159,6 @@ object RebarConfig {
                 throw IllegalStateException("Default bossbar overlay $overlay is not in the list of allowed overlays: $ALLOWED_BOSS_BAR_OVERLAYS")
             }
         }
-    }
-
-    object GuideConfig {
-
-        @JvmField
-        val DISCORD_BUTTON = config.getOrThrow("guide.discord-button", ConfigAdapter.BOOLEAN)
-
     }
 
     object ArmorTextureConfig {

@@ -2,6 +2,8 @@
 
 package io.github.pylonmc.rebar.util.gui
 
+import io.github.pylonmc.rebar.config.RebarConfig
+import io.github.pylonmc.rebar.content.guide.RebarGuide.Companion.playGuideSound
 import io.github.pylonmc.rebar.i18n.RebarArgument
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
 import io.github.pylonmc.rebar.util.gui.GuiItems.background
@@ -81,7 +83,7 @@ object GuiItems {
         var i = 0
         while (i < timeTicks) {
             states.add(
-                ItemStackBuilder.of(template.build().clone())
+                template.clone()
                     .set(DataComponentTypes.MAX_DAMAGE, timeTicks)
                     .set(DataComponentTypes.DAMAGE, i)
                     .set(
@@ -148,7 +150,10 @@ private class RebarScrollItem(private val direction: Int, private val key: Strin
     }
 
     override fun handleClick(clickType: ClickType, player: Player, click: Click) {
-        gui.line += direction
+        if (gui.canScroll) {
+            gui.line += direction
+            player.playGuideSound(RebarConfig.GuideConfig.CLICK_BUTTON_SOUND)
+        }
     }
 
     private val ScrollGui<*>.canScroll: Boolean
@@ -173,7 +178,10 @@ private class RebarPageItem(private val forward: Boolean) : AbstractPagedGuiBoun
     }
 
     override fun handleClick(clickType: ClickType, player: Player, click: Click) {
-        if (forward) gui.page++ else gui.page--
+        if (gui.canPage) {
+            if (forward) gui.page++ else gui.page--
+            player.playGuideSound(RebarConfig.GuideConfig.CLICK_BUTTON_SOUND)
+        }
     }
 
     private val PagedGui<*>.canPage: Boolean
@@ -191,7 +199,10 @@ private class RebarTabItem(private val item: ItemStackBuilder, private val tab: 
     }
 
     override fun handleClick(clickType: ClickType, player: Player, click: Click) {
-        gui.tab = tab
+        if (gui.tab != tab) {
+            gui.tab = tab
+            player.playGuideSound(RebarConfig.GuideConfig.CLICK_BUTTON_SOUND)
+        }
     }
 }
 

@@ -88,8 +88,8 @@ open class ItemIngredientsPage(val input: FluidOrItem) : TabbedGuidePage {
         .addIngredient(
             'r',
             when (input) {
-                is FluidOrItem.Fluid -> FluidButton(input.amountMillibuckets, input.fluid)
-                is FluidOrItem.Item -> ItemButton(input.item)
+                is FluidOrItem.Fluid -> FluidButton.of(input.amountMillibuckets, input.fluid)
+                is FluidOrItem.Item -> ItemButton.of(input.item)
             }
         )
         .addIngredient('x', Markers.CONTENT_LIST_SLOT_HORIZONTAL)
@@ -107,13 +107,13 @@ private val AMOUNT_KEY = rebarKey("actual_amount")
 
 @Suppress("UnstableApiUsage")
 private fun fluidOrItemButton(fluidOrItem: FluidOrItem) = when (fluidOrItem) {
-    is FluidOrItem.Fluid -> FluidButton(listOf(fluidOrItem.fluid), fluidOrItem.amountMillibuckets) { stack ->
+    is FluidOrItem.Fluid -> FluidButton.of(fluidOrItem) { stack ->
         stack.editPdc { pdc ->
             pdc.set(AMOUNT_KEY, RebarSerializers.DOUBLE, fluidOrItem.amountMillibuckets)
         }
     }
 
-    is FluidOrItem.Item -> ItemButton(fluidOrItem.item) { stack, _ ->
+    is FluidOrItem.Item -> ItemButton.of(fluidOrItem.item) { stack, _ ->
         ItemStackBuilder.of(stack)
             .name(
                 Component.translatable(

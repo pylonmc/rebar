@@ -1,5 +1,23 @@
-# Should players be given the Rebar guide book when they first join?
-rebar-guide-on-first-join: true
+rebar-guide:
+  # Should players be given the Rebar guide book when they first join?
+  give-on-first-join: true
+
+  # Should there be a button linking to the official rebar/pylon discord server in the info section of the guide?
+  discord-button: true
+
+  # The sound played when opening the guide
+  open-sound:
+    sound: minecraft:ui.toast.in
+    source: ui
+    volume: 1.75
+    pitch: 1
+
+  # The sound played when clicking generic buttons in the guide
+  click-button-sound:
+    sound: minecraft:ui.button.click
+    source: ui
+    volume: 0.1
+    pitch: 1
 
 # The default interval (in Minecraft ticks) between each block tick
 # Most blocks have a custom tick interval which can be changed in their settings
@@ -42,11 +60,21 @@ confetti-creeper:
   confetti-lifetime: 600
 
 waila:
-  # The interval (in Minecraft ticks), between WAILA checks
-  # Set to 0 to disable WAILA globally
-  tick-interval: 1
+  enabled: true
+
+  # The interval (in Minecraft ticks), between the player's target block/entity being updated
+  target-tick-interval: 6
+
+  # When the player is standing completely still, the interval between WAILA updated is
+  # multiplied by this much
+  stationary-target-tick-interval-multiplier: 4
+
+  # The interval (in Minecraft ticks), between the WAILA display being updated for the player's target block/entity
+  # This can generally be kept low without any performance issues
+  contents-tick-interval: 2
 
   # The WAILA display types players can choose between
+  # If this is set to an empty list, players will not have any WAILA, but WAILA placeholders will still work
   enabled-types:
     - actionbar
     - bossbar
@@ -145,10 +173,6 @@ metrics-save-interval-ticks: 6000
 # Be aware that disabling an item that's used as an ingredient for other items will mean that
 # those items can't be crafted.
 disabled-items: []
-
-guide:
-  # Should there be a button linking to the official rebar/pylon discord server in the info section of the guide?
-  discord-button: true
 
 custom-armor-textures:
   # Should Rebar support modifying the equipment component of armor items to use custom armor textures?

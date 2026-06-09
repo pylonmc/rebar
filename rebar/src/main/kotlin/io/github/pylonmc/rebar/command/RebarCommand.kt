@@ -11,8 +11,8 @@ import com.mojang.brigadier.context.CommandContext
 import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.addon.RebarAddon
 import io.github.pylonmc.rebar.block.BlockStorage
-import io.github.pylonmc.rebar.block.interfaces.SimpleRebarMultiblock
 import io.github.pylonmc.rebar.block.context.BlockCreateContext
+import io.github.pylonmc.rebar.block.interfaces.SimpleRebarMultiblock
 import io.github.pylonmc.rebar.content.debug.DebugWaxedWeatheredCutCopperStairs
 import io.github.pylonmc.rebar.content.guide.RebarGuide
 import io.github.pylonmc.rebar.entity.display.transform.Rotation
@@ -60,9 +60,8 @@ import org.bukkit.command.CommandSender
 import org.bukkit.entity.Entity
 import org.bukkit.entity.Player
 import org.bukkit.inventory.EquipmentSlot
-import kotlin.math.min
 import org.bukkit.util.Vector
-import kotlin.collections.forEach
+import kotlin.math.min
 import kotlin.reflect.typeOf
 import io.papermc.paper.math.BlockPosition as PaperBlockPosition
 
@@ -647,28 +646,6 @@ private val fillMultiblock = buildCommand("fillmultiblock") {
     }
 }
 
-private val forceload = buildCommand("forceload") {
-    argument("radius", IntegerArgumentType.integer(1)) {
-        executesWithPlayer { player ->
-            RebarMetrics.onCommandRun("/rb forceload")
-            val radius = IntegerArgumentType.getInteger(this, "radius")
-            val center = player.location.chunk
-            for (x in -radius..radius) {
-                for (z in -radius..radius) {
-                    player.world.getChunkAt(center.x + x, center.z + z).isForceLoaded = true
-                    player.sendMessage(
-                        Component.translatable(
-                            "rebar.message.command.forceload",
-                            RebarArgument.of("x", center.x + x),
-                            RebarArgument.of("z", center.z + z)
-                        )
-                    )
-                }
-            }
-        }
-    }
-}
-
 private val versions = buildCommand("versions") {
     executes { sender ->
         RebarMetrics.onCommandRun("/rb versions")
@@ -721,7 +698,6 @@ internal val ROOT_COMMAND = buildCommand("rebar") {
     then(exposeRecipeConfig)
     then(confetti)
     then(fillMultiblock)
-    then(forceload)
     then(versions)
 }
 

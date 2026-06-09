@@ -51,7 +51,7 @@ tasks.runServer {
         val archive = project(":rebar").tasks.shadowJar.map { it.archiveFile }.get().get().asFile
         archive.copyTo(pluginFolder.resolve(archive.name), overwrite = true)
     }
-    maxHeapSize = "4G"
+    maxHeapSize = "2G"
     minecraftVersion(minecraftVersion)
     doLast {
         runFolder.resolve("gametests").deleteRecursively()

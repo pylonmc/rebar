@@ -47,7 +47,7 @@ class FluidSectionMarker : RebarBlock, BlockBreakRebarBlockHandler, EntityHolder
     }
 
     override fun getWaila(player: Player): WailaDisplay?
-        = WailaDisplay(defaultWailaTranslationKey.arguments(RebarArgument.of("pipe", pipe!!.stack.effectiveName())))
+        = WailaDisplay(pipe!!.stack.effectiveName())
 
     override fun getDropItem(context: BlockBreakContext) = null
 

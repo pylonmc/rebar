@@ -15,19 +15,13 @@ item:
       <arrow> You can open the guide without this item with <insn>/rb</insn>
 
   phantom_block:
-    name: "<red>Phantom Block (%block%)"
+    name: "<red>Phantom Block"
 
   debug_waxed_weathered_cut_copper_stairs:
     name: "<red>Debug Waxed Weathered Cut Copper Stairs"
     lore: |-
       <arrow> <insn>Shift left click</insn> a block/entity to remove it
       <arrow> <insn>Right click</insn> a block/entity to view its Rebar data
-
-  fluid_pipe_intersection_marker:
-    waila: "%pipe%"
-
-  fluid_pipe_section_marker:
-    waila: "%pipe%"
 
 fluid:
   none: "<#ce9d98>None"
@@ -36,6 +30,9 @@ fluid:
     cold: "<#1cb3d8>cold"
     normal: "<#c9d81c>normal"
     hot: "<#d81c1c>hot"
+
+waila:
+  error: "<red>WAILA error - check console"
 
 message:
   debug:
@@ -103,7 +100,6 @@ message:
       not-looking: "<red>You are not looking at a multiblock"
       failed: "No blocks were filled"
       success: "Filled %filled%/%total% blocks"
-    forceload: "Force loaded chunk at %x%, %z%"
     versions: |-
       <gray>This server uses the following setup of Rebar:</gray>
       <green>%server_implementation% <dark_green>%server_version%</dark_green> <gray>(API: %api_version%)</gray>
@@ -372,6 +368,15 @@ guide:
         name: "<white>Guide Hints: <red>Disabled <dark_gray>(Click to toggle)"
         lore: |-
           <guidearrow> Whether to show <guideinsn>hints</guideinsn> in the guide
+    toggle-guide-sounds:
+      enabled:
+        name: "<white>Guide Sounds: <green>Enabled <dark_gray>(Click to toggle)"
+        lore: |-
+          <guidearrow> Whether to play sounds in the guide
+      disabled:
+        name: "<white>Guide Sounds: <red>Disabled <dark_gray>(Click to toggle)"
+        lore: |-
+          <guidearrow> Whether to play sounds in the guide
     info:
       discord:
         name: "<white>Discord"

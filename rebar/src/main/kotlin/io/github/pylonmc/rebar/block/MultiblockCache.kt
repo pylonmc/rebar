@@ -5,6 +5,7 @@ import io.github.pylonmc.rebar.block.interfaces.RebarMultiblock
 import io.github.pylonmc.rebar.event.*
 import io.github.pylonmc.rebar.util.position.BlockPosition
 import io.github.pylonmc.rebar.util.position.ChunkPosition
+import io.github.pylonmc.rebar.util.position.chunkPosition
 import io.github.pylonmc.rebar.util.position.position
 import org.bukkit.block.Block
 import org.bukkit.block.BlockState
@@ -143,7 +144,7 @@ internal object MultiblockCache : Listener {
         }
 
     private fun loadedMultiblocksWithComponent(block: Block): List<BlockPosition>
-            = loadedMultiblocksWithComponentsInChunk(block.position.chunk).filter {
+            = loadedMultiblocksWithComponentsInChunk(block.chunkPosition).filter {
         BlockStorage.getAs<RebarMultiblock>(it)?.isPartOfMultiblock(block) == true
     }
 
