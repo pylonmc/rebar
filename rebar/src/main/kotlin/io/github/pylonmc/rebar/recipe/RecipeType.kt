@@ -125,15 +125,15 @@ open class RecipeType<T : RebarRecipe>(private val key: NamespacedKey) : Keyed, 
             for (recipe in Bukkit.recipeIterator()) {
                 // @formatter:off
                 when (recipe) {
-                    is BlastingRecipe -> VANILLA_BLASTING.addNonRebarRecipe(BlastingRecipeWrapper(recipe))
-                    is CampfireRecipe -> VANILLA_CAMPFIRE.addNonRebarRecipe(CampfireRecipeWrapper(recipe))
-                    is FurnaceRecipe -> VANILLA_FURNACE.addNonRebarRecipe(FurnaceRecipeWrapper(recipe))
-                    is ShapedRecipe -> VANILLA_SHAPED.addNonRebarRecipe(ShapedRebarRecipe(recipe))
-                    is ShapelessRecipe -> VANILLA_SHAPELESS.addNonRebarRecipe(ShapelessRecipeWrapper(recipe))
-                    is TransmuteRecipe -> VANILLA_TRANSMUTE.addNonRebarRecipe(TransmuteRecipeWrapper(recipe))
-                    is SmithingTrimRecipe -> VANILLA_SMITHING_TRIM.addNonRebarRecipe(SmithingTrimRecipeWrapper(recipe))
-                    is SmithingTransformRecipe -> VANILLA_SMITHING_TRANSFORM.addNonRebarRecipe(SmithingTransformRecipeWrapper(recipe))
-                    is SmokingRecipe -> VANILLA_SMOKING.addNonRebarRecipe(SmokingRecipeWrapper(recipe))
+                    is BlastingRecipe -> VANILLA_BLASTING.addNonRebarRecipe(BlastingRebarRecipe.fromVanilla(recipe))
+                    is CampfireRecipe -> VANILLA_CAMPFIRE.addNonRebarRecipe(CampfireRebarRecipe.fromVanilla(recipe))
+                    is FurnaceRecipe -> VANILLA_FURNACE.addNonRebarRecipe(FurnaceRebarRecipe.fromVanilla(recipe))
+                    is ShapedRecipe -> VANILLA_SHAPED.addNonRebarRecipe(ShapedRebarRecipe.fromVanilla(recipe))
+                    is ShapelessRecipe -> VANILLA_SHAPELESS.addNonRebarRecipe(ShapelessRebarRecipe.fromVanilla(recipe))
+                    is TransmuteRecipe -> VANILLA_TRANSMUTE.addNonRebarRecipe(TransmuteRebarRecipe.fromVanilla(recipe))
+                    is SmithingTrimRecipe -> VANILLA_SMITHING_TRIM.addNonRebarRecipe(SmithingTrimRebarRecipe.fromVanilla(recipe))
+                    is SmithingTransformRecipe -> VANILLA_SMITHING_TRANSFORM.addNonRebarRecipe(SmithingTransformRebarRecipe.fromVanilla(recipe))
+                    is SmokingRecipe -> VANILLA_SMOKING.addNonRebarRecipe(SmokingRebarRecipe.fromVanilla(recipe))
                 }
                 // @formatter:on
             }

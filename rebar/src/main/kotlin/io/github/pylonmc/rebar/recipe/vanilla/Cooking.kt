@@ -6,7 +6,7 @@ import io.github.pylonmc.rebar.guide.button.ItemButton
 import io.github.pylonmc.rebar.i18n.RebarArgument
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
 import io.github.pylonmc.rebar.recipe.FluidOrItem
-import io.github.pylonmc.rebar.recipe.RecipeInput
+import io.github.pylonmc.rebar.recipe.ItemChoice
 import io.github.pylonmc.rebar.util.gui.GuiItems
 import io.github.pylonmc.rebar.util.gui.unit.UnitFormat
 import net.kyori.adventure.text.Component
@@ -17,10 +17,17 @@ import org.bukkit.inventory.recipe.CookingBookCategory
 import xyz.xenondevs.invui.gui.Gui
 
 
-sealed class CookingRecipeWrapper(final override val recipe: CookingRecipe<*>) : VanillaRecipeWrapper {
-    override val inputs: List<RecipeInput> = listOf(recipe.inputChoice.asRecipeInput())
-    override val results: List<FluidOrItem> = listOf(FluidOrItem.of(recipe.result))
-    override fun getKey(): NamespacedKey = recipe.key
+sealed class CookingRebarRecipe(
+    val ingredient: ItemChoice,
+    val result: FluidOrItem.Item,
+    val experience: Float,
+    val cookingTime: Int,
+    val category: CookingBookCategory,
+    val group: String,
+    @JvmField val key: NamespacedKey
+) : VanillaRebarRecipe {
+    override val inputs = listOf(ingredient)
+    override val results = listOf(result)
 
     protected abstract val displayBlock: Material
 
@@ -34,64 +41,184 @@ sealed class CookingRecipeWrapper(final override val recipe: CookingRecipe<*>) :
         )
         .addIngredient('#', GuiItems.backgroundBlack())
         .addIngredient('b', ItemStack.of(displayBlock))
-        .addIngredient('i', ItemButton.of(recipe.inputChoice))
+        .addIngredient('i', ItemButton.of(ingredient))
         .addIngredient(
             'f', GuiItems.progressCyclingItem(
-                recipe.cookingTime,
+                cookingTime,
                 ItemStackBuilder.of(Material.COAL)
                     .name(
                         Component.translatable(
                             "rebar.guide.recipe.cooking",
-                            RebarArgument.of("time", UnitFormat.SECONDS.format(recipe.cookingTime / 20))
+                            RebarArgument.of("time", UnitFormat.SECONDS.format(cookingTime / 20))
                         )
                     )
             )
         )
-        .addIngredient('o', ItemButton.of(recipe.result))
+        .addIngredient('o', ItemButton.of(result))
         .build()
+
+    override fun getKey(): NamespacedKey = key
 }
 
-class BlastingRecipeWrapper(recipe: BlastingRecipe) : CookingRecipeWrapper(recipe) {
+class BlastingRebarRecipe(
+    ingredient: ItemChoice,
+    result: FluidOrItem.Item,
+    experience: Float,
+    cookingTime: Int,
+    category: CookingBookCategory,
+    group: String,
+    key: NamespacedKey,
+    override val recipe: BlastingRecipe = BlastingRecipe(
+        key, result.item, ingredient.toRepresentativeRecipeChoice(),
+        experience, cookingTime
+    ).apply {
+        this.category = category
+        this.group = group
+    }
+) : CookingRebarRecipe(ingredient, result, experience, cookingTime, category, group, key) {
     override val displayBlock = Material.BLAST_FURNACE
+
+    companion object {
+        fun fromVanilla(recipe: BlastingRecipe): BlastingRebarRecipe {
+            return BlastingRebarRecipe(
+                recipe.inputChoice.toItemChoice(),
+                FluidOrItem.of(recipe.result),
+                recipe.experience,
+                recipe.cookingTime,
+                recipe.category,
+                recipe.group,
+                recipe.key,
+                recipe
+            )
+        }
+    }
 }
 
-class CampfireRecipeWrapper(recipe: CampfireRecipe) : CookingRecipeWrapper(recipe) {
+class CampfireRebarRecipe(
+    ingredient: ItemChoice,
+    result: FluidOrItem.Item,
+    experience: Float,
+    cookingTime: Int,
+    category: CookingBookCategory,
+    group: String,
+    key: NamespacedKey,
+    override val recipe: CampfireRecipe = CampfireRecipe(
+        key, result.item, ingredient.toRepresentativeRecipeChoice(),
+        experience, cookingTime
+    ).apply {
+        this.category = category
+        this.group = group
+    }
+) : CookingRebarRecipe(ingredient, result, experience, cookingTime, category, group, key) {
     override val displayBlock = Material.CAMPFIRE
+
+    companion object {
+        fun fromVanilla(recipe: CampfireRecipe): CampfireRebarRecipe {
+            return CampfireRebarRecipe(
+                recipe.inputChoice.toItemChoice(),
+                FluidOrItem.of(recipe.result),
+                recipe.experience,
+                recipe.cookingTime,
+                recipe.category,
+                recipe.group,
+                recipe.key,
+                recipe
+            )
+        }
+    }
 }
 
-class FurnaceRecipeWrapper(recipe: FurnaceRecipe) : CookingRecipeWrapper(recipe) {
+class FurnaceRebarRecipe(
+    ingredient: ItemChoice,
+    result: FluidOrItem.Item,
+    experience: Float,
+    cookingTime: Int,
+    category: CookingBookCategory,
+    group: String,
+    key: NamespacedKey,
+    override val recipe: FurnaceRecipe = FurnaceRecipe(
+        key, result.item, ingredient.toRepresentativeRecipeChoice(),
+        experience, cookingTime
+    ).apply {
+        this.category = category
+        this.group = group
+    }
+) : CookingRebarRecipe(ingredient, result, experience, cookingTime, category, group, key) {
     override val displayBlock = Material.FURNACE
+
+    companion object {
+        fun fromVanilla(recipe: FurnaceRecipe): FurnaceRebarRecipe {
+            return FurnaceRebarRecipe(
+                recipe.inputChoice.toItemChoice(),
+                FluidOrItem.of(recipe.result),
+                recipe.experience,
+                recipe.cookingTime,
+                recipe.category,
+                recipe.group,
+                recipe.key,
+                recipe
+            )
+        }
+    }
 }
 
-class SmokingRecipeWrapper(recipe: SmokingRecipe) : CookingRecipeWrapper(recipe) {
+class SmokingRebarRecipe(
+    ingredient: ItemChoice,
+    result: FluidOrItem.Item,
+    experience: Float,
+    cookingTime: Int,
+    category: CookingBookCategory,
+    group: String,
+    key: NamespacedKey,
+    override val recipe: SmokingRecipe = SmokingRecipe(
+        key, result.item, ingredient.toRepresentativeRecipeChoice(),
+        experience, cookingTime
+    ).apply {
+        this.category = category
+        this.group = group
+    }
+) : CookingRebarRecipe(ingredient, result, experience, cookingTime, category, group, key) {
     override val displayBlock = Material.SMOKER
+
+    companion object {
+        fun fromVanilla(recipe: SmokingRecipe): SmokingRebarRecipe {
+            return SmokingRebarRecipe(
+                recipe.inputChoice.toItemChoice(),
+                FluidOrItem.of(recipe.result),
+                recipe.experience,
+                recipe.cookingTime,
+                recipe.category,
+                recipe.group,
+                recipe.key,
+                recipe
+            )
+        }
+    }
 }
 
-private inline fun <T : CookingRecipe<T>> loadCookingRecipe(
+private val COOKING_BOOK_CATEGORY_ADAPTER = ConfigAdapter.ENUM.from<CookingBookCategory>()
+
+private inline fun <T : CookingRebarRecipe> loadCookingRecipe(
     key: NamespacedKey,
     config: ConfigSection,
     defaultCookingTime: Int,
-    cons: (NamespacedKey, ItemStack, RecipeChoice, Float, Int) -> T
+    cons: (ItemChoice, FluidOrItem.Item, Float, Int, CookingBookCategory, String, NamespacedKey) -> T
 ): T {
-    val cookingTime = config.get("cookingtime", ConfigAdapter.INTEGER, defaultCookingTime)
+    val ingredient = config.getOrThrow("ingredient", ConfigAdapter.ITEM_CHOICE)
+    val result = FluidOrItem.of(config.getOrThrow("result", ConfigAdapter.ITEM_STACK))
     val experience = config.get("experience", ConfigAdapter.FLOAT, 0f)
-    val ingredient = config.getOrThrow("ingredient", ConfigAdapter.RECIPE_CHOICE)
-    val result = config.getOrThrow("result", ConfigAdapter.ITEM_STACK)
-    val recipe = cons(key, result, ingredient, experience, cookingTime)
-    config.get("category", ConfigAdapter.ENUM.from<CookingBookCategory>())?.let { recipe.category = it }
-    config.get("group", ConfigAdapter.STRING)?.let { recipe.group = it }
-    return recipe
+    val cookingTime = config.get("cookingtime", ConfigAdapter.INTEGER, defaultCookingTime)
+    val category = config.get("category", COOKING_BOOK_CATEGORY_ADAPTER, CookingBookCategory.MISC)
+    val group = config.get("group", ConfigAdapter.STRING, "")
+    return cons(ingredient, result, experience, cookingTime, category, group, key)
 }
 
 /**
  * Key: `minecraft:blasting`
  */
-object BlastingRecipeType : VanillaRecipeType<BlastingRecipeWrapper>("blasting") {
-
-    fun addRecipe(recipe: BlastingRecipe) = super.addRecipe(BlastingRecipeWrapper(recipe))
-
+object BlastingRecipeType : VanillaRecipeType<BlastingRebarRecipe>("blasting") {
     override fun loadRecipe(key: NamespacedKey, section: ConfigSection) =
-        BlastingRecipeWrapper(loadCookingRecipe(key, section, 100, ::BlastingRecipe))
+        loadCookingRecipe(key, section, 100, ::BlastingRebarRecipe)
 }
 
 /**
@@ -100,32 +227,23 @@ object BlastingRecipeType : VanillaRecipeType<BlastingRecipeWrapper>("blasting")
  * Despite the vanilla default cooking time being 100 ticks, we set it to 600 ticks here
  * to match the actual in-game behavior
  */
-object CampfireRecipeType : VanillaRecipeType<CampfireRecipeWrapper>("campfire_cooking") {
-
-    fun addRecipe(recipe: CampfireRecipe) = super.addRecipe(CampfireRecipeWrapper(recipe))
-
+object CampfireRecipeType : VanillaRecipeType<CampfireRebarRecipe>("campfire_cooking") {
     override fun loadRecipe(key: NamespacedKey, section: ConfigSection) =
-        CampfireRecipeWrapper(loadCookingRecipe(key, section, 600, ::CampfireRecipe))
+        loadCookingRecipe(key, section, 600, ::CampfireRebarRecipe)
 }
 
 /**
  * Key: `minecraft:smelting`
  */
-object FurnaceRecipeType : VanillaRecipeType<FurnaceRecipeWrapper>("smelting") {
-
-    fun addRecipe(recipe: FurnaceRecipe) = super.addRecipe(FurnaceRecipeWrapper(recipe))
-
+object FurnaceRecipeType : VanillaRecipeType<FurnaceRebarRecipe>("smelting") {
     override fun loadRecipe(key: NamespacedKey, section: ConfigSection) =
-        FurnaceRecipeWrapper(loadCookingRecipe(key, section, 200, ::FurnaceRecipe))
+        loadCookingRecipe(key, section, 200, ::FurnaceRebarRecipe)
 }
 
 /**
  * Key: `minecraft:smoking`
  */
-object SmokingRecipeType : VanillaRecipeType<SmokingRecipeWrapper>("smoking") {
-
-    fun addRecipe(recipe: SmokingRecipe) = super.addRecipe(SmokingRecipeWrapper(recipe))
-
+object SmokingRecipeType : VanillaRecipeType<SmokingRebarRecipe>("smoking") {
     override fun loadRecipe(key: NamespacedKey, section: ConfigSection) =
-        SmokingRecipeWrapper(loadCookingRecipe(key, section, 100, ::SmokingRecipe))
+        loadCookingRecipe(key, section, 100, ::SmokingRebarRecipe)
 }

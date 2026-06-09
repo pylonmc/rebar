@@ -90,7 +90,7 @@ class Research(
 
         addResearch(player, this)
         for (recipe in RecipeType.vanillaCraftingRecipes()) {
-            val schema = RebarItemSchema.fromStack(recipe.craftingRecipe.result) ?: continue
+            val schema = RebarItemSchema.fromStack(recipe.result.item) ?: continue
             if (schema.key in unlocks) {
                 player.discoverRecipe(recipe.key)
             }
@@ -131,7 +131,7 @@ class Research(
 
         removeResearch(player, this)
         for (recipe in RecipeType.vanillaCraftingRecipes()) {
-            val schema = RebarItemSchema.fromStack(recipe.craftingRecipe.result) ?: continue
+            val schema = RebarItemSchema.fromStack(recipe.result.item) ?: continue
             if (schema.key in unlocks) {
                 player.undiscoverRecipe(recipe.key)
             }

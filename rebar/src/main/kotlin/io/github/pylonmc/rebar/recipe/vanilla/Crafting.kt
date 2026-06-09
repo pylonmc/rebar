@@ -4,17 +4,17 @@ import io.github.pylonmc.rebar.config.ConfigSection
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter
 import io.github.pylonmc.rebar.guide.button.ItemButton
 import io.github.pylonmc.rebar.recipe.FluidOrItem
-import io.github.pylonmc.rebar.recipe.FluidOrItemChoice
 import io.github.pylonmc.rebar.recipe.ItemChoice
-import io.github.pylonmc.rebar.recipe.RebarRecipe
 import io.github.pylonmc.rebar.util.gui.GuiItems
 import io.github.pylonmc.rebar.util.isSymmetrical
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
 import org.bukkit.inventory.*
 import org.bukkit.inventory.recipe.CraftingBookCategory
+import org.checkerframework.checker.units.qual.h
 import xyz.xenondevs.invui.gui.Gui
 import xyz.xenondevs.invui.item.Item
+import kotlin.collections.iterator
 import kotlin.math.max
 import kotlin.math.min
 
@@ -22,11 +22,63 @@ data class CraftingInput(
     val stacks: List<ItemStack?>,
     val width: Int,
     val height: Int,
-    val horizontalSpace: Int,
-    val verticalSpace: Int,
     val ingredientCount: Int = stacks.count { it != null && !it.isEmpty }
 ) {
     fun getItem(x: Int, y: Int) = stacks[x + y * this.width]
+
+    companion object {
+        val EMPTY = CraftingInput(emptyList(), 0, 0, 0)
+
+        fun of(inventory: CrafterInventory): CraftingInput {
+            return of(3, 3, inventory.contents.toList())
+        }
+
+        fun of(inventory: CraftingInventory): CraftingInput {
+            return of(3, 3, inventory.contents.toList())
+        }
+
+        fun of(width: Int, height: Int, items: List<ItemStack?>): CraftingInput {
+            if (width == 0 || height == 0) return EMPTY
+
+            var left = width -1
+            var right = 0
+            var top = height - 1
+            var bottom = 0
+
+            for (y in 0 until height) {
+                var rowEmpty = true
+                for (x in 0 until width) {
+                    val item = items[x + y * width]
+                    if (item != null && !item.isEmpty) {
+                        left = min(left, x)
+                        right = max(right, x)
+                        rowEmpty = false
+                    }
+                }
+
+                if (!rowEmpty) {
+                    top = min(top, y)
+                    bottom = max(bottom, y)
+                }
+            }
+
+            val newWidth = right - left + 1
+            val newHeight = bottom - top + 1
+            if (newWidth <= 0 || newHeight <= 0) {
+                return EMPTY
+            } else if (newWidth == width && newHeight == height) {
+                return CraftingInput(items, width, height)
+            }
+
+            val newItems = mutableListOf<ItemStack?>()
+            for (y in 0 until newHeight) {
+                for (x in 0 until newWidth) {
+                    newItems.add(items[x + left + (y + top) * width])
+                }
+            }
+            return CraftingInput(newItems, newWidth, newHeight)
+        }
+    }
 }
 
 data class CraftingRecipeShape private constructor(
@@ -126,20 +178,30 @@ data class CraftingRecipeShape private constructor(
 }
 
 sealed class AbstractCraftingRebarRecipe(
+    val result: FluidOrItem.Item,
     val category: CraftingBookCategory,
-    val group: String?,
-    val key: NamespacedKey
-) : RebarRecipe {
+    val group: String,
+    @JvmField val key: NamespacedKey
+) : VanillaRebarRecipe {
+    abstract fun matches(input: CraftingInput): Boolean
     override fun getKey() = this.key
 }
 
 class ShapedRebarRecipe(
     val shape: CraftingRecipeShape,
-    val result: FluidOrItem.Item,
+    result: FluidOrItem.Item,
     category: CraftingBookCategory,
-    group: String?,
-    key: NamespacedKey
-) : AbstractCraftingRebarRecipe(category, group, key) {
+    group: String,
+    key: NamespacedKey,
+    override val recipe: ShapedRecipe = ShapedRecipe(key, result.item).apply {
+        this.category = category
+        this.group = group
+        this.shape(*shape.pattern.toTypedArray())
+        for (ingredient in shape.key) {
+            this.setIngredient(ingredient.key, ingredient.value.toRepresentativeRecipeChoice())
+        }
+    }
+) : AbstractCraftingRebarRecipe(result, category, group, key) {
     override val inputs = shape.ingredients.filterNotNull()
     override val results = listOf(result)
 
@@ -164,13 +226,31 @@ class ShapedRebarRecipe(
         }
         return gui
     }
+
+    override fun matches(input: CraftingInput) = shape.matches(input)
+
+    companion object {
+        fun fromVanilla(recipe: ShapedRecipe): ShapedRebarRecipe {
+            return ShapedRebarRecipe(
+                CraftingRecipeShape.of(
+                    recipe.choiceMap.mapValues { entry -> entry.value.toItemChoice() },
+                    recipe.shape.toList()
+                ),
+                FluidOrItem.of(recipe.result),
+                recipe.category,
+                recipe.group,
+                recipe.key
+            )
+        }
+    }
 }
 
 sealed class AbstractShapelessRebarRecipe(
+    result: FluidOrItem.Item,
     category: CraftingBookCategory,
-    group: String?,
+    group: String,
     key: NamespacedKey
-) : AbstractCraftingRebarRecipe(category, group, key) {
+) : AbstractCraftingRebarRecipe(result, category, group, key) {
     override fun display() = Gui.builder()
         .setStructure(
             "# # # # # # # # #",
@@ -196,28 +276,87 @@ sealed class AbstractShapelessRebarRecipe(
 
 class ShapelessRebarRecipe(
     val ingredients: List<ItemChoice>,
-
+    result: FluidOrItem.Item,
     category: CraftingBookCategory,
-    group: String?,
-    key: NamespacedKey
-) : AbstractShapelessRebarRecipe(category, group, key) {
+    group: String,
+    key: NamespacedKey,
+    override val recipe: ShapelessRecipe = ShapelessRecipe(key, result.item).apply {
+        this.category = category
+        this.group = group
+        for (ingredient in ingredients) {
+            this.addIngredient(ingredient.toRepresentativeRecipeChoice())
+        }
+    }
+) : AbstractShapelessRebarRecipe(result, category, group, key) {
+    override val inputs = ingredients
+    override val results = listOf(result)
 
+    override fun matches(input: CraftingInput): Boolean {
+        if (input.ingredientCount != ingredients.size) return false
+        val inputs = input.stacks.filterNotNullTo(mutableListOf())
+        for (ingredient in ingredients) {
+            var found = false
+            for ((index, input) in inputs.withIndex()) {
+                if (!ingredient.validate(input)) continue
+                found = true
+                inputs.removeAt(index)
+                break
+            }
+            if (!found) return false
+        }
+        return inputs.isEmpty()
+    }
+
+    companion object {
+        fun fromVanilla(recipe: ShapelessRecipe): ShapelessRebarRecipe {
+            return ShapelessRebarRecipe(
+                recipe.choiceList.map { it.toItemChoice() },
+                FluidOrItem.Item(recipe.result),
+                recipe.category,
+                recipe.group,
+                recipe.key,
+                recipe
+            )
+        }
+    }
 }
 
 class TransmuteRebarRecipe(
+    val input: ItemChoice,
+    val material: ItemChoice,
+    val resultType: Material,
     category: CraftingBookCategory,
-    group: String?,
-    key: NamespacedKey
-) : AbstractShapelessRebarRecipe(category, group, key) {
+    group: String,
+    key: NamespacedKey,
+    override val recipe: TransmuteRecipe
+) : AbstractShapelessRebarRecipe(FluidOrItem.Item.EMPTY, category, group, key) {
+    override val inputs = listOf(input, material)
+    override val results = emptyList<FluidOrItem.Item>()
 
-}
+    override fun matches(input: CraftingInput): Boolean {
+        if (input.ingredientCount != 2) return false
+        val first = input.stacks[0] ?: return false
+        val second = input.stacks[1] ?: return false
+        return if (this.input.validate(first)) {
+            this.material.validate(second)
+        } else if (this.input.validate(second)) {
+             this.material.validate(first)
+        } else false
+    }
 
-class ShapelessRecipeWrapper(override val recipe: ShapelessRecipe) : AShapelessRecipeWrapper(recipe) {
-    override val choiceList = recipe.choiceList
-}
-
-class TransmuteRecipeWrapper(override val recipe: TransmuteRecipe) : AShapelessRecipeWrapper(recipe) {
-    override val choiceList = listOf(recipe.input, recipe.material)
+    companion object {
+        fun fromVanilla(recipe: TransmuteRecipe): TransmuteRebarRecipe {
+            return TransmuteRebarRecipe(
+                recipe.input.toItemChoice(),
+                recipe.material.toItemChoice(),
+                recipe.result.type,
+                recipe.category,
+                recipe.group,
+                recipe.key,
+                recipe
+            )
+        }
+    }
 }
 
 private val CRAFTING_BOOK_CATEGORY_ADAPTER = ConfigAdapter.ENUM.from<CraftingBookCategory>()
@@ -226,62 +365,36 @@ private val CRAFTING_BOOK_CATEGORY_ADAPTER = ConfigAdapter.ENUM.from<CraftingBoo
  * Key: `minecraft:crafting_shaped`
  */
 object ShapedRecipeType : VanillaRecipeType<ShapedRebarRecipe>("crafting_shaped") {
-
-    fun addRecipe(recipe: ShapedRecipe) = super.addRecipe(ShapedRebarRecipe(recipe))
-
     override fun loadRecipe(key: NamespacedKey, section: ConfigSection): ShapedRebarRecipe {
-        val ingredientKey = section.getOrThrow("key", ConfigAdapter.MAP.from(ConfigAdapter.CHAR, ConfigAdapter.RECIPE_CHOICE))
+        val ingredientKey = section.getOrThrow("key", ConfigAdapter.MAP.from(ConfigAdapter.CHAR, ConfigAdapter.ITEM_CHOICE))
         val pattern = section.getOrThrow("pattern", ConfigAdapter.LIST.from(ConfigAdapter.STRING))
-        val result = section.getOrThrow("result", ConfigAdapter.ITEM_STACK)
 
-        val recipe = ShapedRecipe(key, result)
-        recipe.shape(*pattern.toTypedArray())
-        for ((character, item) in ingredientKey) {
-            recipe.setIngredient(character, item)
-        }
-        section.get("category", CRAFTING_BOOK_CATEGORY_ADAPTER)?.let { recipe.category = it }
-        section.get("group", ConfigAdapter.STRING)?.let { recipe.group = it }
-        return ShapedRebarRecipe(recipe)
+        val shape = CraftingRecipeShape.of(ingredientKey, pattern)
+        val result = FluidOrItem.of(section.getOrThrow("result", ConfigAdapter.ITEM_STACK))
+        val category = section.get("category", CRAFTING_BOOK_CATEGORY_ADAPTER, CraftingBookCategory.MISC)
+        val group = section.get("group", ConfigAdapter.STRING, "")
+        return ShapedRebarRecipe(shape, result, category, group, key)
     }
 }
 
 /**
  * Key: `minecraft:crafting_shapeless`
  */
-object ShapelessRecipeType : VanillaRecipeType<ShapelessRecipeWrapper>("crafting_shapeless") {
-
-    fun addRecipe(recipe: ShapelessRecipe) = super.addRecipe(ShapelessRecipeWrapper(recipe))
-
-    override fun loadRecipe(key: NamespacedKey, section: ConfigSection): ShapelessRecipeWrapper {
-        val ingredients = section.getOrThrow("ingredients", ConfigAdapter.LIST.from(ConfigAdapter.RECIPE_CHOICE))
-        val result = section.getOrThrow("result", ConfigAdapter.ITEM_STACK)
-
-        val recipe = ShapelessRecipe(key, result)
-        for (ingredient in ingredients) {
-            recipe.addIngredient(ingredient)
-        }
-        section.get("category", CRAFTING_BOOK_CATEGORY_ADAPTER)?.let { recipe.category = it }
-        section.get("group", ConfigAdapter.STRING)?.let { recipe.group = it }
-        return ShapelessRecipeWrapper(recipe)
+object ShapelessRecipeType : VanillaRecipeType<ShapelessRebarRecipe>("crafting_shapeless") {
+    override fun loadRecipe(key: NamespacedKey, section: ConfigSection): ShapelessRebarRecipe {
+        val ingredients = section.getOrThrow("ingredients", ConfigAdapter.LIST.from(ConfigAdapter.ITEM_CHOICE))
+        val result = FluidOrItem.of(section.getOrThrow("result", ConfigAdapter.ITEM_STACK))
+        val category = section.get("category", CRAFTING_BOOK_CATEGORY_ADAPTER, CraftingBookCategory.MISC)
+        val group = section.get("group", ConfigAdapter.STRING, "")
+        return ShapelessRebarRecipe(ingredients, result, category, group, key)
     }
 }
 
 /**
  * Key: `minecraft:crafting_transmute`
  */
-object TransmuteRecipeType : VanillaRecipeType<TransmuteRecipeWrapper>("crafting_transmute") {
-
-    fun addRecipe(recipe: TransmuteRecipe) = super.addRecipe(TransmuteRecipeWrapper(recipe))
-
-    override fun loadRecipe(key: NamespacedKey, section: ConfigSection): TransmuteRecipeWrapper {
-        val input = section.getOrThrow("input", ConfigAdapter.RECIPE_CHOICE)
-        val material = section.getOrThrow("material", ConfigAdapter.RECIPE_CHOICE)
-        val result = section.getOrThrow("result", ConfigAdapter.MATERIAL)
-        val category = section.get("category", CRAFTING_BOOK_CATEGORY_ADAPTER, CraftingBookCategory.MISC)
-        val group = section.get("group", ConfigAdapter.STRING, "")
-        val recipe = TransmuteRecipe(key, result, input, material)
-        recipe.category = category
-        recipe.group = group
-        return TransmuteRecipeWrapper(recipe)
+object TransmuteRecipeType : VanillaRecipeType<TransmuteRebarRecipe>("crafting_transmute") {
+    override fun loadRecipe(key: NamespacedKey, section: ConfigSection): TransmuteRebarRecipe {
+        throw IllegalArgumentException("You cannot make custom transmute recipes")
     }
 }

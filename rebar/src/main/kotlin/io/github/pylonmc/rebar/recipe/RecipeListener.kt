@@ -5,8 +5,9 @@ import io.github.pylonmc.rebar.item.RebarItemSchema
 import io.github.pylonmc.rebar.item.interfaces.*
 import io.github.pylonmc.rebar.item.research.Research.Companion.canCraft
 import io.github.pylonmc.rebar.nms.NmsAccessor
-import io.github.pylonmc.rebar.recipe.RecipeType.Companion.vanillaCraftingRecipes
-import io.github.pylonmc.rebar.recipe.vanilla.CookingRecipeWrapper
+import io.github.pylonmc.rebar.recipe.vanilla.AbstractCraftingRebarRecipe
+import io.github.pylonmc.rebar.recipe.vanilla.CookingRebarRecipe
+import io.github.pylonmc.rebar.recipe.vanilla.CraftingInput
 import io.github.pylonmc.rebar.recipe.vanilla.VanillaRecipeType
 import io.github.pylonmc.rebar.recipe.vanilla.recipeType
 import io.github.pylonmc.rebar.util.isRebarAndIsNot
@@ -38,11 +39,11 @@ internal object RebarRecipeListener : Listener {
     @Suppress("UnstableApiUsage")
     @EventHandler(priority = EventPriority.LOWEST)
     private fun onPreCraft(e: PrepareItemCraftEvent) {
-        val recipe = e.recipe as? Keyed
+        val recipe = e.recipe
         val inventory = e.inventory
 
         val hasRebarItems = inventory.any { it.isRebarAndIsNot<VanillaCraftingIngredientItem>() }
-        val isNotRebarCraftingRecipe = recipe == null || recipe.key in VanillaRecipeType.nonRebarRecipes
+        val isNotRebarCraftingRecipe = recipe == null || recipe !is Keyed || recipe.key in VanillaRecipeType.nonRebarRecipes
 
         // Prevent the erroneous crafting of vanilla items with Rebar ingredients
         if (hasRebarItems && isNotRebarCraftingRecipe) {
@@ -98,7 +99,13 @@ internal object RebarRecipeListener : Listener {
             inventory.result = resultItem
         }
 
-        // Use the recipe matcher
+        // Use the recipe matcher if necessary
+        if (recipe == null || inventory.result == null) {
+            val matchedRecipe = RecipeMatchingService.matchCraftingRecipe(CraftingInput.of(inventory), recipe)
+            if (matchedRecipe != null) {
+                inventory.result = matchedRecipe.result.item.clone()
+            }
+        }
 
         // Prevent crafting of unresearched items
         val resultSchema = RebarItemSchema.fromStack(inventory.result)
@@ -120,73 +127,17 @@ internal object RebarRecipeListener : Listener {
         }
     }
 
-    private fun getCorrectedCrafterRecipe(originalRecipe: Recipe?, block: Block): Recipe? {
-        if (originalRecipe is Keyed && originalRecipe.key !in VanillaRecipeType.nonRebarRecipes) {
-            // Already a rebar recipe, so it should be valid
-            return originalRecipe
-        }
-
+    private fun checkCrafterRecipe(block: Block, possibleRecipe: Recipe? = null): Pair<Boolean, AbstractCraftingRebarRecipe?>? {
         val crafter = block.getState(false) as? Crafter ?: return null
-        val inventory = crafter.inventory
+        val inventory = crafter.inventory as CrafterInventory
 
         val hasRebarItems = inventory.any { it.isRebarAndIsNot<VanillaCraftingIngredientItem>() }
         if (!hasRebarItems) {
-            return originalRecipe
+            return true to null
         }
 
-        // TODO make this not horrible (both for performance and readability) - see https://github.com/pylonmc/rebar/issues/545
-        for (recipe in vanillaCraftingRecipes()) {
-            val craftingRecipe = recipe.craftingRecipe
-            if (craftingRecipe.key in VanillaRecipeType.nonRebarRecipes) {
-                continue
-            }
-
-            if (craftingRecipe is ShapedRecipe) {
-                var i = 0
-                var isValid = true
-                rowLoop@ for (row in craftingRecipe.shape) {
-                    ingredientLoop@ for (index in row) {
-                        val ingredient = craftingRecipe.choiceMap[index]
-                        val actual = inventory.getItem(i++)
-                        if (ingredient == null && (actual == null || actual.isEmpty)) {
-                            continue@ingredientLoop
-                        }
-
-                        if (ingredient == null || actual == null || !ingredient.test(actual)) {
-                            isValid = false
-                            break@rowLoop
-                        }
-                    }
-                }
-                if (isValid) {
-                    return craftingRecipe
-                }
-            } else if (craftingRecipe is ShapelessRecipe) {
-                val slots = crafter.inventory.contents.filterNotNull().toMutableList()
-                var isValid = true
-                ingredientLoop@ for (ingredient in craftingRecipe.choiceList) {
-                    var found = false
-                    slotLoop@ for (crafterIndex in slots.indices) {
-                        val actual = slots[crafterIndex]
-                        if (!ingredient.test(actual)) {
-                            continue
-                        }
-                        found = true
-                        slots.removeAt(crafterIndex)
-                        break@slotLoop
-                    }
-
-                    if (!found) {
-                        isValid = false
-                        break@ingredientLoop
-                    }
-                }
-                if (isValid && slots.isEmpty()) {
-                    return craftingRecipe
-                }
-            }
-        }
-        return null
+        val matchedRecipe = RecipeMatchingService.matchCraftingRecipe(CraftingInput.of(inventory), possibleRecipe)
+        return false to matchedRecipe
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
@@ -197,9 +148,9 @@ internal object RebarRecipeListener : Listener {
             // We do not have the original recipe so instead we pass a dummy recipe and check if
             // that is what is returned, if so, whatever the result already is, is valid
             // otherwise it should be corrected to the found recipe's result, or null
-            val correctedRecipe = getCorrectedCrafterRecipe(DummyRecipe, block)
-            if (correctedRecipe === DummyRecipe) return@slotListener
-            crafterInventory.setItem(9, correctedRecipe?.result)
+            val result = checkCrafterRecipe(block)
+            if (result != null && result.first) return@slotListener
+            crafterInventory.setItem(9, result?.second?.result?.item?.clone())
         }
         slotListener(e.view, 0, null, null)
         NmsAccessor.instance.addSlotChangedListener(crafterResultCorrector, e.view, slotListener)
@@ -207,10 +158,16 @@ internal object RebarRecipeListener : Listener {
 
     @EventHandler(priority = EventPriority.LOWEST)
     private fun onCrafterCraft(e: CrafterCraftEvent) {
-        val correctedRecipe = getCorrectedCrafterRecipe(e.recipe, e.block)
-        if (correctedRecipe != null && correctedRecipe !== e.recipe) {
-            e.result = correctedRecipe.result
-        } else if (correctedRecipe == null) {
+        val result = checkCrafterRecipe(e.block, e.recipe)
+        if (result != null && !result.first) {
+            val recipe = result.second
+            if (recipe != null) {
+                e.result = recipe.result.item
+            } else {
+                e.isCancelled = true
+                e.result = ItemStack.empty()
+            }
+        } else if (result == null) {
             e.isCancelled = true
             e.result = ItemStack.empty()
         }
@@ -230,7 +187,7 @@ internal object RebarRecipeListener : Listener {
 
     @EventHandler(priority = EventPriority.LOWEST)
     private fun onStartCook(e: FurnaceStartSmeltEvent) {
-        if (RebarItemSchema.fromStack(e.source) == null) return
+        if (!RebarItem.isRebarItem(e.source)) return
 
         val originalRecipe = e.recipe
         if (originalRecipe.key !in VanillaRecipeType.nonRebarRecipes) {
@@ -244,8 +201,8 @@ internal object RebarRecipeListener : Listener {
         }
 
         for (recipe in originalType.recipes) {
-            if (recipe is CookingRecipeWrapper && recipe.key !in VanillaRecipeType.nonRebarRecipes && recipe.recipe.inputChoice.test(e.source)) {
-                e.totalCookTime = recipe.recipe.cookingTime
+            if (recipe is CookingRebarRecipe && recipe.key !in VanillaRecipeType.nonRebarRecipes && recipe.ingredient.validate(e.source)) {
+                e.totalCookTime = recipe.cookingTime
                 NmsAccessor.instance.setFurnaceRecipeCache(e.block, recipe.key)
                 break
             }
@@ -274,8 +231,8 @@ internal object RebarRecipeListener : Listener {
         }
 
         for (recipe in originalType.recipes) {
-            if (recipe is CookingRecipeWrapper && recipe.key !in VanillaRecipeType.nonRebarRecipes && recipe.recipe.inputChoice.test(e.source)) {
-                e.result = recipe.recipe.result
+            if (recipe is CookingRebarRecipe && recipe.key !in VanillaRecipeType.nonRebarRecipes && recipe.ingredient.validate(e.source)) {
+                e.result = recipe.result.item.clone()
                 NmsAccessor.instance.setFurnaceRecipeCache(e.block, recipe.key)
                 break
             }
@@ -292,9 +249,9 @@ internal object RebarRecipeListener : Listener {
         val furnace = (e.block.state as Furnace)
         val input = furnace.inventory.smelting
         if (input != null && input.isRebarAndIsNot<VanillaFurnaceIngredientItem>()) {
-            var rebarRecipe: CookingRecipeWrapper? = null
+            var rebarRecipe: CookingRebarRecipe? = null
             for (recipe in RecipeType.vanillaCookingRecipes()) {
-                if (recipe.key !in VanillaRecipeType.nonRebarRecipes && recipe.recipe.inputChoice.test(input)) {
+                if (recipe.key !in VanillaRecipeType.nonRebarRecipes && recipe.ingredient.validate(input)) {
                     rebarRecipe = recipe
                     break
                 }

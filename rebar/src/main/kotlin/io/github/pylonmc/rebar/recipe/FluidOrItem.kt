@@ -5,6 +5,8 @@ import io.github.pylonmc.rebar.guide.button.FluidButton
 import io.github.pylonmc.rebar.guide.button.ItemButton
 import io.github.pylonmc.rebar.item.ItemTypeWrapper
 import io.github.pylonmc.rebar.item.RebarItemSchema
+import io.github.pylonmc.rebar.util.rebarTypeSimilar
+import io.papermc.paper.datacomponent.item.attribute.AttributeModifierDisplay.override
 import org.bukkit.Keyed
 import org.bukkit.inventory.ItemStack
 
@@ -18,8 +20,12 @@ sealed interface FluidOrItem : Keyed {
     @JvmRecord
     data class Item(val item: ItemStack) : FluidOrItem {
         override fun getKey() = RebarItemSchema.fromStack(item)?.key ?: item.type.key
-        override fun matchesType(other: FluidOrItem) = other is Item && ItemTypeWrapper(this.item) == ItemTypeWrapper(other.item)
+        override fun matchesType(other: FluidOrItem) = other is Item && rebarTypeSimilar(this.item, other.item)
         override fun button() = ItemButton.of(this)
+
+        companion object {
+            val EMPTY = Item(ItemStack.empty())
+        }
     }
 
     @JvmRecord
@@ -32,10 +38,10 @@ sealed interface FluidOrItem : Keyed {
     companion object {
 
         @JvmStatic
-        fun of(item: ItemStack): FluidOrItem = Item(item)
+        fun of(item: ItemStack): Item = Item(item)
 
         @JvmStatic
-        fun of(fluid: RebarFluid, amountMillibuckets: Double): FluidOrItem = Fluid(fluid, amountMillibuckets)
+        fun of(fluid: RebarFluid, amountMillibuckets: Double): Fluid = Fluid(fluid, amountMillibuckets)
 
     }
 }

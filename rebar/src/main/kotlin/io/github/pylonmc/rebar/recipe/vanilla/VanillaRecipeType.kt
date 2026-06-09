@@ -4,8 +4,8 @@ import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.item.ItemTypeWrapper
 import io.github.pylonmc.rebar.nms.NmsAccessor
 import io.github.pylonmc.rebar.recipe.ConfigurableRecipeType
+import io.github.pylonmc.rebar.recipe.ItemChoice
 import io.github.pylonmc.rebar.recipe.RebarRecipe
-import io.github.pylonmc.rebar.recipe.RecipeInput
 import io.github.pylonmc.rebar.recipe.RecipeType
 import org.bukkit.Bukkit
 import org.bukkit.NamespacedKey
@@ -18,12 +18,11 @@ import org.bukkit.inventory.Recipe
 import org.bukkit.inventory.RecipeChoice
 import org.bukkit.inventory.SmokingRecipe
 
-sealed interface VanillaRecipeWrapper : RebarRecipe {
+sealed interface VanillaRebarRecipe : RebarRecipe {
     val recipe: Recipe
 }
 
-sealed class VanillaRecipeType<T : VanillaRecipeWrapper>(key: String) :
-    ConfigurableRecipeType<T>(NamespacedKey.minecraft(key)), Listener {
+sealed class VanillaRecipeType<T : VanillaRebarRecipe>(key: String) : ConfigurableRecipeType<T>(NamespacedKey.minecraft(key)), Listener {
 
     init {
         Bukkit.getPluginManager().registerEvents(this, Rebar)
@@ -55,17 +54,19 @@ sealed class VanillaRecipeType<T : VanillaRecipeWrapper>(key: String) :
 }
 
 @JvmSynthetic
-internal fun RecipeChoice.asRecipeInput(): RecipeInput {
+internal fun RecipeChoice.toItemChoice(): ItemChoice {
     return when (this) {
-        is RecipeChoice.ExactChoice -> RecipeInput.Item(
-            this.itemStack.amount,
-            *this.choices.toTypedArray()
-        )
+        is RecipeChoice.ExactChoice -> ItemChoice.Builder().apply {
+            for (choice in this@toItemChoice.choices) {
+                addExact(choice, 1)
+            }
+        }.build()
 
-        is RecipeChoice.MaterialChoice -> RecipeInput.Item(
-            this.choices.mapTo(mutableListOf()) { ItemTypeWrapper(it) },
-            1
-        )
+        is RecipeChoice.MaterialChoice -> ItemChoice.Builder().apply {
+            for (choice in this@toItemChoice.choices) {
+                addFuzzy(ItemTypeWrapper(choice))
+            }
+        }.build()
 
         else -> throw IllegalArgumentException("Unsupported RecipeChoice type: ${this::class.java.name}")
     }
