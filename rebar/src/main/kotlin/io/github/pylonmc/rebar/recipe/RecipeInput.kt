@@ -10,6 +10,7 @@ import net.kyori.adventure.text.minimessage.translation.Argument.tag
 import org.bukkit.Material
 import org.bukkit.Tag
 import org.bukkit.inventory.ItemStack
+import org.bukkit.inventory.RecipeChoice
 import kotlin.collections.associate
 import kotlin.collections.emptyMap
 import kotlin.to

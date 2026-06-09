@@ -129,6 +129,23 @@ interface NmsAccessor {
 
     fun getOverriddenTypes(itemStack: ItemStack): List<DataComponentType>
 
+    fun overriddenComponents(itemStack: ItemStack, exact: Boolean): Map<DataComponentType, Any?>
+
+    fun hasDefaultComponents(itemStack: ItemStack, components: Set<DataComponentType>) : Boolean
+
+    fun isDefaultComponents(itemStack: ItemStack): Boolean
+
+    /**
+     * Checks if the given [itemStack] has the given values of all the [components].
+     */
+    fun componentsMatch(itemStack: ItemStack, components: Map<DataComponentType, Any?>): Boolean
+
+    /**
+     * Checks if the given [itemStack] matches the given [components] and does not have any
+     * additional components.
+     */
+    fun componentsEqual(itemStack: ItemStack, components: Map<DataComponentType, Any?>): Boolean
+
     companion object {
         val instance = Class.forName("io.github.pylonmc.rebar.nms.NmsAccessorImpl")
             .getDeclaredField("INSTANCE")

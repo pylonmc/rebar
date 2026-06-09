@@ -13,6 +13,7 @@ import io.github.pylonmc.rebar.item.research.Research.Companion.canUse
 import io.github.pylonmc.rebar.content.guide.RebarGuide.Companion.guideHints
 import io.github.pylonmc.rebar.content.guide.RebarGuide.Companion.playGuideSound
 import io.github.pylonmc.rebar.item.research.Research.Companion.researchPoints
+import io.github.pylonmc.rebar.recipe.ItemChoice
 import io.github.pylonmc.rebar.recipe.RecipeInput
 import io.github.pylonmc.rebar.util.gui.unit.UnitFormat
 import io.papermc.paper.datacomponent.DataComponentTypes
@@ -260,6 +261,10 @@ class ItemButton private constructor(
             is RecipeChoice.ExactChoice -> of(choice.choices)
             else -> EMPTY
         }
+
+        @JvmStatic
+        fun of(choice: ItemChoice, preDisplayDecorator: Decorator? = null)
+                = of(choice.representativeItems, preDisplayDecorator)
 
         @JvmStatic @JvmOverloads
         fun of(stacks: List<ItemStack?>, preDisplayDecorator: Decorator? = null) = if (stacks.filterNotNull().isEmpty()) {

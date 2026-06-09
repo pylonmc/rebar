@@ -7,6 +7,7 @@ import io.github.pylonmc.rebar.guide.pages.fluid.FluidRecipesPage
 import io.github.pylonmc.rebar.guide.pages.fluid.FluidUsagesPage
 import io.github.pylonmc.rebar.i18n.RebarArgument
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
+import io.github.pylonmc.rebar.recipe.FluidChoice
 import io.github.pylonmc.rebar.recipe.FluidOrItem
 import io.github.pylonmc.rebar.recipe.RecipeInput
 import io.github.pylonmc.rebar.util.gui.unit.UnitFormat
@@ -27,12 +28,7 @@ import xyz.xenondevs.invui.item.Item
  * cycles through all of them. You must supply at least one fluid
  */
 open class FluidButton private constructor(
-    fluids: List<RebarFluid>,
-
-    /**
-     * The amount of the fluid to display in the lore, or null if no amount should be displayed.
-     */
-    val amount: Double?,
+    fluids: List<Pair<RebarFluid, Double?>>,
 
     /**
      * A function to apply to the button item after creating it.
@@ -42,7 +38,7 @@ open class FluidButton private constructor(
 ) : AbstractItem() {
 
     val fluids = fluids.shuffled()
-    val currentFluid: RebarFluid
+    val currentFluid: Pair<RebarFluid, Double?>
         get() = this.fluids[(Bukkit.getCurrentTick() / 20) % this.fluids.size]
 
     init {
@@ -52,15 +48,15 @@ open class FluidButton private constructor(
     override fun getUpdatePeriod(what: Int): Int = if (fluids.size > 1) 20 else -1
 
     override fun getItemProvider(player: Player) = try {
-        val stack = if (amount == null) {
-            preDisplayDecorator.invoke(ItemStackBuilder.of(currentFluid.item))
+        val stack = if (currentFluid.second == null) {
+            preDisplayDecorator.invoke(ItemStackBuilder.of(currentFluid.first.item))
         } else {
-            preDisplayDecorator.invoke(ItemStackBuilder.of(currentFluid.item))
+            preDisplayDecorator.invoke(ItemStackBuilder.of(currentFluid.first.item))
                 .name(
                     Component.translatable(
                         "rebar.guide.button.fluid.name",
-                        RebarArgument.of("fluid", currentFluid.item.getData(DataComponentTypes.ITEM_NAME)!!),
-                        RebarArgument.of("amount", UnitFormat.MILLIBUCKETS.format(amount).decimalPlaces(2))
+                        RebarArgument.of("fluid", currentFluid.first.item.getData(DataComponentTypes.ITEM_NAME)!!),
+                        RebarArgument.of("amount", UnitFormat.MILLIBUCKETS.format(currentFluid.second!!).decimalPlaces(2))
                     )
                 )
         }
@@ -74,13 +70,13 @@ open class FluidButton private constructor(
     override fun handleClick(clickType: ClickType, player: Player, click: Click) {
         try {
             if (clickType.isLeftClick) {
-                val page = FluidRecipesPage(currentFluid.key)
+                val page = FluidRecipesPage(currentFluid.first.key)
                 if (page.pages.isNotEmpty()) {
                     page.open(player)
                     player.playGuideSound(RebarConfig.GuideConfig.CLICK_BUTTON_SOUND)
                 }
             } else {
-                val page = FluidUsagesPage(currentFluid)
+                val page = FluidUsagesPage(currentFluid.first)
                 if (page.pages.isNotEmpty()) {
                     page.open(player)
                     player.playGuideSound(RebarConfig.GuideConfig.CLICK_BUTTON_SOUND)
@@ -117,8 +113,13 @@ open class FluidButton private constructor(
         fun of(fluids: List<RebarFluid?>, amount: Double?, preDisplayDecorator: Decorator? = null): Item = if (fluids.filterNotNull().isEmpty()) {
             EMPTY
         } else {
-            FluidButton(fluids.filterNotNull(), amount, preDisplayDecorator ?: { it })
+            FluidButton(fluids.filterNotNull().map { it to amount}, preDisplayDecorator ?: { it })
         }
+
+        @JvmStatic
+        @JvmOverloads
+        fun of(fluidChoice: FluidChoice, preDisplayDecorator: Decorator? = null)
+                = FluidButton(fluidChoice.fluids.map { it.key to it.value }, preDisplayDecorator ?: { it })
 
         @JvmStatic
         @JvmOverloads
@@ -128,6 +129,6 @@ open class FluidButton private constructor(
         @JvmStatic
         @JvmOverloads
         fun of(fluid: FluidOrItem.Fluid, preDisplayDecorator: Decorator? = null)
-            = FluidButton(listOf(fluid.fluid), fluid.amountMillibuckets, preDisplayDecorator ?: { it })
+            = FluidButton(listOf(fluid.fluid to fluid.amountMillibuckets), preDisplayDecorator ?: { it })
     }
 }

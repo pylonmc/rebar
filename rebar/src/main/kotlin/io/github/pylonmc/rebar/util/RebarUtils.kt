@@ -748,10 +748,20 @@ fun ItemStack.overriddenDataTypes(): List<DataComponentType> {
     return NmsAccessor.instance.getOverriddenTypes(this)
 }
 
-val Block.isChunkLoaded: Boolean
-    get() = world.isChunkLoaded(x shr 4, z shr 4)
+fun ItemStack.overriddenComponents(exact: Boolean): Map<DataComponentType, Any?>
+    = NmsAccessor.instance.overriddenComponents(this, exact)
 
-const val FLUID_EPSILON = 1.0e-6
+fun ItemStack.matchesComponents(components: Map<DataComponentType, Any?>)
+    = NmsAccessor.instance.componentsMatch(this, components)
+
+fun ItemStack.componentsEqual(components: Map<DataComponentType, Any?>)
+    = NmsAccessor.instance.componentsEqual(this, components)
+
+fun ItemStack.hasDefaultComponents(components: Set<DataComponentType>)
+    = NmsAccessor.instance.hasDefaultComponents(this, components)
+
+val ItemStack.isDefaultComponents: Boolean
+    get() = NmsAccessor.instance.isDefaultComponents(this)
 
 fun Material.getPreferredTool(): Material? {
     if (Tag.MINEABLE_AXE.isTagged(this)) {
@@ -817,3 +827,8 @@ fun Material.getPreferredTool(): Material? {
 
 val Block.breakProgress
     get() = BlockListener.blockBreakProgressMap[position] ?: 0.0F
+
+val Block.isChunkLoaded: Boolean
+    get() = world.isChunkLoaded(x shr 4, z shr 4)
+
+const val FLUID_EPSILON = 1.0e-6
