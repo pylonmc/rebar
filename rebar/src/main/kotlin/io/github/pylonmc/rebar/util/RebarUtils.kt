@@ -831,4 +831,18 @@ val Block.breakProgress
 val Block.isChunkLoaded: Boolean
     get() = world.isChunkLoaded(x shr 4, z shr 4)
 
+fun isSymmetrical(width: Int, height: Int, list: List<*>): Boolean {
+    if (width == 1) return true
+    val center = width / 2
+    for (y in 0..<height) {
+        for (left in 0..<center) {
+            val right = width - 1 - left
+            if (list[left + y * width] != list[right + y * width]) {
+                return false
+            }
+        }
+    }
+    return true
+}
+
 const val FLUID_EPSILON = 1.0e-6

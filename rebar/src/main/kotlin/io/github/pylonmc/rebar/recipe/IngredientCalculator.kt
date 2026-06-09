@@ -2,7 +2,6 @@ package io.github.pylonmc.rebar.recipe
 
 import io.github.pylonmc.rebar.fluid.RebarFluid
 import io.github.pylonmc.rebar.item.ItemTypeWrapper
-import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.recipe.RebarRecipe.Companion.priority
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import org.bukkit.NamespacedKey
@@ -80,14 +79,17 @@ class IngredientCalculator private constructor() {
 
         for (recipeInput in recipe.inputs) {
             val inputItem = when (recipeInput) {
-                is RecipeInput.Fluid -> FluidOrItem.Fluid(
-                    fluid = recipeInput.fluids.first(),
-                    amountMillibuckets = recipeInput.amountMillibuckets * outputMulti
-                )
+                is FluidChoice -> {
+                    val (fluid, amount) = recipeInput.fluids.entries.first()
+                    // TODO make this not just use the first fluid it finds (require some prioritisation algorithm)
+                    FluidOrItem.Fluid(fluid, amount * outputMulti)
+                }
 
-                is RecipeInput.Item -> FluidOrItem.Item(
-                    item = recipeInput.representativeItem.asQuantity(recipeInput.amount * outputMulti)
-                )
+                is ItemChoice -> {
+                    val item = recipeInput.representativeItems.first()
+                    // TODO make this not just use the first item it finds (require some prioritisation algorithm)
+                    FluidOrItem.Item(item.asQuantity(item.amount * outputMulti))
+                }
             }
             calculate(inputItem.asOne(), inputItem.amount)
         }
@@ -130,8 +132,8 @@ class IngredientCalculator private constructor() {
             .sortedWith(compareByDescending<RebarRecipe> { it.priority }.thenByDescending { recipe ->
                 recipe.inputs.distinctBy {
                     when (it) {
-                        is RecipeInput.Fluid -> it.fluids
-                        is RecipeInput.Item -> it.items
+                        is FluidChoice -> it.fluids.keys
+                        is ItemChoice -> it.representativeItems
                     }
                 }.size
             })
@@ -148,8 +150,8 @@ class IngredientCalculator private constructor() {
             .sortedWith(compareByDescending<RebarRecipe> { it.priority }.thenByDescending { recipe ->
                 recipe.inputs.distinctBy {
                     when (it) {
-                        is RecipeInput.Fluid -> it.fluids
-                        is RecipeInput.Item -> it.items
+                        is FluidChoice -> it.fluids.keys
+                        is ItemChoice -> it.representativeItems
                     }
                 }.size
             })

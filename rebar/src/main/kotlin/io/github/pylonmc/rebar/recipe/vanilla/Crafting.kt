@@ -4,29 +4,144 @@ import io.github.pylonmc.rebar.config.ConfigSection
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter
 import io.github.pylonmc.rebar.guide.button.ItemButton
 import io.github.pylonmc.rebar.recipe.FluidOrItem
-import io.github.pylonmc.rebar.recipe.RecipeInput
+import io.github.pylonmc.rebar.recipe.FluidOrItemChoice
+import io.github.pylonmc.rebar.recipe.ItemChoice
+import io.github.pylonmc.rebar.recipe.RebarRecipe
 import io.github.pylonmc.rebar.util.gui.GuiItems
+import io.github.pylonmc.rebar.util.isSymmetrical
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
 import org.bukkit.inventory.*
 import org.bukkit.inventory.recipe.CraftingBookCategory
 import xyz.xenondevs.invui.gui.Gui
 import xyz.xenondevs.invui.item.Item
+import kotlin.math.max
+import kotlin.math.min
 
-
-sealed class CraftingRecipeWrapper(val craftingRecipe: CraftingRecipe) : VanillaRecipeWrapper {
-    override fun getKey(): NamespacedKey = craftingRecipe.key
-    override val results: List<FluidOrItem> = listOf(FluidOrItem.of(craftingRecipe.result))
+data class CraftingInput(
+    val stacks: List<ItemStack?>,
+    val width: Int,
+    val height: Int,
+    val horizontalSpace: Int,
+    val verticalSpace: Int,
+    val ingredientCount: Int = stacks.count { it != null && !it.isEmpty }
+) {
+    fun getItem(x: Int, y: Int) = stacks[x + y * this.width]
 }
 
-class ShapedRecipeWrapper(override val recipe: ShapedRecipe) : CraftingRecipeWrapper(recipe) {
-    override val inputs: List<RecipeInput> by lazy {
-        recipe.shape
-            .flatMap { it.asIterable() }
-            .mapNotNull {
-                recipe.choiceMap[it]?.asRecipeInput()
-            }
+data class CraftingRecipeShape private constructor(
+    val key: Map<Char, ItemChoice>,
+    val pattern: List<String>,
+    val ingredients: List<ItemChoice?>,
+    val width: Int,
+    val height: Int,
+    val ingredientCount: Int = ingredients.count { it != null },
+    val symmetrical: Boolean = isSymmetrical(width, height, ingredients)
+) {
+
+    fun getIngredient(x: Int, y: Int) = ingredients[x + y * width]
+
+    fun getFlippedIngredient(x: Int, y: Int) = ingredients[width - x - 1 + y * width]
+
+    fun matches(input: CraftingInput): Boolean {
+        if (ingredientCount != input.ingredientCount || width != input.width || height != input.height) {
+            return false
+        } else if (matches(input, false)) {
+            return true
+        }
+        return !symmetrical && matches(input, true)
     }
+
+    private fun matches(input: CraftingInput, xFlip: Boolean): Boolean {
+        for (y in 0 until height) {
+            for (x in 0 until width) {
+                val expected = if(xFlip) {
+                    getFlippedIngredient(x, y)
+                } else {
+                    getIngredient(x, y)
+                }
+
+                val actual = input.getItem(x, y)
+                if (!ItemChoice.validate(actual, expected)) {
+                    return false
+                }
+            }
+        }
+        return true
+    }
+
+    companion object {
+        fun of(key: Map<Char, ItemChoice>, pattern: List<String>): CraftingRecipeShape {
+            val shrunkPattern = shrinkPattern(pattern)
+            val ingredients = prepareIngredients(key, shrunkPattern)
+            val width = shrunkPattern[0].length
+            val height = shrunkPattern.size
+            return CraftingRecipeShape(key, shrunkPattern, ingredients, width, height)
+        }
+
+        fun shrinkPattern(pattern: List<String>): List<String> {
+            var left = Integer.MAX_VALUE
+            var right = 0
+            var top = 0
+            var bottom = 0
+            
+            for ((row, line) in pattern.withIndex()) {
+                val lastIngredient = line.indexOfLast { it != ' ' }
+                left = min(left, line.indexOfFirst { it != ' ' })
+                right = max(right, lastIngredient)
+                if (lastIngredient < 0) {
+                    if (top == row) top++
+                    bottom++
+                } else {
+                    bottom = 0
+                }
+            }
+
+            if (pattern.size != bottom) {
+                val rightEdge = right + 1
+                val rows = pattern.size - bottom - top
+                val result = mutableListOf<String>()
+                for (line in 0 until rows) {
+                    result.add(pattern[line + top].substring(left, rightEdge))
+                }
+                return result
+            }
+            return emptyList()
+        }
+
+        fun prepareIngredients(key: Map<Char, ItemChoice>, pattern: List<String>): List<ItemChoice?> {
+            if (key.keys.any { char -> pattern.none { it.contains(char) } }) {
+                throw IllegalArgumentException("Recipe key defines characters not used in the pattern")
+            }
+
+            val ingredients = mutableListOf<ItemChoice?>()
+            for (line in pattern) {
+                for (char in line) {
+                    ingredients.add(if (char == ' ') null else key[char] ?: throw IllegalArgumentException("Recipe pattern defines character $char not present in the key!"))
+                }
+            }
+            return ingredients
+        }
+    }
+}
+
+sealed class AbstractCraftingRebarRecipe(
+    val category: CraftingBookCategory,
+    val group: String?,
+    val key: NamespacedKey
+) : RebarRecipe {
+    override fun getKey() = this.key
+}
+
+class ShapedRebarRecipe(
+    val shape: CraftingRecipeShape,
+    val result: FluidOrItem.Item,
+    category: CraftingBookCategory,
+    group: String?,
+    key: NamespacedKey
+) : AbstractCraftingRebarRecipe(category, group, key) {
+    override val inputs = shape.ingredients.filterNotNull()
+    override val results = listOf(result)
 
     override fun display(): Gui {
         val gui = Gui.builder()
@@ -39,32 +154,23 @@ class ShapedRecipeWrapper(override val recipe: ShapedRecipe) : CraftingRecipeWra
             )
             .addIngredient('#', GuiItems.backgroundBlack())
             .addIngredient('b', ItemButton.of(ItemStack.of(Material.CRAFTING_TABLE)))
-            .addIngredient('r', ItemButton.of(recipe.result))
+            .addIngredient('r', ItemButton.of(result))
             .build()
 
-        val height = recipe.shape.size
-        val width = recipe.shape[0].length
-        for (x in 0 until width) {
-            for (y in 0 until height) {
-                gui.setItem(12 + x + 9 * y, getDisplaySlot(recipe, x, y))
+        for (x in 0 until shape.width) {
+            for (y in 0 until shape.height) {
+                gui.setItem(12 + x + 9 * y, ItemButton.of(shape.getIngredient(x, y)))
             }
         }
-
         return gui
-    }
-
-    private fun getDisplaySlot(recipe: ShapedRecipe, x: Int, y: Int): Item {
-        val character = recipe.shape[y][x]
-        return ItemButton.of(recipe.choiceMap[character])
     }
 }
 
-sealed class AShapelessRecipeWrapper(recipe: CraftingRecipe) : CraftingRecipeWrapper(recipe) {
-
-    protected abstract val choiceList: List<RecipeChoice?>
-
-    override val inputs: List<RecipeInput> by lazy { choiceList.filterNotNull().map(RecipeChoice::asRecipeInput) }
-
+sealed class AbstractShapelessRebarRecipe(
+    category: CraftingBookCategory,
+    group: String?,
+    key: NamespacedKey
+) : AbstractCraftingRebarRecipe(category, group, key) {
     override fun display() = Gui.builder()
         .setStructure(
             "# # # # # # # # #",
@@ -75,21 +181,35 @@ sealed class AShapelessRecipeWrapper(recipe: CraftingRecipe) : CraftingRecipeWra
         )
         .addIngredient('#', GuiItems.backgroundBlack())
         .addIngredient('b', ItemButton.of(ItemStack.of(Material.CRAFTING_TABLE)))
-        .addIngredient('0', getDisplaySlot(0))
-        .addIngredient('1', getDisplaySlot(1))
-        .addIngredient('2', getDisplaySlot(2))
-        .addIngredient('3', getDisplaySlot(3))
-        .addIngredient('4', getDisplaySlot(4))
-        .addIngredient('5', getDisplaySlot(5))
-        .addIngredient('6', getDisplaySlot(6))
-        .addIngredient('7', getDisplaySlot(7))
-        .addIngredient('8', getDisplaySlot(8))
-        .addIngredient('r', ItemButton.of(recipe.result))
+        .addIngredient('0', inputs.getOrNull(0)?.button() ?: Item.EMPTY)
+        .addIngredient('1', inputs.getOrNull(0)?.button() ?: Item.EMPTY)
+        .addIngredient('2', inputs.getOrNull(0)?.button() ?: Item.EMPTY)
+        .addIngredient('3', inputs.getOrNull(0)?.button() ?: Item.EMPTY)
+        .addIngredient('4', inputs.getOrNull(0)?.button() ?: Item.EMPTY)
+        .addIngredient('5', inputs.getOrNull(0)?.button() ?: Item.EMPTY)
+        .addIngredient('6', inputs.getOrNull(0)?.button() ?: Item.EMPTY)
+        .addIngredient('7', inputs.getOrNull(0)?.button() ?: Item.EMPTY)
+        .addIngredient('8', inputs.getOrNull(0)?.button() ?: Item.EMPTY)
+        .addIngredient('r', results.getOrNull(0)?.button() ?: Item.EMPTY)
         .build()
+}
 
-    private fun getDisplaySlot(index: Int): Item {
-        return ItemButton.of(choiceList.getOrNull(index))
-    }
+class ShapelessRebarRecipe(
+    val ingredients: List<ItemChoice>,
+
+    category: CraftingBookCategory,
+    group: String?,
+    key: NamespacedKey
+) : AbstractShapelessRebarRecipe(category, group, key) {
+
+}
+
+class TransmuteRebarRecipe(
+    category: CraftingBookCategory,
+    group: String?,
+    key: NamespacedKey
+) : AbstractShapelessRebarRecipe(category, group, key) {
+
 }
 
 class ShapelessRecipeWrapper(override val recipe: ShapelessRecipe) : AShapelessRecipeWrapper(recipe) {
@@ -105,11 +225,11 @@ private val CRAFTING_BOOK_CATEGORY_ADAPTER = ConfigAdapter.ENUM.from<CraftingBoo
 /**
  * Key: `minecraft:crafting_shaped`
  */
-object ShapedRecipeType : VanillaRecipeType<ShapedRecipeWrapper>("crafting_shaped") {
+object ShapedRecipeType : VanillaRecipeType<ShapedRebarRecipe>("crafting_shaped") {
 
-    fun addRecipe(recipe: ShapedRecipe) = super.addRecipe(ShapedRecipeWrapper(recipe))
+    fun addRecipe(recipe: ShapedRecipe) = super.addRecipe(ShapedRebarRecipe(recipe))
 
-    override fun loadRecipe(key: NamespacedKey, section: ConfigSection): ShapedRecipeWrapper {
+    override fun loadRecipe(key: NamespacedKey, section: ConfigSection): ShapedRebarRecipe {
         val ingredientKey = section.getOrThrow("key", ConfigAdapter.MAP.from(ConfigAdapter.CHAR, ConfigAdapter.RECIPE_CHOICE))
         val pattern = section.getOrThrow("pattern", ConfigAdapter.LIST.from(ConfigAdapter.STRING))
         val result = section.getOrThrow("result", ConfigAdapter.ITEM_STACK)
@@ -121,7 +241,7 @@ object ShapedRecipeType : VanillaRecipeType<ShapedRecipeWrapper>("crafting_shape
         }
         section.get("category", CRAFTING_BOOK_CATEGORY_ADAPTER)?.let { recipe.category = it }
         section.get("group", ConfigAdapter.STRING)?.let { recipe.group = it }
-        return ShapedRecipeWrapper(recipe)
+        return ShapedRebarRecipe(recipe)
     }
 }
 

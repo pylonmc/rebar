@@ -128,7 +128,7 @@ open class RecipeType<T : RebarRecipe>(private val key: NamespacedKey) : Keyed, 
                     is BlastingRecipe -> VANILLA_BLASTING.addNonRebarRecipe(BlastingRecipeWrapper(recipe))
                     is CampfireRecipe -> VANILLA_CAMPFIRE.addNonRebarRecipe(CampfireRecipeWrapper(recipe))
                     is FurnaceRecipe -> VANILLA_FURNACE.addNonRebarRecipe(FurnaceRecipeWrapper(recipe))
-                    is ShapedRecipe -> VANILLA_SHAPED.addNonRebarRecipe(ShapedRecipeWrapper(recipe))
+                    is ShapedRecipe -> VANILLA_SHAPED.addNonRebarRecipe(ShapedRebarRecipe(recipe))
                     is ShapelessRecipe -> VANILLA_SHAPELESS.addNonRebarRecipe(ShapelessRecipeWrapper(recipe))
                     is TransmuteRecipe -> VANILLA_TRANSMUTE.addNonRebarRecipe(TransmuteRecipeWrapper(recipe))
                     is SmithingTrimRecipe -> VANILLA_SMITHING_TRIM.addNonRebarRecipe(SmithingTrimRecipeWrapper(recipe))

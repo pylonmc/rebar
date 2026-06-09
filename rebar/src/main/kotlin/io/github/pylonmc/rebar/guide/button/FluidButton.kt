@@ -123,11 +123,6 @@ open class FluidButton private constructor(
 
         @JvmStatic
         @JvmOverloads
-        fun of(input: RecipeInput.Fluid, preDisplayDecorator: Decorator? = null)
-            = of(input.fluids.toList(), input.amountMillibuckets, preDisplayDecorator)
-
-        @JvmStatic
-        @JvmOverloads
         fun of(fluid: FluidOrItem.Fluid, preDisplayDecorator: Decorator? = null)
             = FluidButton(listOf(fluid.fluid to fluid.amountMillibuckets), preDisplayDecorator ?: { it })
     }

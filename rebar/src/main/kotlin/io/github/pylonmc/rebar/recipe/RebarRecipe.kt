@@ -11,23 +11,38 @@ interface RebarRecipe : Keyed {
     val isHidden: Boolean
         get() = false
 
-    val inputs: List<RecipeInput>
+    val inputs: List<FluidOrItemChoice>
     val results: List<FluidOrItem>
 
+    /**
+     * Returns whether [stack] is used anywhere by this recipe.
+     *
+     * Primarily used for guide navigation
+     */
     fun isInput(stack: ItemStack) = inputs.any { input ->
         when (input) {
-            is RecipeInput.Item -> input.matchesIgnoringAmount(stack)
+            is ItemChoice -> input.validate(stack)
             else -> false
         }
     }
 
+    /**
+     * Returns whether [fluid] is used anywhere by this recipe.
+     *
+     * Primarily used for guide navigation
+     */
     fun isInput(fluid: RebarFluid) = inputs.any { input ->
         when (input) {
-            is RecipeInput.Fluid -> fluid in input.fluids
+            is FluidChoice -> fluid in input.fluids
             else -> false
         }
     }
 
+    /**
+     * Returns whether [stack] is a result of this recipe.
+     *
+     * Primarily used for guide navigation
+     */
     fun isOutput(stack: ItemStack) = results.any {
         when (it) {
             is FluidOrItem.Item -> it.item.isSimilar(stack)
@@ -35,6 +50,11 @@ interface RebarRecipe : Keyed {
         }
     }
 
+    /**
+     * Returns whether [fluid] is a result of this recipe.
+     *
+     * Primarily used for guide navigation
+     */
     fun isOutput(fluid: RebarFluid) = results.any {
         when (it) {
             is FluidOrItem.Fluid -> it.fluid == fluid

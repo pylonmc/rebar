@@ -1,5 +1,6 @@
 package io.github.pylonmc.rebar.recipe
 
+import io.github.pylonmc.rebar.guide.button.ItemButton
 import io.github.pylonmc.rebar.item.ItemTypeWrapper
 import io.github.pylonmc.rebar.util.componentsEqual
 import io.github.pylonmc.rebar.util.hasDefaultComponents
@@ -19,7 +20,8 @@ import java.util.function.Predicate
  */
 class ItemChoice private constructor() : FluidOrItemChoice {
 
-    private val internalChoices: MutableList<InternalItemChoice> = mutableListOf()
+    @JvmSynthetic
+    internal val internalChoices: MutableList<InternalItemChoice> = mutableListOf()
 
     internal class InternalItemChoice(
         val wrapper: ItemTypeWrapper,
@@ -33,6 +35,7 @@ class ItemChoice private constructor() : FluidOrItemChoice {
 
     fun validate(stack: ItemStack)
             = internalChoices.any { it.validate(stack) }
+    override fun button() = ItemButton.of(this)
 
     /**
      * Returns a recipe choice which REPRESENTS this ItemChoice
@@ -56,7 +59,7 @@ class ItemChoice private constructor() : FluidOrItemChoice {
     /**
      * Builds an [ItemChoice]. Accepts nothing by default.
      */
-    class Builder(val choice: ItemChoice = ItemChoice()) {
+    class Builder(private val choice: ItemChoice = ItemChoice()) {
 
         private fun add(internalChoice: InternalItemChoice) = apply { choice.internalChoices.add(internalChoice) }
 
@@ -166,5 +169,16 @@ class ItemChoice private constructor() : FluidOrItemChoice {
         }
 
         fun build() = choice
+    }
+
+    companion object {
+        fun validate(stack: ItemStack?, choice: ItemChoice?): Boolean {
+            if (choice == null) {
+                return stack == null || stack.isEmpty
+            } else if (stack == null) {
+                return false
+            }
+            return choice.validate(stack)
+        }
     }
 }

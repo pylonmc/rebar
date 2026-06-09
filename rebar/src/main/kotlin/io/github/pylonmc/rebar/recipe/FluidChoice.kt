@@ -1,6 +1,7 @@
 package io.github.pylonmc.rebar.recipe
 
 import io.github.pylonmc.rebar.fluid.RebarFluid
+import io.github.pylonmc.rebar.guide.button.FluidButton
 
 /**
  * Represents a fluid input to a recipe.
@@ -8,6 +9,7 @@ import io.github.pylonmc.rebar.fluid.RebarFluid
 class FluidChoice private constructor(val fluids: Map<RebarFluid, Double>) : FluidOrItemChoice {
 
     fun validate(fluid: RebarFluid, amount: Double) = fluids[fluid]?.let { amount >= it } ?: false
+    override fun button() = FluidButton.of(this)
 
     companion object {
 

@@ -38,13 +38,11 @@ internal object RebarRecipeListener : Listener {
     @Suppress("UnstableApiUsage")
     @EventHandler(priority = EventPriority.LOWEST)
     private fun onPreCraft(e: PrepareItemCraftEvent) {
-        val recipe = e.recipe
-        // All recipe types but MerchantRecipe implement Keyed
-        if (recipe !is Keyed) return
+        val recipe = e.recipe as? Keyed
         val inventory = e.inventory
 
         val hasRebarItems = inventory.any { it.isRebarAndIsNot<VanillaCraftingIngredientItem>() }
-        val isNotRebarCraftingRecipe = recipe.key in VanillaRecipeType.nonRebarRecipes
+        val isNotRebarCraftingRecipe = recipe == null || recipe.key in VanillaRecipeType.nonRebarRecipes
 
         // Prevent the erroneous crafting of vanilla items with Rebar ingredients
         if (hasRebarItems && isNotRebarCraftingRecipe) {
@@ -100,8 +98,10 @@ internal object RebarRecipeListener : Listener {
             inventory.result = resultItem
         }
 
+        // Use the recipe matcher
+
         // Prevent crafting of unresearched items
-        val resultSchema = RebarItemSchema.fromStack(recipe.result)
+        val resultSchema = RebarItemSchema.fromStack(inventory.result)
         val anyViewerDoesNotHaveResearch = resultSchema != null && e.viewers.none {
             it is Player && it.canCraft(resultSchema, true)
         }
