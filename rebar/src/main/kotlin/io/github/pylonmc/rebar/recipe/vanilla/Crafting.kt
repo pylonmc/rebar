@@ -6,7 +6,7 @@ import io.github.pylonmc.rebar.guide.button.ItemButton
 import io.github.pylonmc.rebar.recipe.ingredients.FluidOrItem
 import io.github.pylonmc.rebar.recipe.ingredients.FluidOrItemChoice
 import io.github.pylonmc.rebar.recipe.ingredients.ItemChoice
-import io.github.pylonmc.rebar.recipe.vanilla.DummyVanillaRebarRecipe.Companion.dummyKey
+import io.github.pylonmc.rebar.recipe.vanilla.DummyBukkitRebarRecipe.Companion.dummyKey
 import io.github.pylonmc.rebar.util.gui.GuiItems
 import io.github.pylonmc.rebar.util.isSymmetrical
 import io.github.pylonmc.rebar.util.rebarKey
@@ -205,7 +205,7 @@ data class CraftingRecipeShape private constructor(
 class DummyCraftingRebarRecipe(
     val realRecipe: AbstractCraftingRebarRecipe,
     override val recipe: CraftingRecipe
-) : DummyVanillaRebarRecipe {
+) : DummyBukkitRebarRecipe {
     override val inputs = emptyList<FluidOrItemChoice>()
     override val results = emptyList<FluidOrItem>()
     override fun display() = null
@@ -217,7 +217,7 @@ sealed class AbstractCraftingRebarRecipe(
     val category: CraftingBookCategory,
     val group: String,
     @JvmField val key: NamespacedKey
-) : VanillaRebarRecipe {
+) : BukkitRebarRecipe {
     abstract fun matches(input: CraftingInput): Boolean
     override fun getKey() = this.key
 }
@@ -401,7 +401,7 @@ object DummyCraftingRecipeType : DummyRecipeType<DummyCraftingRebarRecipe>(rebar
 /**
  * Key: `minecraft:crafting_shaped`
  */
-object ShapedRecipeType : VanillaRecipeType<ShapedRebarRecipe>("crafting_shaped") {
+object ShapedRecipeType : VanillaRecipeType<ShapedRebarRecipe, DummyCraftingRebarRecipe>("crafting_shaped", DummyCraftingRecipeType) {
     override fun loadRecipe(key: NamespacedKey, section: ConfigSection): ShapedRebarRecipe {
         val ingredientKey = section.getOrThrow("key", ConfigAdapter.MAP.from(ConfigAdapter.CHAR, ConfigAdapter.ITEM_CHOICE)).toMutableMap<Char, ItemChoice?>()
         val pattern = section.getOrThrow("pattern", ConfigAdapter.LIST.from(ConfigAdapter.STRING)).toMutableList()
@@ -412,9 +412,8 @@ object ShapedRecipeType : VanillaRecipeType<ShapedRebarRecipe>("crafting_shaped"
         return ShapedRebarRecipe(shape, result, category, group, key)
     }
 
-    override fun addRecipe(recipe: ShapedRebarRecipe) {
-        super.addRecipe(recipe)
-        DummyCraftingRecipeType.addRecipe(DummyCraftingRebarRecipe(
+    override fun createDummyRecipeFor(recipe: ShapedRebarRecipe): DummyCraftingRebarRecipe {
+        return DummyCraftingRebarRecipe(
             recipe,
             ShapedRecipe(dummyKey(recipe.key), recipe.recipe.result).apply {
                 this.category = recipe.category
@@ -424,19 +423,14 @@ object ShapedRecipeType : VanillaRecipeType<ShapedRebarRecipe>("crafting_shaped"
                     this.setIngredient(ingredient.key, ingredient.value.toDummyRecipeChoice())
                 }
             }
-        ))
-    }
-
-    override fun removeRecipe(recipe: NamespacedKey) {
-        super.removeRecipe(recipe)
-        DummyCraftingRecipeType.removeDummyRecipeFor(recipe)
+        )
     }
 }
 
 /**
  * Key: `minecraft:crafting_shapeless`
  */
-object ShapelessRecipeType : VanillaRecipeType<ShapelessRebarRecipe>("crafting_shapeless") {
+object ShapelessRecipeType : VanillaRecipeType<ShapelessRebarRecipe, DummyCraftingRebarRecipe>("crafting_shapeless", DummyCraftingRecipeType) {
     override fun loadRecipe(key: NamespacedKey, section: ConfigSection): ShapelessRebarRecipe {
         val ingredients = section.getOrThrow("ingredients", ConfigAdapter.LIST.from(ConfigAdapter.ITEM_CHOICE))
         val result = FluidOrItem.of(section.getOrThrow("result", ConfigAdapter.ITEM_STACK))
@@ -445,9 +439,8 @@ object ShapelessRecipeType : VanillaRecipeType<ShapelessRebarRecipe>("crafting_s
         return ShapelessRebarRecipe(ingredients, result, category, group, key)
     }
 
-    override fun addRecipe(recipe: ShapelessRebarRecipe) {
-        super.addRecipe(recipe)
-        DummyCraftingRecipeType.addRecipe(DummyCraftingRebarRecipe(
+    override fun createDummyRecipeFor(recipe: ShapelessRebarRecipe): DummyCraftingRebarRecipe {
+        return DummyCraftingRebarRecipe(
             recipe,
             ShapelessRecipe(dummyKey(recipe.key), recipe.recipe.result).apply {
                 this.category = recipe.category
@@ -456,20 +449,19 @@ object ShapelessRecipeType : VanillaRecipeType<ShapelessRebarRecipe>("crafting_s
                     this.addIngredient(ingredient.toDummyRecipeChoice())
                 }
             }
-        ))
-    }
-
-    override fun removeRecipe(recipe: NamespacedKey) {
-        super.removeRecipe(recipe)
-        DummyCraftingRecipeType.removeDummyRecipeFor(recipe)
+        )
     }
 }
 
 /**
  * Key: `minecraft:crafting_transmute`
  */
-object TransmuteRecipeType : VanillaRecipeType<TransmuteRebarRecipe>("crafting_transmute") {
+object TransmuteRecipeType : VanillaRecipeType<TransmuteRebarRecipe, DummyCraftingRebarRecipe>("crafting_transmute", DummyCraftingRecipeType) {
     override fun loadRecipe(key: NamespacedKey, section: ConfigSection): TransmuteRebarRecipe {
+        throw IllegalArgumentException("You cannot make custom transmute recipes")
+    }
+
+    override fun createDummyRecipeFor(recipe: TransmuteRebarRecipe): DummyCraftingRebarRecipe {
         throw IllegalArgumentException("You cannot make custom transmute recipes")
     }
 }

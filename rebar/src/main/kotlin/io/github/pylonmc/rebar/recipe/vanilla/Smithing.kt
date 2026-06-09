@@ -6,7 +6,7 @@ import io.github.pylonmc.rebar.guide.button.ItemButton
 import io.github.pylonmc.rebar.recipe.ingredients.FluidOrItem
 import io.github.pylonmc.rebar.recipe.ingredients.FluidOrItemChoice
 import io.github.pylonmc.rebar.recipe.ingredients.ItemChoice
-import io.github.pylonmc.rebar.recipe.vanilla.DummyVanillaRebarRecipe.Companion.dummyKey
+import io.github.pylonmc.rebar.recipe.vanilla.DummyBukkitRebarRecipe.Companion.dummyKey
 import io.github.pylonmc.rebar.util.gui.GuiItems
 import io.github.pylonmc.rebar.util.rebarKey
 import io.papermc.paper.registry.RegistryAccess
@@ -23,7 +23,7 @@ import xyz.xenondevs.invui.gui.Gui
 class DummySmithingRebarRecipe(
     val realRecipe: SmithingRebarRecipe,
     override val recipe: SmithingRecipe
-) : DummyVanillaRebarRecipe {
+) : DummyBukkitRebarRecipe {
     override val inputs = emptyList<FluidOrItemChoice>()
     override val results = emptyList<FluidOrItem>()
     override fun display() = null
@@ -34,7 +34,7 @@ sealed class SmithingRebarRecipe(
     val result: FluidOrItem.Item,
     val copyDataComponents: Boolean,
     @JvmField val key: NamespacedKey,
-) : VanillaRebarRecipe {
+) : BukkitRebarRecipe {
     abstract val template: ItemChoice?
     abstract val base: ItemChoice?
     abstract val addition: ItemChoice?
@@ -117,7 +117,7 @@ object DummySmithingRecipeType : DummyRecipeType<DummySmithingRebarRecipe>(rebar
 /**
  * Key: `minecraft:smithing_transform`
  */
-object SmithingTransformRecipeType : VanillaRecipeType<SmithingTransformRebarRecipe>("smithing_transform") {
+object SmithingTransformRecipeType : VanillaRecipeType<SmithingTransformRebarRecipe, DummySmithingRebarRecipe>("smithing_transform", DummySmithingRecipeType) {
     override fun loadRecipe(key: NamespacedKey, section: ConfigSection): SmithingTransformRebarRecipe {
         val template = section.getOrThrow("template", ConfigAdapter.ITEM_CHOICE)
         val base = section.getOrThrow("base", ConfigAdapter.ITEM_CHOICE)
@@ -127,9 +127,8 @@ object SmithingTransformRecipeType : VanillaRecipeType<SmithingTransformRebarRec
         return SmithingTransformRebarRecipe(template, base, addition, result, copyData, key)
     }
 
-    override fun addRecipe(recipe: SmithingTransformRebarRecipe) {
-        super.addRecipe(recipe)
-        DummySmithingRecipeType.addRecipe(DummySmithingRebarRecipe(
+    override fun createDummyRecipeFor(recipe: SmithingTransformRebarRecipe): DummySmithingRebarRecipe {
+        return DummySmithingRebarRecipe(
             recipe, SmithingTransformRecipe(
                 dummyKey(recipe.key), recipe.recipe.result,
                 recipe.template.toDummyRecipeChoice(),
@@ -137,19 +136,14 @@ object SmithingTransformRecipeType : VanillaRecipeType<SmithingTransformRebarRec
                 recipe.addition.toDummyRecipeChoice(),
                 recipe.copyDataComponents
             )
-        ))
-    }
-
-    override fun removeRecipe(recipe: NamespacedKey) {
-        super.removeRecipe(recipe)
-        DummySmithingRecipeType.removeDummyRecipeFor(recipe)
+        )
     }
 }
 
 /**
  * Key: `minecraft:smithing_trim`
  */
-object SmithingTrimRecipeType : VanillaRecipeType<SmithingTrimRebarRecipe>("smithing_trim") {
+object SmithingTrimRecipeType : VanillaRecipeType<SmithingTrimRebarRecipe, DummySmithingRebarRecipe>("smithing_trim", DummySmithingRecipeType) {
     private val TRIM_PATTERN_ADAPTER = ConfigAdapter.KEYED.fromRegistry(
         RegistryAccess.registryAccess().getRegistry(RegistryKey.TRIM_PATTERN)
     )
@@ -162,20 +156,14 @@ object SmithingTrimRecipeType : VanillaRecipeType<SmithingTrimRebarRecipe>("smit
         return SmithingTrimRebarRecipe(template, base, addition, pattern, key)
     }
 
-    override fun addRecipe(recipe: SmithingTrimRebarRecipe) {
-        super.addRecipe(recipe)
-        DummySmithingRecipeType.addRecipe(DummySmithingRebarRecipe(
+    override fun createDummyRecipeFor(recipe: SmithingTrimRebarRecipe): DummySmithingRebarRecipe {
+        return DummySmithingRebarRecipe(
             recipe, SmithingTrimRecipe(
                 dummyKey(recipe.key), recipe.template.toRepresentativeRecipeChoice(),
                 recipe.base.toRepresentativeRecipeChoice(),
                 recipe.addition.toRepresentativeRecipeChoice(),
                 recipe.trimPattern
             )
-        ))
-    }
-
-    override fun removeRecipe(recipe: NamespacedKey) {
-        super.removeRecipe(recipe)
-        DummySmithingRecipeType.removeDummyRecipeFor(recipe)
+        )
     }
 }

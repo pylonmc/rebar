@@ -8,7 +8,7 @@ import io.github.pylonmc.rebar.nms.NmsAccessor
 import io.github.pylonmc.rebar.recipe.RecipeType
 import io.github.pylonmc.rebar.recipe.vanilla.AbstractCraftingRebarRecipe
 import io.github.pylonmc.rebar.recipe.vanilla.CraftingInput
-import io.github.pylonmc.rebar.recipe.vanilla.DummyVanillaRebarRecipe
+import io.github.pylonmc.rebar.recipe.vanilla.DummyBukkitRebarRecipe
 import io.github.pylonmc.rebar.recipe.vanilla.VanillaRecipeType
 import io.github.pylonmc.rebar.recipe.vanilla.rebarRecipeType
 import io.github.pylonmc.rebar.util.isRebarAndIsNot
@@ -222,7 +222,7 @@ internal object RebarRecipeListener : Listener {
         val matchedRecipe = RecipeMatchingService.matchCookingRecipe(rebarType, e.source, furnace.inventory.result, originalRecipe)
         if (matchedRecipe != null) {
             e.totalCookTime = matchedRecipe.cookingTime
-            NmsAccessor.instance.setFurnaceRecipeCache(block, DummyVanillaRebarRecipe.recipeKey(matchedRecipe.key))
+            NmsAccessor.instance.setFurnaceRecipeCache(block, DummyBukkitRebarRecipe.recipeKey(matchedRecipe.key))
         }
     }
 
@@ -260,7 +260,7 @@ internal object RebarRecipeListener : Listener {
         if (matchedRecipe != null) {
             e.result = matchedRecipe.result.item.clone()
             if (blockState is Furnace) {
-                NmsAccessor.instance.setFurnaceRecipeCache(e.block, DummyVanillaRebarRecipe.recipeKey(matchedRecipe.key))
+                NmsAccessor.instance.setFurnaceRecipeCache(e.block, DummyBukkitRebarRecipe.recipeKey(matchedRecipe.key))
             }
             return
         }
@@ -300,7 +300,7 @@ internal object RebarRecipeListener : Listener {
             return
         }
 
-        NmsAccessor.instance.setFurnaceRecipeCache(block, DummyVanillaRebarRecipe.recipeKey(matchedRecipe.key))
+        NmsAccessor.instance.setFurnaceRecipeCache(block, DummyBukkitRebarRecipe.recipeKey(matchedRecipe.key))
     }
 
     @EventHandler(priority = EventPriority.LOWEST)

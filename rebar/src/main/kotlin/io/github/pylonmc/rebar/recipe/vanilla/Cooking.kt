@@ -8,7 +8,7 @@ import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
 import io.github.pylonmc.rebar.recipe.ingredients.FluidOrItem
 import io.github.pylonmc.rebar.recipe.ingredients.FluidOrItemChoice
 import io.github.pylonmc.rebar.recipe.ingredients.ItemChoice
-import io.github.pylonmc.rebar.recipe.vanilla.DummyVanillaRebarRecipe.Companion.dummyKey
+import io.github.pylonmc.rebar.recipe.vanilla.DummyBukkitRebarRecipe.Companion.dummyKey
 import io.github.pylonmc.rebar.util.gui.GuiItems
 import io.github.pylonmc.rebar.util.gui.unit.UnitFormat
 import io.github.pylonmc.rebar.util.rebarKey
@@ -22,7 +22,7 @@ import xyz.xenondevs.invui.gui.Gui
 class DummyCookingRebarRecipe(
     val realRecipe: CookingRebarRecipe,
     override val recipe: CookingRecipe<*>
-) : DummyVanillaRebarRecipe {
+) : DummyBukkitRebarRecipe {
     override val inputs = emptyList<FluidOrItemChoice>()
     override val results = emptyList<FluidOrItem>()
     override fun display() = null
@@ -37,7 +37,7 @@ sealed class CookingRebarRecipe(
     val category: CookingBookCategory,
     val group: String,
     @JvmField val key: NamespacedKey
-) : VanillaRebarRecipe {
+) : BukkitRebarRecipe {
     override val inputs = listOf(ingredient)
     override val results = listOf(result)
 
@@ -235,13 +235,12 @@ object DummyCookingRecipeType : DummyRecipeType<DummyCookingRebarRecipe>(rebarKe
 /**
  * Key: `minecraft:blasting`
  */
-object BlastingRecipeType : VanillaRecipeType<BlastingRebarRecipe>("blasting") {
+object BlastingRecipeType : VanillaRecipeType<BlastingRebarRecipe, DummyCookingRebarRecipe>("blasting", DummyCookingRecipeType) {
     override fun loadRecipe(key: NamespacedKey, section: ConfigSection) =
         loadCookingRecipe(key, section, 100, ::BlastingRebarRecipe)
 
-    override fun addRecipe(recipe: BlastingRebarRecipe) {
-        super.addRecipe(recipe)
-        DummyCookingRecipeType.addRecipe(DummyCookingRebarRecipe(
+    override fun createDummyRecipeFor(recipe: BlastingRebarRecipe): DummyCookingRebarRecipe {
+        return DummyCookingRebarRecipe(
             recipe, BlastingRecipe(
                 dummyKey(recipe.key), recipe.recipe.result, recipe.ingredient.toDummyRecipeChoice(),
                 recipe.experience, recipe.cookingTime
@@ -249,12 +248,7 @@ object BlastingRecipeType : VanillaRecipeType<BlastingRebarRecipe>("blasting") {
                 this.category = recipe.category
                 this.group = recipe.group
             }
-        ))
-    }
-
-    override fun removeRecipe(recipe: NamespacedKey) {
-        super.removeRecipe(recipe)
-        DummyCookingRecipeType.removeDummyRecipeFor(recipe)
+        )
     }
 }
 
@@ -264,13 +258,12 @@ object BlastingRecipeType : VanillaRecipeType<BlastingRebarRecipe>("blasting") {
  * Despite the vanilla default cooking time being 100 ticks, we set it to 600 ticks here
  * to match the actual in-game behavior
  */
-object CampfireRecipeType : VanillaRecipeType<CampfireRebarRecipe>("campfire_cooking") {
+object CampfireRecipeType : VanillaRecipeType<CampfireRebarRecipe, DummyCookingRebarRecipe>("campfire_cooking", DummyCookingRecipeType) {
     override fun loadRecipe(key: NamespacedKey, section: ConfigSection) =
         loadCookingRecipe(key, section, 600, ::CampfireRebarRecipe)
 
-    override fun addRecipe(recipe: CampfireRebarRecipe) {
-        super.addRecipe(recipe)
-        DummyCookingRecipeType.addRecipe(DummyCookingRebarRecipe(
+    override fun createDummyRecipeFor(recipe: CampfireRebarRecipe): DummyCookingRebarRecipe {
+        return DummyCookingRebarRecipe(
             recipe, CampfireRecipe(
                 dummyKey(recipe.key), recipe.recipe.result, recipe.ingredient.toDummyRecipeChoice(),
                 recipe.experience, recipe.cookingTime
@@ -278,25 +271,19 @@ object CampfireRecipeType : VanillaRecipeType<CampfireRebarRecipe>("campfire_coo
                 this.category = recipe.category
                 this.group = recipe.group
             }
-        ))
-    }
-
-    override fun removeRecipe(recipe: NamespacedKey) {
-        super.removeRecipe(recipe)
-        DummyCookingRecipeType.removeDummyRecipeFor(recipe)
+        )
     }
 }
 
 /**
  * Key: `minecraft:smelting`
  */
-object FurnaceRecipeType : VanillaRecipeType<FurnaceRebarRecipe>("smelting") {
+object FurnaceRecipeType : VanillaRecipeType<FurnaceRebarRecipe, DummyCookingRebarRecipe>("smelting", DummyCookingRecipeType) {
     override fun loadRecipe(key: NamespacedKey, section: ConfigSection) =
         loadCookingRecipe(key, section, 200, ::FurnaceRebarRecipe)
 
-    override fun addRecipe(recipe: FurnaceRebarRecipe) {
-        super.addRecipe(recipe)
-        DummyCookingRecipeType.addRecipe(DummyCookingRebarRecipe(
+    override fun createDummyRecipeFor(recipe: FurnaceRebarRecipe): DummyCookingRebarRecipe {
+        return DummyCookingRebarRecipe(
             recipe, FurnaceRecipe(
                 dummyKey(recipe.key), recipe.recipe.result, recipe.ingredient.toDummyRecipeChoice(),
                 recipe.experience, recipe.cookingTime
@@ -304,25 +291,19 @@ object FurnaceRecipeType : VanillaRecipeType<FurnaceRebarRecipe>("smelting") {
                 this.category = recipe.category
                 this.group = recipe.group
             }
-        ))
-    }
-
-    override fun removeRecipe(recipe: NamespacedKey) {
-        super.removeRecipe(recipe)
-        DummyCookingRecipeType.removeDummyRecipeFor(recipe)
+        )
     }
 }
 
 /**
  * Key: `minecraft:smoking`
  */
-object SmokingRecipeType : VanillaRecipeType<SmokingRebarRecipe>("smoking") {
+object SmokingRecipeType : VanillaRecipeType<SmokingRebarRecipe, DummyCookingRebarRecipe>("smoking", DummyCookingRecipeType) {
     override fun loadRecipe(key: NamespacedKey, section: ConfigSection) =
         loadCookingRecipe(key, section, 100, ::SmokingRebarRecipe)
 
-    override fun addRecipe(recipe: SmokingRebarRecipe) {
-        super.addRecipe(recipe)
-        DummyCookingRecipeType.addRecipe(DummyCookingRebarRecipe(
+    override fun createDummyRecipeFor(recipe: SmokingRebarRecipe): DummyCookingRebarRecipe {
+        return DummyCookingRebarRecipe(
             recipe, SmokingRecipe(
                 dummyKey(recipe.key), recipe.recipe.result, recipe.ingredient.toDummyRecipeChoice(),
                 recipe.experience, recipe.cookingTime
@@ -330,11 +311,6 @@ object SmokingRecipeType : VanillaRecipeType<SmokingRebarRecipe>("smoking") {
                 this.category = recipe.category
                 this.group = recipe.group
             }
-        ))
-    }
-
-    override fun removeRecipe(recipe: NamespacedKey) {
-        super.removeRecipe(recipe)
-        DummyCookingRecipeType.removeDummyRecipeFor(recipe)
+        )
     }
 }
