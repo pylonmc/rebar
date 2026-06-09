@@ -11,7 +11,6 @@ import org.bukkit.Material
 import org.bukkit.NamespacedKey
 import org.bukkit.inventory.*
 import org.bukkit.inventory.recipe.CraftingBookCategory
-import org.checkerframework.checker.units.qual.h
 import xyz.xenondevs.invui.gui.Gui
 import xyz.xenondevs.invui.item.Item
 import kotlin.collections.iterator
@@ -297,7 +296,7 @@ class ShapelessRebarRecipe(
         for (ingredient in ingredients) {
             var found = false
             for ((index, input) in inputs.withIndex()) {
-                if (!ingredient.validate(input)) continue
+                if (!ingredient.matches(input)) continue
                 found = true
                 inputs.removeAt(index)
                 break
@@ -337,10 +336,10 @@ class TransmuteRebarRecipe(
         if (input.ingredientCount != 2) return false
         val first = input.stacks[0] ?: return false
         val second = input.stacks[1] ?: return false
-        return if (this.input.validate(first)) {
-            this.material.validate(second)
-        } else if (this.input.validate(second)) {
-             this.material.validate(first)
+        return if (this.input.matches(first)) {
+            this.material.matches(second)
+        } else if (this.input.matches(second)) {
+             this.material.matches(first)
         } else false
     }
 

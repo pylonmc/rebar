@@ -1,13 +1,13 @@
 package io.github.pylonmc.rebar.config.adapter
 
-import io.github.pylonmc.rebar.recipe.FluidOrItem
+import io.github.pylonmc.rebar.recipe.FluidWithAmount
 
-object FluidWithAmountConfigAdapter : ConfigAdapter<FluidOrItem.Fluid> {
+object FluidWithAmountConfigAdapter : ConfigAdapter<FluidWithAmount> {
 
-    override val type = FluidOrItem.Fluid::class.java
+    override val type = FluidWithAmount::class.java
 
-    override fun convert(value: Any): FluidOrItem.Fluid = when (value) {
-        is Pair<*, *> -> FluidOrItem.Fluid(
+    override fun convert(value: Any): FluidWithAmount = when (value) {
+        is Pair<*, *> -> FluidWithAmount(
                 ConfigAdapter.REBAR_FLUID.convert(value.first!!),
                 ConfigAdapter.DOUBLE.convert(value.second!!)
         )

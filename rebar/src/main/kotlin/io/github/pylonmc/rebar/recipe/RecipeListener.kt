@@ -201,7 +201,7 @@ internal object RebarRecipeListener : Listener {
         }
 
         for (recipe in originalType.recipes) {
-            if (recipe is CookingRebarRecipe && recipe.key !in VanillaRecipeType.nonRebarRecipes && recipe.ingredient.validate(e.source)) {
+            if (recipe is CookingRebarRecipe && recipe.key !in VanillaRecipeType.nonRebarRecipes && recipe.ingredient.matches(e.source)) {
                 e.totalCookTime = recipe.cookingTime
                 NmsAccessor.instance.setFurnaceRecipeCache(e.block, recipe.key)
                 break
@@ -231,7 +231,7 @@ internal object RebarRecipeListener : Listener {
         }
 
         for (recipe in originalType.recipes) {
-            if (recipe is CookingRebarRecipe && recipe.key !in VanillaRecipeType.nonRebarRecipes && recipe.ingredient.validate(e.source)) {
+            if (recipe is CookingRebarRecipe && recipe.key !in VanillaRecipeType.nonRebarRecipes && recipe.ingredient.matches(e.source)) {
                 e.result = recipe.result.item.clone()
                 NmsAccessor.instance.setFurnaceRecipeCache(e.block, recipe.key)
                 break
@@ -251,7 +251,7 @@ internal object RebarRecipeListener : Listener {
         if (input != null && input.isRebarAndIsNot<VanillaFurnaceIngredientItem>()) {
             var rebarRecipe: CookingRebarRecipe? = null
             for (recipe in RecipeType.vanillaCookingRecipes()) {
-                if (recipe.key !in VanillaRecipeType.nonRebarRecipes && recipe.ingredient.validate(input)) {
+                if (recipe.key !in VanillaRecipeType.nonRebarRecipes && recipe.ingredient.matches(input)) {
                     rebarRecipe = recipe
                     break
                 }

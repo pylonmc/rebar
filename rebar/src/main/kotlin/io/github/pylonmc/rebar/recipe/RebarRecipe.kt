@@ -21,7 +21,7 @@ interface RebarRecipe : Keyed {
      */
     fun isInput(stack: ItemStack) = inputs.any { input ->
         when (input) {
-            is ItemChoice -> input.validate(stack)
+            is ItemChoice -> input.matches(stack)
             else -> false
         }
     }

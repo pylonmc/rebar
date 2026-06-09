@@ -29,12 +29,12 @@ class ItemChoice private constructor() : FluidOrItemChoice {
         val predicate: Predicate<ItemStack>? = null,
         val representativeItem: ItemStack = wrapper.createItemStack(amount)
     ) {
-        fun validate(stack: ItemStack): Boolean
+        fun matches(stack: ItemStack): Boolean
                 = stack.amount >= amount && wrapper.matches(stack) && predicate?.test(stack) ?: true
     }
 
-    fun validate(stack: ItemStack)
-            = internalChoices.any { it.validate(stack) }
+    fun matches(stack: ItemStack)
+            = internalChoices.any { it.matches(stack) }
     override fun button() = ItemButton.of(this)
 
     /**
@@ -121,7 +121,8 @@ class ItemChoice private constructor() : FluidOrItemChoice {
          *
          * Only checks the provided [stack]'s overriden components of any item being compared
          */
-        fun addFuzzy(stack: ItemStack, amount: Int) = apply {
+        @JvmOverloads
+        fun addFuzzy(stack: ItemStack, amount: Int = 1) = apply {
             val components = stack.overriddenComponents(false)
             addFuzzy(ItemTypeWrapper(stack), amount, components)
         }
@@ -157,7 +158,7 @@ class ItemChoice private constructor() : FluidOrItemChoice {
          * the provided [componentsToIgnore].
          */
         @JvmOverloads
-        fun addExact(stack: ItemStack, amount: Int, componentsToIgnore: Set<DataComponentType> = emptySet()) = apply {
+        fun addExact(stack: ItemStack, amount: Int = 1, componentsToIgnore: Set<DataComponentType> = emptySet()) = apply {
             val components = stack.overriddenComponents(true).filterKeys { it !in componentsToIgnore }
             if (components.isEmpty()) {
                 addFuzzy(ItemTypeWrapper(stack), amount)
@@ -178,7 +179,7 @@ class ItemChoice private constructor() : FluidOrItemChoice {
             } else if (stack == null) {
                 return false
             }
-            return choice.validate(stack)
+            return choice.matches(stack)
         }
     }
 }

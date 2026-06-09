@@ -8,7 +8,8 @@ import io.github.pylonmc.rebar.guide.button.FluidButton
  */
 class FluidChoice private constructor(val fluids: Map<RebarFluid, Double>) : FluidOrItemChoice {
 
-    fun validate(fluid: RebarFluid, amount: Double) = fluids[fluid]?.let { amount >= it } ?: false
+    fun matches(fluid: RebarFluid, amount: Double) = fluids[fluid]?.let { amount >= it } ?: false
+
     override fun button() = FluidButton.of(this)
 
     companion object {
