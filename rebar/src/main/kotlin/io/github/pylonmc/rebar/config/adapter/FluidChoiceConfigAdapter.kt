@@ -19,7 +19,7 @@ object FluidChoiceConfigAdapter : ConfigAdapter<FluidChoice> {
                 // e.g.
                 // input:
                 //  pylon:water: 500
-                return convert(map.entries.first())
+                return convert(map.entries.first().toPair())
             }
 
             // e.g.
