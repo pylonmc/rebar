@@ -45,10 +45,10 @@ class ItemChoice internal constructor(
     } ?: false
 
     fun matches(stack: ItemStack)
-            = stack.amount > amount && matchesIgnoringAmount(stack)
+            = stack.amount >= amount && matchesIgnoringAmount(stack)
 
     fun matches(slot: LogisticSlot)
-            = slot.getAmount() > amount && matchesIgnoringAmount(slot)
+            = slot.getAmount() >= amount && matchesIgnoringAmount(slot)
 
     override fun button() = ItemButton.of(this)
 

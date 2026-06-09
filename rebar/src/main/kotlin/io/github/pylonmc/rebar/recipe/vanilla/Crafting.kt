@@ -32,12 +32,21 @@ data class CraftingInput(
     companion object {
         val EMPTY = CraftingInput(emptyList(), 0, 0, 0)
 
-        fun of(inventory: CrafterInventory): CraftingInput {
+        /**
+         * Currently accepts generic [Inventory] because paper has a bug and doesn't actually return a [CrafterInventory] atm
+         */
+        fun of(inventory: Inventory): CraftingInput {
             return of(3, 3, inventory.contents.toList())
         }
 
         fun of(inventory: CraftingInventory): CraftingInput {
-            return of(3, 3, inventory.contents.toList())
+            val matrix = inventory.matrix
+            val size = when(matrix.size) {
+                4 -> 2
+                9 -> 3
+                else -> throw IllegalArgumentException("Unsupported crafting inventory size: ${matrix.size} (expected 4 or 9)")
+            }
+            return of(size, size, matrix.toList())
         }
 
         fun of(width: Int, height: Int, items: List<ItemStack?>): CraftingInput {
