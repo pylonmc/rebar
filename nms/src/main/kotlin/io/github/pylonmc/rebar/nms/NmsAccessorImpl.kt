@@ -348,8 +348,12 @@ object NmsAccessorImpl : NmsAccessor {
         }
     }
 
+    fun getBukkitType(nmsType: NmsDataComponentType<*>): PaperDataComponentType<*, *>? {
+        val bukkitType = PaperDataComponentType.minecraftToBukkit(nmsType) as? PaperDataComponentType<*, *>
+        return if (bukkitType !is PaperDataComponentType.Unimplemented<*, *>) bukkitType else null
+    }
+
     override fun getOverriddenTypes(itemStack: ItemStack): List<DataComponentType> {
-        val nmsComponents = mutableMapOf<NmsDataComponentType<*>, Any?>()
         val schema = RebarItemSchema.fromStack(itemStack)
         val nmsStack = (itemStack as CraftItemStack).handle
         if (schema != null) {
@@ -358,12 +362,12 @@ object NmsAccessorImpl : NmsAccessor {
             val types = mutableListOf<DataComponentType>()
             for (type in nmsTemplate.components.keySet()) {
                 if (nmsTemplate.get(type) != nmsStack.get(type)) {
-                    types.add(PaperDataComponentType.minecraftToBukkit(type))
+                    types.add(getBukkitType(type) ?: continue)
                 }
             }
             return types
         }
-        return nmsStack.componentsPatch.entrySet().map { PaperDataComponentType.minecraftToBukkit(it.key) }
+        return nmsStack.componentsPatch.entrySet().mapNotNull { getBukkitType(it.key) }
     }
 
     fun <T: Any, NMS: Any> componentMatches(itemStack: NmsItemStack, type: PaperDataComponentType.ValuedImpl<T, NMS>, value: Any?): Boolean {
@@ -403,13 +407,13 @@ object NmsAccessorImpl : NmsAccessor {
             }
         } else {
             for (component in nmsStack.componentsPatch.entrySet()) {
-                nmsComponents[component.key] = component.value
+                nmsComponents[component.key] = component.value.orElse(null)
             }
         }
 
         val components = mutableMapOf<DataComponentType, Any?>()
         for (component in nmsComponents) {
-            val bukkitType = PaperDataComponentType.minecraftToBukkit(component.key) as PaperDataComponentType<*, *>
+            val bukkitType = getBukkitType(component.key) ?: continue
             val bukkitValue = component.value?.let { convertNmsValue(bukkitType, it) }
             components[bukkitType] = bukkitValue
         }
