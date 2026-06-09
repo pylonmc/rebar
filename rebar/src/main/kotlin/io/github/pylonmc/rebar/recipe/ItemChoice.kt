@@ -44,8 +44,8 @@ class ItemChoice internal constructor(
         internalChoices.any { choice -> choice.matches(stack) }
     } ?: false
 
-    fun matches(stack: ItemStack)
-            = stack.amount >= amount && matchesIgnoringAmount(stack)
+    fun matches(stack: ItemStack?)
+            = stack != null && stack.amount >= amount && matchesIgnoringAmount(stack)
 
     fun matches(slot: LogisticSlot)
             = slot.getAmount() >= amount && matchesIgnoringAmount(slot)

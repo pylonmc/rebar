@@ -134,6 +134,7 @@ interface ConfigAdapter<T> {
         @JvmField val FLUID_CHOICE = FluidChoiceConfigAdapter
         @JvmField val ITEM_CHOICE = ItemChoiceConfigAdapter
 
+        @JvmField val FLUID_OR_ITEM = FluidOrItemConfigAdapter
         @JvmField val FLUID_WITH_AMOUNT = FluidWithAmountConfigAdapter
 
         @JvmField val ITEM_TAG = ItemTagConfigAdapter
