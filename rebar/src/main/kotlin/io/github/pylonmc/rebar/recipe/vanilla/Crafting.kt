@@ -245,7 +245,7 @@ class ShapedRebarRecipe(
         fun fromVanilla(recipe: ShapedRecipe): ShapedRebarRecipe {
             return ShapedRebarRecipe(
                 CraftingRecipeShape.of(
-                    recipe.choiceMap.mapValues { entry -> entry.value.toItemChoice() },
+                    recipe.choiceMap.filter { it.value != null }.mapValues { entry -> entry.value.toItemChoice() },
                     recipe.shape.toList()
                 ),
                 FluidOrItem.of(recipe.result),

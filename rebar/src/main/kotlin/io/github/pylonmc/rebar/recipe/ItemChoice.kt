@@ -2,6 +2,7 @@ package io.github.pylonmc.rebar.recipe
 
 import io.github.pylonmc.rebar.guide.button.ItemButton
 import io.github.pylonmc.rebar.item.ItemTypeWrapper
+import io.github.pylonmc.rebar.logistics.slot.LogisticSlot
 import io.github.pylonmc.rebar.util.componentsEqual
 import io.github.pylonmc.rebar.util.hasDefaultComponents
 import io.github.pylonmc.rebar.util.isDefaultComponents
@@ -32,13 +33,22 @@ class ItemChoice internal constructor(
     ) {
         fun matches(stack: ItemStack): Boolean
                 = wrapper.matches(stack) && predicate?.test(stack) ?: true
-    }
 
-    fun matches(stack: ItemStack)
-            = stack.amount > amount && internalChoices.any { it.matches(stack) }
+        fun matches(slot: LogisticSlot) = slot.getItemStack()?.let { matches(it) } ?: false
+    }
 
     fun matchesIgnoringAmount(stack: ItemStack)
             = internalChoices.any { it.matches(stack) }
+
+    fun matchesIgnoringAmount(slot: LogisticSlot) = slot.getItemStack()?.let { stack ->
+        internalChoices.any { choice -> choice.matches(stack) }
+    } ?: false
+
+    fun matches(stack: ItemStack)
+            = stack.amount > amount && matchesIgnoringAmount(stack)
+
+    fun matches(slot: LogisticSlot)
+            = slot.getAmount() > amount && matchesIgnoringAmount(slot)
 
     override fun button() = ItemButton.of(this)
 
