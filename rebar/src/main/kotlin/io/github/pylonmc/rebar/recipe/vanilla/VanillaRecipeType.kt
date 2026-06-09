@@ -1,15 +1,12 @@
 package io.github.pylonmc.rebar.recipe.vanilla
 
-import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.item.ItemTypeWrapper
 import io.github.pylonmc.rebar.nms.NmsAccessor
 import io.github.pylonmc.rebar.recipe.ConfigurableRecipeType
 import io.github.pylonmc.rebar.recipe.ItemChoice
 import io.github.pylonmc.rebar.recipe.RebarRecipe
 import io.github.pylonmc.rebar.recipe.RecipeType
-import org.bukkit.Bukkit
 import org.bukkit.NamespacedKey
-import org.bukkit.event.Listener
 import org.bukkit.inventory.BlastingRecipe
 import org.bukkit.inventory.CampfireRecipe
 import org.bukkit.inventory.CookingRecipe
@@ -22,12 +19,35 @@ sealed interface VanillaRebarRecipe : RebarRecipe {
     val recipe: Recipe
 }
 
-sealed class VanillaRecipeType<T : VanillaRebarRecipe>(key: String) : ConfigurableRecipeType<T>(NamespacedKey.minecraft(key)), Listener {
+sealed interface DummyVanillaRebarRecipe : VanillaRebarRecipe {
+    companion object {
+        fun dummyKey(originalKey: NamespacedKey): NamespacedKey {
+            return NamespacedKey(originalKey.namespace, "internal_dummy_" + originalKey.key)
+        }
 
-    init {
-        Bukkit.getPluginManager().registerEvents(this, Rebar)
+        fun recipeKey(originalKey: NamespacedKey): NamespacedKey {
+            val dummyKey = dummyKey(originalKey)
+            if (RecipeType.isDummyRecipe(dummyKey)) {
+                return dummyKey
+            }
+            return originalKey
+        }
+    }
+}
+
+sealed class DummyRecipeType<T: VanillaRebarRecipe>(key: NamespacedKey) : RecipeType<T>(key) {
+    override fun addRecipe(recipe: T) {
+        super.addRecipe(recipe)
+        if (NmsAccessor.instance.hasRecipe(recipe.key)) {
+            NmsAccessor.queueUnregisterRecipe(recipe.key)
+        }
+        NmsAccessor.queueRegisterRecipe(recipe.recipe)
     }
 
+    fun removeDummyRecipeFor(recipe: NamespacedKey) = removeRecipe(DummyVanillaRebarRecipe.dummyKey(recipe))
+}
+
+sealed class VanillaRecipeType<T : VanillaRebarRecipe>(key: String) : ConfigurableRecipeType<T>(NamespacedKey.minecraft(key)) {
     override fun addRecipe(recipe: T) {
         super.addRecipe(recipe)
         if (NmsAccessor.instance.hasRecipe(recipe.key)) {
@@ -73,7 +93,7 @@ internal fun RecipeChoice.toItemChoice(): ItemChoice {
 }
 
 @get:JvmSynthetic
-val CookingRecipe<*>.recipeType: RecipeType<*>?
+val CookingRecipe<*>.rebarRecipeType: VanillaRecipeType<out CookingRebarRecipe>?
     get() = when (this) {
         is BlastingRecipe -> BlastingRecipeType
         is CampfireRecipe -> CampfireRecipeType

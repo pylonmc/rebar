@@ -54,6 +54,19 @@ class ItemChoice private constructor() : FluidOrItemChoice {
         return RecipeChoice.ExactChoice(internalChoices.map { it.representativeItem })
     }
 
+    /**
+     * TODO
+     */
+    @JvmSynthetic
+    internal fun toDummyRecipeChoice(): RecipeChoice {
+        return RecipeChoice.MaterialChoice(internalChoices.map {
+            when(val type = it.wrapper) {
+                is ItemTypeWrapper.Vanilla -> type.material
+                is ItemTypeWrapper.Rebar -> type.item.getOriginalTemplate().type
+            }
+        })
+    }
+
     val representativeItems: List<ItemStack> = internalChoices.map { it.representativeItem }
 
     /**
@@ -173,7 +186,7 @@ class ItemChoice private constructor() : FluidOrItemChoice {
     }
 
     companion object {
-        fun validate(stack: ItemStack?, choice: ItemChoice?): Boolean {
+        fun matches(stack: ItemStack?, choice: ItemChoice?): Boolean {
             if (choice == null) {
                 return stack == null || stack.isEmpty
             } else if (stack == null) {
