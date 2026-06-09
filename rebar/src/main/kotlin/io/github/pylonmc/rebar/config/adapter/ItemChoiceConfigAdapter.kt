@@ -51,6 +51,8 @@ object ItemChoiceConfigAdapter : ConfigAdapter<ItemChoice> {
     }
 
     override fun convert(value: Any): ItemChoice = when (value) {
+        is String -> fromString(value).amount(1).build()
+
         is Pair<*, *> -> {
             // e.g. 'pylon:fluid_pipe_bronze: 5'
             fromString(value.first!! as String)
@@ -69,8 +71,13 @@ object ItemChoiceConfigAdapter : ConfigAdapter<ItemChoice> {
             //     - max_damage
             //   - item: pylon:bronze_ingot
             //   - item: minecraft:stone-pickaxe
+            // OR
+            // pylon:bronze_ingot: 5
 
             val map = MapConfigAdapter.STRING_TO_ANY.convert(value)
+            if (map.size == 1) {
+                return convert(map.entries.first().toPair())
+            }
 
             val amount = ConfigAdapter.INTEGER.convert(map["amount"] ?: error("You must specify a recipe amount e.g. 'amount: 5'"))
             val choices = ListConfigAdapter.from(ConfigAdapter.ANY).convert(map["choices"] ?: error("You must specify recipe choices e.g. 'choices: [pylon:fluid_pipe_copper, minecraft:apple]'"))

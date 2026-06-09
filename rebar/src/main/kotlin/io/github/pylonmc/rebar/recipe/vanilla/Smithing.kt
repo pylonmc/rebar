@@ -31,18 +31,13 @@ class DummySmithingRebarRecipe(
 }
 
 sealed class SmithingRebarRecipe(
-    open val template: ItemChoice?,
-    open val base: ItemChoice?,
-    open val addition: ItemChoice?,
     val result: FluidOrItem.Item,
     val copyDataComponents: Boolean,
     @JvmField val key: NamespacedKey,
 ) : VanillaRebarRecipe {
-    init {
-        check(template != null || base != null || addition != null) {
-            "There must be at least one non-null ingredient in a smithing recipe"
-        }
-    }
+    abstract val template: ItemChoice?
+    abstract val base: ItemChoice?
+    abstract val addition: ItemChoice?
 
     override val inputs = listOfNotNull(template, base, addition)
     override val results = listOf(result)
@@ -80,7 +75,7 @@ class SmithingTransformRebarRecipe(
     copyDataComponents: Boolean,
     key: NamespacedKey,
     override val recipe: SmithingTransformRecipe = SmithingTransformRecipe(key, result.item, template.toRepresentativeRecipeChoice(), base.toRepresentativeRecipeChoice(), addition.toRepresentativeRecipeChoice(), copyDataComponents)
-) : SmithingRebarRecipe(template, base, addition, result, copyDataComponents, key) {
+) : SmithingRebarRecipe(result, copyDataComponents, key) {
     companion object {
         fun fromVanilla(recipe: SmithingTransformRecipe): SmithingTransformRebarRecipe {
             return SmithingTransformRebarRecipe(
@@ -102,7 +97,7 @@ class SmithingTrimRebarRecipe(
     val trimPattern: TrimPattern,
     key: NamespacedKey,
     override val recipe: SmithingTrimRecipe = SmithingTrimRecipe(key, template.toRepresentativeRecipeChoice(), base.toRepresentativeRecipeChoice(), addition.toRepresentativeRecipeChoice(), trimPattern)
-) : SmithingRebarRecipe(template, base, addition, FluidOrItem.Item.EMPTY, true, key) {
+) : SmithingRebarRecipe(FluidOrItem.Item.EMPTY, true, key) {
     companion object {
         fun fromVanilla(recipe: SmithingTrimRecipe): SmithingTrimRebarRecipe {
             return SmithingTrimRebarRecipe(

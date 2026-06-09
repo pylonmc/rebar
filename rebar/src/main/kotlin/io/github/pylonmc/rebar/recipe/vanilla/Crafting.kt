@@ -17,6 +17,7 @@ import org.bukkit.inventory.recipe.CraftingBookCategory
 import xyz.xenondevs.invui.gui.Gui
 import xyz.xenondevs.invui.item.Item
 import kotlin.collections.iterator
+import kotlin.collections.mutableMapOf
 import kotlin.math.max
 import kotlin.math.min
 
@@ -125,23 +126,36 @@ data class CraftingRecipeShape private constructor(
     }
 
     companion object {
-        fun of(key: Map<Char, ItemChoice>, pattern: List<String>): CraftingRecipeShape {
-            val shrunkPattern = shrinkPattern(pattern)
-            val ingredients = prepareIngredients(key, shrunkPattern)
+        fun of(key: MutableMap<Char, ItemChoice?>, pattern: MutableList<String>): CraftingRecipeShape {
+            val shrunkPattern = shrinkPattern(key, pattern)
+            val strictKey = mutableMapOf<Char, ItemChoice>().apply {
+                for (entry in key) {
+                    put(entry.key, entry.value!!) // any null entries were removed in shrinkPattern
+                }
+            }
+            val ingredients = prepareIngredients(strictKey, shrunkPattern)
             val width = shrunkPattern[0].length
             val height = shrunkPattern.size
-            return CraftingRecipeShape(key, shrunkPattern, ingredients, width, height)
+            return CraftingRecipeShape(strictKey, shrunkPattern, ingredients, width, height)
         }
 
-        fun shrinkPattern(pattern: List<String>): List<String> {
+        fun shrinkPattern(key: MutableMap<Char, ItemChoice?>, pattern: MutableList<String>): List<String> {
+            for (ingredient in key.toList()) {
+                if (ingredient.second == null) {
+                    pattern.replaceAll { it.replace(ingredient.first, ' ') }
+                    key.remove(ingredient.first)
+                }
+            }
+
             var left = Integer.MAX_VALUE
             var right = 0
             var top = 0
             var bottom = 0
             
             for ((row, line) in pattern.withIndex()) {
-                val lastIngredient = line.indexOfLast { it != ' ' }
-                left = min(left, line.indexOfFirst { it != ' ' })
+                val lastIngredient = line.indexOfLast { it != ' ' }.let { if (it == -1) 0 else it }
+                val firstIngredient = line.indexOfFirst { it != ' ' }.let { if (it == -1) line.length else it }
+                left = min(left, firstIngredient)
                 right = max(right, lastIngredient)
                 if (lastIngredient < 0) {
                     if (top == row) top++
@@ -245,8 +259,8 @@ class ShapedRebarRecipe(
         fun fromVanilla(recipe: ShapedRecipe): ShapedRebarRecipe {
             return ShapedRebarRecipe(
                 CraftingRecipeShape.of(
-                    recipe.choiceMap.filter { it.value != null }.mapValues { entry -> entry.value.toItemChoice() },
-                    recipe.shape.toList()
+                    recipe.choiceMap.mapValuesTo(mutableMapOf()) { entry -> entry.value?.toItemChoice() },
+                    recipe.shape.toMutableList()
                 ),
                 FluidOrItem.of(recipe.result),
                 recipe.category,
@@ -380,9 +394,8 @@ object DummyCraftingRecipeType : DummyRecipeType<DummyCraftingRebarRecipe>(rebar
  */
 object ShapedRecipeType : VanillaRecipeType<ShapedRebarRecipe>("crafting_shaped") {
     override fun loadRecipe(key: NamespacedKey, section: ConfigSection): ShapedRebarRecipe {
-        val ingredientKey = section.getOrThrow("key", ConfigAdapter.MAP.from(ConfigAdapter.CHAR, ConfigAdapter.ITEM_CHOICE))
-        val pattern = section.getOrThrow("pattern", ConfigAdapter.LIST.from(ConfigAdapter.STRING))
-
+        val ingredientKey = section.getOrThrow("key", ConfigAdapter.MAP.from(ConfigAdapter.CHAR, ConfigAdapter.ITEM_CHOICE)).toMutableMap<Char, ItemChoice?>()
+        val pattern = section.getOrThrow("pattern", ConfigAdapter.LIST.from(ConfigAdapter.STRING)).toMutableList()
         val shape = CraftingRecipeShape.of(ingredientKey, pattern)
         val result = FluidOrItem.of(section.getOrThrow("result", ConfigAdapter.ITEM_STACK))
         val category = section.get("category", CRAFTING_BOOK_CATEGORY_ADAPTER, CraftingBookCategory.MISC)
