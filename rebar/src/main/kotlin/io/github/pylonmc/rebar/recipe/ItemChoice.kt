@@ -10,7 +10,6 @@ import io.github.pylonmc.rebar.util.matchesComponents
 import io.github.pylonmc.rebar.util.overriddenComponents
 import io.github.pylonmc.rebar.util.overriddenDataTypes
 import io.papermc.paper.datacomponent.DataComponentType
-import jdk.vm.ci.code.Location.stack
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.RecipeChoice
 import java.util.function.Predicate

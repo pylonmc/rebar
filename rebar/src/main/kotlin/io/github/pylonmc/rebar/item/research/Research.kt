@@ -349,7 +349,7 @@ class Research(
 
             // discover only the recipes that have no research whenever an ingredient is added to the inventory
             for (recipeType in RebarRegistry.RECIPE_TYPES) {
-                if (recipeType !is VanillaRecipeType<*>) continue
+                if (recipeType !is VanillaRecipeType<*, *>) continue
                 for (recipe in recipeType) {
                     if (recipe.key in VanillaRecipeType.nonRebarRecipes) continue
                     val researches = recipe.results
