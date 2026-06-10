@@ -1,4 +1,4 @@
-package io.github.pylonmc.rebar.recipe.ingredients
+package io.github.pylonmc.rebar.recipe
 
 import io.github.pylonmc.rebar.fluid.RebarFluid
 import io.github.pylonmc.rebar.guide.button.FluidButton
@@ -8,5 +8,5 @@ data class FluidWithAmount(val fluid: RebarFluid, val amountMillibuckets: Double
 
     override fun getKey() = fluid.key
     override fun matchesType(other: FluidOrItem) = other is FluidWithAmount && this.fluid == other.fluid
-    override fun button() = FluidButton.Companion.of(this)
+    override fun button() = FluidButton.of(this)
 }

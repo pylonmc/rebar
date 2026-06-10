@@ -3,10 +3,10 @@ package io.github.pylonmc.rebar.recipe.vanilla
 import io.github.pylonmc.rebar.config.ConfigSection
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter
 import io.github.pylonmc.rebar.guide.button.ItemButton
-import io.github.pylonmc.rebar.recipe.ingredients.FluidOrItem
-import io.github.pylonmc.rebar.recipe.ingredients.FluidOrItemChoice
-import io.github.pylonmc.rebar.recipe.ingredients.ItemChoice
-import io.github.pylonmc.rebar.recipe.vanilla.DummyBukkitRebarRecipe.Companion.dummyKey
+import io.github.pylonmc.rebar.recipe.FluidOrItem
+import io.github.pylonmc.rebar.recipe.FluidOrItemChoice
+import io.github.pylonmc.rebar.recipe.ItemChoice
+import io.github.pylonmc.rebar.recipe.vanilla.DummyVanillaRebarRecipe.Companion.dummyKey
 import io.github.pylonmc.rebar.util.gui.GuiItems
 import io.github.pylonmc.rebar.util.isSymmetrical
 import io.github.pylonmc.rebar.util.rebarKey

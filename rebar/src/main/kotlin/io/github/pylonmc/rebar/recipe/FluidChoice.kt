@@ -1,4 +1,4 @@
-package io.github.pylonmc.rebar.recipe.ingredients
+package io.github.pylonmc.rebar.recipe
 
 import io.github.pylonmc.rebar.fluid.RebarFluid
 import io.github.pylonmc.rebar.guide.button.FluidButton
@@ -12,7 +12,7 @@ class FluidChoice private constructor(val fluids: Set<RebarFluid>, val amount: D
 
     fun matchesIgnoringAmount(fluid: RebarFluid) = fluids.contains(fluid)
 
-    override fun button() = FluidButton.Companion.of(this)
+    override fun button() = FluidButton.of(this)
 
     companion object {
 

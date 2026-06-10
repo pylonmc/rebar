@@ -1,6 +1,6 @@
 package io.github.pylonmc.rebar.config.adapter
 
-import io.github.pylonmc.rebar.recipe.ingredients.FluidChoice
+import io.github.pylonmc.rebar.recipe.FluidChoice
 import org.bukkit.configuration.ConfigurationSection
 
 object FluidChoiceConfigAdapter : ConfigAdapter<FluidChoice> {

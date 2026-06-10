@@ -2,7 +2,7 @@ package io.github.pylonmc.rebar.guide.pages.fluid
 
 import io.github.pylonmc.rebar.content.guide.RebarGuide
 import io.github.pylonmc.rebar.guide.pages.base.PagedGuidePage
-import io.github.pylonmc.rebar.recipe.ingredients.FluidOrItem
+import io.github.pylonmc.rebar.recipe.FluidOrItem
 import io.github.pylonmc.rebar.recipe.RebarRecipe
 import io.github.pylonmc.rebar.recipe.RebarRecipe.Companion.priority
 import io.github.pylonmc.rebar.registry.RebarRegistry

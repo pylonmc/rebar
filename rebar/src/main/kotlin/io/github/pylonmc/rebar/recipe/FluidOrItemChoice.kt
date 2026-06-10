@@ -1,4 +1,4 @@
-package io.github.pylonmc.rebar.recipe.ingredients
+package io.github.pylonmc.rebar.recipe
 
 import xyz.xenondevs.invui.item.Item
 

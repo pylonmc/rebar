@@ -35,8 +35,8 @@ import io.github.pylonmc.rebar.item.research.Research
 import io.github.pylonmc.rebar.logistics.CargoRoutes
 import io.github.pylonmc.rebar.metrics.RebarMetrics
 import io.github.pylonmc.rebar.recipe.ConfigurableRecipeType
-import io.github.pylonmc.rebar.recipe.logic.RebarRecipeListener
-import io.github.pylonmc.rebar.recipe.logic.RecipeCompletion
+import io.github.pylonmc.rebar.recipe.RebarRecipeListener
+import io.github.pylonmc.rebar.recipe.RecipeCompletion
 import io.github.pylonmc.rebar.recipe.RecipeType
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.util.delayTicks

@@ -1,11 +1,10 @@
-package io.github.pylonmc.rebar.recipe.logic
+package io.github.pylonmc.rebar.recipe
 
 import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.item.RebarItemSchema
 import io.github.pylonmc.rebar.item.interfaces.*
 import io.github.pylonmc.rebar.item.research.Research.Companion.canCraft
 import io.github.pylonmc.rebar.nms.NmsAccessor
-import io.github.pylonmc.rebar.recipe.RecipeType
 import io.github.pylonmc.rebar.recipe.vanilla.AbstractCraftingRebarRecipe
 import io.github.pylonmc.rebar.recipe.vanilla.CraftingInput
 import io.github.pylonmc.rebar.recipe.vanilla.DummyBukkitRebarRecipe
@@ -14,6 +13,7 @@ import io.github.pylonmc.rebar.recipe.vanilla.rebarRecipeType
 import io.github.pylonmc.rebar.util.isRebarAndIsNot
 import io.github.pylonmc.rebar.util.plainText
 import io.github.pylonmc.rebar.util.rebarKey
+import io.papermc.paper.command.brigadier.argument.ArgumentTypes.blockState
 import io.papermc.paper.datacomponent.DataComponentTypes
 import io.papermc.paper.event.player.CartographyItemEvent
 import net.kyori.adventure.text.Component

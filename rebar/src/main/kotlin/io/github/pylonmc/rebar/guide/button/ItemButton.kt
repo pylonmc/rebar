@@ -13,8 +13,8 @@ import io.github.pylonmc.rebar.item.research.Research.Companion.canUse
 import io.github.pylonmc.rebar.content.guide.RebarGuide.Companion.guideHints
 import io.github.pylonmc.rebar.content.guide.RebarGuide.Companion.playGuideSound
 import io.github.pylonmc.rebar.item.research.Research.Companion.researchPoints
-import io.github.pylonmc.rebar.recipe.ingredients.FluidOrItem
-import io.github.pylonmc.rebar.recipe.ingredients.ItemChoice
+import io.github.pylonmc.rebar.recipe.FluidOrItem
+import io.github.pylonmc.rebar.recipe.ItemChoice
 import io.github.pylonmc.rebar.util.gui.unit.UnitFormat
 import io.papermc.paper.datacomponent.DataComponentTypes
 import net.kyori.adventure.text.Component
@@ -24,6 +24,7 @@ import org.bukkit.Registry
 import org.bukkit.entity.Player
 import org.bukkit.event.inventory.ClickType
 import org.bukkit.inventory.ItemStack
+import org.bukkit.inventory.RecipeChoice
 import xyz.xenondevs.invui.Click
 import xyz.xenondevs.invui.gui.SlotElement
 import xyz.xenondevs.invui.gui.get

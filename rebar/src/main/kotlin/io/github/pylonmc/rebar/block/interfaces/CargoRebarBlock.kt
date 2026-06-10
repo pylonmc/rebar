@@ -18,7 +18,7 @@ import io.github.pylonmc.rebar.event.RebarCargoConnectEvent
 import io.github.pylonmc.rebar.event.RebarCargoDisconnectEvent
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
 import io.github.pylonmc.rebar.logistics.CargoRoutes
-import io.github.pylonmc.rebar.recipe.slot.item.ItemSlotGroup
+import io.github.pylonmc.rebar.logistics.LogisticGroup
 import io.github.pylonmc.rebar.logistics.LogisticGroupType
 import io.github.pylonmc.rebar.util.IMMEDIATE_FACES
 import io.github.pylonmc.rebar.util.delayTicks
@@ -68,7 +68,7 @@ interface CargoRebarBlock : LogisticRebarBlock, EntityHolderRebarBlock {
     }
 
     @ApiStatus.NonExtendable
-    fun getCargoLogisticGroup(face: BlockFace): ItemSlotGroup?
+    fun getCargoLogisticGroup(face: BlockFace): LogisticGroup?
             = cargoBlockData.groups[face]?.let { getLogisticGroup(it) }
 
     val cargoLogisticGroups: Map<BlockFace, String>
@@ -154,7 +154,7 @@ interface CargoRebarBlock : LogisticRebarBlock, EntityHolderRebarBlock {
     }
 
     @ApiStatus.Internal
-    fun tickCargoFace(sourceGroup: ItemSlotGroup, targetGroup: ItemSlotGroup) {
+    fun tickCargoFace(sourceGroup: LogisticGroup, targetGroup: LogisticGroup) {
         for (sourceSlot in sourceGroup.slots) {
             val sourceStack = sourceSlot.getItemStack()
             if (sourceStack == null || (targetGroup.filter != null && !targetGroup.filter!!(sourceStack))) {

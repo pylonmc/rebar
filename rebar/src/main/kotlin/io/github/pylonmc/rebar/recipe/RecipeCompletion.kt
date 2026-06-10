@@ -1,4 +1,4 @@
-package io.github.pylonmc.rebar.recipe.logic
+package io.github.pylonmc.rebar.recipe
 
 import com.destroystokyo.paper.event.player.PlayerRecipeBookClickEvent
 import io.github.pylonmc.rebar.nms.NmsAccessor
