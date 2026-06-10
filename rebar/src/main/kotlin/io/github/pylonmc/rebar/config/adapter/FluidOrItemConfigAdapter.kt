@@ -1,6 +1,6 @@
 package io.github.pylonmc.rebar.config.adapter
 
-import io.github.pylonmc.rebar.recipe.FluidOrItem
+import io.github.pylonmc.rebar.recipe.ingredient.FluidOrItem
 
 object FluidOrItemConfigAdapter : ConfigAdapter<FluidOrItem> {
 

@@ -1,4 +1,4 @@
-package io.github.pylonmc.rebar.recipe
+package io.github.pylonmc.rebar.recipe.ingredient
 
 import io.github.pylonmc.rebar.guide.button.ItemButton
 import io.github.pylonmc.rebar.item.ItemTypeWrapper
@@ -13,6 +13,7 @@ import io.papermc.paper.datacomponent.DataComponentType
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.RecipeChoice
 import java.util.function.Predicate
+import kotlin.compareTo
 
 /**
  * Represents an item being used in a recipe.
@@ -58,7 +59,7 @@ class ItemChoice internal constructor(
      * This is not directly used to match recipes because it cannot represent all the possible
      * inputs that [ItemChoice] can.
      *
-     * @see RecipeCompletion
+     * @see io.github.pylonmc.rebar.recipe.logic.RecipeCompletion
      */
     @JvmSynthetic
     internal fun toRepresentativeRecipeChoice(): RecipeChoice {
@@ -144,7 +145,7 @@ class ItemChoice internal constructor(
          */
         fun addFuzzy(stack: ItemStack) = apply {
             val components = stack.overriddenComponents(false)
-            addFuzzy(ItemTypeWrapper(stack), components)
+            addFuzzy(ItemTypeWrapper.Companion(stack), components)
         }
 
         /**
@@ -180,9 +181,9 @@ class ItemChoice internal constructor(
         fun addExact(stack: ItemStack, componentsToIgnore: Set<DataComponentType> = emptySet()) = apply {
             val components = stack.overriddenComponents(true).filterKeys { it !in componentsToIgnore }
             if (components.isEmpty()) {
-                addFuzzy(ItemTypeWrapper(stack))
+                addFuzzy(ItemTypeWrapper.Companion(stack))
             } else {
-                add(ItemTypeWrapper(stack)) { stack ->
+                add(ItemTypeWrapper.Companion(stack)) { stack ->
                     stack.componentsEqual(components)
                 }
             }

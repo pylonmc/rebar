@@ -1,12 +1,12 @@
-package io.github.pylonmc.rebar.recipe
+package io.github.pylonmc.rebar.recipe.logic
 
+import io.github.pylonmc.rebar.recipe.RecipeType
 import io.github.pylonmc.rebar.recipe.vanilla.AbstractCraftingRebarRecipe
 import io.github.pylonmc.rebar.recipe.vanilla.CookingRebarRecipe
 import io.github.pylonmc.rebar.recipe.vanilla.CraftingInput
 import io.github.pylonmc.rebar.recipe.vanilla.DummyCookingRebarRecipe
 import io.github.pylonmc.rebar.recipe.vanilla.SmithingRebarRecipe
 import io.github.pylonmc.rebar.recipe.vanilla.VanillaRecipeType
-import io.github.pylonmc.rebar.util.gui.GuiItems.input
 import org.bukkit.Keyed
 import org.bukkit.inventory.BlastingRecipe
 import org.bukkit.inventory.CampfireRecipe
@@ -16,11 +16,9 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.Recipe
 import org.bukkit.inventory.ShapedRecipe
 import org.bukkit.inventory.ShapelessRecipe
-import org.bukkit.inventory.SmithingRecipe
 import org.bukkit.inventory.SmithingTransformRecipe
 import org.bukkit.inventory.SmithingTrimRecipe
 import org.bukkit.inventory.SmokingRecipe
-import org.bukkit.inventory.TransmuteRecipe
 
 object RecipeMatchingService {
     fun matchCraftingRecipe(input: CraftingInput, possibleRecipe: Recipe? = null, lastRecipe: AbstractCraftingRebarRecipe? = null): AbstractCraftingRebarRecipe? {

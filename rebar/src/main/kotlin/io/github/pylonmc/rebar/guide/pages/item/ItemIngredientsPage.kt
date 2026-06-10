@@ -8,9 +8,9 @@ import io.github.pylonmc.rebar.guide.pages.base.SimpleStaticGuidePage
 import io.github.pylonmc.rebar.guide.pages.base.TabbedGuidePage
 import io.github.pylonmc.rebar.i18n.RebarArgument
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
-import io.github.pylonmc.rebar.recipe.FluidOrItem
-import io.github.pylonmc.rebar.recipe.FluidWithAmount
-import io.github.pylonmc.rebar.recipe.IngredientCalculator
+import io.github.pylonmc.rebar.recipe.ingredient.FluidOrItem
+import io.github.pylonmc.rebar.recipe.ingredient.FluidWithAmount
+import io.github.pylonmc.rebar.recipe.ingredient.IngredientCalculator
 import io.github.pylonmc.rebar.util.gui.GuiItems
 import io.github.pylonmc.rebar.util.rebarKey
 import io.papermc.paper.datacomponent.DataComponentTypes

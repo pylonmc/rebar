@@ -1,6 +1,6 @@
 package io.github.pylonmc.rebar.config.adapter
 
-import io.github.pylonmc.rebar.recipe.ItemChoice
+import io.github.pylonmc.rebar.recipe.ingredient.ItemChoice
 import org.bukkit.Registry
 import org.bukkit.configuration.ConfigurationSection
 

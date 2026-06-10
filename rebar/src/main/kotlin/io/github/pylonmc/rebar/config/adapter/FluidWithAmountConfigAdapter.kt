@@ -1,6 +1,6 @@
 package io.github.pylonmc.rebar.config.adapter
 
-import io.github.pylonmc.rebar.recipe.FluidWithAmount
+import io.github.pylonmc.rebar.recipe.ingredient.FluidWithAmount
 import org.bukkit.configuration.ConfigurationSection
 
 object FluidWithAmountConfigAdapter : ConfigAdapter<FluidWithAmount> {
