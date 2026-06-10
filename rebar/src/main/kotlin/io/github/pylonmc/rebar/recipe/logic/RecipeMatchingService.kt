@@ -4,6 +4,7 @@ import io.github.pylonmc.rebar.recipe.RecipeType
 import io.github.pylonmc.rebar.recipe.vanilla.AbstractCraftingRebarRecipe
 import io.github.pylonmc.rebar.recipe.vanilla.CookingRebarRecipe
 import io.github.pylonmc.rebar.recipe.vanilla.CraftingInput
+import io.github.pylonmc.rebar.recipe.vanilla.DummyCookingRebarRecipe
 import io.github.pylonmc.rebar.recipe.vanilla.SmithingRebarRecipe
 import io.github.pylonmc.rebar.recipe.vanilla.VanillaRecipeType
 import org.bukkit.Keyed
@@ -26,7 +27,6 @@ object RecipeMatchingService {
             var possibleRebarRecipe = when(possibleRecipe) {
                 is ShapedRecipe -> RecipeType.VANILLA_SHAPED.getRecipe(possibleRecipe.key)
                 is ShapelessRecipe -> RecipeType.VANILLA_SHAPELESS.getRecipe(possibleRecipe.key)
-                is TransmuteRecipe -> RecipeType.VANILLA_TRANSMUTE.getRecipe(possibleRecipe.key)
                 else -> null
             }
 
@@ -54,7 +54,7 @@ object RecipeMatchingService {
         return null
     }
 
-    fun matchCookingRecipe(type: VanillaRecipeType<out CookingRebarRecipe>, input: ItemStack?, output: ItemStack?, possibleRecipe: CookingRecipe<*>?, lastRecipe: CookingRebarRecipe? = null): CookingRebarRecipe? {
+    fun matchCookingRecipe(type: VanillaRecipeType<out CookingRebarRecipe, DummyCookingRebarRecipe>, input: ItemStack?, output: ItemStack?, possibleRecipe: CookingRecipe<*>?, lastRecipe: CookingRebarRecipe? = null): CookingRebarRecipe? {
         if (possibleRecipe != null) {
             var possibleRebarRecipe = when(possibleRecipe) {
                 is CampfireRecipe -> RecipeType.VANILLA_CAMPFIRE.getRecipe(possibleRecipe.key)

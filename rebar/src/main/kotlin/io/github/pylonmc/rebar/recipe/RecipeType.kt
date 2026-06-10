@@ -78,12 +78,6 @@ open class RecipeType<T : RebarRecipe>(private val key: NamespacedKey) : Keyed, 
         val VANILLA_SHAPELESS = ShapelessRecipeType
 
         /**
-         * Key: `minecraft:crafting_transmute`
-         */
-        @JvmField
-        val VANILLA_TRANSMUTE = TransmuteRecipeType
-
-        /**
          * Key: `minecraft:smithing_transform`
          */
         @JvmField
@@ -125,7 +119,6 @@ open class RecipeType<T : RebarRecipe>(private val key: NamespacedKey) : Keyed, 
         @JvmStatic
         fun vanillaCraftingRecipes() = VANILLA_SHAPED
             .union(VANILLA_SHAPELESS)
-            .union(VANILLA_TRANSMUTE)
 
         @JvmStatic
         fun vanillaCookingRecipes() = VANILLA_BLASTING.recipes
@@ -156,7 +149,6 @@ open class RecipeType<T : RebarRecipe>(private val key: NamespacedKey) : Keyed, 
                     is FurnaceRecipe -> VANILLA_FURNACE.addNonRebarRecipe(FurnaceRebarRecipe.fromVanilla(recipe))
                     is ShapedRecipe -> VANILLA_SHAPED.addNonRebarRecipe(ShapedRebarRecipe.fromVanilla(recipe))
                     is ShapelessRecipe -> VANILLA_SHAPELESS.addNonRebarRecipe(ShapelessRebarRecipe.fromVanilla(recipe))
-                    is TransmuteRecipe -> VANILLA_TRANSMUTE.addNonRebarRecipe(TransmuteRebarRecipe.fromVanilla(recipe))
                     is SmithingTrimRecipe -> VANILLA_SMITHING_TRIM.addNonRebarRecipe(SmithingTrimRebarRecipe.fromVanilla(recipe))
                     is SmithingTransformRecipe -> VANILLA_SMITHING_TRANSFORM.addNonRebarRecipe(SmithingTransformRebarRecipe.fromVanilla(recipe))
                     is SmokingRecipe -> VANILLA_SMOKING.addNonRebarRecipe(SmokingRebarRecipe.fromVanilla(recipe))

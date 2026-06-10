@@ -22,12 +22,12 @@ import xyz.xenondevs.invui.gui.Gui
 
 class DummySmithingRebarRecipe(
     val realRecipe: SmithingRebarRecipe,
-    override val recipe: SmithingRecipe
+    override val bukkitRecipe: SmithingRecipe
 ) : DummyBukkitRebarRecipe {
     override val inputs = emptyList<FluidOrItemChoice>()
     override val results = emptyList<FluidOrItem>()
     override fun display() = null
-    override fun getKey() = recipe.key
+    override fun getKey() = bukkitRecipe.key
 }
 
 sealed class SmithingRebarRecipe(
@@ -74,7 +74,7 @@ class SmithingTransformRebarRecipe(
     result: FluidOrItem.Item,
     copyDataComponents: Boolean,
     key: NamespacedKey,
-    override val recipe: SmithingTransformRecipe = SmithingTransformRecipe(key, result.item, template.toRepresentativeRecipeChoice(), base.toRepresentativeRecipeChoice(), addition.toRepresentativeRecipeChoice(), copyDataComponents)
+    override val bukkitRecipe: SmithingTransformRecipe = SmithingTransformRecipe(key, result.item, template.toRepresentativeRecipeChoice(), base.toRepresentativeRecipeChoice(), addition.toRepresentativeRecipeChoice(), copyDataComponents)
 ) : SmithingRebarRecipe(result, copyDataComponents, key) {
     companion object {
         fun fromVanilla(recipe: SmithingTransformRecipe): SmithingTransformRebarRecipe {
@@ -96,7 +96,7 @@ class SmithingTrimRebarRecipe(
     override val addition: ItemChoice,
     val trimPattern: TrimPattern,
     key: NamespacedKey,
-    override val recipe: SmithingTrimRecipe = SmithingTrimRecipe(key, template.toRepresentativeRecipeChoice(), base.toRepresentativeRecipeChoice(), addition.toRepresentativeRecipeChoice(), trimPattern)
+    override val bukkitRecipe: SmithingTrimRecipe = SmithingTrimRecipe(key, template.toRepresentativeRecipeChoice(), base.toRepresentativeRecipeChoice(), addition.toRepresentativeRecipeChoice(), trimPattern)
 ) : SmithingRebarRecipe(FluidOrItem.Item.EMPTY, true, key) {
     companion object {
         fun fromVanilla(recipe: SmithingTrimRecipe): SmithingTrimRebarRecipe {
@@ -130,7 +130,7 @@ object SmithingTransformRecipeType : VanillaRecipeType<SmithingTransformRebarRec
     override fun createDummyRecipeFor(recipe: SmithingTransformRebarRecipe): DummySmithingRebarRecipe {
         return DummySmithingRebarRecipe(
             recipe, SmithingTransformRecipe(
-                dummyKey(recipe.key), recipe.recipe.result,
+                dummyKey(recipe.key), recipe.bukkitRecipe.result,
                 recipe.template.toDummyRecipeChoice(),
                 recipe.base.toDummyRecipeChoice(),
                 recipe.addition.toDummyRecipeChoice(),

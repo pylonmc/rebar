@@ -18,6 +18,7 @@ import xyz.xenondevs.invui.gui.Gui
 import xyz.xenondevs.invui.item.Item
 import kotlin.collections.iterator
 import kotlin.collections.mutableMapOf
+import kotlin.collections.toMutableMap
 import kotlin.math.max
 import kotlin.math.min
 
@@ -136,16 +137,12 @@ data class CraftingRecipeShape private constructor(
 
     companion object {
         fun of(key: MutableMap<Char, ItemChoice?>, pattern: MutableList<String>): CraftingRecipeShape {
-            val shrunkPattern = shrinkPattern(key, pattern)
-            val strictKey = mutableMapOf<Char, ItemChoice>().apply {
-                for (entry in key) {
-                    put(entry.key, entry.value!!) // any null entries were removed in shrinkPattern
-                }
-            }
-            val ingredients = prepareIngredients(strictKey, shrunkPattern)
-            val width = shrunkPattern[0].length
-            val height = shrunkPattern.size
-            return CraftingRecipeShape(strictKey, shrunkPattern, ingredients, width, height)
+            val pattern = shrinkPattern(key, pattern)
+            val key = key.toList().associate { it.first to it.second!! }
+            val ingredients = prepareIngredients(key, pattern)
+            val width = pattern[0].length
+            val height = pattern.size
+            return CraftingRecipeShape(key, pattern, ingredients, width, height)
         }
 
         fun shrinkPattern(key: MutableMap<Char, ItemChoice?>, pattern: MutableList<String>): List<String> {
@@ -204,12 +201,12 @@ data class CraftingRecipeShape private constructor(
 
 class DummyCraftingRebarRecipe(
     val realRecipe: AbstractCraftingRebarRecipe,
-    override val recipe: CraftingRecipe
+    override val bukkitRecipe: CraftingRecipe
 ) : DummyBukkitRebarRecipe {
     override val inputs = emptyList<FluidOrItemChoice>()
     override val results = emptyList<FluidOrItem>()
     override fun display() = null
-    override fun getKey() = recipe.key
+    override fun getKey() = bukkitRecipe.key
 }
 
 sealed class AbstractCraftingRebarRecipe(
@@ -228,7 +225,7 @@ class ShapedRebarRecipe(
     category: CraftingBookCategory,
     group: String,
     key: NamespacedKey,
-    override val recipe: ShapedRecipe = ShapedRecipe(key, result.item).apply {
+    override val bukkitRecipe: ShapedRecipe = ShapedRecipe(key, result.item).apply {
         this.category = category
         this.group = group
         this.shape(*shape.pattern.toTypedArray())
@@ -315,7 +312,7 @@ class ShapelessRebarRecipe(
     category: CraftingBookCategory,
     group: String,
     key: NamespacedKey,
-    override val recipe: ShapelessRecipe = ShapelessRecipe(key, result.item).apply {
+    override val bukkitRecipe: ShapelessRecipe = ShapelessRecipe(key, result.item).apply {
         this.category = category
         this.group = group
         for (ingredient in ingredients) {
@@ -356,44 +353,6 @@ class ShapelessRebarRecipe(
     }
 }
 
-class TransmuteRebarRecipe(
-    val input: ItemChoice,
-    val material: ItemChoice,
-    val resultType: Material,
-    category: CraftingBookCategory,
-    group: String,
-    key: NamespacedKey,
-    override val recipe: TransmuteRecipe
-) : AbstractShapelessRebarRecipe(FluidOrItem.Item.EMPTY, category, group, key) {
-    override val inputs = listOf(input, material)
-    override val results = emptyList<FluidOrItem.Item>()
-
-    override fun matches(input: CraftingInput): Boolean {
-        if (input.ingredientCount != 2) return false
-        val first = input.stacks[0] ?: return false
-        val second = input.stacks[1] ?: return false
-        return if (this.input.matches(first)) {
-            this.material.matches(second)
-        } else if (this.input.matches(second)) {
-             this.material.matches(first)
-        } else false
-    }
-
-    companion object {
-        fun fromVanilla(recipe: TransmuteRecipe): TransmuteRebarRecipe {
-            return TransmuteRebarRecipe(
-                recipe.input.toItemChoice(),
-                recipe.material.toItemChoice(),
-                recipe.result.type,
-                recipe.category,
-                recipe.group,
-                recipe.key,
-                recipe
-            )
-        }
-    }
-}
-
 private val CRAFTING_BOOK_CATEGORY_ADAPTER = ConfigAdapter.ENUM.from<CraftingBookCategory>()
 
 object DummyCraftingRecipeType : DummyRecipeType<DummyCraftingRebarRecipe>(rebarKey("dummy_crafting"))
@@ -415,10 +374,10 @@ object ShapedRecipeType : VanillaRecipeType<ShapedRebarRecipe, DummyCraftingReba
     override fun createDummyRecipeFor(recipe: ShapedRebarRecipe): DummyCraftingRebarRecipe {
         return DummyCraftingRebarRecipe(
             recipe,
-            ShapedRecipe(dummyKey(recipe.key), recipe.recipe.result).apply {
+            ShapedRecipe(dummyKey(recipe.key), recipe.bukkitRecipe.result).apply {
                 this.category = recipe.category
                 this.group = recipe.group
-                this.shape(*recipe.recipe.shape)
+                this.shape(*recipe.bukkitRecipe.shape)
                 for (ingredient in recipe.shape.key) {
                     this.setIngredient(ingredient.key, ingredient.value.toDummyRecipeChoice())
                 }
@@ -442,7 +401,7 @@ object ShapelessRecipeType : VanillaRecipeType<ShapelessRebarRecipe, DummyCrafti
     override fun createDummyRecipeFor(recipe: ShapelessRebarRecipe): DummyCraftingRebarRecipe {
         return DummyCraftingRebarRecipe(
             recipe,
-            ShapelessRecipe(dummyKey(recipe.key), recipe.recipe.result).apply {
+            ShapelessRecipe(dummyKey(recipe.key), recipe.bukkitRecipe.result).apply {
                 this.category = recipe.category
                 this.group = recipe.group
                 for (ingredient in recipe.ingredients) {
@@ -450,18 +409,5 @@ object ShapelessRecipeType : VanillaRecipeType<ShapelessRebarRecipe, DummyCrafti
                 }
             }
         )
-    }
-}
-
-/**
- * Key: `minecraft:crafting_transmute`
- */
-object TransmuteRecipeType : VanillaRecipeType<TransmuteRebarRecipe, DummyCraftingRebarRecipe>("crafting_transmute", DummyCraftingRecipeType) {
-    override fun loadRecipe(key: NamespacedKey, section: ConfigSection): TransmuteRebarRecipe {
-        throw IllegalArgumentException("You cannot make custom transmute recipes")
-    }
-
-    override fun createDummyRecipeFor(recipe: TransmuteRebarRecipe): DummyCraftingRebarRecipe {
-        throw IllegalArgumentException("You cannot make custom transmute recipes")
     }
 }

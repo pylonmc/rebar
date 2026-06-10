@@ -21,12 +21,12 @@ import xyz.xenondevs.invui.gui.Gui
 
 class DummyCookingRebarRecipe(
     val realRecipe: CookingRebarRecipe,
-    override val recipe: CookingRecipe<*>
+    override val bukkitRecipe: CookingRecipe<*>
 ) : DummyBukkitRebarRecipe {
     override val inputs = emptyList<FluidOrItemChoice>()
     override val results = emptyList<FluidOrItem>()
     override fun display() = null
-    override fun getKey() = recipe.key
+    override fun getKey() = bukkitRecipe.key
 }
 
 sealed class CookingRebarRecipe(
@@ -85,7 +85,7 @@ class BlastingRebarRecipe(
     category: CookingBookCategory,
     group: String,
     key: NamespacedKey,
-    override val recipe: BlastingRecipe = BlastingRecipe(
+    override val bukkitRecipe: BlastingRecipe = BlastingRecipe(
         key, result.item, ingredient.toRepresentativeRecipeChoice(),
         experience, cookingTime
     ).apply {
@@ -119,7 +119,7 @@ class CampfireRebarRecipe(
     category: CookingBookCategory,
     group: String,
     key: NamespacedKey,
-    override val recipe: CampfireRecipe = CampfireRecipe(
+    override val bukkitRecipe: CampfireRecipe = CampfireRecipe(
         key, result.item, ingredient.toRepresentativeRecipeChoice(),
         experience, cookingTime
     ).apply {
@@ -153,7 +153,7 @@ class FurnaceRebarRecipe(
     category: CookingBookCategory,
     group: String,
     key: NamespacedKey,
-    override val recipe: FurnaceRecipe = FurnaceRecipe(
+    override val bukkitRecipe: FurnaceRecipe = FurnaceRecipe(
         key, result.item, ingredient.toRepresentativeRecipeChoice(),
         experience, cookingTime
     ).apply {
@@ -187,7 +187,7 @@ class SmokingRebarRecipe(
     category: CookingBookCategory,
     group: String,
     key: NamespacedKey,
-    override val recipe: SmokingRecipe = SmokingRecipe(
+    override val bukkitRecipe: SmokingRecipe = SmokingRecipe(
         key, result.item, ingredient.toRepresentativeRecipeChoice(),
         experience, cookingTime
     ).apply {
@@ -242,7 +242,7 @@ object BlastingRecipeType : VanillaRecipeType<BlastingRebarRecipe, DummyCookingR
     override fun createDummyRecipeFor(recipe: BlastingRebarRecipe): DummyCookingRebarRecipe {
         return DummyCookingRebarRecipe(
             recipe, BlastingRecipe(
-                dummyKey(recipe.key), recipe.recipe.result, recipe.ingredient.toDummyRecipeChoice(),
+                dummyKey(recipe.key), recipe.bukkitRecipe.result, recipe.ingredient.toDummyRecipeChoice(),
                 recipe.experience, recipe.cookingTime
             ).apply {
                 this.category = recipe.category
@@ -265,7 +265,7 @@ object CampfireRecipeType : VanillaRecipeType<CampfireRebarRecipe, DummyCookingR
     override fun createDummyRecipeFor(recipe: CampfireRebarRecipe): DummyCookingRebarRecipe {
         return DummyCookingRebarRecipe(
             recipe, CampfireRecipe(
-                dummyKey(recipe.key), recipe.recipe.result, recipe.ingredient.toDummyRecipeChoice(),
+                dummyKey(recipe.key), recipe.bukkitRecipe.result, recipe.ingredient.toDummyRecipeChoice(),
                 recipe.experience, recipe.cookingTime
             ).apply {
                 this.category = recipe.category
@@ -285,7 +285,7 @@ object FurnaceRecipeType : VanillaRecipeType<FurnaceRebarRecipe, DummyCookingReb
     override fun createDummyRecipeFor(recipe: FurnaceRebarRecipe): DummyCookingRebarRecipe {
         return DummyCookingRebarRecipe(
             recipe, FurnaceRecipe(
-                dummyKey(recipe.key), recipe.recipe.result, recipe.ingredient.toDummyRecipeChoice(),
+                dummyKey(recipe.key), recipe.bukkitRecipe.result, recipe.ingredient.toDummyRecipeChoice(),
                 recipe.experience, recipe.cookingTime
             ).apply {
                 this.category = recipe.category
@@ -305,7 +305,7 @@ object SmokingRecipeType : VanillaRecipeType<SmokingRebarRecipe, DummyCookingReb
     override fun createDummyRecipeFor(recipe: SmokingRebarRecipe): DummyCookingRebarRecipe {
         return DummyCookingRebarRecipe(
             recipe, SmokingRecipe(
-                dummyKey(recipe.key), recipe.recipe.result, recipe.ingredient.toDummyRecipeChoice(),
+                dummyKey(recipe.key), recipe.bukkitRecipe.result, recipe.ingredient.toDummyRecipeChoice(),
                 recipe.experience, recipe.cookingTime
             ).apply {
                 this.category = recipe.category

@@ -17,7 +17,7 @@ import org.bukkit.inventory.RecipeChoice
 import org.bukkit.inventory.SmokingRecipe
 
 sealed interface BukkitRebarRecipe : RebarRecipe {
-    val recipe: Recipe
+    val bukkitRecipe: Recipe
 }
 
 sealed interface DummyBukkitRebarRecipe : BukkitRebarRecipe {
@@ -39,7 +39,7 @@ sealed class BukkitRecipeType<T: BukkitRebarRecipe>(key: NamespacedKey) : Config
         if (NmsAccessor.instance.hasRecipe(recipe.key)) {
             NmsAccessor.queueUnregisterRecipe(recipe.key)
         }
-        NmsAccessor.queueRegisterRecipe(recipe.recipe)
+        NmsAccessor.queueRegisterRecipe(recipe.bukkitRecipe)
     }
 
     override fun removeRecipe(recipe: NamespacedKey) {
