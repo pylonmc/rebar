@@ -49,65 +49,85 @@ open class RecipeType<T : RebarRecipe>(private val key: NamespacedKey) : Keyed, 
     companion object {
         /**
          * Key: `minecraft:blasting`
+         * @see BlastingRebarRecipe
          */
         @JvmField
         val VANILLA_BLASTING = BlastingRecipeType
 
         /**
          * Key: `minecraft:campfire_cooking`
+         * @see CampfireRebarRecipe
          */
         @JvmField
         val VANILLA_CAMPFIRE = CampfireRecipeType
 
         /**
          * Key: `minecraft:smelting`
+         * @see SmeltingRebarRecipe
          */
         @JvmField
-        val VANILLA_FURNACE = FurnaceRecipeType
+        val VANILLA_SMELTING = SmeltingRecipeType
 
         /**
          * Key: `minecraft:crafting_shaped`
+         * @see ShapedRebarRecipe
          */
         @JvmField
         val VANILLA_SHAPED = ShapedRecipeType
 
         /**
          * Key: `minecraft:crafting_shapeless`
+         * @see ShapelessRebarRecipe
          */
         @JvmField
         val VANILLA_SHAPELESS = ShapelessRecipeType
 
         /**
          * Key: `minecraft:smithing_transform`
+         * @see SmithingTransformRebarRecipe
          */
         @JvmField
         val VANILLA_SMITHING_TRANSFORM = SmithingTransformRecipeType
 
         /**
          * Key: `minecraft:smithing_trim`
+         * @see SmithingTrimRebarRecipe
          */
         @JvmField
         val VANILLA_SMITHING_TRIM = SmithingTrimRecipeType
 
         /**
          * Key: `minecraft:smoking`
+         * @see SmokingRebarRecipe
          */
         @JvmField
         val VANILLA_SMOKING = SmokingRecipeType
 
+        /**
+         * The dummy holder of all [DummyCraftingRebarRecipe]
+         * @see DummyRecipeType
+         */
         @JvmField
         val DUMMY_CRAFTING = DummyCraftingRecipeType
 
+        /**
+         * The dummy holder of all [DummyCookingRebarRecipe]
+         * @see DummyRecipeType
+         */
         @JvmField
         val DUMMY_COOKING = DummyCookingRecipeType
 
+        /**
+         * The dummy holder of all [DummySmithingRebarRecipe]
+         * @see DummyRecipeType
+         */
         @JvmField
         val DUMMY_SMITHING = DummySmithingRecipeType
 
         init {
             VANILLA_BLASTING.register()
             VANILLA_CAMPFIRE.register()
-            VANILLA_FURNACE.register()
+            VANILLA_SMELTING.register()
             VANILLA_SHAPED.register()
             VANILLA_SHAPELESS.register()
             VANILLA_SMITHING_TRANSFORM.register()
@@ -119,12 +139,6 @@ open class RecipeType<T : RebarRecipe>(private val key: NamespacedKey) : Keyed, 
         @JvmStatic
         fun vanillaCraftingRecipes() = VANILLA_SHAPED
             .union(VANILLA_SHAPELESS)
-
-        @JvmStatic
-        fun vanillaCookingRecipes() = VANILLA_BLASTING.recipes
-            .union(VANILLA_CAMPFIRE.recipes)
-            .union(VANILLA_FURNACE.recipes)
-            .union(VANILLA_SMOKING.recipes)
 
         @JvmStatic
         fun vanillaSmithingRecipes() = VANILLA_SMITHING_TRANSFORM.recipes
@@ -146,7 +160,7 @@ open class RecipeType<T : RebarRecipe>(private val key: NamespacedKey) : Keyed, 
                 when (recipe) {
                     is BlastingRecipe -> VANILLA_BLASTING.addNonRebarRecipe(BlastingRebarRecipe.fromVanilla(recipe))
                     is CampfireRecipe -> VANILLA_CAMPFIRE.addNonRebarRecipe(CampfireRebarRecipe.fromVanilla(recipe))
-                    is FurnaceRecipe -> VANILLA_FURNACE.addNonRebarRecipe(FurnaceRebarRecipe.fromVanilla(recipe))
+                    is FurnaceRecipe -> VANILLA_SMELTING.addNonRebarRecipe(SmeltingRebarRecipe.fromVanilla(recipe))
                     is ShapedRecipe -> VANILLA_SHAPED.addNonRebarRecipe(ShapedRebarRecipe.fromVanilla(recipe))
                     is ShapelessRecipe -> VANILLA_SHAPELESS.addNonRebarRecipe(ShapelessRebarRecipe.fromVanilla(recipe))
                     is SmithingTrimRecipe -> VANILLA_SMITHING_TRIM.addNonRebarRecipe(SmithingTrimRebarRecipe.fromVanilla(recipe))

@@ -6,7 +6,7 @@ import io.github.pylonmc.rebar.item.interfaces.*
 import io.github.pylonmc.rebar.item.research.Research.Companion.canCraft
 import io.github.pylonmc.rebar.nms.NmsAccessor
 import io.github.pylonmc.rebar.recipe.RecipeType
-import io.github.pylonmc.rebar.recipe.vanilla.AbstractCraftingRebarRecipe
+import io.github.pylonmc.rebar.recipe.vanilla.CraftingRebarRecipe
 import io.github.pylonmc.rebar.recipe.vanilla.CraftingInput
 import io.github.pylonmc.rebar.recipe.vanilla.DummyBukkitRebarRecipe
 import io.github.pylonmc.rebar.recipe.vanilla.VanillaRecipeType
@@ -36,6 +36,12 @@ import org.bukkit.inventory.*
 import kotlin.math.max
 import kotlin.math.min
 
+/**
+ * Houses the logic which enables and corrects the usage of [RebarItem]s within
+ * vanilla recipes.
+ *
+ * @see RecipeMatchingService
+ */
 internal object RebarRecipeListener : Listener {
 
     private val crafterResultCorrector = rebarKey("crafter_result_corrector")
@@ -135,7 +141,7 @@ internal object RebarRecipeListener : Listener {
         }
     }
 
-    private fun checkCrafterRecipe(block: Block, possibleRecipe: Recipe? = null): Pair<Boolean, AbstractCraftingRebarRecipe?>? {
+    private fun checkCrafterRecipe(block: Block, possibleRecipe: Recipe? = null): Pair<Boolean, CraftingRebarRecipe?>? {
         val crafter = block.getState(false) as? Crafter ?: return null
         val inventory = crafter.inventory
 
@@ -283,7 +289,7 @@ internal object RebarRecipeListener : Listener {
         }
 
         val rebarType = when(block.type) {
-            Material.FURNACE -> RecipeType.VANILLA_FURNACE
+            Material.FURNACE -> RecipeType.VANILLA_SMELTING
             Material.SMOKER -> RecipeType.VANILLA_SMOKING
             Material.BLAST_FURNACE -> RecipeType.VANILLA_BLASTING
             else -> {

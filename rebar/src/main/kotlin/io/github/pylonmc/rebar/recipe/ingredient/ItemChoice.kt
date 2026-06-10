@@ -3,6 +3,10 @@ package io.github.pylonmc.rebar.recipe.ingredient
 import io.github.pylonmc.rebar.guide.button.ItemButton
 import io.github.pylonmc.rebar.item.ItemTypeWrapper
 import io.github.pylonmc.rebar.logistics.slot.LogisticSlot
+import io.github.pylonmc.rebar.recipe.logic.RebarRecipeListener
+import io.github.pylonmc.rebar.recipe.logic.RecipeMatchingService
+import io.github.pylonmc.rebar.recipe.vanilla.BukkitRebarRecipe
+import io.github.pylonmc.rebar.recipe.vanilla.DummyBukkitRebarRecipe
 import io.github.pylonmc.rebar.util.componentsEqual
 import io.github.pylonmc.rebar.util.hasDefaultComponents
 import io.github.pylonmc.rebar.util.isDefaultComponents
@@ -13,7 +17,7 @@ import io.papermc.paper.datacomponent.DataComponentType
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.RecipeChoice
 import java.util.function.Predicate
-import kotlin.compareTo
+
 
 /**
  * Represents an item being used in a recipe.
@@ -54,12 +58,13 @@ class ItemChoice internal constructor(
     override fun button() = ItemButton.of(this)
 
     /**
-     * Returns a recipe choice which REPRESENTS this ItemChoice
+     * Returns a [RecipeChoice] which REPRESENTS this ItemChoice for use in a [BukkitRebarRecipe]
      *
      * This is not directly used to match recipes because it cannot represent all the possible
      * inputs that [ItemChoice] can.
      *
-     * @see io.github.pylonmc.rebar.recipe.logic.RecipeCompletion
+     * @see RecipeMatchingService
+     * @see RebarRecipeListener
      */
     @JvmSynthetic
     internal fun toRepresentativeRecipeChoice(): RecipeChoice {
@@ -71,7 +76,17 @@ class ItemChoice internal constructor(
     }
 
     /**
-     * TODO
+     * Returns a [RecipeChoice] for use in a [DummyBukkitRebarRecipe]
+     *
+     * This is an intentionally simplified choice so vanilla minecraft can always match against it
+     * even when the [representative recipe choice][toRepresentativeRecipeChoice] cannot be matched
+     * when its [ItemChoice] can be.
+     *
+     * After vanilla minecraft matches against this [RecipeChoice] we take over and correct
+     * it using the [ItemChoice].
+     *
+     * @see RecipeMatchingService
+     * @see RebarRecipeListener
      */
     @JvmSynthetic
     internal fun toDummyRecipeChoice(): RecipeChoice {

@@ -1,6 +1,7 @@
 package io.github.pylonmc.rebar.recipe
 
 import com.google.common.collect.MapMaker
+import io.github.pylonmc.rebar.content.guide.RebarGuide
 import io.github.pylonmc.rebar.fluid.RebarFluid
 import io.github.pylonmc.rebar.recipe.ingredient.FluidChoice
 import io.github.pylonmc.rebar.recipe.ingredient.FluidOrItem
@@ -11,6 +12,15 @@ import org.bukkit.Keyed
 import org.bukkit.inventory.ItemStack
 import xyz.xenondevs.invui.gui.Gui
 
+/**
+ * A generic rebar recipe
+ *
+ * @property isHidden If this recipe should be hidden from the [RebarGuide]
+ * @property inputs The inputs used by this recipe, either [FluidChoice] or [ItemChoice]
+ * @property results The results of this recipe, either [FluidWithAmount] or [FluidOrItem.Item]
+ *
+ * @see RecipeType
+ */
 interface RebarRecipe : Keyed {
 
     val isHidden: Boolean

@@ -20,6 +20,11 @@ import org.bukkit.inventory.SmithingTrimRecipe
 import org.bukkit.inventory.meta.trim.TrimPattern
 import xyz.xenondevs.invui.gui.Gui
 
+/**
+ * The dummy form of [SmithingRebarRecipe]
+ * @see DummySmithingRecipeType
+ * @see DummyBukkitRebarRecipe
+ */
 class DummySmithingRebarRecipe(
     val realRecipe: SmithingRebarRecipe,
     override val bukkitRecipe: SmithingRecipe
@@ -30,6 +35,12 @@ class DummySmithingRebarRecipe(
     override fun getKey() = bukkitRecipe.key
 }
 
+/**
+ * A generic rebar smithing recipe.
+ *
+ * @see SmithingTransformRebarRecipe
+ * @see SmithingTrimRebarRecipe
+ */
 sealed class SmithingRebarRecipe(
     val result: FluidOrItem.Item,
     val copyDataComponents: Boolean,
@@ -67,6 +78,9 @@ sealed class SmithingRebarRecipe(
     override fun getKey(): NamespacedKey = key
 }
 
+/**
+ * Rebar's equivalent of [SmithingTransformRecipe]
+ */
 class SmithingTransformRebarRecipe(
     override val template: ItemChoice,
     override val base: ItemChoice,
@@ -90,6 +104,10 @@ class SmithingTransformRebarRecipe(
         }
     }
 }
+
+/**
+ * Rebar's equivalent of [SmithingTrimRecipe]
+ */
 class SmithingTrimRebarRecipe(
     override val template: ItemChoice,
     override val base: ItemChoice,
@@ -112,10 +130,15 @@ class SmithingTrimRebarRecipe(
     }
 }
 
+/**
+ * The dummy holder of all [DummySmithingRebarRecipe]
+ * @see DummyRecipeType
+ */
 object DummySmithingRecipeType : DummyRecipeType<DummySmithingRebarRecipe>(rebarKey("dummy_smithing"))
 
 /**
  * Key: `minecraft:smithing_transform`
+ * @see SmithingTransformRebarRecipe
  */
 object SmithingTransformRecipeType : VanillaRecipeType<SmithingTransformRebarRecipe, DummySmithingRebarRecipe>("smithing_transform", DummySmithingRecipeType) {
     override fun loadRecipe(key: NamespacedKey, section: ConfigSection): SmithingTransformRebarRecipe {
@@ -142,6 +165,7 @@ object SmithingTransformRecipeType : VanillaRecipeType<SmithingTransformRebarRec
 
 /**
  * Key: `minecraft:smithing_trim`
+ * @see SmithingTrimRebarRecipe
  */
 object SmithingTrimRecipeType : VanillaRecipeType<SmithingTrimRebarRecipe, DummySmithingRebarRecipe>("smithing_trim", DummySmithingRecipeType) {
     private val TRIM_PATTERN_ADAPTER = ConfigAdapter.KEYED.fromRegistry(

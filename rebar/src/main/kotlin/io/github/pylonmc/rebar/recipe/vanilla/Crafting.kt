@@ -22,6 +22,18 @@ import kotlin.collections.toMutableMap
 import kotlin.math.max
 import kotlin.math.min
 
+/**
+ * Represents the active inputs in a crafting matrix (crafting table, crafter, player crafting grid).
+ * Used to match against crafting recipes.
+ *
+ * You can think of this of a cutout that encloses the ingredients within the matrix. If only
+ * the first 2 slots on the top row of the matrix are filled, width would be 2 and height would be 1.
+ *
+ * @param stacks A sorted view of all items within the matrix, accessible via [getItem]
+ * @param width How wide the input is
+ * @param height How tall the input is
+ * @param ingredientCount How many non-empty ingredients are in the input (used for quick mismatch checks)
+ */
 data class CraftingInput(
     val stacks: List<ItemStack?>,
     val width: Int,
@@ -35,11 +47,15 @@ data class CraftingInput(
 
         /**
          * Currently accepts generic [Inventory] because paper has a bug and doesn't actually return a [CrafterInventory] atm
+         * @return A [CraftingInput] of the contents of the [CrafterInventory]
          */
         fun of(inventory: Inventory): CraftingInput {
             return of(3, 3, inventory.contents.toList())
         }
 
+        /**
+         * @return A [CraftingInput] of the contents of the [CraftingInventory]
+         */
         fun of(inventory: CraftingInventory): CraftingInput {
             val matrix = inventory.matrix
             val size = when(matrix.size) {
@@ -50,6 +66,18 @@ data class CraftingInput(
             return of(size, size, matrix.toList())
         }
 
+        /**
+         * Takes in a full crafting matrix of items and cuts out the actual
+         * input present within it.
+         *
+         * For ex: If a crafting table has 1 item in the top left corner and
+         * everything else is empty, this would collapse the width and height
+         * from 3 to 1.
+         *
+         * @param width The full width of the matrix
+         * @param height The full height of the matrix
+         * @param items Every item from the matrix (from left to right, top to bottom)
+         */
         fun of(width: Int, height: Int, items: List<ItemStack?>): CraftingInput {
             if (width == 0 || height == 0) return EMPTY
 
@@ -94,6 +122,21 @@ data class CraftingInput(
     }
 }
 
+/**
+ * Represents the full shape of a [ShapedRebarRecipe]
+ *
+ * Similar to [CraftingInput] this is a cutout of the matrix,
+ * if the recipe only takes up 1 row this will too.
+ *
+ * @param key The mapping of [Char] to [ItemChoice], when combined with the [pattern] this defines the shape of the recipe
+ * @param pattern The [String] pattern representation of this recipe, when combined with the [key] this defines the shape of the recipe
+ * @param ingredients A list of all ingredients in this recipe, sorted from left to right, top to bottom. Null if the slot is empty.
+ * @param width How wide this recipe is
+ * @param height How tall this recipe is
+ * @param ingredientCount How many non-empty ingredients are used in this recipe
+ * @param symmetrical If this recipe is symmetrical and should be checked flipped across the y-axis when matching
+ */
+@ConsistentCopyVisibility
 data class CraftingRecipeShape private constructor(
     val key: Map<Char, ItemChoice>,
     val pattern: List<String>,
@@ -108,6 +151,9 @@ data class CraftingRecipeShape private constructor(
 
     fun getFlippedIngredient(x: Int, y: Int) = ingredients[width - x - 1 + y * width]
 
+    /**
+     * Checks if the provided [input] matches this recipe shape
+     */
     fun matches(input: CraftingInput): Boolean {
         if (ingredientCount != input.ingredientCount || width != input.width || height != input.height) {
             return false
@@ -136,6 +182,16 @@ data class CraftingRecipeShape private constructor(
     }
 
     companion object {
+        /**
+         * Converts a [key] and [pattern] into a [CraftingRecipeShape]
+         *
+         * Just like [CraftingInput.of] this will cut out the actual shape of the recipe
+         * from the provided pattern, so if the pattern is 3 rows but only the first row
+         * has ingredients, the resulting shape will only be 1 row.
+         *
+         * @param key The key for this shape
+         * @param pattern The pattern for this shape
+         */
         fun of(key: MutableMap<Char, ItemChoice?>, pattern: MutableList<String>): CraftingRecipeShape {
             val pattern = shrinkPattern(key, pattern)
             val key = key.toList().associate { it.first to it.second!! }
@@ -145,7 +201,7 @@ data class CraftingRecipeShape private constructor(
             return CraftingRecipeShape(key, pattern, ingredients, width, height)
         }
 
-        fun shrinkPattern(key: MutableMap<Char, ItemChoice?>, pattern: MutableList<String>): List<String> {
+        private fun shrinkPattern(key: MutableMap<Char, ItemChoice?>, pattern: MutableList<String>): List<String> {
             for (ingredient in key.toList()) {
                 if (ingredient.second == null) {
                     pattern.replaceAll { it.replace(ingredient.first, ' ') }
@@ -183,7 +239,7 @@ data class CraftingRecipeShape private constructor(
             return emptyList()
         }
 
-        fun prepareIngredients(key: Map<Char, ItemChoice>, pattern: List<String>): List<ItemChoice?> {
+        private fun prepareIngredients(key: Map<Char, ItemChoice>, pattern: List<String>): List<ItemChoice?> {
             if (key.keys.any { char -> pattern.none { it.contains(char) } }) {
                 throw IllegalArgumentException("Recipe key defines characters not used in the pattern")
             }
@@ -199,8 +255,13 @@ data class CraftingRecipeShape private constructor(
     }
 }
 
+/**
+ * The dummy form of [CraftingRebarRecipe]
+ * @see DummyCraftingRecipeType
+ * @see DummyBukkitRebarRecipe
+ */
 class DummyCraftingRebarRecipe(
-    val realRecipe: AbstractCraftingRebarRecipe,
+    val realRecipe: CraftingRebarRecipe,
     override val bukkitRecipe: CraftingRecipe
 ) : DummyBukkitRebarRecipe {
     override val inputs = emptyList<FluidOrItemChoice>()
@@ -209,7 +270,13 @@ class DummyCraftingRebarRecipe(
     override fun getKey() = bukkitRecipe.key
 }
 
-sealed class AbstractCraftingRebarRecipe(
+/**
+ * A generic rebar crafting recipe
+ *
+ * @see ShapedRebarRecipe
+ * @see ShapelessRebarRecipe
+ */
+sealed class CraftingRebarRecipe(
     val result: FluidOrItem.Item,
     val category: CraftingBookCategory,
     val group: String,
@@ -219,6 +286,9 @@ sealed class AbstractCraftingRebarRecipe(
     override fun getKey() = this.key
 }
 
+/**
+ * Rebar's equivalent of [ShapedRecipe]
+ */
 class ShapedRebarRecipe(
     val shape: CraftingRecipeShape,
     result: FluidOrItem.Item,
@@ -233,7 +303,7 @@ class ShapedRebarRecipe(
             this.setIngredient(ingredient.key, ingredient.value.toRepresentativeRecipeChoice())
         }
     }
-) : AbstractCraftingRebarRecipe(result, category, group, key) {
+) : CraftingRebarRecipe(result, category, group, key) {
     override val inputs = shape.ingredients.filterNotNull()
     override val results = listOf(result)
 
@@ -277,12 +347,26 @@ class ShapedRebarRecipe(
     }
 }
 
-sealed class AbstractShapelessRebarRecipe(
+/**
+ * Rebar's equivalent of [ShapelessRecipe]
+ */
+class ShapelessRebarRecipe(
+    val ingredients: List<ItemChoice>,
     result: FluidOrItem.Item,
     category: CraftingBookCategory,
     group: String,
-    key: NamespacedKey
-) : AbstractCraftingRebarRecipe(result, category, group, key) {
+    key: NamespacedKey,
+    override val bukkitRecipe: ShapelessRecipe = ShapelessRecipe(key, result.item).apply {
+        this.category = category
+        this.group = group
+        for (ingredient in ingredients) {
+            this.addIngredient(ingredient.toRepresentativeRecipeChoice())
+        }
+    }
+) : CraftingRebarRecipe(result, category, group, key) {
+    override val inputs = ingredients
+    override val results = listOf(result)
+
     override fun display() = Gui.builder()
         .setStructure(
             "# # # # # # # # #",
@@ -304,24 +388,6 @@ sealed class AbstractShapelessRebarRecipe(
         .addIngredient('8', inputs.getOrNull(0)?.button() ?: Item.EMPTY)
         .addIngredient('r', results.getOrNull(0)?.button() ?: Item.EMPTY)
         .build()
-}
-
-class ShapelessRebarRecipe(
-    val ingredients: List<ItemChoice>,
-    result: FluidOrItem.Item,
-    category: CraftingBookCategory,
-    group: String,
-    key: NamespacedKey,
-    override val bukkitRecipe: ShapelessRecipe = ShapelessRecipe(key, result.item).apply {
-        this.category = category
-        this.group = group
-        for (ingredient in ingredients) {
-            this.addIngredient(ingredient.toRepresentativeRecipeChoice())
-        }
-    }
-) : AbstractShapelessRebarRecipe(result, category, group, key) {
-    override val inputs = ingredients
-    override val results = listOf(result)
 
     override fun matches(input: CraftingInput): Boolean {
         if (input.ingredientCount != ingredients.size) return false
@@ -355,10 +421,15 @@ class ShapelessRebarRecipe(
 
 private val CRAFTING_BOOK_CATEGORY_ADAPTER = ConfigAdapter.ENUM.from<CraftingBookCategory>()
 
+/**
+ * The dummy holder of all [DummyCraftingRebarRecipe]
+ * @see DummyRecipeType
+ */
 object DummyCraftingRecipeType : DummyRecipeType<DummyCraftingRebarRecipe>(rebarKey("dummy_crafting"))
 
 /**
  * Key: `minecraft:crafting_shaped`
+ * @see ShapedRebarRecipe
  */
 object ShapedRecipeType : VanillaRecipeType<ShapedRebarRecipe, DummyCraftingRebarRecipe>("crafting_shaped", DummyCraftingRecipeType) {
     override fun loadRecipe(key: NamespacedKey, section: ConfigSection): ShapedRebarRecipe {
@@ -388,6 +459,7 @@ object ShapedRecipeType : VanillaRecipeType<ShapedRebarRecipe, DummyCraftingReba
 
 /**
  * Key: `minecraft:crafting_shapeless`
+ * @see ShapelessRebarRecipe
  */
 object ShapelessRecipeType : VanillaRecipeType<ShapelessRebarRecipe, DummyCraftingRebarRecipe>("crafting_shapeless", DummyCraftingRecipeType) {
     override fun loadRecipe(key: NamespacedKey, section: ConfigSection): ShapelessRebarRecipe {

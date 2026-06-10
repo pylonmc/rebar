@@ -19,6 +19,11 @@ import org.bukkit.inventory.*
 import org.bukkit.inventory.recipe.CookingBookCategory
 import xyz.xenondevs.invui.gui.Gui
 
+/**
+ * The dummy form of [CookingRebarRecipe]
+ * @see DummyCookingRecipeType
+ * @see DummyBukkitRebarRecipe
+ */
 class DummyCookingRebarRecipe(
     val realRecipe: CookingRebarRecipe,
     override val bukkitRecipe: CookingRecipe<*>
@@ -29,6 +34,14 @@ class DummyCookingRebarRecipe(
     override fun getKey() = bukkitRecipe.key
 }
 
+/**
+ * A generic rebar cooking recipe.
+ *
+ * @see SmeltingRebarRecipe
+ * @see BlastingRebarRecipe
+ * @see SmokingRebarRecipe
+ * @see CampfireRebarRecipe
+ */
 sealed class CookingRebarRecipe(
     val ingredient: ItemChoice,
     val result: FluidOrItem.Item,
@@ -77,6 +90,9 @@ sealed class CookingRebarRecipe(
     override fun getKey(): NamespacedKey = key
 }
 
+/**
+ * Rebar's equivalent of [BlastingRecipe]
+ */
 class BlastingRebarRecipe(
     ingredient: ItemChoice,
     result: FluidOrItem.Item,
@@ -111,6 +127,9 @@ class BlastingRebarRecipe(
     }
 }
 
+/**
+ * Rebar's equivalent of [CampfireRecipe]
+ */
 class CampfireRebarRecipe(
     ingredient: ItemChoice,
     result: FluidOrItem.Item,
@@ -145,7 +164,10 @@ class CampfireRebarRecipe(
     }
 }
 
-class FurnaceRebarRecipe(
+/**
+ * Rebar's equivalent of [FurnaceRecipe]
+ */
+class SmeltingRebarRecipe(
     ingredient: ItemChoice,
     result: FluidOrItem.Item,
     experience: Float,
@@ -164,8 +186,8 @@ class FurnaceRebarRecipe(
     override val displayBlock = Material.FURNACE
 
     companion object {
-        fun fromVanilla(recipe: FurnaceRecipe): FurnaceRebarRecipe {
-            return FurnaceRebarRecipe(
+        fun fromVanilla(recipe: FurnaceRecipe): SmeltingRebarRecipe {
+            return SmeltingRebarRecipe(
                 recipe.inputChoice.toItemChoice(),
                 FluidOrItem.of(recipe.result),
                 recipe.experience,
@@ -179,6 +201,9 @@ class FurnaceRebarRecipe(
     }
 }
 
+/**
+ * Rebar's equivalent of [SmokingRecipe]
+ */
 class SmokingRebarRecipe(
     ingredient: ItemChoice,
     result: FluidOrItem.Item,
@@ -230,10 +255,15 @@ private inline fun <T : CookingRebarRecipe> loadCookingRecipe(
     return cons(ingredient, result, experience, cookingTime, category, group, key)
 }
 
+/**
+ * The dummy holder of all [DummyCookingRebarRecipe]
+ * @see DummyRecipeType
+ */
 object DummyCookingRecipeType : DummyRecipeType<DummyCookingRebarRecipe>(rebarKey("dummy_cooking"))
 
 /**
  * Key: `minecraft:blasting`
+ * @see BlastingRebarRecipe
  */
 object BlastingRecipeType : VanillaRecipeType<BlastingRebarRecipe, DummyCookingRebarRecipe>("blasting", DummyCookingRecipeType) {
     override fun loadRecipe(key: NamespacedKey, section: ConfigSection) =
@@ -257,6 +287,8 @@ object BlastingRecipeType : VanillaRecipeType<BlastingRebarRecipe, DummyCookingR
  *
  * Despite the vanilla default cooking time being 100 ticks, we set it to 600 ticks here
  * to match the actual in-game behavior
+ *
+ * @see CampfireRebarRecipe
  */
 object CampfireRecipeType : VanillaRecipeType<CampfireRebarRecipe, DummyCookingRebarRecipe>("campfire_cooking", DummyCookingRecipeType) {
     override fun loadRecipe(key: NamespacedKey, section: ConfigSection) =
@@ -277,12 +309,13 @@ object CampfireRecipeType : VanillaRecipeType<CampfireRebarRecipe, DummyCookingR
 
 /**
  * Key: `minecraft:smelting`
+ * @see SmeltingRebarRecipe
  */
-object FurnaceRecipeType : VanillaRecipeType<FurnaceRebarRecipe, DummyCookingRebarRecipe>("smelting", DummyCookingRecipeType) {
+object SmeltingRecipeType : VanillaRecipeType<SmeltingRebarRecipe, DummyCookingRebarRecipe>("smelting", DummyCookingRecipeType) {
     override fun loadRecipe(key: NamespacedKey, section: ConfigSection) =
-        loadCookingRecipe(key, section, 200, ::FurnaceRebarRecipe)
+        loadCookingRecipe(key, section, 200, ::SmeltingRebarRecipe)
 
-    override fun createDummyRecipeFor(recipe: FurnaceRebarRecipe): DummyCookingRebarRecipe {
+    override fun createDummyRecipeFor(recipe: SmeltingRebarRecipe): DummyCookingRebarRecipe {
         return DummyCookingRebarRecipe(
             recipe, FurnaceRecipe(
                 dummyKey(recipe.key), recipe.bukkitRecipe.result, recipe.ingredient.toDummyRecipeChoice(),
@@ -297,6 +330,7 @@ object FurnaceRecipeType : VanillaRecipeType<FurnaceRebarRecipe, DummyCookingReb
 
 /**
  * Key: `minecraft:smoking`
+ * @see SmokingRebarRecipe
  */
 object SmokingRecipeType : VanillaRecipeType<SmokingRebarRecipe, DummyCookingRebarRecipe>("smoking", DummyCookingRecipeType) {
     override fun loadRecipe(key: NamespacedKey, section: ConfigSection) =

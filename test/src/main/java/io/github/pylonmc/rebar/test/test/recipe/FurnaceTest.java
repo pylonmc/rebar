@@ -21,7 +21,7 @@ public class FurnaceTest extends GameTest {
                 .setUp(test -> {
                     ItemStack stickyStick = TestItems.STICKY_STICK_STACK;
                     ItemStack diamond = ItemStack.of(Material.DIAMOND);
-                    RecipeType.VANILLA_FURNACE.addRecipe(new FurnaceRecipe(
+                    RecipeType.VANILLA_SMELTING.addRecipe(new FurnaceRecipe(
                             RebarTest.key("sticky_stick_furnace"),
                             diamond,
                             new RecipeChoice.ExactChoice(stickyStick),

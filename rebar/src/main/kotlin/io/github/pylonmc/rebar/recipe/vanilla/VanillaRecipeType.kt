@@ -7,6 +7,8 @@ import io.github.pylonmc.rebar.recipe.ConfigurableRecipeType
 import io.github.pylonmc.rebar.recipe.ingredient.ItemChoice
 import io.github.pylonmc.rebar.recipe.RebarRecipe
 import io.github.pylonmc.rebar.recipe.RecipeType
+import io.github.pylonmc.rebar.recipe.logic.RecipeMatchingService
+import io.github.pylonmc.rebar.recipe.logic.RebarRecipeListener
 import org.bukkit.NamespacedKey
 import org.bukkit.inventory.BlastingRecipe
 import org.bukkit.inventory.CampfireRecipe
@@ -16,10 +18,27 @@ import org.bukkit.inventory.Recipe
 import org.bukkit.inventory.RecipeChoice
 import org.bukkit.inventory.SmokingRecipe
 
+/**
+ * A [RebarRecipe] with a bukkit [Recipe] that needs to be (un)registered
+ * alongside this recipe.
+ *
+ * @see CraftingRebarRecipe
+ * @see CookingRebarRecipe
+ * @see SmithingRebarRecipe
+ */
 sealed interface BukkitRebarRecipe : RebarRecipe {
     val bukkitRecipe: Recipe
 }
 
+/**
+ * A dummy version of the real [BukkitRebarRecipe], these will always use
+ * [RecipeChoice.MaterialChoice] so that vanilla minecraft can match against
+ * the recipe before we correct it in [RecipeMatchingService]
+ *
+ * @see DummyCraftingRebarRecipe
+ * @see DummyCookingRebarRecipe
+ * @see DummySmithingRebarRecipe
+ */
 sealed interface DummyBukkitRebarRecipe : BukkitRebarRecipe {
     companion object {
         fun dummyKey(originalKey: NamespacedKey): NamespacedKey {
@@ -33,6 +52,9 @@ sealed interface DummyBukkitRebarRecipe : BukkitRebarRecipe {
     }
 }
 
+/**
+ * A [ConfigurableRecipeType] that automatically handles (un)registering of its recipes' bukkit counterparts.
+ */
 sealed class BukkitRecipeType<T: BukkitRebarRecipe>(key: NamespacedKey) : ConfigurableRecipeType<T>(key) {
     override fun addRecipe(recipe: T) {
         super.addRecipe(recipe)
@@ -48,7 +70,16 @@ sealed class BukkitRecipeType<T: BukkitRebarRecipe>(key: NamespacedKey) : Config
     }
 }
 
-sealed class DummyRecipeType<T: BukkitRebarRecipe>(key: NamespacedKey) : BukkitRecipeType<T>(key) {
+/**
+ * [BukkitRecipeType] but for [DummyBukkitRebarRecipe]s, these are never loaded from config and
+ * instead are only ever created by [VanillaRecipeType.createDummyRecipeFor] when a real recipe is added,
+ * and removed when the real recipe is removed.
+ *
+ * @see DummyCraftingRecipeType
+ * @see DummyCookingRecipeType
+ * @see DummySmithingRecipeType
+ */
+sealed class DummyRecipeType<T: DummyBukkitRebarRecipe>(key: NamespacedKey) : BukkitRecipeType<T>(key) {
     override fun loadRecipe(key: NamespacedKey, section: ConfigSection): T {
         throw IllegalAccessException("DummyRecipeType should not be loaded from config")
     }
@@ -56,6 +87,25 @@ sealed class DummyRecipeType<T: BukkitRebarRecipe>(key: NamespacedKey) : BukkitR
     fun removeDummyRecipeFor(recipe: NamespacedKey) = removeRecipe(DummyBukkitRebarRecipe.dummyKey(recipe))
 }
 
+/**
+ * A wrapper around a vanilla recipe type of some kind. (Crafting, Smelting, etc.)
+ *
+ * All vanilla recipe's are backed by a [dummy recipe][DummyBukkitRebarRecipe] automatically created
+ * whenever a [a recipe is added][addRecipe], and removed whenever a recipe is removed.
+ *
+ * Without dummy recipes blocks like the furnace would be unable to process our custom recipes
+ * as we cannot pass [ItemChoice] to the vanilla implementation. Therefor we use
+ * dummy recipes to start the recipe, and correct them in [RebarRecipeListener] using [RecipeMatchingService]
+ *
+ * @param key The vanilla id for this recipe type (for ex: `crafting_shaped`)
+ * @param dummyType The dummy type for this recipe type
+ *
+ * @see ShapedRecipeType
+ * @see ShapelessRecipeType
+ * @see SmeltingRecipeType
+ * @see CampfireRecipeType
+ * @see SmithingTransformRecipeType
+ */
 sealed class VanillaRecipeType<T : BukkitRebarRecipe, D : DummyBukkitRebarRecipe>(
     key: String,
     val dummyType: DummyRecipeType<D>
@@ -108,7 +158,7 @@ val CookingRecipe<*>.rebarRecipeType: VanillaRecipeType<out CookingRebarRecipe, 
     get() = when (this) {
         is BlastingRecipe -> BlastingRecipeType
         is CampfireRecipe -> CampfireRecipeType
-        is FurnaceRecipe -> FurnaceRecipeType
+        is FurnaceRecipe -> SmeltingRecipeType
         is SmokingRecipe -> SmokingRecipeType
         else -> null
     }
