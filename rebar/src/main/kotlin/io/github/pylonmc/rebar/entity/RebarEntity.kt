@@ -32,12 +32,12 @@ import org.bukkit.persistence.PersistentDataContainer
  */
 abstract class RebarEntity<out E: Entity>(val entity: E) : WailaSupplier, Keyed {
 
-    val key = entity.persistentDataContainer.get(rebarEntityKeyKey, RebarSerializers.NAMESPACED_KEY)
+    @JvmField val key = entity.persistentDataContainer.get(rebarEntityKeyKey, RebarSerializers.NAMESPACED_KEY)
         ?: throw IllegalStateException("Entity did not have a Rebar key; did you mean to call RebarEntity(NamespacedKey, Entity) instead of RebarEntity(Entity)?")
     val schema = RebarRegistry.ENTITIES.getOrThrow(key)
     val uuid = entity.uniqueId
 
-    override fun getKey(): NamespacedKey = schema.key
+    override fun getKey() = key
 
     constructor(key: NamespacedKey, entity: E): this(initialiseRebarEntity<E>(key, entity))
 
