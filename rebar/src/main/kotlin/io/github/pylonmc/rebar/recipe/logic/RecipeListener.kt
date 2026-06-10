@@ -114,7 +114,7 @@ internal object RebarRecipeListener : Listener {
         }
 
         // Use the recipe matcher if necessary
-        if (recipe == null || inventory.result == null) {
+        if (recipe != null && inventory.result == null) {
             val matchedRecipe = RecipeMatchingService.matchCraftingRecipe(CraftingInput.of(inventory), recipe)
             if (matchedRecipe != null) {
                 inventory.result = matchedRecipe.result.item.clone()

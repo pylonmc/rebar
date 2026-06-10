@@ -208,6 +208,7 @@ class ItemChoice internal constructor(
     }
 
     companion object {
+        @JvmStatic
         fun matches(stack: ItemStack?, choice: ItemChoice?): Boolean {
             if (choice == null) {
                 return stack == null || stack.isEmpty
@@ -216,5 +217,68 @@ class ItemChoice internal constructor(
             }
             return choice.matches(stack)
         }
+
+        @JvmStatic
+        fun builder(): Builder = Builder()
+
+        /**
+         * Matches stacks of the given [type].
+         *
+         * Does not check that the components of any item being compared are the default ones for this [type].
+         */
+        @JvmStatic
+        fun fuzzy(type: ItemTypeWrapper) = builder().addFuzzy(type).build()
+
+        /**
+         * Matches stacks of the given [type].
+         *
+         * Only checks that the provided [components] of any item being compared match the [type]'s default
+         * values.
+         */
+        @JvmStatic
+        fun fuzzy(type: ItemTypeWrapper, components: Set<DataComponentType>) = builder().addFuzzy(type, components).build()
+
+        /**
+         * Matches stacks containing at least [amount] of the given [type].
+         *
+         * Checks that the provided [components] of any item being compared match the corresponding value.
+         */
+        @JvmStatic
+        fun fuzzy(type: ItemTypeWrapper, components: Map<DataComponentType, Any?>) = builder().addFuzzy(type, components).build()
+
+        /**
+         * Matches stacks containing at least [amount] of the given [stack]'s type
+         *
+         * Only checks the provided [stack]'s overriden components of any item being compared
+         */
+        @JvmStatic
+        fun fuzzy(stack: ItemStack) = builder().addFuzzy(stack).build()
+
+        /**
+         * Matches stacks containing at least [amount] of the given [type] or 1 if [amount] is not provided.
+         *
+         * Checks that the components of any item being compared are the default ones for this [type].
+         */
+        @JvmStatic
+        fun exact(type: ItemTypeWrapper) = builder().addExact(type).build()
+
+        /**
+         * Matches stacks containing at least [amount] of the given [type].
+         *
+         * Checks that the components of any item being compared are the default ones for this [type], except for
+         * the provided [componentsToIgnore].
+         */
+        @JvmStatic
+        fun exact(type: ItemTypeWrapper, componentsToIgnore: Set<DataComponentType>) = builder().addExact(type, componentsToIgnore).build()
+
+        /**
+         * Matches stacks containing at least [amount] of the given [stack].
+         *
+         * Checks that all components of any item being compared match the components of [stack], except for
+         * the provided [componentsToIgnore].
+         */
+        @JvmStatic
+        @JvmOverloads
+        fun exact(stack: ItemStack, componentsToIgnore: Set<DataComponentType> = emptySet()) = builder().addExact(stack, componentsToIgnore).build()
     }
 }

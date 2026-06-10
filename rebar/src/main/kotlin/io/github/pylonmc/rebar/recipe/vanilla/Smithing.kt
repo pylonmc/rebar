@@ -81,7 +81,7 @@ sealed class SmithingRebarRecipe(
 /**
  * Rebar's equivalent of [SmithingTransformRecipe]
  */
-class SmithingTransformRebarRecipe(
+class SmithingTransformRebarRecipe @JvmOverloads constructor(
     override val template: ItemChoice,
     override val base: ItemChoice,
     override val addition: ItemChoice,
@@ -108,7 +108,7 @@ class SmithingTransformRebarRecipe(
 /**
  * Rebar's equivalent of [SmithingTrimRecipe]
  */
-class SmithingTrimRebarRecipe(
+class SmithingTrimRebarRecipe @JvmOverloads constructor(
     override val template: ItemChoice,
     override val base: ItemChoice,
     override val addition: ItemChoice,

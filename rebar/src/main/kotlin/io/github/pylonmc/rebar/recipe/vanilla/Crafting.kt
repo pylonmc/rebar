@@ -289,7 +289,7 @@ sealed class CraftingRebarRecipe(
 /**
  * Rebar's equivalent of [ShapedRecipe]
  */
-class ShapedRebarRecipe(
+class ShapedRebarRecipe @JvmOverloads constructor(
     val shape: CraftingRecipeShape,
     result: FluidOrItem.Item,
     category: CraftingBookCategory,
@@ -350,7 +350,7 @@ class ShapedRebarRecipe(
 /**
  * Rebar's equivalent of [ShapelessRecipe]
  */
-class ShapelessRebarRecipe(
+class ShapelessRebarRecipe @JvmOverloads constructor(
     val ingredients: List<ItemChoice>,
     result: FluidOrItem.Item,
     category: CraftingBookCategory,

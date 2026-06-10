@@ -93,7 +93,7 @@ sealed class CookingRebarRecipe(
 /**
  * Rebar's equivalent of [BlastingRecipe]
  */
-class BlastingRebarRecipe(
+class BlastingRebarRecipe @JvmOverloads constructor(
     ingredient: ItemChoice,
     result: FluidOrItem.Item,
     experience: Float,
@@ -130,7 +130,7 @@ class BlastingRebarRecipe(
 /**
  * Rebar's equivalent of [CampfireRecipe]
  */
-class CampfireRebarRecipe(
+class CampfireRebarRecipe @JvmOverloads constructor(
     ingredient: ItemChoice,
     result: FluidOrItem.Item,
     experience: Float,
@@ -167,7 +167,7 @@ class CampfireRebarRecipe(
 /**
  * Rebar's equivalent of [FurnaceRecipe]
  */
-class SmeltingRebarRecipe(
+class SmeltingRebarRecipe @JvmOverloads constructor(
     ingredient: ItemChoice,
     result: FluidOrItem.Item,
     experience: Float,
@@ -204,7 +204,7 @@ class SmeltingRebarRecipe(
 /**
  * Rebar's equivalent of [SmokingRecipe]
  */
-class SmokingRebarRecipe(
+class SmokingRebarRecipe @JvmOverloads constructor(
     ingredient: ItemChoice,
     result: FluidOrItem.Item,
     experience: Float,
