@@ -50,7 +50,7 @@ class RebarItemSchema @JvmOverloads internal constructor(
      * Return's a clone of the [template] [ItemStack]
      */
     @JvmOverloads
-    fun getItemStack(count: Int = 1): ItemStack = template.asQuantity(min(count, template.maxStackSize))
+    fun getItemStack(count: Int = 1): ItemStack = if (count == 1) template.asOne() else template.asQuantity(min(count, template.maxStackSize))
 
     /**
      * Return's a new instance of the [RebarItem] from the [itemClass] using a copy of the [template] [ItemStack]

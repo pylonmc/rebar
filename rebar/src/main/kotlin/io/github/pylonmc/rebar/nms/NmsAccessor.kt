@@ -1,10 +1,14 @@
 package io.github.pylonmc.rebar.nms
 
 import com.destroystokyo.paper.event.player.PlayerRecipeBookClickEvent
+import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.block.RebarBlock
 import io.github.pylonmc.rebar.entity.packet.BlockTextureEntity
 import io.github.pylonmc.rebar.i18n.PlayerTranslationHandler
+import io.github.pylonmc.rebar.util.delayTicks
 import io.github.pylonmc.rebar.util.position.BlockPosition
+import io.papermc.paper.datacomponent.DataComponentType
+import kotlinx.coroutines.launch
 import net.kyori.adventure.text.Component
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
@@ -19,6 +23,7 @@ import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.InventoryView
 import org.bukkit.inventory.ItemFactory
 import org.bukkit.inventory.ItemStack
+import org.bukkit.inventory.Recipe
 import org.bukkit.persistence.PersistentDataContainer
 import org.jetbrains.annotations.ApiStatus
 import java.util.UUID
@@ -116,9 +121,52 @@ interface NmsAccessor {
      */
     fun simulateInteract(player: Player, itemStack: ItemStack, hand: EquipmentSlot, block: Block?, blockFace: BlockFace?)
 
+    fun hasRecipe(key: NamespacedKey): Boolean
+
+    fun registerRecipes(recipes: Iterable<Recipe>, finalize: Boolean)
+
+    fun unregisterRecipes(recipes: Iterable<NamespacedKey>, finalize: Boolean)
+
+    fun getOverriddenTypes(itemStack: ItemStack): List<DataComponentType>
+
     companion object {
         val instance = Class.forName("io.github.pylonmc.rebar.nms.NmsAccessorImpl")
             .getDeclaredField("INSTANCE")
             .get(null) as NmsAccessor
+
+        private val recipeRegisterQueue = mutableSetOf<Recipe>()
+        private val recipeUnregisterQueue = mutableSetOf<NamespacedKey>()
+
+        private val registerRecipeJob = Rebar.scope.launch {
+            while (true) {
+                processRecipeQueue()
+                delayTicks(1)
+            }
+        }
+
+        @JvmStatic
+        fun queueRegisterRecipe(recipe: Recipe) {
+            recipeRegisterQueue.add(recipe)
+        }
+
+        @JvmStatic
+        fun queueUnregisterRecipe(recipeKey: NamespacedKey) {
+            recipeUnregisterQueue.add(recipeKey)
+        }
+
+        @JvmStatic
+        fun processRecipeQueue() {
+            if (recipeUnregisterQueue.isNotEmpty()) {
+                val unregistering = recipeUnregisterQueue.toSet()
+                recipeUnregisterQueue.clear()
+                instance.unregisterRecipes(unregistering, false)
+            }
+
+            if (recipeRegisterQueue.isNotEmpty()) {
+                val registering = recipeRegisterQueue.toSet()
+                recipeRegisterQueue.clear()
+                instance.registerRecipes(registering, true)
+            }
+        }
     }
 }

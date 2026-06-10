@@ -2,6 +2,7 @@ package io.github.pylonmc.rebar.recipe.vanilla
 
 import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.item.ItemTypeWrapper
+import io.github.pylonmc.rebar.nms.NmsAccessor
 import io.github.pylonmc.rebar.recipe.ConfigurableRecipeType
 import io.github.pylonmc.rebar.recipe.RebarRecipe
 import io.github.pylonmc.rebar.recipe.RecipeInput
@@ -30,10 +31,10 @@ sealed class VanillaRecipeType<T : VanillaRecipeWrapper>(key: String) :
 
     override fun addRecipe(recipe: T) {
         super.addRecipe(recipe)
-        if (Bukkit.getRecipe(recipe.key) != null) {
-            Bukkit.removeRecipe(recipe.key)
+        if (NmsAccessor.instance.hasRecipe(recipe.key)) {
+            NmsAccessor.queueUnregisterRecipe(recipe.key)
         }
-        Bukkit.addRecipe(recipe.recipe)
+        NmsAccessor.queueRegisterRecipe(recipe.recipe)
     }
 
     @JvmSynthetic
@@ -44,7 +45,7 @@ sealed class VanillaRecipeType<T : VanillaRecipeWrapper>(key: String) :
 
     override fun removeRecipe(recipe: NamespacedKey) {
         super.removeRecipe(recipe)
-        Bukkit.removeRecipe(recipe)
+        NmsAccessor.queueUnregisterRecipe(recipe)
     }
 
     companion object {
@@ -68,11 +69,6 @@ internal fun RecipeChoice.asRecipeInput(): RecipeInput {
 
         else -> throw IllegalArgumentException("Unsupported RecipeChoice type: ${this::class.java.name}")
     }
-}
-
-@JvmSynthetic
-internal fun RecipeInput.Item.asRecipeChoice(): RecipeChoice {
-    return RecipeChoice.ExactChoice(representativeItems.mapTo(mutableListOf()) { it.clone() })
 }
 
 @get:JvmSynthetic

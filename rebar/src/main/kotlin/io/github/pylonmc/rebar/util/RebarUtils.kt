@@ -20,6 +20,7 @@ import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.util.position.BlockPosition
 import io.github.pylonmc.rebar.util.position.position
 import io.papermc.paper.datacomponent.DataComponentType
+import io.papermc.paper.datacomponent.DataComponentTypes
 import io.papermc.paper.registry.keys.tags.BlockTypeTagKeys
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -744,18 +745,7 @@ fun ItemStack.setComponents(components: Map<DataComponentType, Any?>) {
 }
 
 fun ItemStack.overriddenDataTypes(): List<DataComponentType> {
-    val schema = RebarItemSchema.fromStack(this)
-    if (schema != null) {
-        val template = schema.getOriginalTemplate()
-        return dataTypes.filter {
-            return@filter when (it) {
-                is DataComponentType.NonValued -> hasData(it) != template.hasData(it)
-                is DataComponentType.Valued<*> -> getData(it) != template.getData(it)
-                else -> false
-            }
-        }
-    }
-    return dataTypes.filter { isDataOverridden(it) }
+    return NmsAccessor.instance.getOverriddenTypes(this)
 }
 
 val Block.isChunkLoaded: Boolean
