@@ -374,6 +374,24 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
                 = "${key.namespace}.item.${key.key}.lore"
 
         /**
+         * Creates a new ItemStackBuilder from [stack] with an amount of 1. Any modifications made to the
+         * ItemStackBuilder will **NOT** be made to [stack].
+         */
+        @JvmStatic
+        fun asOne(stack: ItemStack): ItemStackBuilder {
+            return ItemStackBuilder(stack.asOne())
+        }
+
+        /**
+         * Creates a new ItemStackBuilder from [stack]. Any modifications made to the
+         * ItemStackBuilder will **NOT** be made to [stack].
+         */
+        @JvmStatic
+        fun copyOf(stack: ItemStack): ItemStackBuilder {
+            return ItemStackBuilder(stack.clone())
+        }
+
+        /**
          * Creates a new ItemStackBuilder from [stack]. Any modifications made to the
          * ItemStackBuilder will also be made to [stack].
          */
@@ -384,7 +402,7 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
 
         @JvmStatic
         fun of(material: Material): ItemStackBuilder {
-            return of(ItemStack(material))
+            return of(ItemStack.of(material))
         }
 
         /**
@@ -404,7 +422,7 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
          */
         @JvmStatic
         fun gui(material: Material, key: String): ItemStackBuilder {
-            return gui(ItemStack(material), key)
+            return gui(ItemStack.of(material), key)
         }
 
         /**
@@ -421,7 +439,7 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
          * a custom model data string for resource packs.
          */
         @JvmStatic
-        fun gui(material: Material, key: NamespacedKey) = gui(ItemStack(material), key)
+        fun gui(material: Material, key: NamespacedKey) = gui(ItemStack.of(material), key)
 
         @JvmStatic
         fun guide(stack: ItemStack, addon: RebarAddon, key: String): ItemStackBuilder {
@@ -431,7 +449,7 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
         }
 
         @JvmStatic
-        fun guide(material: Material, addon: RebarAddon, key: String) = guide(ItemStack(material), addon, key)
+        fun guide(material: Material, addon: RebarAddon, key: String) = guide(ItemStack.of(material), addon, key)
 
         /**
          * Creates a new [ItemStack] for a [RebarItem] by setting
@@ -454,7 +472,7 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
          */
         @JvmStatic
         fun rebar(material: Material, key: NamespacedKey): ItemStackBuilder {
-            return rebar(ItemStack(material), key)
+            return rebar(ItemStack.of(material), key)
         }
 
         /**
@@ -485,7 +503,7 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
          */
         @JvmStatic
         fun rebar(material: Material, key: NamespacedKey, consumer: (ItemStackBuilder, ConfigSection) -> Any): ItemStackBuilder {
-            return rebar(ItemStack(material), key, consumer)
+            return rebar(ItemStack.of(material), key, consumer)
         }
 
         /**
@@ -520,7 +538,7 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
          * ```
          */
         @JvmStatic
-        fun rebarHelmet(material: Material, key: NamespacedKey, hasDurability: Boolean) = rebarHelmet(ItemStack(material), key, hasDurability)
+        fun rebarHelmet(material: Material, key: NamespacedKey, hasDurability: Boolean) = rebarHelmet(ItemStack.of(material), key, hasDurability)
 
         /**
          * Creates a new [ItemStack] for a [RebarItem] that can be worn in the [chestplate][EquipmentSlotGroup.CHEST] slot.
@@ -554,7 +572,7 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
          * ```
          */
         @JvmStatic
-        fun rebarChestplate(material: Material, key: NamespacedKey, hasDurability: Boolean) = rebarChestplate(ItemStack(material), key, hasDurability)
+        fun rebarChestplate(material: Material, key: NamespacedKey, hasDurability: Boolean) = rebarChestplate(ItemStack.of(material), key, hasDurability)
 
         /**
          * Creates a new [ItemStack] for a [RebarItem] that can be worn in the [leggings][EquipmentSlotGroup.LEGS] slot.
@@ -588,7 +606,7 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
          * ```
          */
         @JvmStatic
-        fun rebarLeggings(material: Material, key: NamespacedKey, hasDurability: Boolean) = rebarLeggings(ItemStack(material), key, hasDurability)
+        fun rebarLeggings(material: Material, key: NamespacedKey, hasDurability: Boolean) = rebarLeggings(ItemStack.of(material), key, hasDurability)
 
         /**
          * Creates a new [ItemStack] for a [RebarItem] that can be worn in the [boots][EquipmentSlotGroup.FEET] slot.
@@ -622,7 +640,7 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
          * ```
          */
         @JvmStatic
-        fun rebarBoots(material: Material, key: NamespacedKey, hasDurability: Boolean) = rebarBoots(ItemStack(material), key, hasDurability)
+        fun rebarBoots(material: Material, key: NamespacedKey, hasDurability: Boolean) = rebarBoots(ItemStack.of(material), key, hasDurability)
 
         /**
          * Creates a new [ItemStack] for a [RebarItem] that can be worn in the specified [slot].
@@ -674,7 +692,7 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
          */
         @JvmStatic
         fun rebarArmor(material: Material, key: NamespacedKey, slot: EquipmentSlotGroup, hasDurability: Boolean)
-                = rebarArmor(ItemStack(material), key, slot, hasDurability)
+                = rebarArmor(ItemStack.of(material), key, slot, hasDurability)
 
         /**
          * Creates a new [ItemStack] for a [RebarItem] that can be used as a tool for the [mineable] blocks. (See [pickaxeMineable]
@@ -726,7 +744,7 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
          */
         @JvmStatic
         fun rebarTool(material: Material, key: NamespacedKey, mineable: RegistryKeySet<BlockType>, hasDurability: Boolean)
-                = rebarTool(ItemStack(material), key, mineable, hasDurability)
+                = rebarTool(ItemStack.of(material), key, mineable, hasDurability)
 
         /**
          * Creates a new [ItemStack] for a [RebarItem] that can be used as a weapon.
@@ -803,7 +821,7 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
          */
         @JvmStatic
         fun rebarWeapon(material: Material, key: NamespacedKey, hasDurability: Boolean, hasKnockback: Boolean, disablesShield: Boolean)
-                = rebarWeapon(ItemStack(material), key, hasDurability, hasKnockback, disablesShield)
+                = rebarWeapon(ItemStack.of(material), key, hasDurability, hasKnockback, disablesShield)
 
         /**
          * Creates a new [ItemStack] for a [RebarItem] that can be used as a weapon and tool for the [mineable] blocks. (See [pickaxeMineable] and related for basic tools)
@@ -873,7 +891,7 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
          */
         @JvmStatic
         fun rebarToolWeapon(material: Material, key: NamespacedKey, mineable: RegistryKeySet<BlockType>, hasDurability: Boolean, hasKnockback: Boolean, disablesShield: Boolean)
-                = rebarToolWeapon(ItemStack(material), key, mineable, hasDurability, hasKnockback, disablesShield)
+                = rebarToolWeapon(ItemStack.of(material), key, mineable, hasDurability, hasKnockback, disablesShield)
 
         fun ItemAttributeModifiers.Builder.copy(modifiers: List<ItemAttributeModifiers.Entry>?) : ItemAttributeModifiers.Builder {
             modifiers?.forEach { entry ->

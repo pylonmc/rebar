@@ -4,6 +4,7 @@ import com.google.common.collect.HashMultimap
 import io.github.pylonmc.rebar.util.position.ChunkPosition
 import io.github.pylonmc.rebar.util.position.position
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
@@ -26,7 +27,11 @@ class ChunkScope(override val coroutineContext: CoroutineContext, chunk: ChunkPo
 
         @EventHandler(priority = EventPriority.MONITOR)
         private fun onChunkUnload(event: ChunkUnloadEvent) {
-            chunkScopes.removeAll(event.chunk.position).forEach { it.cancel() }
+            chunkScopes.removeAll(event.chunk.position).forEach {
+                if (it.coroutineContext[Job] != null) {
+                    it.cancel()
+                }
+            }
         }
     }
 }

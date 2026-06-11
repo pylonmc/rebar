@@ -32,8 +32,8 @@ sealed class SmithingRecipeWrapper(recipe: SmithingRecipe) : VanillaRecipeWrappe
             "# # # # # # # # #",
         )
         .addIngredient('#', GuiItems.backgroundBlack())
-        .addIngredient('b', ItemButton.of(ItemStack(Material.SMITHING_TABLE)))
-        .addIngredient('0', ItemStack(Material.NETHERITE_UPGRADE_SMITHING_TEMPLATE))
+        .addIngredient('b', ItemButton.of(ItemStack.of(Material.SMITHING_TABLE)))
+        .addIngredient('0', ItemStack.of(Material.NETHERITE_UPGRADE_SMITHING_TEMPLATE))
         .addIngredient('1', ItemButton.of(recipe.base))
         .addIngredient('2', ItemButton.of(recipe.addition))
         .addIngredient('r', ItemButton.of(recipe.result))
@@ -53,17 +53,17 @@ object SmithingTransformRecipeType : VanillaRecipeType<SmithingTransformRecipeWr
     fun addRecipe(recipe: SmithingTransformRecipe) = super.addRecipe(SmithingTransformRecipeWrapper(recipe))
 
     override fun loadRecipe(key: NamespacedKey, section: ConfigSection): SmithingTransformRecipeWrapper {
-        val template = section.getOrThrow("template", ConfigAdapter.RECIPE_INPUT_ITEM)
-        val base = section.getOrThrow("base", ConfigAdapter.RECIPE_INPUT_ITEM)
-        val addition = section.getOrThrow("addition", ConfigAdapter.RECIPE_INPUT_ITEM)
+        val template = section.getOrThrow("template", ConfigAdapter.RECIPE_CHOICE)
+        val base = section.getOrThrow("base", ConfigAdapter.RECIPE_CHOICE)
+        val addition = section.getOrThrow("addition", ConfigAdapter.RECIPE_CHOICE)
         val result = section.getOrThrow("result", ConfigAdapter.ITEM_STACK)
         return SmithingTransformRecipeWrapper(
             SmithingTransformRecipe(
                 key,
                 result,
-                template.asRecipeChoice(),
-                base.asRecipeChoice(),
-                addition.asRecipeChoice()
+                template,
+                base,
+                addition
             )
         )
     }
@@ -82,15 +82,15 @@ object SmithingTrimRecipeType : VanillaRecipeType<SmithingTrimRecipeWrapper>("sm
 
     override fun loadRecipe(key: NamespacedKey, section: ConfigSection): SmithingTrimRecipeWrapper {
         val pattern = section.getOrThrow("pattern", TRIM_PATTERN_ADAPTER)
-        val template = section.getOrThrow("template", ConfigAdapter.RECIPE_INPUT_ITEM)
-        val base = section.getOrThrow("base", ConfigAdapter.RECIPE_INPUT_ITEM)
-        val addition = section.getOrThrow("addition", ConfigAdapter.RECIPE_INPUT_ITEM)
+        val template = section.getOrThrow("template", ConfigAdapter.RECIPE_CHOICE)
+        val base = section.getOrThrow("base", ConfigAdapter.RECIPE_CHOICE)
+        val addition = section.getOrThrow("addition", ConfigAdapter.RECIPE_CHOICE)
         return SmithingTrimRecipeWrapper(
             SmithingTrimRecipe(
                 key,
-                template.asRecipeChoice(),
-                base.asRecipeChoice(),
-                addition.asRecipeChoice(),
+                template,
+                base,
+                addition,
                 pattern
             )
         )

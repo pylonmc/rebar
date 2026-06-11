@@ -1,5 +1,7 @@
 package io.github.pylonmc.rebar.guide.button.setting
 
+import io.github.pylonmc.rebar.config.RebarConfig
+import io.github.pylonmc.rebar.content.guide.RebarGuide.Companion.playGuideSound
 import io.github.pylonmc.rebar.i18n.RebarArgument
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
 import net.kyori.adventure.text.Component
@@ -74,5 +76,6 @@ data class NumericPlayerSettingButton<N : Number>(
         value = value.coerceIn(min.toDouble(), max.toDouble())
         setter(player, type(value))
         notifyWindows()
+        player.playGuideSound(RebarConfig.GuideConfig.CLICK_BUTTON_SOUND)
     }
 }

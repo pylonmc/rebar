@@ -23,8 +23,14 @@ class BlockPosition(val worldId: UUID?, val x: Int, val y: Int, val z: Int) {
     val world: World?
         get() = worldId?.let { Bukkit.getWorld(it) }
 
-    val chunk: ChunkPosition
-        get() = ChunkPosition(worldId, x shr 4, z shr 4)
+    val chunkX: Int = x shr 4
+
+    val chunkZ: Int = z shr 4
+
+    val chunk: ChunkPosition = ChunkPosition(worldId, chunkX, chunkZ)
+
+    val isChunkLoaded: Boolean
+        get() = world?.isChunkLoaded(chunkX, chunkZ) == true
 
     @get:JvmSynthetic
     internal val asLong: Long
@@ -111,7 +117,7 @@ class BlockPosition(val worldId: UUID?, val x: Int, val y: Int, val z: Int) {
         get() = Vector3i(x, y, z)
 
     val vector: Vector
-        get() = Vector(x.toDouble(), y.toDouble(), z.toDouble())
+        get() = Vector(x, y, z)
 
     val location: Location
         get() = Location(world, x.toDouble(), y.toDouble(), z.toDouble())

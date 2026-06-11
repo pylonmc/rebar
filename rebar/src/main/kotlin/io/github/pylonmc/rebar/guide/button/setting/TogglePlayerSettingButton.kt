@@ -1,5 +1,7 @@
 package io.github.pylonmc.rebar.guide.button.setting
 
+import io.github.pylonmc.rebar.config.RebarConfig
+import io.github.pylonmc.rebar.content.guide.RebarGuide.Companion.playGuideSound
 import io.github.pylonmc.rebar.i18n.RebarArgument
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
 import net.kyori.adventure.text.Component
@@ -35,8 +37,8 @@ data class TogglePlayerSettingButton(
     val isEnabled: (Player) -> Boolean,
     val toggle: (Player) -> Unit,
 
-    val decorator: (Player, Boolean) -> ItemStack = { _, toggled -> if (toggled) ItemStack(Material.LIME_CONCRETE) else ItemStack(Material.RED_CONCRETE) },
-    val placeholderProvider: (Player, Boolean) -> MutableList<ComponentLike> = { _, _ -> mutableListOf<ComponentLike>() }
+    val decorator: (Player, Boolean) -> ItemStack = { _, toggled -> ItemStack.of(if (toggled) Material.LIME_CONCRETE else Material.RED_CONCRETE) },
+    val placeholderProvider: (Player, Boolean) -> MutableList<ComponentLike> = { _, _ -> mutableListOf() }
 ) : AbstractItem() {
     override fun getItemProvider(player: Player) : ItemProvider {
         val toggled = isEnabled(player)
@@ -51,5 +53,6 @@ data class TogglePlayerSettingButton(
     override fun handleClick(clickType: ClickType, player: Player, click: Click) {
         toggle(player)
         notifyWindows()
+        player.playGuideSound(RebarConfig.GuideConfig.CLICK_BUTTON_SOUND)
     }
 }

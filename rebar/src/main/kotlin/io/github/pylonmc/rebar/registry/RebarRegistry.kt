@@ -73,7 +73,11 @@ class RebarRegistry<T : Keyed>(val key: NamespacedKey) : Iterable<T> {
     }
 
     fun getOrThrow(key: NamespacedKey): T {
-        return get(key) ?: throw NoSuchElementException("No value found for key $key in registry $this")
+        return getOrThrow(key, NoSuchElementException("No value found for key $key in registry $this"))
+    }
+
+    fun getOrThrow(key: NamespacedKey, throwable: Throwable): T {
+        return get(key) ?: throw throwable
     }
 
     fun getOrCreate(key: NamespacedKey, creator: () -> T): T {

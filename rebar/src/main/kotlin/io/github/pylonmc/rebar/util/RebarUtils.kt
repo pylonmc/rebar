@@ -5,6 +5,7 @@ package io.github.pylonmc.rebar.util
 
 import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.addon.RebarAddon
+import io.github.pylonmc.rebar.block.BlockListener
 import io.github.pylonmc.rebar.config.ConfigSection
 import io.github.pylonmc.rebar.config.ContributorConfig
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter
@@ -17,7 +18,9 @@ import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.nms.NmsAccessor
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.util.position.BlockPosition
+import io.github.pylonmc.rebar.util.position.position
 import io.papermc.paper.datacomponent.DataComponentType
+import io.papermc.paper.datacomponent.DataComponentTypes
 import io.papermc.paper.registry.keys.tags.BlockTypeTagKeys
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -309,6 +312,15 @@ fun Class<*>.isSubclassOf(other: Class<*>): Boolean = other.isAssignableFrom(thi
  */
 @JvmSynthetic
 fun fromMiniMessage(string: String): Component = customMiniMessage.deserialize(string)
+
+/**
+ * Finds a Rebar item in this inventory. Use this to find Rebar items instead of traditional
+ * find methods, because this will compare Rebar IDs.
+ *
+ * @param targetItemId The item id to find. Items will be compared by their Rebar ID
+ * @return The slot containing the item, or null if no item was found
+ */
+fun Inventory.findRebar(targetItemId: NamespacedKey): Int? = RebarRegistry.ITEMS[targetItemId]?.let { findRebar(it) }
 
 /**
  * Finds a Rebar item in this inventory. Use this to find Rebar items instead of traditional
@@ -733,18 +745,75 @@ fun ItemStack.setComponents(components: Map<DataComponentType, Any?>) {
 }
 
 fun ItemStack.overriddenDataTypes(): List<DataComponentType> {
-    val schema = RebarItemSchema.fromStack(this)
-    if (schema != null) {
-        val template = schema.getOriginalTemplate()
-        return dataTypes.filter {
-            return@filter when (it) {
-                is DataComponentType.NonValued -> hasData(it) != template.hasData(it)
-                is DataComponentType.Valued<*> -> getData(it) != template.getData(it)
-                else -> false
-            }
-        }
-    }
-    return dataTypes.filter { isDataOverridden(it) }
+    return NmsAccessor.instance.getOverriddenTypes(this)
 }
 
+val Block.isChunkLoaded: Boolean
+    get() = world.isChunkLoaded(x shr 4, z shr 4)
+
 const val FLUID_EPSILON = 1.0e-6
+
+fun Material.getPreferredTool(): Material? {
+    if (Tag.MINEABLE_AXE.isTagged(this)) {
+        if (Tag.NEEDS_DIAMOND_TOOL.isTagged(this)) {
+            return Material.DIAMOND_AXE
+        }
+        if (Tag.NEEDS_STONE_TOOL.isTagged(this)) {
+            return Material.STONE_AXE
+        }
+        if (Tag.NEEDS_IRON_TOOL.isTagged(this)) {
+            return Material.IRON_AXE
+        }
+        return Material.WOODEN_AXE
+    }
+
+    if (Tag.MINEABLE_PICKAXE.isTagged(this)) {
+        if (Tag.NEEDS_DIAMOND_TOOL.isTagged(this)) {
+            return Material.DIAMOND_PICKAXE
+        }
+        if (Tag.NEEDS_STONE_TOOL.isTagged(this)) {
+            return Material.STONE_PICKAXE
+        }
+        if (Tag.NEEDS_IRON_TOOL.isTagged(this)) {
+            return Material.IRON_PICKAXE
+        }
+        return Material.WOODEN_PICKAXE
+    }
+
+    if (Tag.MINEABLE_SHOVEL.isTagged(this)) {
+        if (Tag.NEEDS_DIAMOND_TOOL.isTagged(this)) {
+            return Material.DIAMOND_SHOVEL
+        }
+        if (Tag.NEEDS_STONE_TOOL.isTagged(this)) {
+            return Material.STONE_SHOVEL
+        }
+        if (Tag.NEEDS_IRON_TOOL.isTagged(this)) {
+            return Material.IRON_SHOVEL
+        }
+        return Material.WOODEN_SHOVEL
+    }
+
+    if (Tag.MINEABLE_HOE.isTagged(this)) {
+        if (Tag.NEEDS_DIAMOND_TOOL.isTagged(this)) {
+            return Material.DIAMOND_HOE
+        }
+        if (Tag.NEEDS_STONE_TOOL.isTagged(this)) {
+            return Material.STONE_HOE
+        }
+        if (Tag.NEEDS_IRON_TOOL.isTagged(this)) {
+            return Material.IRON_HOE
+        }
+        return Material.WOODEN_HOE
+    }
+
+    if (Tag.SWORD_EFFICIENT.isTagged(this) || Tag.SWORD_INSTANTLY_MINES.isTagged(this)) {
+        return Material.WOODEN_SWORD
+    }
+
+    // TODO shears - tags will be added next update, we can't do this yet
+
+    return null
+}
+
+val Block.breakProgress
+    get() = BlockListener.blockBreakProgressMap[position] ?: 0.0F

@@ -1,10 +1,13 @@
 package io.github.pylonmc.rebar.guide.button
 
+import io.github.pylonmc.rebar.config.RebarConfig
+import io.github.pylonmc.rebar.content.guide.RebarGuide.Companion.playGuideSound
 import io.github.pylonmc.rebar.fluid.RebarFluid
 import io.github.pylonmc.rebar.guide.pages.fluid.FluidRecipesPage
 import io.github.pylonmc.rebar.guide.pages.fluid.FluidUsagesPage
 import io.github.pylonmc.rebar.i18n.RebarArgument
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
+import io.github.pylonmc.rebar.recipe.FluidOrItem
 import io.github.pylonmc.rebar.recipe.RecipeInput
 import io.github.pylonmc.rebar.util.gui.unit.UnitFormat
 import io.papermc.paper.datacomponent.DataComponentTypes
@@ -15,6 +18,7 @@ import org.bukkit.entity.Player
 import org.bukkit.event.inventory.ClickType
 import xyz.xenondevs.invui.Click
 import xyz.xenondevs.invui.item.AbstractItem
+import xyz.xenondevs.invui.item.Item
 
 /**
  * Represents a fluid in the guide.
@@ -22,7 +26,7 @@ import xyz.xenondevs.invui.item.AbstractItem
  * @param fluids The list of fluids to display. If multiple fluids are supplied, the button automatically
  * cycles through all of them. You must supply at least one fluid
  */
-open class FluidButton(
+open class FluidButton private constructor(
     fluids: List<RebarFluid>,
 
     /**
@@ -33,23 +37,9 @@ open class FluidButton(
     /**
      * A function to apply to the button item after creating it.
      */
-    val preDisplayDecorator: (ItemStackBuilder) -> ItemStackBuilder
+    val preDisplayDecorator: Decorator
 
 ) : AbstractItem() {
-
-    /**
-     * @param fluids The list of fluids to display. If multiple fluids are supplied, the button
-     * cycles through them. You must supply at least one fluid
-     */
-    constructor(amount: Double?, vararg fluids: RebarFluid) : this(fluids.toList(), amount, { it })
-
-    /**
-     * @param fluids The list of fluids to display. If multiple fluids are supplied, the button
-     * cycles through them. You must supply at least one fluid
-     */
-    constructor(vararg fluids: RebarFluid) : this(null, *fluids)
-
-    constructor(input: RecipeInput.Fluid) : this(input.amountMillibuckets, *input.fluids.toTypedArray())
 
     val fluids = fluids.shuffled()
     val currentFluid: RebarFluid
@@ -87,15 +77,57 @@ open class FluidButton(
                 val page = FluidRecipesPage(currentFluid.key)
                 if (page.pages.isNotEmpty()) {
                     page.open(player)
+                    player.playGuideSound(RebarConfig.GuideConfig.CLICK_BUTTON_SOUND)
                 }
             } else {
                 val page = FluidUsagesPage(currentFluid)
                 if (page.pages.isNotEmpty()) {
                     page.open(player)
+                    player.playGuideSound(RebarConfig.GuideConfig.CLICK_BUTTON_SOUND)
                 }
             }
         } catch (e: Exception) {
             e.printStackTrace()
         }
+    }
+
+    companion object {
+        private typealias Decorator = (ItemStackBuilder) -> ItemStackBuilder
+
+        /**
+         * @param fluids The list of fluids to display. If multiple fluids are supplied, the button
+         * cycles through them. (if no fluids are provided, returns an empty item)
+         */
+        @JvmStatic
+        fun of(vararg fluids: RebarFluid?): Item = of(fluids.toList(), null)
+
+        /**
+         * @param fluids The list of fluids to display. If multiple fluids are supplied, the button
+         * cycles through them. (if no fluids are provided, returns an empty item)
+         */
+        @JvmStatic
+        fun of(amount: Double?, vararg fluids: RebarFluid?): Item = of(fluids.toList(), amount)
+
+        /**
+         * @param fluids The list of fluids to display. If multiple fluids are supplied, the button
+         * cycles through them. (if no fluids are provided, returns an empty item)
+         */
+        @JvmStatic
+        @JvmOverloads
+        fun of(fluids: List<RebarFluid?>, amount: Double?, preDisplayDecorator: Decorator? = null): Item = if (fluids.filterNotNull().isEmpty()) {
+            EMPTY
+        } else {
+            FluidButton(fluids.filterNotNull(), amount, preDisplayDecorator ?: { it })
+        }
+
+        @JvmStatic
+        @JvmOverloads
+        fun of(input: RecipeInput.Fluid, preDisplayDecorator: Decorator? = null)
+            = of(input.fluids.toList(), input.amountMillibuckets, preDisplayDecorator)
+
+        @JvmStatic
+        @JvmOverloads
+        fun of(fluid: FluidOrItem.Fluid, preDisplayDecorator: Decorator? = null)
+            = FluidButton(listOf(fluid.fluid), fluid.amountMillibuckets, preDisplayDecorator ?: { it })
     }
 }

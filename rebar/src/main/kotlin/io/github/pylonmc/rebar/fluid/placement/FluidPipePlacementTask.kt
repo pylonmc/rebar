@@ -83,21 +83,21 @@ internal class FluidPipePlacementTask(
             // Player does not have enough pipes
             isValid = false
             player.sendActionBar(Component.translatable("rebar.message.pipe.not_enough_pipes"))
-            display.setItemStack(ItemStack(Material.RED_CONCRETE))
+            display.setItemStack(ItemStack.of(Material.RED_CONCRETE))
         } else if (!this.isPipeTypeValid) {
             // Pipe is not of the correct type
             isValid = false
             player.sendActionBar(Component.translatable("rebar.message.pipe.not_of_same_type"))
-            display.setItemStack(ItemStack(Material.RED_CONCRETE))
+            display.setItemStack(ItemStack.of(Material.RED_CONCRETE))
         } else if (!this.isPlacementValid) {
             // Points cannot be joined together (eg blocks in the way, one faces the wrong direction)
             isValid = false
             player.sendActionBar(Component.translatable("rebar.message.pipe.cannot_place_here"))
-            display.setItemStack(ItemStack(Material.RED_CONCRETE))
+            display.setItemStack(ItemStack.of(Material.RED_CONCRETE))
         } else if (origin.position == target.position) {
             // Starting and ending in the same location
             isValid = false
-            display.setItemStack(ItemStack(Material.CYAN_CONCRETE))
+            display.setItemStack(ItemStack.of(Material.CYAN_CONCRETE))
             display.setTransformationMatrix(
                 TransformBuilder()
                     .scale(FluidPipeDisplay.SIZE)
@@ -107,7 +107,7 @@ internal class FluidPipePlacementTask(
             // Everything is fine
             isValid = true
             player.sendActionBar(Component.translatable("rebar.message.pipe.connecting"))
-            display.setItemStack(ItemStack(Material.WHITE_CONCRETE))
+            display.setItemStack(ItemStack.of(Material.WHITE_CONCRETE))
         }
 
         // Update transformation

@@ -9,7 +9,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class SerializerTestItemStack extends SerializerTest<ItemStack> {
     private static @NotNull ItemStack getStack() {
-        ItemStack value = new ItemStack(Material.ACACIA_BOAT);
+        ItemStack value = ItemStack.of(Material.ACACIA_BOAT);
         // Just random properties to test
         value.editMeta((meta) -> {
             meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);

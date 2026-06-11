@@ -1,10 +1,12 @@
 package io.github.pylonmc.rebar.guide.button
 
+import io.github.pylonmc.rebar.config.RebarConfig
 import io.github.pylonmc.rebar.guide.pages.research.ResearchItemsPage
 import io.github.pylonmc.rebar.i18n.RebarArgument
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
 import io.github.pylonmc.rebar.item.research.Research
-import io.github.pylonmc.rebar.item.research.Research.Companion.guideHints
+import io.github.pylonmc.rebar.content.guide.RebarGuide.Companion.guideHints
+import io.github.pylonmc.rebar.content.guide.RebarGuide.Companion.playGuideSound
 import io.github.pylonmc.rebar.item.research.Research.Companion.researchPoints
 import io.github.pylonmc.rebar.util.gui.unit.UnitFormat
 import io.github.pylonmc.rebar.util.rebarKey
@@ -26,7 +28,7 @@ open class ResearchButton(val research: Research) : AbstractBoundItem() {
 
     override fun getItemProvider(player: Player): ItemProvider = try {
         val playerHasResearch = Research.getResearches(player).contains(research)
-        val item = ItemStackBuilder.gui(if (playerHasResearch) ItemStack(Material.LIME_STAINED_GLASS_PANE) else research.item, "${rebarKey("research")}:${research.key}:$playerHasResearch")
+        val item = ItemStackBuilder.gui(if (playerHasResearch) ItemStack.of(Material.LIME_STAINED_GLASS_PANE) else research.item, "${rebarKey("research")}:${research.key}:$playerHasResearch")
             .name(research.name)
 
         if (playerHasResearch) {
@@ -106,12 +108,15 @@ open class ResearchButton(val research: Research) : AbstractBoundItem() {
                         item.item.notifyWindows()
                     }
                 }
+                player.playGuideSound(RebarConfig.GuideConfig.CLICK_BUTTON_SOUND)
             } else if (clickType.isRightClick) {
                 ResearchItemsPage(research).open(player)
+                player.playGuideSound(RebarConfig.GuideConfig.CLICK_BUTTON_SOUND)
             } else if (clickType == ClickType.MIDDLE) {
                 if (player.hasPermission("rebar.command.research.modify")) {
                     research.addTo(player)
                     notifyWindows()
+                    player.playGuideSound(RebarConfig.GuideConfig.CLICK_BUTTON_SOUND)
                 }
             }
         } catch (e: Exception) {

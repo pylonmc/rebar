@@ -1,5 +1,7 @@
 package io.github.pylonmc.rebar.guide.button
 
+import io.github.pylonmc.rebar.config.RebarConfig
+import io.github.pylonmc.rebar.content.guide.RebarGuide.Companion.playGuideSound
 import io.github.pylonmc.rebar.guide.pages.base.GuidePage
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
 import io.github.pylonmc.rebar.util.rebarKey
@@ -28,7 +30,7 @@ open class PageButton(val stack: ItemStack, val page: GuidePage) : GuideButton()
 
     constructor(builder: ItemStackBuilder, page: GuidePage) : this(builder.build(), page)
 
-    constructor(material: Material, page: GuidePage) : this(ItemStack(material), page)
+    constructor(material: Material, page: GuidePage) : this(ItemStack.of(material), page)
 
     @Suppress("UnstableApiUsage")
     override fun getItemProvider(viewer: Player): ItemProvider = ItemStackBuilder.gui(stack.clone(), "${rebarKey("guide_page")}:${page.key}")
@@ -39,6 +41,7 @@ open class PageButton(val stack: ItemStack, val page: GuidePage) : GuideButton()
 
     override fun handleClick(clickType: ClickType, player: Player, click: Click) {
         page.open(player)
+        player.playGuideSound(RebarConfig.GuideConfig.CLICK_BUTTON_SOUND)
     }
 
     override fun shouldDisplay(player: Player) = page.shouldDisplay(player)
