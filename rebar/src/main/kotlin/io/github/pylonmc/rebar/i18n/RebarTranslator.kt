@@ -125,7 +125,7 @@ class RebarTranslator private constructor(private val addon: RebarAddon) : Trans
             val lookupList = LocaleUtils.localeLookupList(locale)
             lookupList.reversed()
                 .mapIndexed { index, value ->
-                    Locale.LanguageRange(value.toString().replace('_', '-'), (index + 1.0) / lookupList.size)
+                    Locale.LanguageRange(value.toLanguageTag(), (index + 1.0) / lookupList.size)
                 }
                 .sortedByDescending { it.weight }
         }
