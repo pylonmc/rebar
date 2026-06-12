@@ -6,6 +6,7 @@ import org.bukkit.Bukkit
 import org.bukkit.Keyed
 import org.bukkit.NamespacedKey
 import org.bukkit.inventory.*
+import kotlin.collections.union
 
 /**
  * Serves as a registry and container for recipes of a specific type.
@@ -18,6 +19,8 @@ open class RecipeType<T : RebarRecipe>(private val key: NamespacedKey) : Keyed, 
     protected open val registeredRecipes = LinkedHashMap<NamespacedKey, T>()
     val recipes: Collection<T>
         get() = registeredRecipes.values
+
+    fun hasRecipe(key: NamespacedKey) = registeredRecipes.containsKey(key)
 
     fun getRecipe(key: NamespacedKey): T? = registeredRecipes[key]
 
@@ -46,94 +49,123 @@ open class RecipeType<T : RebarRecipe>(private val key: NamespacedKey) : Keyed, 
     companion object {
         /**
          * Key: `minecraft:blasting`
+         * @see BlastingRebarRecipe
          */
         @JvmField
         val VANILLA_BLASTING = BlastingRecipeType
 
         /**
          * Key: `minecraft:campfire_cooking`
+         * @see CampfireRebarRecipe
          */
         @JvmField
         val VANILLA_CAMPFIRE = CampfireRecipeType
 
         /**
          * Key: `minecraft:smelting`
+         * @see SmeltingRebarRecipe
          */
         @JvmField
-        val VANILLA_FURNACE = FurnaceRecipeType
+        val VANILLA_SMELTING = SmeltingRecipeType
 
         /**
          * Key: `minecraft:crafting_shaped`
+         * @see ShapedRebarRecipe
          */
         @JvmField
         val VANILLA_SHAPED = ShapedRecipeType
 
         /**
          * Key: `minecraft:crafting_shapeless`
+         * @see ShapelessRebarRecipe
          */
         @JvmField
         val VANILLA_SHAPELESS = ShapelessRecipeType
 
         /**
-         * Key: `minecraft:crafting_transmute`
-         */
-        @JvmField
-        val VANILLA_TRANSMUTE = TransmuteRecipeType
-
-        /**
          * Key: `minecraft:smithing_transform`
+         * @see SmithingTransformRebarRecipe
          */
         @JvmField
         val VANILLA_SMITHING_TRANSFORM = SmithingTransformRecipeType
 
         /**
          * Key: `minecraft:smithing_trim`
+         * @see SmithingTrimRebarRecipe
          */
         @JvmField
         val VANILLA_SMITHING_TRIM = SmithingTrimRecipeType
 
         /**
          * Key: `minecraft:smoking`
+         * @see SmokingRebarRecipe
          */
         @JvmField
         val VANILLA_SMOKING = SmokingRecipeType
 
+        /**
+         * The dummy holder of all [DummyCraftingRebarRecipe]
+         * @see DummyRecipeType
+         */
+        @JvmField
+        val DUMMY_CRAFTING = DummyCraftingRecipeType
+
+        /**
+         * The dummy holder of all [DummyCookingRebarRecipe]
+         * @see DummyRecipeType
+         */
+        @JvmField
+        val DUMMY_COOKING = DummyCookingRecipeType
+
+        /**
+         * The dummy holder of all [DummySmithingRebarRecipe]
+         * @see DummyRecipeType
+         */
+        @JvmField
+        val DUMMY_SMITHING = DummySmithingRecipeType
+
         init {
             VANILLA_BLASTING.register()
             VANILLA_CAMPFIRE.register()
-            VANILLA_FURNACE.register()
+            VANILLA_SMELTING.register()
             VANILLA_SHAPED.register()
             VANILLA_SHAPELESS.register()
             VANILLA_SMITHING_TRANSFORM.register()
             VANILLA_SMITHING_TRIM.register()
             VANILLA_SMOKING.register()
+            DUMMY_CRAFTING.register()
         }
 
         @JvmStatic
         fun vanillaCraftingRecipes() = VANILLA_SHAPED
             .union(VANILLA_SHAPELESS)
-            .union(VANILLA_TRANSMUTE)
 
         @JvmStatic
-        fun vanillaCookingRecipes() = VANILLA_BLASTING.recipes
-            .union(VANILLA_CAMPFIRE.recipes)
-            .union(VANILLA_FURNACE.recipes)
-            .union(VANILLA_SMOKING.recipes)
+        fun vanillaSmithingRecipes() = VANILLA_SMITHING_TRANSFORM.recipes
+            .union(VANILLA_SMITHING_TRIM.recipes)
+
+        @JvmStatic
+        fun isDummyRecipe(recipe: Recipe?) =
+            recipe is Keyed && isDummyRecipe(recipe.key)
+
+        @JvmStatic
+        fun isDummyRecipe(key: NamespacedKey) = DUMMY_CRAFTING.hasRecipe(key)
+                || DUMMY_COOKING.hasRecipe(key)
+                || DUMMY_SMITHING.hasRecipe(key)
 
         @JvmSynthetic
         internal fun addVanillaRecipes() {
             for (recipe in Bukkit.recipeIterator()) {
                 // @formatter:off
                 when (recipe) {
-                    is BlastingRecipe -> VANILLA_BLASTING.addNonRebarRecipe(BlastingRecipeWrapper(recipe))
-                    is CampfireRecipe -> VANILLA_CAMPFIRE.addNonRebarRecipe(CampfireRecipeWrapper(recipe))
-                    is FurnaceRecipe -> VANILLA_FURNACE.addNonRebarRecipe(FurnaceRecipeWrapper(recipe))
-                    is ShapedRecipe -> VANILLA_SHAPED.addNonRebarRecipe(ShapedRecipeWrapper(recipe))
-                    is ShapelessRecipe -> VANILLA_SHAPELESS.addNonRebarRecipe(ShapelessRecipeWrapper(recipe))
-                    is TransmuteRecipe -> VANILLA_TRANSMUTE.addNonRebarRecipe(TransmuteRecipeWrapper(recipe))
-                    is SmithingTrimRecipe -> VANILLA_SMITHING_TRIM.addNonRebarRecipe(SmithingTrimRecipeWrapper(recipe))
-                    is SmithingTransformRecipe -> VANILLA_SMITHING_TRANSFORM.addNonRebarRecipe(SmithingTransformRecipeWrapper(recipe))
-                    is SmokingRecipe -> VANILLA_SMOKING.addNonRebarRecipe(SmokingRecipeWrapper(recipe))
+                    is BlastingRecipe -> VANILLA_BLASTING.addNonRebarRecipe(BlastingRebarRecipe.fromVanilla(recipe))
+                    is CampfireRecipe -> VANILLA_CAMPFIRE.addNonRebarRecipe(CampfireRebarRecipe.fromVanilla(recipe))
+                    is FurnaceRecipe -> VANILLA_SMELTING.addNonRebarRecipe(SmeltingRebarRecipe.fromVanilla(recipe))
+                    is ShapedRecipe -> VANILLA_SHAPED.addNonRebarRecipe(ShapedRebarRecipe.fromVanilla(recipe))
+                    is ShapelessRecipe -> VANILLA_SHAPELESS.addNonRebarRecipe(ShapelessRebarRecipe.fromVanilla(recipe))
+                    is SmithingTrimRecipe -> VANILLA_SMITHING_TRIM.addNonRebarRecipe(SmithingTrimRebarRecipe.fromVanilla(recipe))
+                    is SmithingTransformRecipe -> VANILLA_SMITHING_TRANSFORM.addNonRebarRecipe(SmithingTransformRebarRecipe.fromVanilla(recipe))
+                    is SmokingRecipe -> VANILLA_SMOKING.addNonRebarRecipe(SmokingRebarRecipe.fromVanilla(recipe))
                 }
                 // @formatter:on
             }

@@ -1,8 +1,8 @@
-package io.github.pylonmc.rebar.recipe
+package io.github.pylonmc.rebar.recipe.ingredient
 
 import io.github.pylonmc.rebar.fluid.RebarFluid
 import io.github.pylonmc.rebar.item.ItemTypeWrapper
-import io.github.pylonmc.rebar.item.RebarItem
+import io.github.pylonmc.rebar.recipe.RebarRecipe
 import io.github.pylonmc.rebar.recipe.RebarRecipe.Companion.priority
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import org.bukkit.NamespacedKey
@@ -44,7 +44,7 @@ class IngredientCalculator private constructor() {
         var recipe: RebarRecipe?
         do {
             recipe = when (input) {
-                is FluidOrItem.Fluid -> findRecipeFor(input.fluid)
+                is FluidWithAmount -> findRecipeFor(input.fluid)
                 is FluidOrItem.Item -> findRecipeFor(input.item)
             }
 
@@ -80,14 +80,18 @@ class IngredientCalculator private constructor() {
 
         for (recipeInput in recipe.inputs) {
             val inputItem = when (recipeInput) {
-                is RecipeInput.Fluid -> FluidOrItem.Fluid(
-                    fluid = recipeInput.fluids.first(),
-                    amountMillibuckets = recipeInput.amountMillibuckets * outputMulti
-                )
+                is FluidChoice -> {
+                    val fluid = recipeInput.fluids.first()
+                    val amount = recipeInput.amount
+                    // TODO make this not just use the first fluid it finds (require some prioritisation algorithm)
+                    FluidWithAmount(fluid, amount * outputMulti)
+                }
 
-                is RecipeInput.Item -> FluidOrItem.Item(
-                    item = recipeInput.representativeItem.asQuantity(recipeInput.amount * outputMulti)
-                )
+                is ItemChoice -> {
+                    val item = recipeInput.representativeItems.first()
+                    // TODO make this not just use the first item it finds (require some prioritisation algorithm)
+                    FluidOrItem.Item(item.asQuantity(item.amount * outputMulti))
+                }
             }
             calculate(inputItem.asOne(), inputItem.amount)
         }
@@ -130,8 +134,8 @@ class IngredientCalculator private constructor() {
             .sortedWith(compareByDescending<RebarRecipe> { it.priority }.thenByDescending { recipe ->
                 recipe.inputs.distinctBy {
                     when (it) {
-                        is RecipeInput.Fluid -> it.fluids
-                        is RecipeInput.Item -> it.items
+                        is FluidChoice -> it.fluids
+                        is ItemChoice -> it.representativeItems
                     }
                 }.size
             })
@@ -148,8 +152,8 @@ class IngredientCalculator private constructor() {
             .sortedWith(compareByDescending<RebarRecipe> { it.priority }.thenByDescending { recipe ->
                 recipe.inputs.distinctBy {
                     when (it) {
-                        is RecipeInput.Fluid -> it.fluids
-                        is RecipeInput.Item -> it.items
+                        is FluidChoice -> it.fluids
+                        is ItemChoice -> it.representativeItems
                     }
                 }.size
             })
@@ -173,7 +177,7 @@ class IngredientCalculator private constructor() {
          */
         @JvmStatic
         fun addBaseIngredient(fluid: RebarFluid) {
-            baseIngredients.add(FluidOrItem.Fluid(fluid, 1.0))
+            baseIngredients.add(FluidWithAmount(fluid, 1.0))
         }
 
         /**
@@ -201,8 +205,8 @@ class IngredientCalculator private constructor() {
             calculator.calculate(input.asOne(), input.amount)
 
             fun transformEntry(entry: Map.Entry<FluidOrItem, Double>) = when (entry.key) {
-                is FluidOrItem.Fluid -> FluidOrItem.of(
-                    fluid = (entry.key as FluidOrItem.Fluid).fluid,
+                is FluidWithAmount -> FluidOrItem.of(
+                    fluid = (entry.key as FluidWithAmount).fluid,
                     amountMillibuckets = entry.value
                 )
 
@@ -228,12 +232,12 @@ class IngredientCalculator private constructor() {
 data class IngredientCalculation(val inputs: List<FluidOrItem>, val byproducts: List<FluidOrItem>)
 
 private fun FluidOrItem.asOne(): FluidOrItem = when (this) {
-    is FluidOrItem.Fluid -> this.copy(amountMillibuckets = 1.0)
+    is FluidWithAmount -> FluidOrItem.of(fluid, amountMillibuckets = 1.0)
     is FluidOrItem.Item -> this.copy(item = this.item.asQuantity(1))
 }
 
 private val FluidOrItem.amount: Double
     get() = when (this) {
-        is FluidOrItem.Fluid -> this.amountMillibuckets
+        is FluidWithAmount -> this.amountMillibuckets
         is FluidOrItem.Item -> this.item.amount.toDouble()
     }

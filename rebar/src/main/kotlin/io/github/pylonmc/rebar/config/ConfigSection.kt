@@ -75,6 +75,11 @@ open class ConfigSection private constructor(val name: String?, val internalSect
         getSection(key) ?: throw KeyNotFoundException(getKeyPath(key))
 
     /**
+     * Returns true if the config contains the given [key]
+     */
+    fun has(key: String) = internalSection.contains(key)
+
+    /**
      * Returns null if the key does not exist or if the value cannot be converted to the desired type.
      */
     fun <T> get(key: String, adapter: ConfigAdapter<T>): T? {

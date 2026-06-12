@@ -2,6 +2,9 @@ package io.github.pylonmc.rebar.test.test.recipe;
 
 import io.github.pylonmc.rebar.gametest.GameTestConfig;
 import io.github.pylonmc.rebar.recipe.RecipeType;
+import io.github.pylonmc.rebar.recipe.ingredient.FluidOrItem;
+import io.github.pylonmc.rebar.recipe.ingredient.ItemChoice;
+import io.github.pylonmc.rebar.recipe.vanilla.SmeltingRebarRecipe;
 import io.github.pylonmc.rebar.test.RebarTest;
 import io.github.pylonmc.rebar.test.base.GameTest;
 import io.github.pylonmc.rebar.test.item.TestItems;
@@ -9,9 +12,8 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Furnace;
 import org.bukkit.inventory.FurnaceInventory;
-import org.bukkit.inventory.FurnaceRecipe;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.RecipeChoice;
+import org.bukkit.inventory.recipe.CookingBookCategory;
 
 public class FurnaceTest extends GameTest {
 
@@ -21,12 +23,14 @@ public class FurnaceTest extends GameTest {
                 .setUp(test -> {
                     ItemStack stickyStick = TestItems.STICKY_STICK_STACK;
                     ItemStack diamond = ItemStack.of(Material.DIAMOND);
-                    RecipeType.VANILLA_FURNACE.addRecipe(new FurnaceRecipe(
-                            RebarTest.key("sticky_stick_furnace"),
-                            diamond,
-                            new RecipeChoice.ExactChoice(stickyStick),
+                    RecipeType.VANILLA_SMELTING.addRecipe(new SmeltingRebarRecipe(
+                            ItemChoice.fuzzy(stickyStick),
+                            FluidOrItem.of(diamond),
                             0.1f,
-                            10
+                            10,
+                            CookingBookCategory.MISC,
+                            "",
+                            RebarTest.key("sticky_stick_furnace")
                     ));
 
                     Block furnace = test.position().getBlock();

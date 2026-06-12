@@ -10,9 +10,7 @@ import org.bukkit.inventory.ItemStack
  */
 sealed interface ItemTypeWrapper : Keyed {
 
-    fun matches(itemStack: ItemStack?): Boolean {
-        return itemStack != null && ItemTypeWrapper(itemStack) == this
-    }
+    fun matches(itemStack: ItemStack?): Boolean
 
     fun createItemStack() = createItemStack(1)
 
@@ -23,6 +21,7 @@ sealed interface ItemTypeWrapper : Keyed {
      */
     @JvmRecord
     data class Vanilla(val material: Material) : ItemTypeWrapper {
+        override fun matches(itemStack: ItemStack?) = itemStack?.type == material && !RebarItem.isRebarItem(itemStack)
         override fun createItemStack(count: Int) = ItemStack.of(material, count)
         override fun getKey() = material.key
     }
@@ -32,6 +31,7 @@ sealed interface ItemTypeWrapper : Keyed {
      */
     @JvmRecord
     data class Rebar(val item: RebarItemSchema) : ItemTypeWrapper {
+        override fun matches(itemStack: ItemStack?) = RebarItem.isRebarItem(itemStack, item)
         override fun createItemStack(count: Int) = item.getItemStack(count)
         override fun getKey() = item.key
     }

@@ -5,10 +5,13 @@ import io.github.pylonmc.rebar.config.adapter.ConfigAdapter
 import io.github.pylonmc.rebar.guide.button.ItemButton
 import io.github.pylonmc.rebar.i18n.RebarArgument
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
-import io.github.pylonmc.rebar.recipe.FluidOrItem
-import io.github.pylonmc.rebar.recipe.RecipeInput
+import io.github.pylonmc.rebar.recipe.ingredient.FluidOrItem
+import io.github.pylonmc.rebar.recipe.ingredient.FluidOrItemChoice
+import io.github.pylonmc.rebar.recipe.ingredient.ItemChoice
+import io.github.pylonmc.rebar.recipe.vanilla.DummyBukkitRebarRecipe.Companion.dummyKey
 import io.github.pylonmc.rebar.util.gui.GuiItems
 import io.github.pylonmc.rebar.util.gui.unit.UnitFormat
+import io.github.pylonmc.rebar.util.rebarKey
 import net.kyori.adventure.text.Component
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
@@ -16,13 +19,47 @@ import org.bukkit.inventory.*
 import org.bukkit.inventory.recipe.CookingBookCategory
 import xyz.xenondevs.invui.gui.Gui
 
+/**
+ * The dummy form of [CookingRebarRecipe]
+ * @see DummyCookingRecipeType
+ * @see DummyBukkitRebarRecipe
+ */
+class DummyCookingRebarRecipe(
+    val realRecipe: CookingRebarRecipe,
+    override val bukkitRecipe: CookingRecipe<*>
+) : DummyBukkitRebarRecipe {
+    override val inputs = emptyList<FluidOrItemChoice>()
+    override val results = emptyList<FluidOrItem>()
+    override fun display() = null
+    override fun getKey() = bukkitRecipe.key
+}
 
-sealed class CookingRecipeWrapper(final override val recipe: CookingRecipe<*>) : VanillaRecipeWrapper {
-    override val inputs: List<RecipeInput> = listOf(recipe.inputChoice.asRecipeInput())
-    override val results: List<FluidOrItem> = listOf(FluidOrItem.of(recipe.result))
-    override fun getKey(): NamespacedKey = recipe.key
+/**
+ * A generic rebar cooking recipe.
+ *
+ * @see SmeltingRebarRecipe
+ * @see BlastingRebarRecipe
+ * @see SmokingRebarRecipe
+ * @see CampfireRebarRecipe
+ */
+sealed class CookingRebarRecipe(
+    val ingredient: ItemChoice,
+    val result: FluidOrItem.Item,
+    val experience: Float,
+    val cookingTime: Int,
+    val category: CookingBookCategory,
+    val group: String,
+    @JvmField val key: NamespacedKey
+) : BukkitRebarRecipe {
+    override val inputs = listOf(ingredient)
+    override val results = listOf(result)
 
     protected abstract val displayBlock: Material
+
+    fun matches(item: ItemStack?, output: ItemStack?): Boolean {
+        return item != null && ingredient.matches(item)
+                && (output == null || output.isEmpty || output.isSimilar(result.item))
+    }
 
     override fun display(): Gui = Gui.builder()
         .setStructure(
@@ -34,64 +71,215 @@ sealed class CookingRecipeWrapper(final override val recipe: CookingRecipe<*>) :
         )
         .addIngredient('#', GuiItems.backgroundBlack())
         .addIngredient('b', ItemStack.of(displayBlock))
-        .addIngredient('i', ItemButton.of(recipe.inputChoice))
+        .addIngredient('i', ItemButton.of(ingredient))
         .addIngredient(
             'f', GuiItems.progressCyclingItem(
-                recipe.cookingTime,
+                cookingTime,
                 ItemStackBuilder.of(Material.COAL)
                     .name(
                         Component.translatable(
                             "rebar.guide.recipe.cooking",
-                            RebarArgument.of("time", UnitFormat.SECONDS.format(recipe.cookingTime / 20))
+                            RebarArgument.of("time", UnitFormat.SECONDS.format(cookingTime / 20))
                         )
                     )
             )
         )
-        .addIngredient('o', ItemButton.of(recipe.result))
+        .addIngredient('o', ItemButton.of(result))
         .build()
-}
 
-class BlastingRecipeWrapper(recipe: BlastingRecipe) : CookingRecipeWrapper(recipe) {
-    override val displayBlock = Material.BLAST_FURNACE
-}
-
-class CampfireRecipeWrapper(recipe: CampfireRecipe) : CookingRecipeWrapper(recipe) {
-    override val displayBlock = Material.CAMPFIRE
-}
-
-class FurnaceRecipeWrapper(recipe: FurnaceRecipe) : CookingRecipeWrapper(recipe) {
-    override val displayBlock = Material.FURNACE
-}
-
-class SmokingRecipeWrapper(recipe: SmokingRecipe) : CookingRecipeWrapper(recipe) {
-    override val displayBlock = Material.SMOKER
-}
-
-private inline fun <T : CookingRecipe<T>> loadCookingRecipe(
-    key: NamespacedKey,
-    config: ConfigSection,
-    defaultCookingTime: Int,
-    cons: (NamespacedKey, ItemStack, RecipeChoice, Float, Int) -> T
-): T {
-    val cookingTime = config.get("cookingtime", ConfigAdapter.INTEGER, defaultCookingTime)
-    val experience = config.get("experience", ConfigAdapter.FLOAT, 0f)
-    val ingredient = config.getOrThrow("ingredient", ConfigAdapter.RECIPE_CHOICE)
-    val result = config.getOrThrow("result", ConfigAdapter.ITEM_STACK)
-    val recipe = cons(key, result, ingredient, experience, cookingTime)
-    config.get("category", ConfigAdapter.ENUM.from<CookingBookCategory>())?.let { recipe.category = it }
-    config.get("group", ConfigAdapter.STRING)?.let { recipe.group = it }
-    return recipe
+    override fun getKey(): NamespacedKey = key
 }
 
 /**
- * Key: `minecraft:blasting`
+ * Rebar's equivalent of [BlastingRecipe]
  */
-object BlastingRecipeType : VanillaRecipeType<BlastingRecipeWrapper>("blasting") {
+class BlastingRebarRecipe @JvmOverloads constructor(
+    ingredient: ItemChoice,
+    result: FluidOrItem.Item,
+    experience: Float,
+    cookingTime: Int,
+    category: CookingBookCategory,
+    group: String,
+    key: NamespacedKey,
+    override val bukkitRecipe: BlastingRecipe = BlastingRecipe(
+        key, result.item, ingredient.toRepresentativeRecipeChoice(),
+        experience, cookingTime
+    ).apply {
+        this.category = category
+        this.group = group
+    }
+) : CookingRebarRecipe(ingredient, result, experience, cookingTime, category, group, key) {
+    override val displayBlock = Material.BLAST_FURNACE
 
-    fun addRecipe(recipe: BlastingRecipe) = super.addRecipe(BlastingRecipeWrapper(recipe))
+    companion object {
+        fun fromVanilla(recipe: BlastingRecipe): BlastingRebarRecipe {
+            return BlastingRebarRecipe(
+                recipe.inputChoice.toItemChoice(),
+                FluidOrItem.of(recipe.result),
+                recipe.experience,
+                recipe.cookingTime,
+                recipe.category,
+                recipe.group,
+                recipe.key,
+                recipe
+            )
+        }
+    }
+}
 
+/**
+ * Rebar's equivalent of [CampfireRecipe]
+ */
+class CampfireRebarRecipe @JvmOverloads constructor(
+    ingredient: ItemChoice,
+    result: FluidOrItem.Item,
+    experience: Float,
+    cookingTime: Int,
+    category: CookingBookCategory,
+    group: String,
+    key: NamespacedKey,
+    override val bukkitRecipe: CampfireRecipe = CampfireRecipe(
+        key, result.item, ingredient.toRepresentativeRecipeChoice(),
+        experience, cookingTime
+    ).apply {
+        this.category = category
+        this.group = group
+    }
+) : CookingRebarRecipe(ingredient, result, experience, cookingTime, category, group, key) {
+    override val displayBlock = Material.CAMPFIRE
+
+    companion object {
+        fun fromVanilla(recipe: CampfireRecipe): CampfireRebarRecipe {
+            return CampfireRebarRecipe(
+                recipe.inputChoice.toItemChoice(),
+                FluidOrItem.of(recipe.result),
+                recipe.experience,
+                recipe.cookingTime,
+                recipe.category,
+                recipe.group,
+                recipe.key,
+                recipe
+            )
+        }
+    }
+}
+
+/**
+ * Rebar's equivalent of [FurnaceRecipe]
+ */
+class SmeltingRebarRecipe @JvmOverloads constructor(
+    ingredient: ItemChoice,
+    result: FluidOrItem.Item,
+    experience: Float,
+    cookingTime: Int,
+    category: CookingBookCategory,
+    group: String,
+    key: NamespacedKey,
+    override val bukkitRecipe: FurnaceRecipe = FurnaceRecipe(
+        key, result.item, ingredient.toRepresentativeRecipeChoice(),
+        experience, cookingTime
+    ).apply {
+        this.category = category
+        this.group = group
+    }
+) : CookingRebarRecipe(ingredient, result, experience, cookingTime, category, group, key) {
+    override val displayBlock = Material.FURNACE
+
+    companion object {
+        fun fromVanilla(recipe: FurnaceRecipe): SmeltingRebarRecipe {
+            return SmeltingRebarRecipe(
+                recipe.inputChoice.toItemChoice(),
+                FluidOrItem.of(recipe.result),
+                recipe.experience,
+                recipe.cookingTime,
+                recipe.category,
+                recipe.group,
+                recipe.key,
+                recipe
+            )
+        }
+    }
+}
+
+/**
+ * Rebar's equivalent of [SmokingRecipe]
+ */
+class SmokingRebarRecipe @JvmOverloads constructor(
+    ingredient: ItemChoice,
+    result: FluidOrItem.Item,
+    experience: Float,
+    cookingTime: Int,
+    category: CookingBookCategory,
+    group: String,
+    key: NamespacedKey,
+    override val bukkitRecipe: SmokingRecipe = SmokingRecipe(
+        key, result.item, ingredient.toRepresentativeRecipeChoice(),
+        experience, cookingTime
+    ).apply {
+        this.category = category
+        this.group = group
+    }
+) : CookingRebarRecipe(ingredient, result, experience, cookingTime, category, group, key) {
+    override val displayBlock = Material.SMOKER
+
+    companion object {
+        fun fromVanilla(recipe: SmokingRecipe): SmokingRebarRecipe {
+            return SmokingRebarRecipe(
+                recipe.inputChoice.toItemChoice(),
+                FluidOrItem.of(recipe.result),
+                recipe.experience,
+                recipe.cookingTime,
+                recipe.category,
+                recipe.group,
+                recipe.key,
+                recipe
+            )
+        }
+    }
+}
+
+private val COOKING_BOOK_CATEGORY_ADAPTER = ConfigAdapter.ENUM.from<CookingBookCategory>()
+
+private inline fun <T : CookingRebarRecipe> loadCookingRecipe(
+    key: NamespacedKey,
+    config: ConfigSection,
+    defaultCookingTime: Int,
+    cons: (ItemChoice, FluidOrItem.Item, Float, Int, CookingBookCategory, String, NamespacedKey) -> T
+): T {
+    val ingredient = config.getOrThrow("ingredient", ConfigAdapter.ITEM_CHOICE)
+    val result = FluidOrItem.of(config.getOrThrow("result", ConfigAdapter.ITEM_STACK))
+    val experience = config.get("experience", ConfigAdapter.FLOAT, 0f)
+    val cookingTime = config.get("cookingtime", ConfigAdapter.INTEGER, defaultCookingTime)
+    val category = config.get("category", COOKING_BOOK_CATEGORY_ADAPTER, CookingBookCategory.MISC)
+    val group = config.get("group", ConfigAdapter.STRING, "")
+    return cons(ingredient, result, experience, cookingTime, category, group, key)
+}
+
+/**
+ * The dummy holder of all [DummyCookingRebarRecipe]
+ * @see DummyRecipeType
+ */
+object DummyCookingRecipeType : DummyRecipeType<DummyCookingRebarRecipe>(rebarKey("dummy_cooking"))
+
+/**
+ * Key: `minecraft:blasting`
+ * @see BlastingRebarRecipe
+ */
+object BlastingRecipeType : VanillaRecipeType<BlastingRebarRecipe, DummyCookingRebarRecipe>("blasting", DummyCookingRecipeType) {
     override fun loadRecipe(key: NamespacedKey, section: ConfigSection) =
-        BlastingRecipeWrapper(loadCookingRecipe(key, section, 100, ::BlastingRecipe))
+        loadCookingRecipe(key, section, 100, ::BlastingRebarRecipe)
+
+    override fun createDummyRecipeFor(recipe: BlastingRebarRecipe): DummyCookingRebarRecipe {
+        return DummyCookingRebarRecipe(
+            recipe, BlastingRecipe(
+                dummyKey(recipe.key), recipe.bukkitRecipe.result, recipe.ingredient.toDummyRecipeChoice(),
+                recipe.experience, recipe.cookingTime
+            ).apply {
+                this.category = recipe.category
+                this.group = recipe.group
+            }
+        )
+    }
 }
 
 /**
@@ -99,33 +287,64 @@ object BlastingRecipeType : VanillaRecipeType<BlastingRecipeWrapper>("blasting")
  *
  * Despite the vanilla default cooking time being 100 ticks, we set it to 600 ticks here
  * to match the actual in-game behavior
+ *
+ * @see CampfireRebarRecipe
  */
-object CampfireRecipeType : VanillaRecipeType<CampfireRecipeWrapper>("campfire_cooking") {
-
-    fun addRecipe(recipe: CampfireRecipe) = super.addRecipe(CampfireRecipeWrapper(recipe))
-
+object CampfireRecipeType : VanillaRecipeType<CampfireRebarRecipe, DummyCookingRebarRecipe>("campfire_cooking", DummyCookingRecipeType) {
     override fun loadRecipe(key: NamespacedKey, section: ConfigSection) =
-        CampfireRecipeWrapper(loadCookingRecipe(key, section, 600, ::CampfireRecipe))
+        loadCookingRecipe(key, section, 600, ::CampfireRebarRecipe)
+
+    override fun createDummyRecipeFor(recipe: CampfireRebarRecipe): DummyCookingRebarRecipe {
+        return DummyCookingRebarRecipe(
+            recipe, CampfireRecipe(
+                dummyKey(recipe.key), recipe.bukkitRecipe.result, recipe.ingredient.toDummyRecipeChoice(),
+                recipe.experience, recipe.cookingTime
+            ).apply {
+                this.category = recipe.category
+                this.group = recipe.group
+            }
+        )
+    }
 }
 
 /**
  * Key: `minecraft:smelting`
+ * @see SmeltingRebarRecipe
  */
-object FurnaceRecipeType : VanillaRecipeType<FurnaceRecipeWrapper>("smelting") {
-
-    fun addRecipe(recipe: FurnaceRecipe) = super.addRecipe(FurnaceRecipeWrapper(recipe))
-
+object SmeltingRecipeType : VanillaRecipeType<SmeltingRebarRecipe, DummyCookingRebarRecipe>("smelting", DummyCookingRecipeType) {
     override fun loadRecipe(key: NamespacedKey, section: ConfigSection) =
-        FurnaceRecipeWrapper(loadCookingRecipe(key, section, 200, ::FurnaceRecipe))
+        loadCookingRecipe(key, section, 200, ::SmeltingRebarRecipe)
+
+    override fun createDummyRecipeFor(recipe: SmeltingRebarRecipe): DummyCookingRebarRecipe {
+        return DummyCookingRebarRecipe(
+            recipe, FurnaceRecipe(
+                dummyKey(recipe.key), recipe.bukkitRecipe.result, recipe.ingredient.toDummyRecipeChoice(),
+                recipe.experience, recipe.cookingTime
+            ).apply {
+                this.category = recipe.category
+                this.group = recipe.group
+            }
+        )
+    }
 }
 
 /**
  * Key: `minecraft:smoking`
+ * @see SmokingRebarRecipe
  */
-object SmokingRecipeType : VanillaRecipeType<SmokingRecipeWrapper>("smoking") {
-
-    fun addRecipe(recipe: SmokingRecipe) = super.addRecipe(SmokingRecipeWrapper(recipe))
-
+object SmokingRecipeType : VanillaRecipeType<SmokingRebarRecipe, DummyCookingRebarRecipe>("smoking", DummyCookingRecipeType) {
     override fun loadRecipe(key: NamespacedKey, section: ConfigSection) =
-        SmokingRecipeWrapper(loadCookingRecipe(key, section, 100, ::SmokingRecipe))
+        loadCookingRecipe(key, section, 100, ::SmokingRebarRecipe)
+
+    override fun createDummyRecipeFor(recipe: SmokingRebarRecipe): DummyCookingRebarRecipe {
+        return DummyCookingRebarRecipe(
+            recipe, SmokingRecipe(
+                dummyKey(recipe.key), recipe.bukkitRecipe.result, recipe.ingredient.toDummyRecipeChoice(),
+                recipe.experience, recipe.cookingTime
+            ).apply {
+                this.category = recipe.category
+                this.group = recipe.group
+            }
+        )
+    }
 }
