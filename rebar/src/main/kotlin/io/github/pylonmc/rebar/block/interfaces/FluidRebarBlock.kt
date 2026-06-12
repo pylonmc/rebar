@@ -12,7 +12,7 @@ import org.bukkit.inventory.ItemStack
 import org.jetbrains.annotations.MustBeInvokedByOverriders
 
 /**
- * A block that interacts with fluids in some way.
+ * A block that interacts with the fluid system.
  *
  * This is a very flexible class which requires you to define exactly how fluid should
  * be input and output. You are responsible for keeping track of any state, like how
@@ -24,7 +24,6 @@ import org.jetbrains.annotations.MustBeInvokedByOverriders
  * output points, and specify how to add/remove fluids from your block.
  *
  * Multiple inputs/outputs are not supported. You can have at most 1 input and 1 output.
- *
  *
  * @see FluidBufferRebarBlock
  * @see FluidTankRebarBlock

@@ -16,9 +16,14 @@ import xyz.xenondevs.invui.inventory.event.UpdateReason
 import kotlin.collections.iterator
 
 /**
- * Saves and loads virtual inventories associated with the block.
+ * Allows virtual inventories associated with the block to be saved and automatically re-loaded
+ * when the block is loaded again.
  *
- * When the block is broken, the contents of the virtual inventories will be dropped.
+ * To use this, simply implement [io.github.pylonmc.rebar.block.interfaces.VirtualInventoryRebarBlock.getVirtualInventories]
+ * and return each virtual inventory you wish to save/load along with a unique name.
+ *
+ * When the block is broken, the contents of the virtual inventories will be dropped. You can
+ * override this behaviour by overriding [io.github.pylonmc.rebar.block.interfaces.VirtualInventoryRebarBlock.onBlockBreak].
  *
  * See [InvUI docs](https://docs.xenondevs.xyz/invui/) for more information on virtual inventories.
  *

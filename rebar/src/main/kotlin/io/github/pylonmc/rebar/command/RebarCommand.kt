@@ -65,6 +65,8 @@ import kotlin.math.min
 import kotlin.reflect.typeOf
 import io.papermc.paper.math.BlockPosition as PaperBlockPosition
 
+// IF MODIFYING COMMANDS, PLEASE ENSURE YOU UPDATE https://pylonmc.github.io/home/commands-and-permissions/ ACCORDINGLY
+
 private val guide = buildCommand("guide") {
     permission("rebar.command.guide")
     executesWithPlayer { player ->
@@ -503,7 +505,7 @@ private val exposeRecipeConfig = buildCommand("exposerecipeconfig") {
                     "exposerecipe.warning",
                     RebarArgument.of("file", "plugins/Rebar/${recipeType.filePath}")
                 )
-                mergeResource(addon, recipeType.filePath, recipeType.filePath)
+                mergeResource(addon, Rebar, recipeType.filePath, recipeType.filePath)
             }
         }
     }
@@ -647,6 +649,7 @@ private val fillMultiblock = buildCommand("fillmultiblock") {
 }
 
 private val versions = buildCommand("versions") {
+    permission("rebar.command.versions")
     executes { sender ->
         RebarMetrics.onCommandRun("/rb versions")
         val serverImplementation = Bukkit.getName()

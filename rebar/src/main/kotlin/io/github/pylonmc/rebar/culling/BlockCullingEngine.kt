@@ -6,7 +6,7 @@ import com.github.benmanes.caffeine.cache.Caffeine
 import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.block.RebarBlock
 import io.github.pylonmc.rebar.block.interfaces.CulledRebarBlock
-import io.github.pylonmc.rebar.block.interfaces.GroupCulledRebarBLock
+import io.github.pylonmc.rebar.block.interfaces.GroupCulledRebarBlock
 import io.github.pylonmc.rebar.config.RebarConfig
 import io.github.pylonmc.rebar.culling.PlayerCullingJob.Companion.cullingBoundingBox
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
@@ -69,7 +69,7 @@ object BlockCullingEngine : Listener {
 
     private val jobs = mutableMapOf<UUID, Pair<PlayerCullingJob, Job>>()
     internal val syncJobTasks = ConcurrentHashMap<UUID, MutableMap<CulledRebarBlock, Boolean>>()
-    internal val syncJobGroupTasks = ConcurrentHashMap<UUID, MutableMap<GroupCulledRebarBLock, MutableMap<GroupCulledRebarBLock.CullingGroup, Boolean>>>()
+    internal val syncJobGroupTasks = ConcurrentHashMap<UUID, MutableMap<GroupCulledRebarBlock, MutableMap<GroupCulledRebarBlock.CullingGroup, Boolean>>>()
 
     /**
      * Periodically invalidates a share of the occluding cache, to ensure stale data isn't perpetuated.

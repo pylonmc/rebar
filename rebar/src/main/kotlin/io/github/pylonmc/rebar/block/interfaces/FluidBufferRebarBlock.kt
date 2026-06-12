@@ -19,17 +19,20 @@ import kotlin.math.max
  *
  * In more detail: Usually, fluid machines store fluids in internal 'buffers.'
  * For example, the press has an internal buffer used to store plant oil, of
- * size 1000mB by default. This is a common enough thing that we created a new
- * interface to handle it: RebarFluidBufferBlock. This interface allows your
- * block to easily manage fluid buffers.
+ * size 1000mB by default. This is a common enough thing that we created this
+ * interface to handle it. This interface allows your block to easily manage
+ * fluid buffers.
  *
- * You will need to call `createFluidBuffer` when your block is placed
- * and specify the buffer's fluid type, capacity, whether it can take in
- * fluids from input points, and whether it can supply fluids to output
- * points.
+ * You will need to call [io.github.pylonmc.rebar.block.interfaces.FluidBufferRebarBlock.createFluidBuffer]
+ * when your block is placed and specify the buffer's fluid type, capacity,
+ * whether it can take in fluids from input points, and whether it can supply
+ * fluids to output points.
  *
  * You do not need to handle saving buffers or implement any of the
- * `RebarFluidBlock` methods for this; this is all done automatically.
+ * [FluidRebarBlock] methods for this; this is all done automatically.
+ *
+ * @see FluidTankRebarBlock
+ * @see FluidRebarBlock
  */
 interface FluidBufferRebarBlock : FluidRebarBlock {
     private val fluidBuffers: MutableMap<RebarFluid, FluidBufferData>

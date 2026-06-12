@@ -10,6 +10,12 @@ import org.bukkit.event.EventPriority
 import org.jetbrains.annotations.ApiStatus
 
 interface UnloadRebarBlockHandler {
+
+    /**
+     * Called whenever the block is unloaded.
+     *
+     * @see RebarBlockUnloadEvent
+     */
     fun onUnload(event: RebarBlockUnloadEvent, priority: EventPriority) {}
 
     @ApiStatus.Internal

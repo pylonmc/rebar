@@ -61,7 +61,7 @@ class RebarTranslator private constructor(private val addon: RebarAddon) : Trans
 
     init {
         for (lang in addon.languages) {
-            mergeResource(addon, "lang/$lang.yml", "lang/$addonNamespace/$lang.yml")
+            mergeResource(addon, Rebar, "lang/$lang.yml", "lang/$addonNamespace/$lang.yml")
         }
         val langsDir = Rebar.dataPath.resolve("lang").resolve(addonNamespace)
         translations = if (!langsDir.exists()) {

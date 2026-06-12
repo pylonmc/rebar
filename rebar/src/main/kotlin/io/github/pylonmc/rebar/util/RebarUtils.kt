@@ -471,7 +471,13 @@ val Player.pdc: PersistentDataContainer
  * @return The merged config
  */
 @JvmSynthetic
-internal fun mergeResource(fromAddon: RebarAddon, from: String, to: String, warnMissing: Boolean = true): ConfigSection {
+internal fun mergeResource(
+    fromAddon: RebarAddon,
+    toAddon: RebarAddon,
+    from: String,
+    to: String,
+    warnMissing: Boolean = true
+): ConfigSection {
     require(from.endsWith(".yml") || from.endsWith(".yaml")) {
         "Config file must be a YAML file (addon: ${fromAddon.javaClass.simpleName}, path: $from"
     }
@@ -484,7 +490,7 @@ internal fun mergeResource(fromAddon: RebarAddon, from: String, to: String, warn
         return cached
     }
 
-    val toConfigFile = Rebar.javaPlugin.dataFolder.resolve(to)
+    val toConfigFile = toAddon.javaPlugin.dataFolder.resolve(to)
     if (!toConfigFile.exists()) {
         toConfigFile.parentFile.mkdirs()
         toConfigFile.createNewFile()
@@ -494,7 +500,7 @@ internal fun mergeResource(fromAddon: RebarAddon, from: String, to: String, warn
     val toConfig = ConfigSection.fromOrThrow(toConfigFile)
     val fromConfig = ConfigSection.fromResource(fromAddon.javaPlugin, from)
     if (fromConfig == null) {
-        if (warnMissing) Rebar.logger.warning("Resource not found: $from")
+        if (warnMissing) toAddon.javaPlugin.logger.warning("Resource not found: $from")
     } else {
         toConfig.merge(fromConfig)
         toConfig.save(toConfigFile)

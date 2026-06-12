@@ -6,6 +6,9 @@ import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import java.util.UUID
 
+/**
+ * TODO docs (JustAHuman)
+ */
 interface EntityCulledRebarBlock : CulledRebarBlock {
     /**
      * Any entity id's that should be culled when the block is considered culled by the BlockTextureEngine.

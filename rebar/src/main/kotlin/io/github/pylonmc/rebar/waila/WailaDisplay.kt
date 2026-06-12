@@ -17,12 +17,13 @@ import org.bukkit.entity.Player
  * The configuration for a WAILA bossbar (the bar shown at the top of your
  * screen when looking at a block).
  */
-class WailaDisplay @JvmOverloads constructor(
+class WailaDisplay internal constructor(
     var text: Component,
     var color: BossBar.Color = RebarConfig.WailaConfig.DEFAULT_DISPLAY.color,
     var overlay: BossBar.Overlay = RebarConfig.WailaConfig.DEFAULT_DISPLAY.overlay,
     var progress: Float = RebarConfig.WailaConfig.DEFAULT_DISPLAY.progress
 ) {
+
 
     fun color(color: BossBar.Color) = apply { this.color = color }
     fun overlay(overlay: BossBar.Overlay) = apply { this.overlay = overlay }
