@@ -1,7 +1,9 @@
 package io.github.pylonmc.rebar.config.adapter
 
+import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextColor
 import net.kyori.adventure.util.HSVLike
+import org.bukkit.Bukkit
 import java.lang.reflect.Type
 
 object TextColorConfigAdapter : ConfigAdapter<TextColor> {
@@ -9,26 +11,33 @@ object TextColorConfigAdapter : ConfigAdapter<TextColor> {
 
     override fun convert(value: Any): TextColor {
         if (value is String) {
-            val color = TextColor.fromHexString("#${value.trimStart().trimEnd()}")
-            if (color != null) {
-                return color
+            return if (value.startsWith("#")) {
+                val hexString = value.trimEnd()
+                TextColor.fromHexString(hexString)
+                    ?: error("Unable to convert hex color $hexString to TextColor")
             } else {
-                throw RuntimeException("Unable to convert hex color #${value.trimStart().trimEnd()} to TextColor")
+                val nameString = value.lowercase()
+                Bukkit.getLogger().severe { "${NamedTextColor.NAMES.keys()}" }
+                NamedTextColor.NAMES.valueOr(nameString, null)
+                    ?: error("There is no TextColor with the name '$nameString'")
             }
         } else {
             val section = ConfigAdapter.CONFIG_SECTION.convert(value)
-            val h = section.get("h", ConfigAdapter.FLOAT)
-            val s = section.get("s", ConfigAdapter.FLOAT)
-            val v = section.get("v", ConfigAdapter.FLOAT)
-            if (h != null && s != null && v != null) {
+
+            if (section.has("h") && section.has("s") && section.has("v")) {
+                val h = section.getOrThrow("h", ConfigAdapter.FLOAT)
+                val s = section.getOrThrow("s", ConfigAdapter.FLOAT)
+                val v = section.getOrThrow("v", ConfigAdapter.FLOAT)
                 return TextColor.color(HSVLike.hsvLike(h, s, v))
             }
-            val r = section.get("r", ConfigAdapter.INTEGER)
-            val g = section.get("g", ConfigAdapter.INTEGER)
-            val b = section.get("b", ConfigAdapter.INTEGER)
-            if (r != null && g != null && b != null && v != null) {
+
+            if (section.has("r") && section.has("g") && section.has("b")) {
+                val r = section.getOrThrow("r", ConfigAdapter.INTEGER)
+                val g = section.getOrThrow("g", ConfigAdapter.INTEGER)
+                val b = section.getOrThrow("b", ConfigAdapter.INTEGER)
                 return TextColor.color(r, g, b)
             }
+
             throw RuntimeException("Could not find hsv or rgb values in TextColor config section")
         }
     }

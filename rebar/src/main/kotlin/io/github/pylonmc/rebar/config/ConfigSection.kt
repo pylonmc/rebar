@@ -133,7 +133,7 @@ open class ConfigSection private constructor(val name: String?, val internalSect
             throw exception
         } catch (e: Exception) {
             throw IllegalArgumentException(
-                "Failed to convert value '$rawValue' to type ${adapter.type} at ${getKeyPath(key)}",
+                "Failed to convert value '$rawValue' to type ${adapter.type.typeName} at ${getKeyPath(key)}",
                 e
             )
         }

@@ -75,12 +75,12 @@ object ItemChoiceConfigAdapter : ConfigAdapter<ItemChoice> {
             // pylon:bronze_ingot: 5
 
             val map = MapConfigAdapter.STRING_TO_ANY.convert(value)
-            if (map.size == 1) {
+            if (map.size == 1 && "choices" !in map) {
                 return convert(map.entries.first().toPair())
             }
 
-            val amount = ConfigAdapter.INTEGER.convert(map["amount"] ?: error("You must specify a recipe amount e.g. 'amount: 5'"))
             val choices = ListConfigAdapter.from(ConfigAdapter.ANY).convert(map["choices"] ?: error("You must specify recipe choices e.g. 'choices: [pylon:fluid_pipe_copper, minecraft:apple]'"))
+            val amount = ConfigAdapter.INTEGER.convert(map["amount"] ?: 1)
 
             val internalChoices = mutableListOf<ItemChoice.InternalItemChoice>()
             for (choice in choices) {

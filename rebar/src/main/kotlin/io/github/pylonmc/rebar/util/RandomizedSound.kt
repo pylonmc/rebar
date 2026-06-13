@@ -7,6 +7,10 @@ import org.bukkit.Location
 import org.bukkit.block.Block
 import org.bukkit.entity.Entity
 
+/**
+ * Picks a random sound and a random volume and pitch from the ranges
+ * when played.
+ */
 data class RandomizedSound(
     val keys: Collection<Key>,
     val source: Sound.Source,
