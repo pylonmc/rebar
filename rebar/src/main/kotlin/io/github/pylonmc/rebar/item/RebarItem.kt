@@ -115,7 +115,7 @@ open class RebarItem(val stack: ItemStack) : Keyed {
 
             if (isNameValid) {
                 val translator = schema.addon.translator
-                for (locale in schema.addon.languages) {
+                for (locale in schema.addon.translator.languages) {
                     if (!translator.canTranslate(name!!.key(), locale)) {
                         Rebar.logger.warning(
                             "${schema.key.namespace} is missing a name translation key for item ${schema.key} (locale: ${locale.displayName} | expected translation key: ${

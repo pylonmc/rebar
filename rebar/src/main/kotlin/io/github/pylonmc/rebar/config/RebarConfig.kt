@@ -16,6 +16,9 @@ object RebarConfig {
     val BYPASS_VERSION_CHECK = config.getOrThrow("bypass-version-check", ConfigAdapter.BOOLEAN)
 
     @JvmField
+    val DEFAULT_LANGUAGE = config.getOrThrow("default-language", ConfigAdapter.LOCALE)
+
+    @JvmField
     val DEFAULT_TICK_INTERVAL = config.getOrThrow("default-tick-interval", ConfigAdapter.INTEGER)
 
     @JvmField

@@ -412,10 +412,7 @@ object Rebar : JavaPlugin(), RebarAddon {
 
     override val material = Material.BEDROCK
 
-    override val languages: Set<Locale> = setOf(
-        Locale.ENGLISH,
-        Locale.of("enws")
-    )
+    override val defaultLanguage: Locale = RebarConfig.DEFAULT_LANGUAGE
 }
 
 private fun addDefaultPermission(permission: String) {

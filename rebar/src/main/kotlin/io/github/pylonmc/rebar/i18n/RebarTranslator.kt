@@ -35,8 +35,10 @@ import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerLocaleChangeEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.inventory.ItemStack
+import java.io.File
 import java.text.MessageFormat
 import java.util.*
+import java.util.jar.JarFile
 import kotlin.io.path.exists
 import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.nameWithoutExtension
@@ -60,9 +62,13 @@ class RebarTranslator private constructor(private val addon: RebarAddon) : Trans
     private val translationCache = mutableMapOf<Pair<Locale, String>, Component>()
 
     init {
-        for (lang in addon.languages) {
-            mergeResource(addon, "lang/$lang.yml", "lang/$addonNamespace/$lang.yml")
-        }
+        // Copy builtin language files
+        val jarFile = JarFile(File(addon.javaClass.protectionDomain.codeSource.location.toURI()))
+        jarFile.stream()
+            .filter { it.name.startsWith("lang/") && it.name.endsWith(".yml") }
+            .map { it.name.removePrefix("lang/") }
+            .forEach { file -> mergeResource(addon, "lang/$file", "lang/$addonNamespace/$file") }
+
         loadTranslations()
     }
 
@@ -140,7 +146,7 @@ class RebarTranslator private constructor(private val addon: RebarAddon) : Trans
                 .sortedByDescending { it.weight }
         }
         return Locale.lookup(languageRange, this.translations.keys)?.let(translations::get)
-            ?: findTranslations(addon.languages.first())
+            ?: findTranslations(addon.defaultLanguage)
     }
 
     override fun name(): Key = addon.key
