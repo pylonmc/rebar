@@ -10,8 +10,8 @@ import io.github.pylonmc.rebar.item.RebarItemSchema
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
 import io.github.pylonmc.rebar.item.research.Research.Companion.canCraft
 import io.github.pylonmc.rebar.item.research.Research.Companion.canUse
-import io.github.pylonmc.rebar.content.guide.RebarGuide.Companion.guideHints
 import io.github.pylonmc.rebar.content.guide.RebarGuide.Companion.playGuideSound
+import io.github.pylonmc.rebar.guide.pages.settings.MainSettingsPage.guideHints
 import io.github.pylonmc.rebar.item.research.Research.Companion.researchPoints
 import io.github.pylonmc.rebar.recipe.RecipeInput
 import io.github.pylonmc.rebar.util.gui.unit.UnitFormat

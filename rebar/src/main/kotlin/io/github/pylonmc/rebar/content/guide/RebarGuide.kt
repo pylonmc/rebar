@@ -2,7 +2,6 @@ package io.github.pylonmc.rebar.content.guide
 
 import io.github.pylonmc.rebar.addon.RebarAddon
 import io.github.pylonmc.rebar.config.RebarConfig
-import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.event.api.annotation.MultiHandler
 import io.github.pylonmc.rebar.guide.button.BackButton
 import io.github.pylonmc.rebar.guide.button.FluidButton
@@ -19,6 +18,7 @@ import io.github.pylonmc.rebar.guide.pages.research.AddonResearchesPage
 import io.github.pylonmc.rebar.guide.pages.research.ResearchItemsPage
 import io.github.pylonmc.rebar.guide.pages.research.ResearchesPage
 import io.github.pylonmc.rebar.guide.pages.settings.MainSettingsPage
+import io.github.pylonmc.rebar.guide.pages.settings.MainSettingsPage.guideSounds
 import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
 import io.github.pylonmc.rebar.item.interfaces.InteractRebarItemHandler
@@ -28,7 +28,6 @@ import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.util.RandomizedSound
 import io.github.pylonmc.rebar.util.findRebar
 import io.github.pylonmc.rebar.util.gui.GuiItems
-import io.github.pylonmc.rebar.util.persistentData
 import io.github.pylonmc.rebar.util.rebarKey
 import io.papermc.paper.datacomponent.DataComponentTypes
 import net.kyori.adventure.key.Key
@@ -64,9 +63,6 @@ class RebarGuide(stack: ItemStack) : RebarItem(stack), InteractRebarItemHandler 
     }
 
     companion object : Listener {
-
-        private val guideHintsKey = rebarKey("guide_hints")
-        private val guideSoundsKey = rebarKey("guide_sounds")
 
         @JvmField
         val KEY = rebarKey("guide")
@@ -162,12 +158,6 @@ class RebarGuide(stack: ItemStack) : RebarItem(stack), InteractRebarItemHandler 
 
         @JvmStatic
         val mainSettingsButton = PageButton(Material.COMPARATOR, mainSettingsPage)
-
-        @JvmStatic
-        var Player.guideHints: Boolean by persistentData(guideHintsKey, RebarSerializers.BOOLEAN, true)
-
-        @JvmStatic
-        var Player.guideSounds: Boolean by persistentData(guideSoundsKey, RebarSerializers.BOOLEAN, true)
 
         @JvmStatic
         @JvmOverloads

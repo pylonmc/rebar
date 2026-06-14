@@ -7,7 +7,9 @@ import io.github.pylonmc.rebar.config.adapter.ConfigAdapter
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.event.RebarRegisterEvent
 import io.github.pylonmc.rebar.event.RebarUnregisterEvent
+import io.github.pylonmc.rebar.guide.pages.settings.MainSettingsPage.storyText
 import io.github.pylonmc.rebar.i18n.RebarTranslator.Companion.translator
+import io.github.pylonmc.rebar.item.RebarItemSchema
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
 import io.github.pylonmc.rebar.nms.NmsAccessor
 import io.github.pylonmc.rebar.registry.RebarRegistry
@@ -28,6 +30,7 @@ import net.kyori.adventure.translation.Translator
 import org.apache.commons.lang3.LocaleUtils
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
+import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
@@ -154,13 +157,13 @@ class RebarTranslator private constructor(private val addon: RebarAddon) : Trans
                 ?: error("Addon does not have a translator; did you forget to call registerWithRebar()?")
 
         /**
-         * Modifies the [ItemStack] to translate its name and lore into the specified [locale].
+         * Modifies the [ItemStack] to translate its name and lore into the locale of the specified [player].
          */
         @JvmStatic
         @JvmOverloads
         @JvmName("translateItem")
         @Suppress("UnstableApiUsage")
-        fun ItemStack.translate(locale: Locale, arguments: List<RebarArgument> = emptyList()) {
+        fun ItemStack.translate(player: Player, arguments: List<RebarArgument> = emptyList()) {
             fun isRebarOrAddon(component: Component): Boolean {
                 if (component is TranslatableComponent) {
                     for (addon in RebarRegistry.ADDONS) {
@@ -171,6 +174,8 @@ class RebarTranslator private constructor(private val addon: RebarAddon) : Trans
                 }
                 return component.children().any(::isRebarOrAddon)
             }
+
+            val locale = player.locale()
 
             editData(DataComponentTypes.ITEM_NAME) {
                 if (!isRebarOrAddon(it)) return@editData it
@@ -221,7 +226,20 @@ class RebarTranslator private constructor(private val addon: RebarAddon) : Trans
                 if (result.style().color() == null) result.color(NamedTextColor.WHITE) else result
             }
             editData(DataComponentTypes.LORE) { lore ->
-                val originalLore = lore.lines()
+                val originalLore = lore.lines().toMutableList()
+
+                // Add story text to lore if this is a Rebar item with story text and player has story text enabled
+                val rebarItemSchema = RebarItemSchema.fromStack(this)
+                if (rebarItemSchema != null && player.storyText) {
+                    val storyKey = "${rebarItemSchema.key.namespace}.item.${rebarItemSchema.key.key}.story"
+                    if (translators[rebarItemSchema.addon.key]!!.canTranslate(storyKey, locale)) {
+                        if (originalLore.isNotEmpty()) {
+                            originalLore.add(Component.empty()) // newline
+                        }
+                        originalLore.add(Component.translatable(storyKey, null as String?))
+                    }
+                }
+
                 val newLore = originalLore.flatMap { line ->
                     if (!isRebarOrAddon(line)) return@flatMap listOf(line)
                     val concatenatedArguments: MutableList<TranslationArgumentLike> = arguments.toMutableList()
@@ -240,6 +258,9 @@ class RebarTranslator private constructor(private val addon: RebarAddon) : Trans
                 }
 
                 editPersistentDataContainer { pdc -> pdc.set(originalLoreKey, loreType, originalLore) }
+                check(newLore.size <= 256) {
+                    "Lore for item had too many lines ($locale) (256 lines max but had ${newLore.size}): ${newLore.map { it.plainText }}\\n"
+                }
                 ItemLore.lore(newLore)
             }
         }
