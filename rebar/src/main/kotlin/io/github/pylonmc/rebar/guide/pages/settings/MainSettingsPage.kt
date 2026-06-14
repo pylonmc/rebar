@@ -1,15 +1,15 @@
 package io.github.pylonmc.rebar.guide.pages.settings
 
 import io.github.pylonmc.rebar.config.RebarConfig
+import io.github.pylonmc.rebar.content.guide.RebarGuide.Companion.guideHints
+import io.github.pylonmc.rebar.content.guide.RebarGuide.Companion.guideSounds
 import io.github.pylonmc.rebar.guide.button.PageButton
 import io.github.pylonmc.rebar.guide.button.setting.TogglePlayerSettingButton
-import io.github.pylonmc.rebar.datatypes.RebarSerializers
+import io.github.pylonmc.rebar.i18n.RebarTranslator.Companion.storyText
 import io.github.pylonmc.rebar.item.research.Research.Companion.researchConfetti
 import io.github.pylonmc.rebar.item.research.Research.Companion.researchSounds
-import io.github.pylonmc.rebar.util.persistentData
 import io.github.pylonmc.rebar.util.rebarKey
 import org.bukkit.Material
-import org.bukkit.entity.Player
 
 object MainSettingsPage : PlayerSettingsPage(rebarKey("settings")) {
 
@@ -77,17 +77,4 @@ object MainSettingsPage : PlayerSettingsPage(rebarKey("settings")) {
         addSetting(guideSoundsButton)
         addSetting(storyTextButton)
     }
-
-    private val guideHintsKey = rebarKey("guide_hints")
-    private val guideSoundsKey = rebarKey("guide_sounds")
-    private val storyTextKey = rebarKey("story_text")
-
-    @JvmStatic
-    var Player.guideHints: Boolean by persistentData(guideHintsKey, RebarSerializers.BOOLEAN, true)
-
-    @JvmStatic
-    var Player.storyText: Boolean by persistentData(storyTextKey, RebarSerializers.BOOLEAN, true)
-
-    @JvmStatic
-    var Player.guideSounds: Boolean by persistentData(guideSoundsKey, RebarSerializers.BOOLEAN, true)
 }

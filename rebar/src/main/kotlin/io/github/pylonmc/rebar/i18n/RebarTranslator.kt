@@ -7,7 +7,6 @@ import io.github.pylonmc.rebar.config.adapter.ConfigAdapter
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.event.RebarRegisterEvent
 import io.github.pylonmc.rebar.event.RebarUnregisterEvent
-import io.github.pylonmc.rebar.guide.pages.settings.MainSettingsPage.storyText
 import io.github.pylonmc.rebar.i18n.RebarTranslator.Companion.translator
 import io.github.pylonmc.rebar.item.RebarItemSchema
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
@@ -15,6 +14,7 @@ import io.github.pylonmc.rebar.nms.NmsAccessor
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.util.editData
 import io.github.pylonmc.rebar.util.mergeResource
+import io.github.pylonmc.rebar.util.persistentData
 import io.github.pylonmc.rebar.util.plainText
 import io.github.pylonmc.rebar.util.rebarKey
 import io.github.pylonmc.rebar.util.withArguments
@@ -149,6 +149,11 @@ class RebarTranslator private constructor(private val addon: RebarAddon) : Trans
         private val originalTypeKey = rebarKey("translation_original_type")
 
         private val loreType = RebarSerializers.LIST.listTypeFrom(RebarSerializers.COMPONENT)
+
+        private val storyTextKey = rebarKey("story_text")
+
+        @JvmStatic
+        var Player.storyText: Boolean by persistentData(storyTextKey, RebarSerializers.BOOLEAN, true)
 
         @JvmStatic
         @get:JvmName("getTranslatorForAddon")
