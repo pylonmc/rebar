@@ -52,7 +52,7 @@ class RebarTranslator private constructor(private val addon: RebarAddon) : Trans
 
     private val addonNamespace = addon.key.namespace
 
-    private val translations: Map<Locale, ConfigSection>
+    private val translations: MutableMap<Locale, ConfigSection> = mutableMapOf()
 
     val languages: Set<Locale>
         get() = translations.keys
@@ -63,19 +63,29 @@ class RebarTranslator private constructor(private val addon: RebarAddon) : Trans
         for (lang in addon.languages) {
             mergeResource(addon, "lang/$lang.yml", "lang/$addonNamespace/$lang.yml")
         }
+        loadTranslations()
+    }
+
+    private fun loadTranslations() {
         val langsDir = Rebar.dataPath.resolve("lang").resolve(addonNamespace)
-        translations = if (!langsDir.exists()) {
-            emptyMap()
-        } else {
-            langsDir.listDirectoryEntries("*.yml").associate {
+        if (langsDir.exists()) {
+            langsDir.listDirectoryEntries("*.yml").forEach {
                 val split = it.nameWithoutExtension.split('_', limit = 3)
-                Locale.of(
+                val locale = Locale.of(
                     split.first(),
                     split.getOrNull(1).orEmpty(),
                     split.getOrNull(2).orEmpty()
-                ) to ConfigSection.fromOrThrow(it)
+                )
+                val config = ConfigSection.fromOrThrow(it)
+                translations[locale] = config
             }
         }
+    }
+
+    fun reload() {
+        translationCache.clear()
+        translations.clear()
+        loadTranslations()
     }
 
     override fun canTranslate(key: String, locale: Locale): Boolean {
@@ -151,7 +161,7 @@ class RebarTranslator private constructor(private val addon: RebarAddon) : Trans
         @get:JvmName("getTranslatorForAddon")
         val RebarAddon.translator: RebarTranslator
             get() = translators[this.key]
-                ?: error("Addon does not have a translator; did you forget to call registerWithRebar()?")
+                ?: error("Addon ${this.key} does not have a translator; did you forget to call registerWithRebar()?")
 
         /**
          * Modifies the [ItemStack] to translate its name and lore into the specified [locale].

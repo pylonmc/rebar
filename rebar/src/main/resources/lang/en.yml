@@ -63,6 +63,9 @@ message:
     unlocked: "<green>You have discovered %research%"
     click_to_research: "<green>Click to research (%points% points)"
 
+  waila:
+    type-disabled: "<red>This server no longer permits the your previously set %type% WAILA display type, it has been reset to default"
+
   command:
     error:
       no_permission: "<red>You do not have permission to use this command"
@@ -109,8 +112,8 @@ message:
       <gray>Installed Addons:</gray> <dark_gray>(%addon_count%)</dark_gray>
       %addon_list%
 
-  waila:
-    type-disabled: "<red>This server no longer permits the your previously set %type% WAILA display type, it has been reset to default"
+    reloadlang:
+      success: "<green>Language entries reloaded"
 
 gui:
   scroll:

@@ -286,10 +286,6 @@ object Rebar : JavaPlugin(), RebarAddon {
         )
 
         addDefaultPermission("rebar.command.guide")
-        addDefaultPermission("rebar.command.waila")
-        addDefaultPermission("rebar.command.research.list.self")
-        addDefaultPermission("rebar.command.research.discover")
-        addDefaultPermission("rebar.command.research.points.query.self")
         lifecycleManager.registerEventHandler(LifecycleEvents.COMMANDS) {
             it.registrar().register(ROOT_COMMAND)
             it.registrar().register(ROOT_COMMAND_RE_ALIAS)
