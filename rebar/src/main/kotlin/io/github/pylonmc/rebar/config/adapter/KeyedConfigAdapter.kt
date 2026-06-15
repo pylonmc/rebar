@@ -16,17 +16,17 @@ abstract class KeyedConfigAdapter<T : Keyed> : ConfigAdapter<T> {
     companion object {
 
         @JvmStatic
-        fun <T : Keyed> fromGetter(clazz: Class<T>, fromKey: (NamespacedKey) -> T): ConfigAdapter<T> =
+        fun <T : Keyed> fromGetter(clazz: Class<T>, getter: (NamespacedKey) -> T): ConfigAdapter<T> =
             object : KeyedConfigAdapter<T>() {
                 override val type = clazz
-                override fun fromKey(key: NamespacedKey): T = fromKey(key)
+                override fun fromKey(key: NamespacedKey): T = getter(key)
             }
 
         @JvmSynthetic
-        inline fun <reified T : Keyed> fromGetter(crossinline fromKey: (NamespacedKey) -> T): ConfigAdapter<T> =
+        inline fun <reified T : Keyed> fromGetter(crossinline getter: (NamespacedKey) -> T): ConfigAdapter<T> =
             object : KeyedConfigAdapter<T>() {
                 override val type = T::class.java
-                override fun fromKey(key: NamespacedKey): T = fromKey(key)
+                override fun fromKey(key: NamespacedKey): T = getter(key)
             }
 
         @JvmStatic

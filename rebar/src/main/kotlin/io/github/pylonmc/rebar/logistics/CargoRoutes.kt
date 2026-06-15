@@ -68,10 +68,10 @@ object CargoRoutes : Listener {
         var lastFaceUsed = source.face
         val previous = source.block.block.position
         var current = previous.getRelative(source.face)
-        val routeBlocks = mutableListOf<BlockPosition>(source.block.block.position)
+        val routeBlocks = mutableListOf(source.block.block.position)
         var endpoint: CargoRouteEndpoint? = null
 
-        while (current.chunk.isLoaded) {
+        while (current.isChunkLoaded) {
             routeBlocks.add(current)
             for (face in IMMEDIATE_FACES) {
                 routeBlocks.add(current.getRelative(face))

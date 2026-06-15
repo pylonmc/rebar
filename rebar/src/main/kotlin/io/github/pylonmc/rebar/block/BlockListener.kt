@@ -11,8 +11,10 @@ import io.github.pylonmc.rebar.event.api.annotation.MultiHandler
 import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.item.research.Research.Companion.canUse
 import io.github.pylonmc.rebar.util.isFakeEvent
+import io.github.pylonmc.rebar.util.position.BlockPosition
 import io.github.pylonmc.rebar.util.position.position
 import io.papermc.paper.event.block.BlockBreakBlockEvent
+import io.papermc.paper.event.block.BlockBreakProgressUpdateEvent
 import org.bukkit.ExplosionResult
 import org.bukkit.Material
 import org.bukkit.event.Event
@@ -35,11 +37,19 @@ import java.util.*
 @Suppress("UnstableApiUsage")
 internal object BlockListener : MultiListener {
     private val blockErrMap: MutableMap<RebarBlock, Int> = WeakHashMap()
+
+    @JvmSynthetic
+    internal val blockBreakProgressMap: MutableMap<BlockPosition, Float> = HashMap()
     
     @MultiHandler(priorities = [ EventPriority.LOWEST, EventPriority.MONITOR ], ignoreCancelled = true)
     private fun blockPlace(event: BlockPlaceEvent, priority: EventPriority) {
-        val item = event.itemInHand
+        val rebarBlock = BlockStorage.get(event.block)
+        if (rebarBlock != null) {
+            event.isCancelled = true
+            return
+        }
 
+        val item = event.itemInHand
         if (!item.type.isBlock) {
             return
         }
@@ -250,18 +260,19 @@ internal object BlockListener : MultiListener {
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    private fun preventReplacingStructureVoids(event: BlockPlaceEvent) {
+    private fun onFluidPlace(event: PlayerBucketEmptyEvent) {
         val rebarBlock = BlockStorage.get(event.block)
-        if (rebarBlock != null && rebarBlock.schema.material == Material.STRUCTURE_VOID) {
+        if (rebarBlock != null) {
             event.isCancelled = true
         }
     }
 
-    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    private fun onFluidPlace(event: PlayerBucketEmptyEvent) {
-        val rebarBlock = BlockStorage.get(event.block)
-        if (rebarBlock != null && rebarBlock.schema.material == Material.STRUCTURE_VOID) {
-            event.isCancelled = true
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    private fun onBlockBreakProgressUpdated(event: BlockBreakProgressUpdateEvent) {
+        if (event.progress == 0.0F) {
+            blockBreakProgressMap.remove(event.block.position)
+        } else {
+            blockBreakProgressMap[event.block.position] = event.progress
         }
     }
 

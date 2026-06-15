@@ -13,9 +13,11 @@ import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.event.*
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.util.delayTicks
+import io.github.pylonmc.rebar.util.isChunkLoaded
 import io.github.pylonmc.rebar.util.isFromAddon
 import io.github.pylonmc.rebar.util.position.BlockPosition
 import io.github.pylonmc.rebar.util.position.ChunkPosition
+import io.github.pylonmc.rebar.util.position.chunkPosition
 import io.github.pylonmc.rebar.util.position.position
 import io.github.pylonmc.rebar.util.rebarKey
 import kotlinx.coroutines.Job
@@ -30,7 +32,6 @@ import org.bukkit.event.world.ChunkLoadEvent
 import org.bukkit.event.world.ChunkUnloadEvent
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataContainer
-import org.bukkit.persistence.PersistentDataType
 import java.util.Collections
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.locks.ReentrantReadWriteLock
@@ -77,7 +78,7 @@ object BlockStorage : Listener {
     // Only contains chunks that have been loaded (including chunks with no Rebar blocks)
     private val blocksByChunk: MutableMap<ChunkPosition, MutableList<RebarBlock>> = ConcurrentHashMap()
 
-    private val blocksByKey: MutableMap<NamespacedKey, MutableList<RebarBlock>> = ConcurrentHashMap()
+    private val blocksBySchema: MutableMap<RebarBlockSchema, MutableList<RebarBlock>> = ConcurrentHashMap()
 
     private val chunkAutosaveTasks: MutableMap<ChunkPosition, Job> = ConcurrentHashMap()
 
@@ -101,7 +102,7 @@ object BlockStorage : Listener {
     @JvmStatic
     fun get(blockPosition: BlockPosition?): RebarBlock? {
         if (blockPosition == null) return null
-        require(blockPosition.chunk.isLoaded) { "You can only get Rebar blocks in loaded chunks" }
+        require(blockPosition.isChunkLoaded) { "You can only get Rebar blocks in loaded chunks" }
         return lockBlockRead { blocks[blockPosition] }
     }
 
@@ -183,7 +184,7 @@ object BlockStorage : Listener {
     inline fun <reified T> getAs(location: Location?): T? = getAs(T::class.java, location)
 
     /**
-     * Returns all the Plyon blocks in the chunk at [chunkPosition].
+     * Returns all the Rebar blocks in the chunk at [chunkPosition].
      *
      * @throws IllegalArgumentException if the chunk is not loaded
      */
@@ -194,17 +195,27 @@ object BlockStorage : Listener {
     }
 
     /**
-     * Returns all the Plyon blocks with type [key].
+     * Returns all the Rebar blocks with schema [schema]
+     */
+    @JvmStatic
+    fun getBySchema(schema: RebarBlockSchema): Collection<RebarBlock> = lockBlockRead {
+        blocksBySchema[schema].orEmpty().toSet()
+    }
+
+    /**
+     * Returns all the Rebar blocks whose [Class] inherits [type]
+     */
+    @JvmStatic
+    fun <T> getByType(type: Class<T>): Collection<RebarBlock> = lockBlockRead {
+        blocksBySchema.filter { it.key.isType(type) }.values.flatten()
+    }
+
+    /**
+     * Returns all the Rebar blocks with key [key].
      */
     @JvmStatic
     fun getByKey(key: NamespacedKey): Collection<RebarBlock> =
-        if (RebarRegistry.BLOCKS.contains(key)) {
-            lockBlockRead {
-                blocksByKey[key].orEmpty().toSet()
-            }
-        } else {
-            emptySet()
-        }
+        getBySchema(RebarRegistry.BLOCKS.getOrThrow(key))
 
     /**
      * Returns whether the block at [blockPosition] is a Rebar block.
@@ -212,7 +223,7 @@ object BlockStorage : Listener {
      */
     @JvmStatic
     fun isRebarBlock(blockPosition: BlockPosition): Boolean =
-        (blockPosition.chunk.isLoaded) && get(blockPosition) != null
+        (blockPosition.isChunkLoaded) && get(blockPosition) != null
 
     /**
      * Returns whether the block at [block] is a Rebar block.
@@ -220,7 +231,7 @@ object BlockStorage : Listener {
      */
     @JvmStatic
     fun isRebarBlock(block: Block): Boolean =
-        (block.position.chunk.isLoaded) && get(block) != null
+        (block.isChunkLoaded) && get(block) != null
 
     /**
      * Returns whether the block at [location] is a Rebar block
@@ -228,7 +239,7 @@ object BlockStorage : Listener {
      */
     @JvmStatic
     fun isRebarBlock(location: Location): Boolean =
-        (location.chunk.isLoaded) && get(location) != null
+        (location.isChunkLoaded) && get(location) != null
 
 
     /**
@@ -281,7 +292,7 @@ object BlockStorage : Listener {
         key: NamespacedKey,
         context: BlockCreateContext = BlockCreateContext.Default(block = blockPosition.block)
     ): RebarBlock? {
-        require(blockPosition.chunk.isLoaded) { "You can only place Rebar blocks in loaded chunks" }
+        require(blockPosition.isChunkLoaded) { "You can only place Rebar blocks in loaded chunks" }
         require(!isRebarBlock(blockPosition)) { "You cannot place a new Rebar block in place of an existing Rebar blocks" }
 
         val schema = RebarRegistry.BLOCKS[key]
@@ -309,7 +320,7 @@ object BlockStorage : Listener {
         lockBlockWrite {
             check(blockPosition.chunk in blocksByChunk) { "Chunk '${blockPosition.chunk}' must be loaded" }
             blocks[blockPosition] = block
-            blocksByKey.getOrPut(schema.key, ::mutableListOf).add(block)
+            blocksBySchema.getOrPut(schema, ::mutableListOf).add(block)
             blocksByChunk[blockPosition.chunk]!!.add(block)
         }
 
@@ -334,13 +345,11 @@ object BlockStorage : Listener {
         schema: RebarBlockSchema,
         pdcData: PersistentDataContainer
     ): RebarBlock? {
-        val context = BlockCreateContext.ManualLoading(block = blockPosition.block)
+        require(blockPosition.isChunkLoaded) { "You can only place Rebar blocks in loaded chunks" }
+        require(!isRebarBlock(blockPosition)) { "You cannot place a new Rebar block in place of an existing Rebar blocks" }
+
         val block = blockPosition.block
-        pdcData.set(RebarBlock.rebarBlockPositionKey, PersistentDataType.LONG, blockPosition.asLong)
-
-        require(block.chunk.isLoaded) { "You can only place Rebar blocks in loaded chunks" }
-        require(!isRebarBlock(block)) { "You cannot place a new Rebar block in place of an existing Rebar blocks" }
-
+        val context = BlockCreateContext.ManualLoading(block = block)
         if (!PreRebarBlockPlaceEvent(block, schema, context).callEvent()) return null
         if (context.shouldSetType) {
             block.type = schema.material
@@ -351,7 +360,7 @@ object BlockStorage : Listener {
         lockBlockWrite {
             check(blockPosition.chunk in blocksByChunk) { "Chunk '${blockPosition.chunk}' must be loaded" }
             blocks[blockPosition] = pyBlock
-            blocksByKey.getOrPut(schema.key, ::mutableListOf).add(pyBlock)
+            blocksBySchema.getOrPut(schema, ::mutableListOf).add(pyBlock)
             blocksByChunk[blockPosition.chunk]!!.add(pyBlock)
         }
 
@@ -377,7 +386,7 @@ object BlockStorage : Listener {
         blockPosition: BlockPosition,
         context: BlockBreakContext = BlockBreakContext.PluginBreak(blockPosition.block)
     ): List<Item>? {
-        require(blockPosition.chunk.isLoaded) { "You can only break Rebar blocks in loaded chunks" }
+        require(blockPosition.isChunkLoaded) { "You can only break Rebar blocks in loaded chunks" }
         val block = get(blockPosition) ?: return null
         if (!preBreakBlock(block, context)) return null
         return removeBlock(block, blockPosition, context)
@@ -410,7 +419,7 @@ object BlockStorage : Listener {
 
         lockBlockWrite {
             blocks.remove(blockPosition)
-            blocksByKey[block.schema.key]?.remove(block)
+            blocksBySchema[block.schema]?.remove(block)
             blocksByChunk[blockPosition.chunk]?.remove(block)
         }
 
@@ -487,7 +496,7 @@ object BlockStorage : Listener {
      */
     @JvmSynthetic
     internal fun deleteBlock(blockPosition: BlockPosition) {
-        require(blockPosition.chunk.isLoaded) { "You can only delete Rebar block data in loaded chunks" }
+        require(blockPosition.isChunkLoaded) { "You can only delete Rebar block data in loaded chunks" }
 
         val block = get(blockPosition) ?: return
 
@@ -498,7 +507,7 @@ object BlockStorage : Listener {
 
         lockBlockWrite {
             blocks.remove(blockPosition)
-            blocksByKey[block.schema.key]?.remove(block)
+            blocksBySchema[block.schema]?.remove(block)
             blocksByChunk[blockPosition.chunk]?.remove(block)
         }
 
@@ -534,7 +543,7 @@ object BlockStorage : Listener {
             blocksByChunk[event.chunk.position] = chunkBlocks.toMutableList()
             for (block in chunkBlocks) {
                 blocks[block.block.position] = block
-                blocksByKey.computeIfAbsent(block.schema.key) { mutableListOf() }.add(block)
+                blocksBySchema.computeIfAbsent(block.schema) { mutableListOf() }.add(block)
             }
 
             // autosaving
@@ -569,7 +578,7 @@ object BlockStorage : Listener {
                 ?: error("Attempted to save Rebar data for chunk '${event.chunk.position}' but no data is stored")
             for (block in chunkBlocks) {
                 blocks.remove(block.block.position)
-                (blocksByKey[block.schema.key] ?: continue).remove(block)
+                (blocksBySchema[block.schema] ?: continue).remove(block)
             }
             chunkAutosaveTasks.remove(event.chunk.position)?.cancel()
             chunkBlocks
@@ -610,10 +619,10 @@ object BlockStorage : Listener {
             try {
                 phantomise(block)?.let { phantomBlock ->
                     blocks[position] = phantomBlock
-                    blocksByKey[block.key]!!.remove(block)
-                    blocksByKey.computeIfAbsent(phantomBlock.key) { mutableListOf() }.add(phantomBlock)
+                    blocksBySchema[block.schema]!!.remove(block)
+                    blocksBySchema.computeIfAbsent(phantomBlock.schema) { mutableListOf() }.add(phantomBlock)
                     blocksByChunk[position.chunk]!!.remove(block)
-                    blocksByChunk[phantomBlock.block.position.chunk]!!.add(phantomBlock)
+                    blocksByChunk[phantomBlock.block.chunkPosition]!!.add(phantomBlock)
                 }
             } catch (e: Exception) {
                 Rebar.logger.severe("Error while cleaning up block at $position from ${addon.key}")
@@ -627,16 +636,17 @@ object BlockStorage : Listener {
      */
     @JvmSynthetic
     internal fun makePhantom(block: RebarBlock): Unit = lockBlockWrite {
+        val blockPos = block.block.position
         BlockCullingEngine.remove(block)
-        RebarBlockSchema.schemaCache[block.block.position] = PhantomBlock.schema
+        RebarBlockSchema.schemaCache[blockPos] = PhantomBlock.schema
         val pdc = RebarBlock.serialize(block, block.block.chunk.persistentDataContainer.adapterContext) ?: return
         val phantomBlock = PhantomBlock(pdc, block.schema.key, block.block)
 
-        blocks.replace(block.block.position, block, phantomBlock)
-        blocksByKey[block.key]!!.remove(block)
-        blocksByKey.computeIfAbsent(phantomBlock.key) { mutableListOf() }.add(phantomBlock)
-        blocksByChunk[block.block.chunk.position]!!.remove(block)
-        blocksByChunk[phantomBlock.block.chunk.position]!!.add(phantomBlock)
+        blocks.replace(blockPos, block, phantomBlock)
+        blocksBySchema[block.schema]!!.remove(block)
+        blocksBySchema.computeIfAbsent(phantomBlock.schema) { mutableListOf() }.add(phantomBlock)
+        blocksByChunk[blockPos.chunk]!!.remove(block)
+        blocksByChunk[blockPos.chunk]!!.add(phantomBlock)
     }
 
     @JvmSynthetic

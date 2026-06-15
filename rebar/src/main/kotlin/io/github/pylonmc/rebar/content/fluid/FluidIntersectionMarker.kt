@@ -8,7 +8,6 @@ import io.github.pylonmc.rebar.block.context.BlockBreakContext
 import io.github.pylonmc.rebar.block.context.BlockBreakContext.PlayerBreak
 import io.github.pylonmc.rebar.block.context.BlockCreateContext
 import io.github.pylonmc.rebar.entity.EntityStorage
-import io.github.pylonmc.rebar.i18n.RebarArgument
 import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.util.rebarKey
 import io.github.pylonmc.rebar.waila.WailaDisplay
@@ -51,7 +50,7 @@ class FluidIntersectionMarker : RebarBlock, EntityHolderRebarBlock, BlockBreakRe
 
     override fun getWaila(player: Player): WailaDisplay? {
         val pipeItem = pipeOrNull() ?: return null
-        return WailaDisplay(defaultWailaTranslationKey.arguments(RebarArgument.of("pipe", pipeItem.stack.effectiveName())))
+        return WailaDisplay.of(pipeItem.stack.effectiveName())
     }
 
     val pipe: RebarItem

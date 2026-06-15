@@ -33,6 +33,10 @@ interface PagedGuidePage : GuidePage {
         pageNumbers.getOrPut(this, ::mutableMapOf)[player.uniqueId] = page
     }
 
+    fun resetCurrentPage(player: Player) {
+        pageNumbers[this]?.remove(player.uniqueId)
+    }
+
     companion object : Listener {
         val pageNumbers = WeakHashMap<GuidePage, MutableMap<UUID, Int>>()
 

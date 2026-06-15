@@ -51,15 +51,18 @@ class RootPage : SimpleStaticGuidePage(
         return gui.setContent(content).build().apply { loadCurrentPage(player, this) }
     }
 
-    override fun open(player: Player) {
+    override fun open(player: Player): Window? {
         try {
-            Window.builder()
+            val window = Window.builder()
                 .setUpperGui(getGui(player))
                 .setTitle(title)
-                .open(player)
+                .build(player)
+            window.open()
             RebarGuide.history.put(player.uniqueId, mutableListOf(this))
+            return window
         } catch (t: Throwable) {
             t.printStackTrace()
+            return null
         }
     }
 }

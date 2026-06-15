@@ -156,7 +156,6 @@ class Research(
         private val researchPointsKey = rebarKey("research_points")
         private val researchConfettiKey = rebarKey("research_confetti")
         private val researchSoundsKey = rebarKey("research_sounds")
-        private val guideHintsKey = rebarKey("guide_hints")
         private val researchesType =
             RebarSerializers.LIST.listTypeFrom(RebarSerializers.NAMESPACED_KEY)
 
@@ -168,9 +167,6 @@ class Research(
 
         @JvmStatic
         var Player.researchSounds: Boolean by persistentData(researchSoundsKey, RebarSerializers.BOOLEAN, true)
-
-        @JvmStatic
-        var Player.guideHints: Boolean by persistentData(guideHintsKey, RebarSerializers.BOOLEAN, true)
 
         @JvmStatic
         fun getResearches(player: OfflinePlayer): List<Research> {
