@@ -121,11 +121,17 @@ interface TickingRebarEntity {
         private val dispatchers = mutableMapOf<RebarEntitySchema, CoroutineDispatcher>()
 
         private fun startTicker(tickingEntity: TickingRebarEntity) {
+            // Ensure the entity is present before assigning its ticking job. After
+            // deserialization, the dispatcher cache can skip isAsync for later
+            // entities with the same schema, leaving them absent from the map.
+            val data = tickingEntities.getOrPut(tickingEntity) {
+                TickingEntityData(RebarConfig.DEFAULT_TICK_INTERVAL, false, null)
+            }
             val dispatcher = dispatchers.getOrPut((tickingEntity as RebarEntity<*>).schema) {
                 if (tickingEntity.isAsync) Dispatchers.Default
                 else Rebar.mainThreadDispatcher
             }
-            tickingEntities[tickingEntity]?.job = Rebar.scope.launch(dispatcher) {
+            data.job = Rebar.scope.launch(dispatcher) {
                 while (true) {
                     delayTicks(tickingEntity.tickInterval.toLong())
                     try {

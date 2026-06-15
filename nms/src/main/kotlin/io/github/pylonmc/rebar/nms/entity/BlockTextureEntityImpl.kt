@@ -365,6 +365,9 @@ class BlockTextureEntityImpl : BlockTextureEntity, SyncedDataHolder {
         return stateUpdated
     }
 
+    private fun CraftBlock.isChunkLoadedSafe(): Boolean =
+        world.isChunkLoaded(x shr 4, z shr 4)
+
     private fun calculateLightingOffset(): Vector3f {
         if (directLighting) {
             return ZERO_VECTOR
@@ -376,7 +379,7 @@ class BlockTextureEntityImpl : BlockTextureEntity, SyncedDataHolder {
         var brightestLight = 0.toByte()
         if (brightest !== ZERO_VECTOR) {
             val delegateBlock = block.block.getRelative(brightest.x.toInt(), brightest.y.toInt(), brightest.z.toInt()) as? CraftBlock
-            if (delegateBlock?.blockState?.hasLightingData ?: false) {
+            if (delegateBlock != null && delegateBlock.isChunkLoadedSafe() && delegateBlock.blockState.hasLightingData) {
                 brightestLight = delegateBlock.lightLevel
                 if (brightestLight >= 15) return brightest
                 brightestFace = IMMEDIATE_FACES.firstOrNull { it.modX == brightest.x.toInt() && it.modY == brightest.y.toInt() && it.modZ == brightest.z.toInt() }
@@ -386,7 +389,7 @@ class BlockTextureEntityImpl : BlockTextureEntity, SyncedDataHolder {
         for (face in IMMEDIATE_FACES) {
             if (brightestFace == face) continue
             val delegateBlock = block.block.getRelative(face) as? CraftBlock ?: continue
-            if (delegateBlock.blockState.hasLightingData) {
+            if (delegateBlock.isChunkLoadedSafe() && delegateBlock.blockState.hasLightingData) {
                 val light = delegateBlock.lightLevel
                 if (light > brightestLight) {
                     brightestLight = light
