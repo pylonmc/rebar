@@ -22,15 +22,16 @@ import java.util.IdentityHashMap
 /**
  * Represents a block that 'ticks' (does something at a fixed time interval).
  *
- * To use this interface, call [io.github.pylonmc.rebar.block.interfaces.TickingRebarBlock.setTickInterval]
- * in your place constructor and override
- * [io.github.pylonmc.rebar.block.interfaces.TickingRebarBlock.tick] with your desired ticking logic.
+ * To use this interface, override [TickingRebarBlock.tick] with your desired ticking
+ * logic and optionally call [TickingRebarBlock.setTickInterval] in your place
+ * constructor. If [TickingRebarBlock.setTickInterval] is not called, the tick interval
+ * defaults to [RebarConfig.DEFAULT_TICK_INTERVAL].
  *
  * You can make the block tick asynchronously by calling [setAsync]. You should only do
  * this if you know what you are doing and understand the
  * [implications of doing something asynchronously](https://docs.papermc.io/paper/dev/scheduler/#difference-between-synchronous-and-asynchronous-tasks).
  *
- * If your [io.github.pylonmc.rebar.block.interfaces.TickingRebarBlock.tick] function errors (or certain
+ * If your [TickingRebarBlock.tick] function errors (or certain
  * implemented methods for other interfaces error) more than [RebarConfig.ALLOWED_BLOCK_ERRORS] times,
  * the block will be turned into a phantom block.
  */

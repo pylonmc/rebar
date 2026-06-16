@@ -47,7 +47,7 @@ import kotlin.math.min
  * Each face can have one logistic group which cargo ducts (or other RebarCargoBlocks)
  * connected to that face are allowed to interface with.
  *
- * In your place constructor, you will need to call [io.github.pylonmc.rebar.block.interfaces.CargoRebarBlock.addCargoLogisticGroup]
+ * In your place constructor, you will need to call [CargoRebarBlock.addCargoLogisticGroup]
  * for all the block faces you want to be able to connect cargo ducts to, and also
  * `setCargoTransferRate` to set the maximum number of items that can be transferred
  * out of this block per cargo tick.

@@ -23,7 +23,7 @@ import kotlin.math.max
  * interface to handle it. This interface allows your block to easily manage
  * fluid buffers.
  *
- * You will need to call [io.github.pylonmc.rebar.block.interfaces.FluidBufferRebarBlock.createFluidBuffer]
+ * You will need to call [FluidBufferRebarBlock.createFluidBuffer]
  * when your block is placed and specify the buffer's fluid type, capacity,
  * whether it can take in fluids from input points, and whether it can supply
  * fluids to output points.

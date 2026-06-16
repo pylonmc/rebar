@@ -13,7 +13,6 @@ import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.EquipmentSlot
-import org.jetbrains.annotations.ApiStatus
 import xyz.xenondevs.invui.gui.Gui
 import xyz.xenondevs.invui.inventory.VirtualInventory
 import xyz.xenondevs.invui.window.Window
@@ -22,9 +21,9 @@ import java.util.IdentityHashMap
 /**
  * A simple interface that opens a GUI when the block is right clicked.
  *
- * To use this interface, simply override [io.github.pylonmc.rebar.block.interfaces.GuiRebarBlock.createGui]
+ * To use this interface, simply override [GuiRebarBlock.createGui]
  * to return the GUI you want to be opened when the block is right clicked. Keep in mind that once
- * the GUI has been created for the first time, [io.github.pylonmc.rebar.block.interfaces.GuiRebarBlock.createGui]
+ * the GUI has been created for the first time, [GuiRebarBlock.createGui]
  * will not be called again until the block is reloaded.
  *
  * This interface doesn't provide a way to update the GUI once it is created. This is mostly because
@@ -33,13 +32,13 @@ import java.util.IdentityHashMap
  * [PagedGui](https://docs.xenondevs.xyz/invui/gui/#paged-gui).
  *
  * The title of the window opened is by default the block's name. Override
- * [io.github.pylonmc.rebar.block.interfaces.GuiRebarBlock.guiTitle] to change this.
+ * [GuiRebarBlock.guiTitle] to change this.
  *
  * See [InvUI docs](https://docs.xenondevs.xyz/invui/) for information on how to make GUIs.
  *
  * @see Gui
  * @see VirtualInventory
- * @see io.github.pylonmc.rebar.block.interfaces.VirtualInventoryRebarBlock
+ * @see VirtualInventoryRebarBlock
  */
 interface GuiRebarBlock : NoVanillaInventoryRebarBlock {
 

@@ -19,17 +19,17 @@ import kotlin.collections.iterator
  * Allows virtual inventories associated with the block to be saved and automatically re-loaded
  * when the block is loaded again.
  *
- * To use this, simply implement [io.github.pylonmc.rebar.block.interfaces.VirtualInventoryRebarBlock.getVirtualInventories]
+ * To use this, simply implement [VirtualInventoryRebarBlock.getVirtualInventories]
  * and return each virtual inventory you wish to save/load along with a unique name.
  *
  * When the block is broken, the contents of the virtual inventories will be dropped. You can
- * override this behaviour by overriding [io.github.pylonmc.rebar.block.interfaces.VirtualInventoryRebarBlock.onBlockBreak].
+ * override this behaviour by overriding [VirtualInventoryRebarBlock.onBlockBreak].
  *
  * See [InvUI docs](https://docs.xenondevs.xyz/invui/) for more information on virtual inventories.
  *
  * @see Gui
  * @see VirtualInventory
- * @see io.github.pylonmc.rebar.block.interfaces.GuiRebarBlock
+ * @see GuiRebarBlock
  */
 interface VirtualInventoryRebarBlock : BlockBreakRebarBlockHandler {
 

@@ -14,12 +14,12 @@ object TextColorConfigAdapter : ConfigAdapter<TextColor> {
             return if (value.startsWith("#")) {
                 val hexString = value.trimEnd()
                 TextColor.fromHexString(hexString)
-                    ?: error("Unable to convert hex color $hexString to TextColor")
+                    ?: throw IllegalArgumentException("Unable to convert hex color $hexString to TextColor")
             } else {
                 val nameString = value.lowercase()
                 Bukkit.getLogger().severe { "${NamedTextColor.NAMES.keys()}" }
                 NamedTextColor.NAMES.valueOr(nameString, null)
-                    ?: error("There is no TextColor with the name '$nameString'")
+                    ?: throw IllegalArgumentException("There is no TextColor with the name '$nameString'")
             }
         } else {
             val section = ConfigAdapter.CONFIG_SECTION.convert(value)
@@ -38,7 +38,7 @@ object TextColorConfigAdapter : ConfigAdapter<TextColor> {
                 return TextColor.color(r, g, b)
             }
 
-            throw RuntimeException("Could not find hsv or rgb values in TextColor config section")
+            throw IllegalArgumentException("Could not find hsv or rgb values in TextColor config section")
         }
     }
 

@@ -1,5 +1,6 @@
 package io.github.pylonmc.rebar.block.interfaces
 
+import io.github.pylonmc.rebar.block.RebarBlock
 import io.github.pylonmc.rebar.event.RebarBlockBreakEvent
 import io.github.pylonmc.rebar.event.RebarBlockUnloadEvent
 import io.github.pylonmc.rebar.logistics.LogisticGroup
@@ -25,8 +26,8 @@ import kotlin.collections.getOrPut
  * slot be in both an input and an output group, allowing items to be both
  * inserted and removed.
  *
- * To use this interface, all you need to do is call [io.github.pylonmc.rebar.block.interfaces.LogisticRebarBlock.createLogisticGroup]
- * to create all the logistic groups you want in [io.github.pylonmc.rebar.block.RebarBlock.postInitialise].
+ * To use this interface, all you need to do is call [LogisticRebarBlock.createLogisticGroup]
+ * to create all the logistic groups you want in [RebarBlock.postInitialise].
  *
  * @see LogisticGroup
  * @see LogisticSlot
