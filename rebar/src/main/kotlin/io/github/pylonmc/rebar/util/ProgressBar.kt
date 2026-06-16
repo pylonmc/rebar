@@ -68,11 +68,11 @@ class ProgressBar : ComponentLike {
          * (where | represents a filled bar and - an empty bar)
          */
         @JvmStatic
-        fun recipeProgress(progress: Double) = ProgressBar()
+        fun recipeProgress(elapsedProportion: Double) = ProgressBar()
             .barColor(TextColor.fromHexString("#cccccc")!!)
-            .proportion(progress)
+            .proportion(elapsedProportion)
             .suffix(Component.text(" ")
-                .append(UnitFormat.PERCENT.format(progress * 100).decimalPlaces(0))
+                .append(UnitFormat.PERCENT.format(elapsedProportion * 100).decimalPlaces(0))
             )
 
          /**
@@ -81,11 +81,11 @@ class ProgressBar : ComponentLike {
          * (where | represents a filled bar and - an empty bar)
          */
         @JvmStatic
-        fun timeRemaining(totalTimeSeconds: Double, remainingTimeSeconds: Double) = ProgressBar()
+        fun timeRemaining(durationSeconds: Double, remainingSeconds: Double) = ProgressBar()
             .barColor(TextColor.fromHexString("#ccafc8")!!)
-            .proportion(remainingTimeSeconds / totalTimeSeconds)
+            .proportion(remainingSeconds / durationSeconds)
             .suffix(Component.text(" ")
-                .append(UnitFormat.SECONDS.format(remainingTimeSeconds))
+                .append(UnitFormat.SECONDS.format(remainingSeconds).decimalPlaces(0))
             )
 
         /**
@@ -98,7 +98,7 @@ class ProgressBar : ComponentLike {
             .barColor(TextColor.fromHexString("#e4b09f")!!)
             .proportion(remaining / total)
             .suffix(Component.text(" ")
-                .append(UnitFormat.SECONDS.format(remaining))
+                .append(UnitFormat.SECONDS.format(remaining).decimalPlaces(0))
             )
 
         /**
