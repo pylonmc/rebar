@@ -26,13 +26,13 @@ data class RebarAdvancement(
         criteria.forEach {
             val criteriaType =
                 RebarRegistry.CRITERIA_TYPE.first { it.javaClass.typeParameters.first().javaClass.equals(criteria.javaClass) }
-            if(CriteriaType.criteriaTypesToAdvancements.contains(criteriaType)){
-                val currentList = CriteriaType.criteriaTypesToAdvancements[criteriaType]!!
+            if(CriteriaType.CRITERIA_TYPES_TO_ADVANCEMENTS.contains(criteriaType)){
+                val currentList = CriteriaType.CRITERIA_TYPES_TO_ADVANCEMENTS[criteriaType]!!
                 if(!currentList.contains(this)){
-                    CriteriaType.criteriaTypesToAdvancements[criteriaType]!!.add(this)
+                    CriteriaType.CRITERIA_TYPES_TO_ADVANCEMENTS[criteriaType]!!.add(this)
                 }
             } else {
-                CriteriaType.criteriaTypesToAdvancements[criteriaType] = arrayListOf(this)
+                CriteriaType.CRITERIA_TYPES_TO_ADVANCEMENTS[criteriaType] = arrayListOf(this)
             }
         }
     }
