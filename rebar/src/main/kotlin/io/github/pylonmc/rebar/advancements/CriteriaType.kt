@@ -13,6 +13,6 @@ interface CriteriaType<T : Criterion> : Keyed {
     }
 
     companion object {
-        @JvmField val criteriaTypesToAdvancements: HashMap<CriteriaType<*>, List<RebarAdvancement>> = hashMapOf()
+        @JvmField val criteriaTypesToAdvancements: HashMap<CriteriaType<*>, ArrayList<RebarAdvancement>> = hashMapOf()
     }
 }

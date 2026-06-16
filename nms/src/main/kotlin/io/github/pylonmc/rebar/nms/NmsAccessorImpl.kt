@@ -11,7 +11,6 @@ import io.github.pylonmc.rebar.entity.packet.BlockTextureEntity
 import io.github.pylonmc.rebar.i18n.PlayerTranslationHandler
 import io.github.pylonmc.rebar.nms.packet.PlayerPacketHandler
 import io.github.pylonmc.rebar.item.ItemTypeWrapper
-import io.github.pylonmc.rebar.i18n.packet.PlayerPacketHandler
 import io.github.pylonmc.rebar.nms.advancements.AdvancementsAccessor.registerRebarAdvancement
 import io.github.pylonmc.rebar.nms.entity.BlockTextureEntityImpl
 import io.github.pylonmc.rebar.nms.inventory.KeyedContainerListener

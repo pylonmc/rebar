@@ -45,7 +45,6 @@ import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.util.delayTicks
 import io.github.pylonmc.rebar.item.interfaces.*
 import io.github.pylonmc.rebar.util.mergeResource
-import io.github.pylonmc.rebar.util.mergeGlobalConfig
 import io.github.pylonmc.rebar.waila.Waila
 import io.github.pylonmc.rebar.waila.WailaPlaceholders
 import io.papermc.paper.ServerBuildInfo
