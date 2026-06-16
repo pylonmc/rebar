@@ -1,6 +1,7 @@
 package io.github.pylonmc.rebar.config.adapter
 
 import io.github.pylonmc.rebar.fluid.tags.FluidTemperature
+import io.github.pylonmc.rebar.item.ItemTypeWrapper
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.util.RandomizedSound
 import net.kyori.adventure.sound.Sound
@@ -49,6 +50,7 @@ interface ConfigAdapter<T> {
         @JvmField val KEYED = KeyedConfigAdapter
         @JvmField val NAMESPACED_KEY = ConfigAdapter { key, value -> NamespacedKey.fromString(STRING.convert(key,value))!! }
         @JvmField val MATERIAL = KEYED.fromRegistry(Registry.MATERIAL)
+        @JvmField val ITEM_TYPE_WRAPPER = KEYED.fromGetter { ItemTypeWrapper(it) }
         @JvmField val ITEM_STACK = ItemStackConfigAdapter
         @JvmField val BLOCK_DATA = ConfigAdapter { key, value -> Bukkit.createBlockData(STRING.convert(key, value)) }
         @JvmField val ADVANCEMENT = AdvancementConfigAdapter
@@ -133,6 +135,7 @@ interface ConfigAdapter<T> {
         @JvmField val RECIPE_INPUT = RecipeInputConfigAdapter
         @JvmField val RECIPE_INPUT_ITEM = RecipeInputItemAdapter
         @JvmField val RECIPE_INPUT_FLUID = RecipeInputFluidAdapter
+        @JvmField val RECIPE_CHOICE = RecipeChoiceConfigAdapter
         @JvmField val ITEM_TAG = ItemTagConfigAdapter
         @JvmField val WEIGHTED_SET = WeightedSetConfigAdapter
         @JvmField val CULLING_PRESET = CullingPresetConfigAdapter

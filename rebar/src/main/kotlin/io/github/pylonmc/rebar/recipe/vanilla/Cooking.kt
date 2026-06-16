@@ -75,9 +75,9 @@ private inline fun <T : CookingRecipe<T>> loadCookingRecipe(
 ): T {
     val cookingTime = config.get("cookingtime", ConfigAdapter.INTEGER, defaultCookingTime)
     val experience = config.get("experience", ConfigAdapter.FLOAT, 0f)
-    val ingredient = config.getOrThrow("ingredient", ConfigAdapter.RECIPE_INPUT_ITEM)
+    val ingredient = config.getOrThrow("ingredient", ConfigAdapter.RECIPE_CHOICE)
     val result = config.getOrThrow("result", ConfigAdapter.ITEM_STACK)
-    val recipe = cons(key, result, ingredient.asRecipeChoice(), experience, cookingTime)
+    val recipe = cons(key, result, ingredient, experience, cookingTime)
     config.get("category", ConfigAdapter.ENUM.from<CookingBookCategory>())?.let { recipe.category = it }
     config.get("group", ConfigAdapter.STRING)?.let { recipe.group = it }
     return recipe

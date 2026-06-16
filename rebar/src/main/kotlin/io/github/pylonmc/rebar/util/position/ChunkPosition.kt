@@ -75,3 +75,7 @@ class ChunkPosition(val worldId: UUID?, val x: Int, val z: Int) {
 @get:JvmSynthetic
 val Chunk.position: ChunkPosition
     get() = ChunkPosition(this)
+
+@get:JvmSynthetic
+val Block.chunkPosition: ChunkPosition
+    get() = ChunkPosition(this)

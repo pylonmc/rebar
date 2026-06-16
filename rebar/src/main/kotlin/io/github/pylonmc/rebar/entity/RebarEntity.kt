@@ -10,6 +10,8 @@ import io.github.pylonmc.rebar.event.RebarEntitySerializeEvent
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.util.rebarKey
 import io.github.pylonmc.rebar.waila.WailaDisplay
+import io.github.pylonmc.rebar.waila.WailaSupplier
+import org.bukkit.Keyed
 import org.bukkit.NamespacedKey
 import org.bukkit.entity.Entity
 import org.bukkit.entity.Player
@@ -28,12 +30,14 @@ import org.bukkit.persistence.PersistentDataContainer
  * Rebar blocks. This is because it doesn't make sense for Rebar to manage spawning entities. However, your
  * entity must still have a load constructor that takes a single parameter of type [E].
  */
-abstract class RebarEntity<out E: Entity>(val entity: E) {
+abstract class RebarEntity<out E: Entity>(val entity: E) : WailaSupplier, Keyed {
 
-    val key = entity.persistentDataContainer.get(rebarEntityKeyKey, RebarSerializers.NAMESPACED_KEY)
+    @JvmField val key = entity.persistentDataContainer.get(rebarEntityKeyKey, RebarSerializers.NAMESPACED_KEY)
         ?: throw IllegalStateException("Entity did not have a Rebar key; did you mean to call RebarEntity(NamespacedKey, Entity) instead of RebarEntity(Entity)?")
     val schema = RebarRegistry.ENTITIES.getOrThrow(key)
     val uuid = entity.uniqueId
+
+    override fun getKey() = key
 
     constructor(key: NamespacedKey, entity: E): this(initialiseRebarEntity<E>(key, entity))
 
@@ -45,7 +49,7 @@ abstract class RebarEntity<out E: Entity>(val entity: E) {
      *
      * @return the WAILA configuration, or null if WAILA should not be shown for this block.
      */
-    open fun getWaila(player: Player): WailaDisplay? = null
+    override fun getWaila(player: Player): WailaDisplay? = null
 
     /**
      * Returns the item that should be given when the entity is middle clicked.

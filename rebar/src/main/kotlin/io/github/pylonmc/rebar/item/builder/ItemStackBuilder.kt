@@ -374,6 +374,24 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
                 = "${key.namespace}.item.${key.key}.lore"
 
         /**
+         * Creates a new ItemStackBuilder from [stack] with an amount of 1. Any modifications made to the
+         * ItemStackBuilder will **NOT** be made to [stack].
+         */
+        @JvmStatic
+        fun asOne(stack: ItemStack): ItemStackBuilder {
+            return ItemStackBuilder(stack.asOne())
+        }
+
+        /**
+         * Creates a new ItemStackBuilder from [stack]. Any modifications made to the
+         * ItemStackBuilder will **NOT** be made to [stack].
+         */
+        @JvmStatic
+        fun copyOf(stack: ItemStack): ItemStackBuilder {
+            return ItemStackBuilder(stack.clone())
+        }
+
+        /**
          * Creates a new ItemStackBuilder from [stack]. Any modifications made to the
          * ItemStackBuilder will also be made to [stack].
          */

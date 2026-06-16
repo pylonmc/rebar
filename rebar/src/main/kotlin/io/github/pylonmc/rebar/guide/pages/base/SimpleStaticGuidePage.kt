@@ -39,7 +39,7 @@ open class SimpleStaticGuidePage @JvmOverloads constructor(
     open fun addPage(material: Material, page: GuidePage) = addButton(PageButton(material, page))
     open fun addPage(stack: ItemStack, page: GuidePage) = addButton(PageButton(stack.clone(), page))
     open fun addPage(builder: ItemStackBuilder, page: GuidePage) = addButton(PageButton(builder.build().clone(), page))
-    open fun addItem(item: ItemStack) = addButton(ItemButton(item))
-    open fun addFluid(fluid: RebarFluid) = addButton(FluidButton(fluid))
+    open fun addItem(item: ItemStack) = addButton(ItemButton.of(item))
+    open fun addFluid(fluid: RebarFluid) = addButton(FluidButton.of(fluid))
     open fun addResearch(research: Research) = addButton(ResearchButton(research))
 }

@@ -21,14 +21,14 @@ class SearchItemsAndFluidsPage : SearchPage(rebarKey("search")) {
         it.key !in RebarGuide.hiddenItems || (it.key in RebarGuide.adminOnlyItems && player.hasPermission("rebar.guide.cheat"))
     }.map { item ->
         val name = GlobalTranslator.render(Component.translatable("${item.key.namespace}.item.${item.key.key}.name"), player.locale())
-        ItemButton(item.getItemStack()) to name.plainText.lowercase(player.locale())
+        ItemButton.of(item.getItemStack()) to name.plainText.lowercase(player.locale())
     }.toMutableList()
 
     fun getFluidButtons(player: Player): MutableList<Pair<Item, String>> = RebarRegistry.FLUIDS.filter {
         it.key !in RebarGuide.hiddenFluids
     }.map { fluid ->
         val name = GlobalTranslator.render(Component.translatable("${fluid.key.namespace}.fluid.${fluid.key.key}"), player.locale())
-        FluidButton(fluid) to name.plainText.lowercase(player.locale())
+        FluidButton.of(fluid) to name.plainText.lowercase(player.locale())
     }.toMutableList()
 
     override fun getItemNamePairs(player: Player, search: String): List<Pair<Item, String>> {

@@ -330,7 +330,7 @@ internal object FluidManager {
         val supplierBlocks = mutableListOf<FluidRebarBlock>()
         val requesterBlocks = mutableListOf<FluidRebarBlock>()
         for (point in getPoints(segment)) {
-            if (point.position.chunk.isLoaded) {
+            if (point.position.isChunkLoaded) {
                 BlockStorage.getAs<FluidRebarBlock>(point.position)?.let { fluidBlock ->
                     if (point.type == FluidPointType.OUTPUT) {
                         supplierBlocks.add(fluidBlock)

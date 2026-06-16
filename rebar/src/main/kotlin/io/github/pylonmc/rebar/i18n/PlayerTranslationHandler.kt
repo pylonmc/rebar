@@ -27,7 +27,7 @@ class PlayerTranslationHandler internal constructor(private val player: Player) 
         val rebarFluid = RebarFluid.fromStack(stack)
         val placeholders = rebarItem?.getPlaceholders().orEmpty()
 
-        stack.translate(player.locale(), placeholders)
+        stack.translate(player, placeholders)
 
         if ((rebarItem != null || rebarFluid != null) && !stack.persistentDataContainer.has(FOOTER_APPENDED)) {
             stack.editData(DataComponentTypes.LORE) { lore ->

@@ -10,6 +10,10 @@ import org.bukkit.inventory.ItemStack
  */
 sealed interface ItemTypeWrapper : Keyed {
 
+    fun matches(itemStack: ItemStack?): Boolean {
+        return itemStack != null && ItemTypeWrapper(itemStack) == this
+    }
+
     fun createItemStack() = createItemStack(1)
 
     fun createItemStack(count: Int): ItemStack
@@ -33,6 +37,9 @@ sealed interface ItemTypeWrapper : Keyed {
     }
 
     companion object {
+        @JvmStatic
+        val AIR = ItemTypeWrapper(Material.AIR)
+
         @JvmStatic
         @JvmName("of")
         operator fun invoke(stack: ItemStack): ItemTypeWrapper {
