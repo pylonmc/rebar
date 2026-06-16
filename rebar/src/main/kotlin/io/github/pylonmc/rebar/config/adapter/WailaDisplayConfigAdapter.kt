@@ -9,10 +9,11 @@ object WailaDisplayConfigAdapter : ConfigAdapter<WailaDisplay> {
 
     override fun convert(value: Any): WailaDisplay {
         val section = ConfigAdapter.CONFIG_SECTION.convert(value)
-        return WailaDisplay.of(Component.translatable(section.getOrThrow("text", ConfigAdapter.STRING)))
-            .color(section.getOrThrow("color", ConfigAdapter.ENUM.from<BossBar.Color>()))
-            .overlay(section.getOrThrow("overlay", ConfigAdapter.ENUM.from<BossBar.Overlay>()))
-            .progress(section.getOrThrow("progress", ConfigAdapter.FLOAT)
+        return WailaDisplay(
+            text = Component.translatable(section.getOrThrow("text", ConfigAdapter.STRING)),
+            color = section.getOrThrow("color", ConfigAdapter.ENUM.from<BossBar.Color>()),
+            overlay = section.getOrThrow("overlay", ConfigAdapter.ENUM.from<BossBar.Overlay>()),
+            progress = section.getOrThrow("progress", ConfigAdapter.FLOAT)
         )
     }
 }

@@ -17,7 +17,7 @@ import org.bukkit.entity.Player
  * The configuration for a WAILA bossbar (the bar shown at the top of your
  * screen when looking at a block).
  */
-class WailaDisplay private constructor(
+class WailaDisplay internal constructor(
     var text: Component,
     var color: BossBar.Color = RebarConfig.WailaConfig.DEFAULT_DISPLAY.color,
     var overlay: BossBar.Overlay = RebarConfig.WailaConfig.DEFAULT_DISPLAY.overlay,
