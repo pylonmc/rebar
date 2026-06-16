@@ -36,6 +36,4 @@ object UnlockOnJoinCriteriaType : CriteriaType<UnlockOnJoinCriterion> {
     }
 }
 
-class UnlockOnJoinCriterion(private val key: NamespacedKey) : EmptyCriterion(key) {
-
-}
+class UnlockOnJoinCriterion(private val key: NamespacedKey) : EmptyCriterion(key)
