@@ -12,12 +12,13 @@ import net.kyori.adventure.text.`object`.ObjectContents
 import org.bukkit.NamespacedKey
 import org.bukkit.block.Block
 import org.bukkit.entity.Player
+import org.jetbrains.annotations.ApiStatus
 
 /**
  * The configuration for a WAILA bossbar (the bar shown at the top of your
  * screen when looking at a block).
  */
-class WailaDisplay internal constructor(
+class WailaDisplay @ApiStatus.Internal internal constructor(
     var text: Component,
     var color: BossBar.Color = RebarConfig.WailaConfig.DEFAULT_DISPLAY.color,
     var overlay: BossBar.Overlay = RebarConfig.WailaConfig.DEFAULT_DISPLAY.overlay,
