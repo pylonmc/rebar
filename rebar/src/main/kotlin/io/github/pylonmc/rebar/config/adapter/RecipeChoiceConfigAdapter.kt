@@ -7,17 +7,17 @@ import org.bukkit.inventory.RecipeChoice
 object RecipeChoiceConfigAdapter: ConfigAdapter<RecipeChoice> {
     override val type = RecipeChoice::class.java
 
-    override fun convert(value: Any): RecipeChoice {
+    override fun convert(key: String?, value: Any): RecipeChoice {
         return when (value) {
-            is ConfigurationSection, is Map<*, *> -> convert(
-                MapConfigAdapter.STRING_TO_ANY.convert(value).toList().single()
+            is ConfigurationSection, is Map<*, *> -> convert(key,
+                MapConfigAdapter.STRING_TO_ANY.convert(key, value).toList().single()
             )
 
             is Pair<*, *> -> {
-                val ingredient = ConfigAdapter.STRING.convert(value.first!!)
-                val amount = ConfigAdapter.INTEGER.convert(value.second!!)
+                val ingredient = ConfigAdapter.STRING.convert(key, value.first!!)
+                val amount = ConfigAdapter.INTEGER.convert(key, value.second!!)
                 if (ingredient.startsWith("#")) {
-                    val tag = ConfigAdapter.ITEM_TAG.convert(value.first!!)
+                    val tag = ConfigAdapter.ITEM_TAG.convert(key, value.first!!)
                     val exact = amount > 1 || tag.values.any { it is ItemTypeWrapper.Rebar }
                     if (exact) {
                         RecipeChoice.ExactChoice(tag.values.map { it.createItemStack(amount) })
@@ -25,11 +25,11 @@ object RecipeChoiceConfigAdapter: ConfigAdapter<RecipeChoice> {
                         RecipeChoice.MaterialChoice(tag.values.map { (it as ItemTypeWrapper.Vanilla).material })
                     }
                 } else if (ingredient.contains("[")) {
-                    val stack = ConfigAdapter.ITEM_STACK.convert(value)
+                    val stack = ConfigAdapter.ITEM_STACK.convert(key, value)
                     stack.amount = amount
                     RecipeChoice.ExactChoice(stack)
                 } else {
-                    val type = ConfigAdapter.ITEM_TYPE_WRAPPER.convert(ingredient)
+                    val type = ConfigAdapter.ITEM_TYPE_WRAPPER.convert(key, ingredient)
                     if (amount > 1 || type is ItemTypeWrapper.Rebar) {
                         RecipeChoice.ExactChoice(type.createItemStack(amount))
                     } else {
@@ -40,12 +40,12 @@ object RecipeChoiceConfigAdapter: ConfigAdapter<RecipeChoice> {
 
             is String -> {
                 if (value.startsWith("#")) {
-                    convert(value to 1)
+                    convert(key, value to 1)
                 } else if (value.contains("[")) {
-                    val stack = ConfigAdapter.ITEM_STACK.convert(value)
+                    val stack = ConfigAdapter.ITEM_STACK.convert(key, value)
                     RecipeChoice.ExactChoice(stack)
                 } else {
-                    val type = ConfigAdapter.ITEM_TYPE_WRAPPER.convert(value)
+                    val type = ConfigAdapter.ITEM_TYPE_WRAPPER.convert(key, value)
                     if (type is ItemTypeWrapper.Rebar) {
                         RecipeChoice.ExactChoice(type.createItemStack())
                     } else {

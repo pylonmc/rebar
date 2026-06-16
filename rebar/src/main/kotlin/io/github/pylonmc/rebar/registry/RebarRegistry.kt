@@ -1,6 +1,8 @@
 package io.github.pylonmc.rebar.registry
 
 import io.github.pylonmc.rebar.addon.RebarAddon
+import io.github.pylonmc.rebar.advancements.CriteriaType
+import io.github.pylonmc.rebar.advancements.RebarAdvancement
 import io.github.pylonmc.rebar.block.RebarBlockSchema
 import io.github.pylonmc.rebar.entity.RebarEntitySchema
 import io.github.pylonmc.rebar.event.RebarRegisterEvent
@@ -129,5 +131,7 @@ class RebarRegistry<T : Keyed> : Iterable<T> {
         @JvmField val RECIPE_TYPES = RebarRegistry<RecipeType<*>>()
         @JvmField val RESEARCHES = RebarRegistry<Research>()
         @JvmField val ITEM_TAGS = RebarRegistry<Tag<ItemTypeWrapper>>()
+        @JvmField val ADVANCEMENTS = RebarRegistry<RebarAdvancement>()
+        @JvmField val CRITERIA_TYPE = RebarRegistry<CriteriaType<*>>()
     }
 }

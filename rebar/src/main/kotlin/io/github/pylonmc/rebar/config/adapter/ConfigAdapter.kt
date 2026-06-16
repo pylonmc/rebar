@@ -23,7 +23,7 @@ interface ConfigAdapter<T> {
     /**
      * Converts the given value obtained from config to the target type [T].
      */
-    fun convert(value: Any): T
+    fun convert(key: String?, value: Any): T
 
     @Suppress("unused")
     companion object {
@@ -35,11 +35,11 @@ interface ConfigAdapter<T> {
         @JvmField val FLOAT = numberAdapter(Float.MIN_VALUE, Float.MAX_VALUE, Number::toFloat)
         @JvmField val DOUBLE = numberAdapter(Double.MIN_VALUE, Double.MAX_VALUE, Number::toDouble)
         @JvmField val INT_RANGE = IntRangeAdapter
-        @JvmField val CHAR = ConfigAdapter { (it as String).single() }
-        @JvmField val BOOLEAN = ConfigAdapter { it as Boolean }
-        @JvmField val ANY = ConfigAdapter { it }
+        @JvmField val CHAR = ConfigAdapter { key, value -> (value as String).single() }
+        @JvmField val BOOLEAN = ConfigAdapter { key, value -> value as Boolean }
+        @JvmField val ANY = ConfigAdapter { key, value -> value }
 
-        @JvmField val STRING = ConfigAdapter { it.toString() }
+        @JvmField val STRING = ConfigAdapter { key, value -> value.toString() }
         @JvmField val LIST = ListConfigAdapter
         @JvmField val SET = SetConfigAdapter
         @JvmField val MAP = MapConfigAdapter
@@ -48,39 +48,40 @@ interface ConfigAdapter<T> {
         @JvmField val UUID = UUIDConfigAdapter
 
         @JvmField val KEYED = KeyedConfigAdapter
-        @JvmField val NAMESPACED_KEY = ConfigAdapter { NamespacedKey.fromString(STRING.convert(it))!! }
+        @JvmField val NAMESPACED_KEY = ConfigAdapter { key, value -> NamespacedKey.fromString(STRING.convert(key,value))!! }
         @JvmField val MATERIAL = KEYED.fromRegistry(Registry.MATERIAL)
         @JvmField val ITEM_TYPE_WRAPPER = KEYED.fromGetter { ItemTypeWrapper(it) }
         @JvmField val ITEM_STACK = ItemStackConfigAdapter
-        @JvmField val BLOCK_DATA = ConfigAdapter { Bukkit.createBlockData(STRING.convert(it)) }
+        @JvmField val BLOCK_DATA = ConfigAdapter { key, value -> Bukkit.createBlockData(STRING.convert(key, value)) }
+        @JvmField val ADVANCEMENT = AdvancementConfigAdapter
 
-         @JvmField val VECTOR_2I = ConfigAdapter {
-            val list = (it as List<*>).filterIsInstance<Int>()
+         @JvmField val VECTOR_2I = ConfigAdapter { key, value ->
+            val list = (value as List<*>).filterIsInstance<Int>()
             check(list.size == 2) { "List must be of size 2" }
             Vector2i(list[0], list[1])
         }
-        @JvmField val VECTOR_2F = ConfigAdapter {
-            val list = (it as List<*>).filterIsInstance<Float>()
+        @JvmField val VECTOR_2F = ConfigAdapter { key, value ->
+            val list = (value as List<*>).filterIsInstance<Float>()
             check(list.size == 2) { "List must be of size 2" }
             Vector2f(list[0], list[1])
         }
-        @JvmField val VECTOR_2D = ConfigAdapter {
-            val list = (it as List<*>).filterIsInstance<Double>()
+        @JvmField val VECTOR_2D = ConfigAdapter { key, value ->
+            val list = (value as List<*>).filterIsInstance<Double>()
             check(list.size == 2) { "List must be of size 2" }
             Vector2d(list[0], list[1])
         }
-        @JvmField val VECTOR_3I = ConfigAdapter {
-            val list = (it as List<*>).filterIsInstance<Int>()
+        @JvmField val VECTOR_3I = ConfigAdapter { key, value ->
+            val list = (value as List<*>).filterIsInstance<Int>()
             check(list.size == 3) { "List must be of size 3" }
             Vector3i(list[0], list[1], list[2])
         }
-        @JvmField val VECTOR_3F = ConfigAdapter {
-            val list = (it as List<*>).filterIsInstance<Float>()
+        @JvmField val VECTOR_3F = ConfigAdapter { key, value ->
+            val list = (value as List<*>).filterIsInstance<Float>()
             check(list.size == 3) { "List must be of size 3" }
             Vector3f(list[0], list[1], list[2])
         }
-        @JvmField val VECTOR_3D = ConfigAdapter {
-            val list = (it as List<*>).filterIsInstance<Double>()
+        @JvmField val VECTOR_3D = ConfigAdapter { key, value ->
+            val list = (value as List<*>).filterIsInstance<Double>()
             check(list.size == 3) { "List must be of size 3" }
             Vector3d(list[0], list[1], list[2])
         }
@@ -148,7 +149,7 @@ interface ConfigAdapter<T> {
             min: T,
             max: T,
             crossinline toType: Number.() -> T
-        ): ConfigAdapter<T> = ConfigAdapter { value ->
+        ): ConfigAdapter<T> = ConfigAdapter { key, value ->
             if (value is String) return@ConfigAdapter value.toDouble().toType()
 
             check (value is Number) { "Expected ${Number::class.java}, got ${value::class.java}" }
@@ -165,8 +166,8 @@ interface ConfigAdapter<T> {
 }
 
 @JvmSynthetic
-inline fun <reified T> ConfigAdapter(crossinline convert: (Any) -> T): ConfigAdapter<T> =
+inline fun <reified T> ConfigAdapter(crossinline convert: (String?, Any) -> T): ConfigAdapter<T> =
     object : ConfigAdapter<T> {
         override val type: Type = T::class.java
-        override fun convert(value: Any): T = convert(value)
+        override fun convert(key: String?, value: Any): T = convert(key, value)
     }

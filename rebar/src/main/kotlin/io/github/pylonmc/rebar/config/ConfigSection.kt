@@ -119,7 +119,7 @@ open class ConfigSection private constructor(val name: String?, val internalSect
 
         val rawValue = internalSection.get(key) ?: throw KeyNotFoundException(getKeyPath(key))
         val value = try {
-            adapter.convert(rawValue)
+            adapter.convert(key, rawValue)
         } catch (e: KeyNotFoundException) {
             val exception = KeyNotFoundException("$key.${e.keyPath.removePrefix("$key.")}")
             exception.stackTrace = e.stackTrace

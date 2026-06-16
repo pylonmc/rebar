@@ -4,12 +4,14 @@ import com.destroystokyo.paper.event.player.PlayerRecipeBookClickEvent
 import com.mojang.brigadier.StringReader
 import com.mojang.brigadier.exceptions.CommandSyntaxException
 import io.github.pylonmc.rebar.Rebar
+import io.github.pylonmc.rebar.advancements.RebarAdvancement
 import io.github.pylonmc.rebar.async.PlayerScope
 import io.github.pylonmc.rebar.block.RebarBlock
 import io.github.pylonmc.rebar.entity.packet.BlockTextureEntity
 import io.github.pylonmc.rebar.i18n.PlayerTranslationHandler
 import io.github.pylonmc.rebar.item.ItemTypeWrapper
 import io.github.pylonmc.rebar.item.RebarItemSchema
+import io.github.pylonmc.rebar.nms.advancements.AdvancementsAccessor.registerRebarAdvancement
 import io.github.pylonmc.rebar.nms.entity.BlockTextureEntityImpl
 import io.github.pylonmc.rebar.nms.inventory.KeyedContainerListener
 import io.github.pylonmc.rebar.nms.packet.PlayerPacketHandler
@@ -218,6 +220,9 @@ object NmsAccessorImpl : NmsAccessor {
             }
         }
     }
+
+    override fun registerAdvancement(advancement: RebarAdvancement, key: NamespacedKey)
+        = registerRebarAdvancement(advancement, key)
 
     override fun hasTracker(entity: Entity): Boolean {
         val id = entity.entityId

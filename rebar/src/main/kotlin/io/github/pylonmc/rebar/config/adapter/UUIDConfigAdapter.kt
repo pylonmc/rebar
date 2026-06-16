@@ -7,11 +7,11 @@ object UUIDConfigAdapter : ConfigAdapter<UUID> {
 
     override val type: Class<UUID> = UUID::class.java
 
-    override fun convert(value: Any): UUID {
+    override fun convert(key: String?, value: Any): UUID {
         return if (value is String) {
             UUID.fromString(value)
         } else {
-            val longs = longListAdapter.convert(value)
+            val longs = longListAdapter.convert(key, value)
             require(longs.size == 2) { "Expected a list of 2 longs for UUID, got ${longs.size}" }
             UUID(longs[0], longs[1])
         }

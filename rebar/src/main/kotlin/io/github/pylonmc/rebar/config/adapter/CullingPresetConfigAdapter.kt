@@ -6,8 +6,8 @@ import java.lang.reflect.Type
 object CullingPresetConfigAdapter : ConfigAdapter<CullingPreset> {
     override val type: Type = CullingPreset::class.java
 
-    override fun convert(value: Any): CullingPreset {
-        val section = ConfigAdapter.CONFIG_SECTION.convert(value)
+    override fun convert(key: String?, value: Any): CullingPreset {
+        val section = ConfigAdapter.CONFIG_SECTION.convert(key, value)
         return CullingPreset(
             index = section.getOrThrow("index", ConfigAdapter.INTEGER),
             id = section.getOrThrow("id", ConfigAdapter.STRING),

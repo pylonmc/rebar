@@ -82,6 +82,9 @@ object RebarConfig {
 
     }
 
+    @JvmField
+    val ADVANCEMENTS_ITEM_TICKER_BASE_RATE = config.getOrThrow("advancements-item-tick-interval", ConfigAdapter.LONG)
+
     object ConfettiCreeperConfig {
 
         @JvmField
