@@ -29,10 +29,10 @@ data class RebarAdvancement(
             if(CriteriaType.criteriaTypesToAdvancements.contains(criteriaType)){
                 val currentList = CriteriaType.criteriaTypesToAdvancements[criteriaType]!!
                 if(!currentList.contains(this)){
-                    CriteriaType.criteriaTypesToAdvancements[criteriaType] =
+                    CriteriaType.criteriaTypesToAdvancements[criteriaType]!!.add(this)
                 }
             } else {
-                CriteriaType.criteriaTypesToAdvancements[criteriaType] = listOf(this)
+                CriteriaType.criteriaTypesToAdvancements[criteriaType] = arrayListOf(this)
             }
         }
     }
