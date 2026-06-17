@@ -214,7 +214,7 @@ open class RebarItem(val stack: ItemStack) : Keyed {
         }
 
         /**
-         * Checks if [stack] is a Rebar item with the id [key].
+         * Checks if [stack] is a Rebar item with schema [schema].
          */
         @JvmStatic
         @Contract("null -> false")
