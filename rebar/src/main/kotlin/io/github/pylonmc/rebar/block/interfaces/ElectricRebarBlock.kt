@@ -12,7 +12,6 @@ import io.github.pylonmc.rebar.event.RebarBlockDeserializeEvent
 import io.github.pylonmc.rebar.event.RebarBlockSerializeEvent
 import io.github.pylonmc.rebar.event.RebarBlockUnloadEvent
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
-import io.github.pylonmc.rebar.util.Vectors
 import io.github.pylonmc.rebar.util.plus
 import io.github.pylonmc.rebar.util.position.position
 import io.github.pylonmc.rebar.util.rebarKey
@@ -82,7 +81,7 @@ interface ElectricRebarBlock : EntityHolderRebarBlock {
         val node: ElectricNode,
         val face: BlockFace,
         val radius: Double = 0.5,
-        val offset: Vector = Vectors.zero,
+        val offset: Vector = Vector(0.0, 0.0, 0.0),
         val material: Material = when (node) {
             is ElectricNode.Connector -> Material.GRAY_CONCRETE
             is ElectricNode.Consumer, is ElectricNode.Acceptor -> Material.LIME_CONCRETE
