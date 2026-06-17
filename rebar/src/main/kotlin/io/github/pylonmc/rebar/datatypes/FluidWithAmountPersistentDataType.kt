@@ -20,7 +20,7 @@ object FluidWithAmountPersistentDataType : PersistentDataType<PersistentDataCont
     ): PersistentDataContainer {
         val pdc = context.newPersistentDataContainer()
         pdc.set(fluidKey, RebarSerializers.REBAR_FLUID, complex.fluid)
-        pdc.set(amountKey, RebarSerializers.DOUBLE, complex.amount)
+        pdc.set(amountKey, RebarSerializers.DOUBLE, complex.millibuckets)
         return pdc
     }
 

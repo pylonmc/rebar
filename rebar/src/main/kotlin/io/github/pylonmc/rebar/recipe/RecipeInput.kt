@@ -3,17 +3,11 @@ package io.github.pylonmc.rebar.recipe
 import io.github.pylonmc.rebar.fluid.FluidWithAmount
 import io.github.pylonmc.rebar.fluid.RebarFluid
 import io.github.pylonmc.rebar.item.ItemTypeWrapper
-import io.github.pylonmc.rebar.util.forceSetData
 import io.github.pylonmc.rebar.util.overriddenDataTypes
 import io.github.pylonmc.rebar.util.setComponents
 import io.papermc.paper.datacomponent.DataComponentType
-import net.kyori.adventure.text.minimessage.translation.Argument.tag
-import org.bukkit.Material
 import org.bukkit.Tag
 import org.bukkit.inventory.ItemStack
-import kotlin.collections.associate
-import kotlin.collections.emptyMap
-import kotlin.to
 
 sealed interface RecipeInput {
     @Suppress("UnstableApiUsage")
@@ -94,7 +88,7 @@ sealed interface RecipeInput {
             return contains(fluid)
         }
 
-        fun matches(fluidWithAmount: FluidWithAmount) = matches(fluidWithAmount.fluid, fluidWithAmount.amount)
+        fun matches(fluidWithAmount: FluidWithAmount) = matches(fluidWithAmount.fluid, fluidWithAmount.millibuckets)
 
         operator fun contains(fluid: RebarFluid?): Boolean = fluid != null && fluid in fluids
     }

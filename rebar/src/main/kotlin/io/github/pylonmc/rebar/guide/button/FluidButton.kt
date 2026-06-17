@@ -106,7 +106,7 @@ open class FluidButton private constructor(
          * @param fluid The fluid to display
          */
         @JvmStatic
-        fun of(fluid: FluidWithAmount): Item = of(fluid.amount, fluid.fluid)
+        fun of(fluid: FluidWithAmount): Item = of(fluid.millibuckets, fluid.fluid)
 
         /**
          * @param fluids The list of fluids to display. If multiple fluids are supplied, the button
