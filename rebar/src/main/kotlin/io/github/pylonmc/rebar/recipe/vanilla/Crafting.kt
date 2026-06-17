@@ -20,12 +20,13 @@ sealed class CraftingRecipeWrapper(val craftingRecipe: CraftingRecipe) : Vanilla
 }
 
 class ShapedRecipeWrapper(override val recipe: ShapedRecipe) : CraftingRecipeWrapper(recipe) {
-    override val inputs: List<RecipeInput> =
+    override val inputs: List<RecipeInput> by lazy {
         recipe.shape
             .flatMap { it.asIterable() }
             .mapNotNull {
                 recipe.choiceMap[it]?.asRecipeInput()
             }
+    }
 
     override fun display(): Gui {
         val gui = Gui.builder()
@@ -37,7 +38,7 @@ class ShapedRecipeWrapper(override val recipe: ShapedRecipe) : CraftingRecipeWra
                 "# # # # # # # # #",
             )
             .addIngredient('#', GuiItems.backgroundBlack())
-            .addIngredient('b', ItemButton.of(ItemStack(Material.CRAFTING_TABLE)))
+            .addIngredient('b', ItemButton.of(ItemStack.of(Material.CRAFTING_TABLE)))
             .addIngredient('r', ItemButton.of(recipe.result))
             .build()
 
@@ -73,7 +74,7 @@ sealed class AShapelessRecipeWrapper(recipe: CraftingRecipe) : CraftingRecipeWra
             "# # # # # # # # #",
         )
         .addIngredient('#', GuiItems.backgroundBlack())
-        .addIngredient('b', ItemButton.of(ItemStack(Material.CRAFTING_TABLE)))
+        .addIngredient('b', ItemButton.of(ItemStack.of(Material.CRAFTING_TABLE)))
         .addIngredient('0', getDisplaySlot(0))
         .addIngredient('1', getDisplaySlot(1))
         .addIngredient('2', getDisplaySlot(2))
@@ -109,14 +110,14 @@ object ShapedRecipeType : VanillaRecipeType<ShapedRecipeWrapper>("crafting_shape
     fun addRecipe(recipe: ShapedRecipe) = super.addRecipe(ShapedRecipeWrapper(recipe))
 
     override fun loadRecipe(key: NamespacedKey, section: ConfigSection): ShapedRecipeWrapper {
-        val ingredientKey = section.getOrThrow("key", ConfigAdapter.MAP.from(ConfigAdapter.CHAR, ConfigAdapter.RECIPE_INPUT_ITEM))
+        val ingredientKey = section.getOrThrow("key", ConfigAdapter.MAP.from(ConfigAdapter.CHAR, ConfigAdapter.RECIPE_CHOICE))
         val pattern = section.getOrThrow("pattern", ConfigAdapter.LIST.from(ConfigAdapter.STRING))
         val result = section.getOrThrow("result", ConfigAdapter.ITEM_STACK)
 
         val recipe = ShapedRecipe(key, result)
         recipe.shape(*pattern.toTypedArray())
         for ((character, item) in ingredientKey) {
-            recipe.setIngredient(character, item.asRecipeChoice())
+            recipe.setIngredient(character, item)
         }
         section.get("category", CRAFTING_BOOK_CATEGORY_ADAPTER)?.let { recipe.category = it }
         section.get("group", ConfigAdapter.STRING)?.let { recipe.group = it }
@@ -132,12 +133,12 @@ object ShapelessRecipeType : VanillaRecipeType<ShapelessRecipeWrapper>("crafting
     fun addRecipe(recipe: ShapelessRecipe) = super.addRecipe(ShapelessRecipeWrapper(recipe))
 
     override fun loadRecipe(key: NamespacedKey, section: ConfigSection): ShapelessRecipeWrapper {
-        val ingredients = section.getOrThrow("ingredients", ConfigAdapter.LIST.from(ConfigAdapter.RECIPE_INPUT_ITEM))
+        val ingredients = section.getOrThrow("ingredients", ConfigAdapter.LIST.from(ConfigAdapter.RECIPE_CHOICE))
         val result = section.getOrThrow("result", ConfigAdapter.ITEM_STACK)
 
         val recipe = ShapelessRecipe(key, result)
         for (ingredient in ingredients) {
-            recipe.addIngredient(ingredient.asRecipeChoice())
+            recipe.addIngredient(ingredient)
         }
         section.get("category", CRAFTING_BOOK_CATEGORY_ADAPTER)?.let { recipe.category = it }
         section.get("group", ConfigAdapter.STRING)?.let { recipe.group = it }
@@ -153,12 +154,12 @@ object TransmuteRecipeType : VanillaRecipeType<TransmuteRecipeWrapper>("crafting
     fun addRecipe(recipe: TransmuteRecipe) = super.addRecipe(TransmuteRecipeWrapper(recipe))
 
     override fun loadRecipe(key: NamespacedKey, section: ConfigSection): TransmuteRecipeWrapper {
-        val input = section.getOrThrow("input", ConfigAdapter.RECIPE_INPUT_ITEM)
-        val material = section.getOrThrow("material", ConfigAdapter.RECIPE_INPUT_ITEM)
+        val input = section.getOrThrow("input", ConfigAdapter.RECIPE_CHOICE)
+        val material = section.getOrThrow("material", ConfigAdapter.RECIPE_CHOICE)
         val result = section.getOrThrow("result", ConfigAdapter.MATERIAL)
         val category = section.get("category", CRAFTING_BOOK_CATEGORY_ADAPTER, CraftingBookCategory.MISC)
         val group = section.get("group", ConfigAdapter.STRING, "")
-        val recipe = TransmuteRecipe(key, result, input.asRecipeChoice(), material.asRecipeChoice())
+        val recipe = TransmuteRecipe(key, result, input, material)
         recipe.category = category
         recipe.group = group
         return TransmuteRecipeWrapper(recipe)

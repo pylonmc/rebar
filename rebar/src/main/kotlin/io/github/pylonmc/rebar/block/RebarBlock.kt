@@ -21,15 +21,16 @@ import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
 import io.github.pylonmc.rebar.nms.NmsAccessor
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.util.IMMEDIATE_FACES
+import io.github.pylonmc.rebar.util.isChunkLoaded
 import io.github.pylonmc.rebar.util.position.BlockPosition
 import io.github.pylonmc.rebar.util.position.position
 import io.github.pylonmc.rebar.util.rebarKey
 import io.github.pylonmc.rebar.waila.WailaDisplay
+import io.github.pylonmc.rebar.waila.WailaSupplier
 import io.papermc.paper.datacomponent.DataComponentTypes
 import net.kyori.adventure.key.Key
 import org.bukkit.*
 import org.bukkit.block.Block
-import org.bukkit.entity.Display
 import org.bukkit.entity.ItemDisplay
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
@@ -53,7 +54,7 @@ import org.joml.Vector3f
  *
  * @see BlockStorage
  */
-open class RebarBlock private constructor(val block: Block) : Keyed {
+open class RebarBlock private constructor(val block: Block) : WailaSupplier, Keyed {
 
     /**
      * All the data needed to create or load the block.
@@ -64,7 +65,6 @@ open class RebarBlock private constructor(val block: Block) : Keyed {
 
     val nameTranslationKey = schema.nameTranslationKey
     val loreTranslationKey = schema.loreTranslationKey
-    val defaultWailaTranslationKey = schema.defaultWailaTranslationKey
 
     /**
      * Set this to `true` if your block should not have a [blockTextureEntity] for custom models/textures.
@@ -97,6 +97,9 @@ open class RebarBlock private constructor(val block: Block) : Keyed {
     }
 
     val defaultItem = RebarRegistry.ITEMS[schema.key]
+
+    val isChunkLoaded: Boolean
+        get() = block.isChunkLoaded
 
     /**
      * This constructor is called when a *new* block is created in the world.
@@ -153,7 +156,7 @@ open class RebarBlock private constructor(val block: Block) : Keyed {
      */
     protected open fun setupBlockTexture(entity: BlockTextureEntity): BlockTextureEntity = entity.apply {
         // TODO: Add a way to easily just change the transformation of the entity, without having to override this method entirely
-        val item = getBlockTextureItem() ?: ItemStack(Material.BARRIER)
+        val item = getBlockTextureItem() ?: ItemStack.of(Material.BARRIER)
         item.setData(DataComponentTypes.ITEM_MODEL, Key.key("air"))
         itemStack = item
         itemDisplayTransform = ItemDisplay.ItemDisplayTransform.FIXED
@@ -166,7 +169,7 @@ open class RebarBlock private constructor(val block: Block) : Keyed {
      */
     fun refreshBlockTextureItem() {
         blockTextureEntity?.let {
-            it.itemStack = getBlockTextureItem() ?: ItemStack(Material.BARRIER)
+            it.itemStack = getBlockTextureItem() ?: ItemStack.of(Material.BARRIER)
         }
     }
 
@@ -194,8 +197,9 @@ open class RebarBlock private constructor(val block: Block) : Keyed {
     /**
      * Returns the item that should be used to display the block's texture.
      *
-     * By default, returns the item with the same key as the block, marked with the
-     * [rebarBlockTextureEntityKey]. The item will also have custom model data with
+     * By default, returns the rebar item with the same key as the block, marked with the
+     * [rebarBlockTextureEntityKey], or if there is no matching rebar item, an item with
+     * the block material & key. The item will also have custom model data with
      * the vanilla block state properties of the block, merged with any custom
      * properties provided by the block. (see [getBlockTextureProperties])
      * This allows resource packs to provide different models/textures for different
@@ -206,14 +210,23 @@ open class RebarBlock private constructor(val block: Block) : Keyed {
      *
      * @return the item that should be used to display the block's texture
      */
-    open fun getBlockTextureItem() = defaultItem?.createNewItemStack()?.let { ItemStackBuilder(it) }?.apply {
-        editPdc { it.set(rebarBlockTextureEntityKey, RebarSerializers.BOOLEAN, true) }
-        val properties = NmsAccessor.instance.getStateProperties(block, getBlockTextureProperties())
-        for ((property, value) in properties) {
-            addCustomModelDataString("$property=$value")
+    open fun getBlockTextureItem(): ItemStack? {
+        val builder = if (defaultItem != null) {
+            ItemStackBuilder.of(defaultItem.createNewItemStack())
+        } else {
+            ItemStackBuilder.of(schema.material)
+                .addCustomModelDataString(key.toString())
         }
-        set(DataComponentTypes.ITEM_MODEL, Key.key("air"))
-    }?.build()
+
+        return builder.apply {
+            editPdc { it.set(rebarBlockTextureEntityKey, RebarSerializers.BOOLEAN, true) }
+            val properties = NmsAccessor.instance.getStateProperties(block, getBlockTextureProperties())
+            for ((property, value) in properties) {
+                addCustomModelDataString("$property=$value")
+            }
+            set(DataComponentTypes.ITEM_MODEL, Key.key("air"))
+        }.build()
+    }
 
     /**
      * WAILA is the text that shows up when looking at a block to tell you what the block is.
@@ -222,8 +235,8 @@ open class RebarBlock private constructor(val block: Block) : Keyed {
      *
      * @return the WAILA configuration, or null if WAILA should not be shown for this block.
      */
-    open fun getWaila(player: Player): WailaDisplay? {
-        return WailaDisplay(defaultWailaTranslationKey)
+    override fun getWaila(player: Player): WailaDisplay? {
+        return WailaDisplay.of(this, player)
     }
 
     /**

@@ -34,15 +34,18 @@ interface GuidePage : Keyed {
      * WARNING: The UI will break and let people take items out of it if an exception is thrown
      * in this function, so make sure to wrap anything in here in try-catch.
      */
-    fun open(player: Player) {
+    fun open(player: Player): Window? {
         try {
-            Window.builder()
+            val window = Window.builder()
                 .setUpperGui(getGui(player))
                 .setTitle(title)
-                .open(player)
+                .build(player)
+            window.open()
             RebarGuide.history.getOrPut(player.uniqueId) { mutableListOf() }.add(this)
+            return window
         } catch (t: Throwable) {
             t.printStackTrace()
+            return null
         }
     }
 }

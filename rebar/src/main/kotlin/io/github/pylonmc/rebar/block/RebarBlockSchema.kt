@@ -1,7 +1,6 @@
 package io.github.pylonmc.rebar.block
 
 import io.github.pylonmc.rebar.block.context.BlockCreateContext
-import io.github.pylonmc.rebar.i18n.RebarTranslator.Companion.translator
 import io.github.pylonmc.rebar.util.findConstructorMatching
 import io.github.pylonmc.rebar.util.getAddon
 import io.github.pylonmc.rebar.util.position.BlockPosition
@@ -34,18 +33,12 @@ class RebarBlockSchema(
 
     val nameTranslationKey: TranslatableComponent
     val loreTranslationKey: TranslatableComponent
-    val defaultWailaTranslationKey: TranslatableComponent
 
     init {
         val prefix = "${key.namespace}.item.${key.key}"
         nameTranslationKey = Component.translatable("$prefix.name")
         loreTranslationKey = Component.translatable("$prefix.lore")
         val default = "$prefix.waila"
-        defaultWailaTranslationKey = if (addon.translator.languages.any { addon.translator.canTranslate(default, it) }) {
-            Component.translatable(default)
-        } else {
-            nameTranslationKey
-        }
     }
 
     private val createConstructor: MethodHandle = blockClass.findConstructorMatching(

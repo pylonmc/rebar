@@ -42,6 +42,8 @@ import io.github.pylonmc.rebar.recipe.RecipeCompletion
 import io.github.pylonmc.rebar.recipe.RecipeType
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.util.delayTicks
+import io.github.pylonmc.rebar.item.interfaces.*
+import io.github.pylonmc.rebar.nms.NmsAccessor
 import io.github.pylonmc.rebar.util.mergeResource
 import io.github.pylonmc.rebar.waila.Waila
 import io.github.pylonmc.rebar.waila.WailaPlaceholders
@@ -356,6 +358,7 @@ object Rebar : JavaPlugin(), RebarAddon {
             }
         }
 
+        NmsAccessor.processRecipeQueue()
         val end = System.currentTimeMillis()
         logger.info("Loaded recipes in ${(end - start) / 1000.0}s")
         RebarConfigurableRecipesLoadedEvent().callEvent()

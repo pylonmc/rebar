@@ -11,6 +11,7 @@ import io.github.pylonmc.rebar.entity.packet.BlockTextureEntity.Companion.SCALE_
 import io.github.pylonmc.rebar.entity.packet.BlockTextureEntity.Companion.SCALE_DISTANCE_THRESHOLD
 import io.github.pylonmc.rebar.util.IMMEDIATE_FACES
 import io.github.pylonmc.rebar.util.delayTicks
+import io.github.pylonmc.rebar.util.isChunkLoaded
 import io.github.pylonmc.rebar.util.position.BlockPosition
 import kotlinx.coroutines.launch
 import net.minecraft.network.protocol.Packet
@@ -376,7 +377,7 @@ class BlockTextureEntityImpl : BlockTextureEntity, SyncedDataHolder {
         var brightestLight = 0.toByte()
         if (brightest !== ZERO_VECTOR) {
             val delegateBlock = block.block.getRelative(brightest.x.toInt(), brightest.y.toInt(), brightest.z.toInt()) as? CraftBlock
-            if (delegateBlock?.blockState?.hasLightingData ?: false) {
+            if (delegateBlock != null && delegateBlock.isChunkLoaded && delegateBlock.blockState.hasLightingData) {
                 brightestLight = delegateBlock.lightLevel
                 if (brightestLight >= 15) return brightest
                 brightestFace = IMMEDIATE_FACES.firstOrNull { it.modX == brightest.x.toInt() && it.modY == brightest.y.toInt() && it.modZ == brightest.z.toInt() }
@@ -386,7 +387,7 @@ class BlockTextureEntityImpl : BlockTextureEntity, SyncedDataHolder {
         for (face in IMMEDIATE_FACES) {
             if (brightestFace == face) continue
             val delegateBlock = block.block.getRelative(face) as? CraftBlock ?: continue
-            if (delegateBlock.blockState.hasLightingData) {
+            if (delegateBlock.isChunkLoaded && delegateBlock.blockState.hasLightingData) {
                 val light = delegateBlock.lightLevel
                 if (light > brightestLight) {
                     brightestLight = light

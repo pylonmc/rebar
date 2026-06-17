@@ -2,7 +2,6 @@ package io.github.pylonmc.rebar.guide.pages.base
 
 import io.github.pylonmc.rebar.content.guide.RebarGuide
 import io.github.pylonmc.rebar.guide.button.GuideButton
-import io.github.pylonmc.rebar.guide.button.PageButton
 import io.github.pylonmc.rebar.util.gui.GuiItems
 import org.bukkit.NamespacedKey
 import org.bukkit.entity.Player

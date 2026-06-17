@@ -23,6 +23,7 @@ open class PlayerSettingsPage(key: NamespacedKey) : SimpleStaticGuidePage(key, m
                 "# b # # # # # s #",
                 "# # # # # # # # #",
                 "# x x x x x x x #",
+                "# x x x x x x x #",
                 "# # # # # # # # #",
             )
             .addIngredient('#', GuiItems.background())

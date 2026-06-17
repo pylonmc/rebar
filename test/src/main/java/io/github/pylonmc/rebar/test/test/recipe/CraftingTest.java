@@ -1,5 +1,6 @@
 package io.github.pylonmc.rebar.test.test.recipe;
 
+import io.github.pylonmc.rebar.nms.NmsAccessor;
 import io.github.pylonmc.rebar.recipe.RecipeType;
 import io.github.pylonmc.rebar.test.RebarTest;
 import io.github.pylonmc.rebar.test.base.SyncTest;
@@ -19,9 +20,9 @@ public class CraftingTest extends SyncTest {
     @Override
     protected void test() {
         ItemStack stickyStick = TestItems.STICKY_STICK_STACK;
-        ItemStack diamond = new ItemStack(Material.DIAMOND);
-        ItemStack nothing = new ItemStack(Material.AIR);
-        ItemStack normalStick = new ItemStack(Material.STICK);
+        ItemStack diamond = ItemStack.of(Material.DIAMOND);
+        ItemStack nothing = ItemStack.of(Material.AIR);
+        ItemStack normalStick = ItemStack.of(Material.STICK);
 
         // Shaped
         {
@@ -40,6 +41,7 @@ public class CraftingTest extends SyncTest {
                     normalStick, stickyStick, normalStick,
                     nothing, normalStick, nothing
             };
+            NmsAccessor.processRecipeQueue();
             assertThat(Bukkit.craftItem(crafting, RebarTest.testWorld))
                     .isEqualTo(diamond);
         }
@@ -55,6 +57,7 @@ public class CraftingTest extends SyncTest {
             Arrays.fill(crafting, nothing);
             crafting[0] = stickyStick;
             crafting[1] = diamond;
+            NmsAccessor.processRecipeQueue();
             assertThat(Bukkit.craftItem(crafting, RebarTest.testWorld))
                     .isEqualTo(normalStick);
         }
@@ -76,6 +79,7 @@ public class CraftingTest extends SyncTest {
                     normalStick, diamond, normalStick,
                     nothing, normalStick, nothing
             };
+            NmsAccessor.processRecipeQueue();
             assertThat(Bukkit.craftItem(crafting, RebarTest.testWorld))
                     .isEqualTo(stickyStick);
         }

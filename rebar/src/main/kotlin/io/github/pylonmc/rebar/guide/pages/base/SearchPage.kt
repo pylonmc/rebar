@@ -29,7 +29,7 @@ abstract class SearchPage(key: NamespacedKey) : SimpleStaticGuidePage(key) {
 
     abstract fun getItemNamePairs(player: Player, search: String): List<Pair<Item, String>>
 
-    override fun open(player: Player) {
+    override fun open(player: Player): AnvilWindow? {
         var firstRename = true
         val search = searches.getOrDefault(player.uniqueId, "")
         val lowerGui = PagedGui.itemsBuilder()
@@ -55,7 +55,7 @@ abstract class SearchPage(key: NamespacedKey) : SimpleStaticGuidePage(key) {
         loadCurrentPage(player, lowerGui)
 
         try {
-            AnvilWindow.builder()
+            val window = AnvilWindow.builder()
                 .setViewer(player)
                 .setUpperGui(upperGui)
                 .setLowerGui(lowerGui)
@@ -74,10 +74,13 @@ abstract class SearchPage(key: NamespacedKey) : SimpleStaticGuidePage(key) {
                         t.printStackTrace()
                     }
                 }
-                .open(player)
+                .build(player)
+            window.open()
             RebarGuide.history.getOrPut(player.uniqueId) { mutableListOf() }.add(this)
+            return window
         } catch (t: Throwable) {
             t.printStackTrace()
+            return null
         }
     }
 

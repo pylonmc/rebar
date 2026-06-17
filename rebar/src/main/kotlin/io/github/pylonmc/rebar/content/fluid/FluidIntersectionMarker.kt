@@ -50,7 +50,7 @@ class FluidIntersectionMarker : RebarBlock, EntityHolderRebarBlock, BlockBreakRe
     }
 
     override fun getWaila(player: Player): WailaDisplay?
-        = WailaDisplay(defaultWailaTranslationKey.arguments(RebarArgument.of("pipe", this.pipe.stack.effectiveName())))
+        = WailaDisplay.of(this.pipe.stack.effectiveName())
 
     val pipe: RebarItem
         get() {

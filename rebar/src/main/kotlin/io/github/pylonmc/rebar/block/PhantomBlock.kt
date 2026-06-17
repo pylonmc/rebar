@@ -12,6 +12,7 @@ import io.github.pylonmc.rebar.util.rebarKey
 import io.github.pylonmc.rebar.waila.WailaDisplay
 import io.papermc.paper.datacomponent.DataComponentTypes
 import net.kyori.adventure.bossbar.BossBar
+import net.kyori.adventure.text.Component
 import org.bukkit.Color
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
@@ -40,7 +41,8 @@ import java.util.UUID
 class PhantomBlock(
     val pdc: PersistentDataContainer,
     val erroredBlockKey: NamespacedKey,
-    block: Block
+    block: Block,
+    val preventErrorEntity: Boolean = false
 ) : RebarBlock(block, pdc), BlockBreakRebarBlockHandler {
 
     override var disableBlockTextureEntity: Boolean = true
@@ -61,27 +63,28 @@ class PhantomBlock(
     }
 
     init {
-        errorOutlineEntityId = block.world.spawn(block.location.toCenterLocation(), ItemDisplay::class.java) { display ->
-            display.setItemStack(ItemStackBuilder.of(Material.BARRIER).set(DataComponentTypes.ITEM_MODEL, PhantomBlock.key).build())
-            display.glowColorOverride = Color.RED
-            display.isGlowing = true
-            display.isPersistent = false
-            display.brightness = Display.Brightness(15, 15)
-            display.setTransformationMatrix(TransformBuilder().scale(1.001f).buildForItemDisplay())
-        }.uniqueId
+        if (!preventErrorEntity) {
+            errorOutlineEntityId = block.world.spawn(block.location.toCenterLocation(), ItemDisplay::class.java) { display ->
+                display.setItemStack(ItemStackBuilder.of(Material.BARRIER).set(DataComponentTypes.ITEM_MODEL, PhantomBlock.key).build())
+                display.glowColorOverride = Color.RED
+                display.isGlowing = true
+                display.isPersistent = false
+                display.brightness = Display.Brightness(15, 15)
+                display.setTransformationMatrix(TransformBuilder().scale(1.001f).buildForItemDisplay())
+            }.uniqueId
+        }
     }
 
     override fun onPostBlockBreak(context: BlockBreakContext) {
         errorOutlineEntityId?.let { uuid ->
             block.world.getEntity(uuid)?.remove()
         }
+        errorOutlineEntityId = null
     }
 
     override fun getWaila(player: Player): WailaDisplay? {
-        return WailaDisplay(
-            text = defaultWailaTranslationKey.arguments(RebarArgument.of("block", erroredBlockKey.toString())),
-            color = BossBar.Color.RED
-        )
+        return WailaDisplay.of(this, player).add(Component.text(erroredBlockKey.toString()))
+            .color(BossBar.Color.RED)
     }
 
     override fun getDropItem(context: BlockBreakContext) = ErrorItem(erroredBlockKey).stack

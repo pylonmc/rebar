@@ -20,7 +20,7 @@ public class FurnaceTest extends GameTest {
                 .size(0)
                 .setUp(test -> {
                     ItemStack stickyStick = TestItems.STICKY_STICK_STACK;
-                    ItemStack diamond = new ItemStack(Material.DIAMOND);
+                    ItemStack diamond = ItemStack.of(Material.DIAMOND);
                     RecipeType.VANILLA_FURNACE.addRecipe(new FurnaceRecipe(
                             RebarTest.key("sticky_stick_furnace"),
                             diamond,
@@ -33,7 +33,7 @@ public class FurnaceTest extends GameTest {
                     furnace.setType(Material.FURNACE);
                     Furnace state = (Furnace) furnace.getState();
                     FurnaceInventory inventory = state.getInventory();
-                    inventory.setFuel(new ItemStack(Material.STICK));
+                    inventory.setFuel(ItemStack.of(Material.STICK));
                     inventory.setSmelting(stickyStick);
 
                     test.succeedWhen(() -> {
