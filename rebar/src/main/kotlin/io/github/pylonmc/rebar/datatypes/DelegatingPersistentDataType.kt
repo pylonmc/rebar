@@ -29,3 +29,13 @@ abstract class DelegatingPersistentDataType<P : Any, D : Any, C : Any>(
         return fromDelegatedType(delegate.fromPrimitive(primitive, context))
     }
 }
+
+@JvmSynthetic
+inline fun <P : Any, D : Any, reified C : Any> PersistentDataType<P, D>.map(
+    crossinline to: (C) -> D,
+    crossinline from: (D) -> C
+): PersistentDataType<P, C> = object : DelegatingPersistentDataType<P, D, C>(this) {
+    override fun getComplexType() = C::class.java
+    override fun toDelegatedType(complex: C): D = to(complex)
+    override fun fromDelegatedType(primitive: D): C = from(primitive)
+}

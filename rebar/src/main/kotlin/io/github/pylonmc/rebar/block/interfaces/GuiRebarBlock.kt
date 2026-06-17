@@ -7,6 +7,8 @@ import io.github.pylonmc.rebar.event.RebarBlockLoadEvent
 import io.github.pylonmc.rebar.event.RebarBlockPlaceEvent
 import io.github.pylonmc.rebar.event.RebarBlockUnloadEvent
 import net.kyori.adventure.text.Component
+import org.bukkit.Keyed
+import org.bukkit.entity.Player
 import org.bukkit.event.Event
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
@@ -16,7 +18,7 @@ import org.bukkit.inventory.EquipmentSlot
 import xyz.xenondevs.invui.gui.Gui
 import xyz.xenondevs.invui.inventory.VirtualInventory
 import xyz.xenondevs.invui.window.Window
-import java.util.IdentityHashMap
+import java.util.*
 
 /**
  * A simple interface that opens a GUI when the block is right clicked
@@ -29,7 +31,7 @@ import java.util.IdentityHashMap
  * @see VirtualInventory
  * @see io.github.pylonmc.rebar.block.interfaces.VirtualInventoryRebarBlock
  */
-interface GuiRebarBlock : NoVanillaInventoryRebarBlock {
+interface GuiRebarBlock : NoVanillaInventoryRebarBlock, Keyed {
 
     /**
      * Returns the block's GUI. Called when a block is created.
@@ -41,6 +43,13 @@ interface GuiRebarBlock : NoVanillaInventoryRebarBlock {
      */
     val guiTitle: Component
         get() = (this as RebarBlock).nameTranslationKey
+
+    fun openWindow(player: Player) {
+        Window.builder()
+            .setUpperGui(guiBlocks[this] ?: error("GUI not found for block $key"))
+            .setTitle(guiTitle)
+            .open(player)
+    }
 
     companion object : Listener {
         private val guiBlocks = IdentityHashMap<GuiRebarBlock, Gui>()
@@ -74,12 +83,7 @@ interface GuiRebarBlock : NoVanillaInventoryRebarBlock {
             event.setUseInteractedBlock(Event.Result.DENY)
             event.setUseItemInHand(Event.Result.DENY)
 
-            Window.builder()
-                .setUpperGui(guiBlocks[guiBlock]!!)
-                .setTitle(guiBlock.guiTitle)
-                .setViewer(event.player)
-                .build()
-                .open()
+            guiBlock.openWindow(event.player)
         }
 
         @EventHandler

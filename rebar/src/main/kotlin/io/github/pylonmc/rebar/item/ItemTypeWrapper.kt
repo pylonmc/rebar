@@ -32,7 +32,7 @@ sealed interface ItemTypeWrapper : Keyed {
      */
     @JvmRecord
     data class Rebar(val item: RebarItemSchema) : ItemTypeWrapper {
-        override fun createItemStack(count: Int) = item.getItemStack(count)
+        override fun createItemStack(count: Int) = item.createNewItemStack(count)
         override fun getKey() = item.key
     }
 

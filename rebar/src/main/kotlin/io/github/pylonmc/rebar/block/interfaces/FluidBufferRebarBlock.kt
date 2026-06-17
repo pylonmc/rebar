@@ -10,7 +10,7 @@ import io.github.pylonmc.rebar.util.rebarKey
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.jetbrains.annotations.ApiStatus
-import java.util.IdentityHashMap
+import java.util.*
 import kotlin.math.max
 
 /**
@@ -130,7 +130,7 @@ interface FluidBufferRebarBlock : FluidRebarBlock {
      * Removes from a fluid buffer only if the new amount of fluid is greater
      * than zero and fits in the buffer.
      *
-     * @return true only if the buffer was added to successfully
+     * @return true only if the buffer was removed from successfully
      */
     fun removeFluid(fluid: RebarFluid, amount: Double): Boolean {
         return setFluid(fluid, fluidData(fluid).amount - amount)
