@@ -103,6 +103,12 @@ open class FluidButton private constructor(
         fun of(vararg fluids: RebarFluid?): Item = of(fluids.toList(), null)
 
         /**
+         * @param fluid The fluid to display
+         */
+        @JvmStatic
+        fun of(fluid: FluidWithAmount): Item = of(fluid.amount, fluid.fluid)
+
+        /**
          * @param fluids The list of fluids to display. If multiple fluids are supplied, the button
          * cycles through them. (if no fluids are provided, returns an empty item)
          */

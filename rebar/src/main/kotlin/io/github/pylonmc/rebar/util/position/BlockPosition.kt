@@ -8,7 +8,7 @@ import org.bukkit.block.BlockFace
 import org.bukkit.util.BoundingBox
 import org.bukkit.util.Vector
 import org.joml.Vector3i
-import java.util.UUID
+import java.util.*
 import io.papermc.paper.math.BlockPosition as PaperBlockPosition
 
 /**
@@ -115,7 +115,7 @@ class BlockPosition(val worldId: UUID?, val x: Int, val y: Int, val z: Int) {
 
     fun toVector3i(): Vector3i = Vector3i(x, y, z)
 
-    fun toLocation(): Location = Location(world, x, y, z)
+    fun toLocation(): Location = Location(world, x.toDouble(), y.toDouble(), z.toDouble())
 
     fun toVector(): Vector = Vector(x.toDouble(), y.toDouble(), z.toDouble())
 
