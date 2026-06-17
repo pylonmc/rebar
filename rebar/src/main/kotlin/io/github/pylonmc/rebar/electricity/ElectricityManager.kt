@@ -2,6 +2,7 @@ package io.github.pylonmc.rebar.electricity
 
 import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.config.RebarConfig
+import io.github.pylonmc.rebar.electricity.nodes.ElectricNode
 import io.github.pylonmc.rebar.util.delayTicks
 import kotlinx.coroutines.launch
 import java.util.UUID

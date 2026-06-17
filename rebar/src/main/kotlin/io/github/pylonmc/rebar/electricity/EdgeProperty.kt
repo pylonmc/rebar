@@ -37,7 +37,7 @@ sealed interface EdgeProperty<V> {
         private val PROPERTIES_TYPE = RebarSerializers.SET.setTypeFrom(PDC_TYPE)
 
         @JvmStatic
-        fun getProperties(edge: ElectricNode.Edge): Set<EdgeProperty<*>> {
+        fun getProperties(edge: ElectricNetwork.Edge): Set<EdgeProperty<*>> {
             val world = edge.from.block.world ?: return emptySet()
             val storage = WorldStorage.getStorage(world)
             val key = rebarKey("edge_properties_${edge.from.id}_${edge.to.id}")
@@ -45,18 +45,18 @@ sealed interface EdgeProperty<V> {
         }
 
         @JvmStatic
-        fun <T : EdgeProperty<*>> getProperty(edge: ElectricNode.Edge, propertyClass: Class<T>): T? {
+        fun <T : EdgeProperty<*>> getProperty(edge: ElectricNetwork.Edge, propertyClass: Class<T>): T? {
             @Suppress("UNCHECKED_CAST")
             return getProperties(edge).firstOrNull { it::class.java == propertyClass } as? T
         }
 
         @JvmSynthetic
-        inline fun <reified T : EdgeProperty<*>> getProperty(edge: ElectricNode.Edge): T? {
+        inline fun <reified T : EdgeProperty<*>> getProperty(edge: ElectricNetwork.Edge): T? {
             return getProperty(edge, T::class.java)
         }
 
         @JvmStatic
-        fun setProperty(edge: ElectricNode.Edge, property: EdgeProperty<*>) {
+        fun setProperty(edge: ElectricNetwork.Edge, property: EdgeProperty<*>) {
             val world = edge.from.block.world ?: return
             val storage = WorldStorage.getStorage(world)
             val key = rebarKey("edge_properties_${edge.from.id}_${edge.to.id}")
@@ -67,7 +67,7 @@ sealed interface EdgeProperty<V> {
         }
 
         @JvmStatic
-        fun removeProperty(edge: ElectricNode.Edge, propertyClass: Class<out EdgeProperty<*>>): Boolean {
+        fun removeProperty(edge: ElectricNetwork.Edge, propertyClass: Class<out EdgeProperty<*>>): Boolean {
             val world = edge.from.block.world ?: return false
             val storage = WorldStorage.getStorage(world)
             val key = rebarKey("edge_properties_${edge.from.id}_${edge.to.id}")
@@ -80,7 +80,7 @@ sealed interface EdgeProperty<V> {
         }
 
         @JvmSynthetic
-        inline fun <reified T : EdgeProperty<*>> removeProperty(edge: ElectricNode.Edge): Boolean {
+        inline fun <reified T : EdgeProperty<*>> removeProperty(edge: ElectricNetwork.Edge): Boolean {
             return removeProperty(edge, T::class.java)
         }
     }

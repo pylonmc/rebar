@@ -1,9 +1,9 @@
 package io.github.pylonmc.rebar.block.interfaces
 
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
-import io.github.pylonmc.rebar.electricity.ElectricNode
 import io.github.pylonmc.rebar.electricity.ElectricityManager
 import io.github.pylonmc.rebar.electricity.WireConnectionService
+import io.github.pylonmc.rebar.electricity.nodes.*
 import io.github.pylonmc.rebar.entity.display.InteractionBuilder
 import io.github.pylonmc.rebar.entity.display.ItemDisplayBuilder
 import io.github.pylonmc.rebar.entity.display.transform.TransformBuilder
@@ -83,9 +83,9 @@ interface ElectricRebarBlock : EntityHolderRebarBlock {
         val radius: Double = 0.5,
         val offset: Vector = Vector(0.0, 0.0, 0.0),
         val material: Material = when (node) {
-            is ElectricNode.Connector -> Material.GRAY_CONCRETE
-            is ElectricNode.Consumer, is ElectricNode.Acceptor -> Material.LIME_CONCRETE
-            is ElectricNode.Producer -> Material.RED_CONCRETE
+            is ElectricConnectorNode -> Material.GRAY_CONCRETE
+            is ElectricConsumerNode, is ElectricAcceptorNode -> Material.LIME_CONCRETE
+            is ElectricProducerNode -> Material.RED_CONCRETE
         }
     ) {
         fun radius(radius: Double) = copy(radius = radius)

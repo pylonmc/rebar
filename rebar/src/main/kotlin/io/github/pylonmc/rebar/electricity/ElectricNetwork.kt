@@ -1,7 +1,7 @@
 package io.github.pylonmc.rebar.electricity
 
 import io.github.pylonmc.rebar.config.RebarConfig
-import io.github.pylonmc.rebar.electricity.ElectricNode.Edge
+import io.github.pylonmc.rebar.electricity.nodes.*
 import java.util.PriorityQueue
 import java.util.UUID
 import kotlin.collections.ArrayDeque
@@ -16,9 +16,9 @@ class ElectricNetwork {
     private val nodeMap: MutableMap<UUID, ElectricNode> = mutableMapOf()
     val nodes: Set<ElectricNode> get() = nodeMap.values.toSet()
 
-    private val producers = mutableSetOf<ElectricNode.Producer>()
-    private val consumers = mutableSetOf<ElectricNode.Consumer>()
-    private val acceptors = mutableSetOf<ElectricNode.Acceptor>()
+    private val producers = mutableSetOf<ElectricProducerNode>()
+    private val consumers = mutableSetOf<ElectricConsumerNode>()
+    private val acceptors = mutableSetOf<ElectricAcceptorNode>()
 
     /**
      * A map of heuristics based on distance to consumers.
@@ -28,10 +28,10 @@ class ElectricNetwork {
     fun addNode(node: ElectricNode) {
         nodeMap[node.id] = node
         when (node) {
-            is ElectricNode.Producer -> producers.add(node)
-            is ElectricNode.Consumer -> consumers.add(node)
-            is ElectricNode.Acceptor -> acceptors.add(node)
-            is ElectricNode.Connector -> {}
+            is ElectricProducerNode -> producers.add(node)
+            is ElectricConsumerNode -> consumers.add(node)
+            is ElectricAcceptorNode -> acceptors.add(node)
+            is ElectricConnectorNode -> {}
         }
         heuristics = null
     }
@@ -324,6 +324,8 @@ class ElectricNetwork {
         }
         return heuristics
     }
+
+    data class Edge(val from: ElectricNode, val to: ElectricNode)
 
     companion object {
 

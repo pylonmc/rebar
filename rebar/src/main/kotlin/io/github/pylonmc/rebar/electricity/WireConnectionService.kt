@@ -3,6 +3,7 @@ package io.github.pylonmc.rebar.electricity
 import io.github.pylonmc.rebar.block.BlockStorage
 import io.github.pylonmc.rebar.block.interfaces.ElectricRebarBlock
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
+import io.github.pylonmc.rebar.electricity.nodes.ElectricNode
 import io.github.pylonmc.rebar.entity.display.ItemDisplayBuilder
 import io.github.pylonmc.rebar.entity.display.transform.TransformBuilder
 import io.github.pylonmc.rebar.event.RebarBlockBreakEvent
@@ -147,8 +148,8 @@ internal object WireConnectionService : Listener {
         val wireItem = playerInv.getItem(event.hand)
         val wire = RebarItem.from<WireRebarItem>(wireItem) ?: return
         connectingNode.connect(thisNode)
-        EdgeProperty.setProperty(ElectricNode.Edge(thisNode, connectingNode), EdgeProperty.PowerLimit(wire.maxPower))
-        EdgeProperty.setProperty(ElectricNode.Edge(connectingNode, thisNode), EdgeProperty.PowerLimit(wire.maxPower))
+        EdgeProperty.setProperty(ElectricNetwork.Edge(thisNode, connectingNode), EdgeProperty.PowerLimit(wire.maxPower))
+        EdgeProperty.setProperty(ElectricNetwork.Edge(connectingNode, thisNode), EdgeProperty.PowerLimit(wire.maxPower))
 
         val connectingLocation = locations[connectingNode] ?: return
         connectingEntity.setTransformationMatrix(getDisplayTransform(connectingLocation, thisLocation))
