@@ -22,10 +22,11 @@ import org.jetbrains.annotations.ApiStatus
 interface SimpleElectricRebarBlock : ElectricRebarBlock {
 
     /**
-     * Creates a port of the given [type] and on the given [face]. If you wish to customize the port further, create an [ElectricNode] and call [addElectricPort] directly instead.
+     * Creates a port of the given [type], on the given [face] and with the given [radius].
+     * If you wish to customize the port further, create an [ElectricNode] and call [addElectricPort] directly instead.
      */
     @ApiStatus.NonExtendable
-    fun createSimpleElectricPort(type: NodeType, face: BlockFace) {
+    fun createSimpleElectricPort(type: NodeType, face: BlockFace, radius: Double) {
         val node = when (type) {
             NodeType.CONNECTOR -> ElectricConnectorNode(
                 "connector_${electricNodes.count { it is ElectricConnectorNode }}",
@@ -44,8 +45,13 @@ interface SimpleElectricRebarBlock : ElectricRebarBlock {
                 0.0
             )
         }
-        addElectricPort(ElectricRebarBlock.ElectricPort(node, face))
+        addElectricPort(ElectricRebarBlock.ElectricPort(node, face, radius = radius))
     }
+    /**
+     * Creates a port of the given [type], on the given [face]
+     */
+    @ApiStatus.NonExtendable
+    fun createSimpleElectricPort(type: NodeType, face: BlockFace) = createSimpleElectricPort(type, face, 0.5)
 
     @ApiStatus.NonExtendable
     override fun <T : ElectricNode> addElectricNode(node: T): T {

@@ -26,6 +26,7 @@ import org.bukkit.event.Listener
 import org.bukkit.util.Vector
 import org.jetbrains.annotations.ApiStatus
 import java.util.*
+import kotlin.math.PI
 
 interface ElectricRebarBlock : EntityHolderRebarBlock {
 
@@ -52,23 +53,20 @@ interface ElectricRebarBlock : EntityHolderRebarBlock {
     @ApiStatus.NonExtendable
     fun addElectricPort(port: ElectricPort) {
         val (node, face, radius, offset, material) = port
-        val expandedRadius = radius - PORT_OUTER_SCALE / 2 + 0.001
+        val expandedRadius = radius - PORT_SCALE / 2 + 0.001
         addEntity(
-            "outer_${node.id}", ItemDisplayBuilder()
-                .itemStack(ItemStackBuilder.of(material).addCustomModelDataString("electric_port_outer"))
-                .transformation(TransformBuilder().scale(PORT_OUTER_SCALE))
+            "port_${node.id}", ItemDisplayBuilder()
+                .itemStack(ItemStackBuilder.of(material).addCustomModelDataString("electric_port"))
+                .transformation(TransformBuilder()
+                    .scale(PORT_SCALE)
+                    .rotate(face.direction.toVector3d(), PI / 4)
+                )
                 .build(block.location.toCenterLocation().add(face.direction * expandedRadius + offset))
-        )
-        addEntity(
-            "inner_${node.id}", ItemDisplayBuilder()
-                .itemStack(ItemStackBuilder.of(Material.BLACK_CONCRETE).addCustomModelDataString("electric_port_inner"))
-                .transformation(TransformBuilder().scale(PORT_INNER_SCALE))
-                .build(block.location.toCenterLocation().add(face.direction * (expandedRadius + 0.001 + PORT_OUTER_SCALE / 2 - PORT_INNER_SCALE / 2) + offset))
         )
         val interaction = addEntity(
             "interaction_${node.id}", InteractionBuilder()
-                .width(PORT_OUTER_SCALE)
-                .height(PORT_OUTER_SCALE)
+                .width(PORT_SCALE)
+                .height(PORT_SCALE)
                 .build(block.location.toCenterLocation().add(face.direction * (radius - 0.001) + offset))
         )
         interaction.persistentDataContainer.set(NODE_KEY, RebarSerializers.UUID, node.id)
@@ -96,8 +94,7 @@ interface ElectricRebarBlock : EntityHolderRebarBlock {
     @ApiStatus.Internal
     companion object : Listener {
 
-        private const val PORT_OUTER_SCALE = 0.19f
-        private const val PORT_INNER_SCALE = PORT_OUTER_SCALE / 2
+        private const val PORT_SCALE = 0.19f
 
         private val NODE_KEY = rebarKey("node")
 
