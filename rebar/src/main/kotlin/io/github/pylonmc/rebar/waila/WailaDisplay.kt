@@ -12,19 +12,17 @@ import net.kyori.adventure.text.`object`.ObjectContents
 import org.bukkit.NamespacedKey
 import org.bukkit.block.Block
 import org.bukkit.entity.Player
-import org.jetbrains.annotations.ApiStatus
 
 /**
  * The configuration for a WAILA bossbar (the bar shown at the top of your
  * screen when looking at a block).
  */
-class WailaDisplay @ApiStatus.Internal internal constructor(
+class WailaDisplay private constructor(
     var text: Component,
     var color: BossBar.Color = RebarConfig.WailaConfig.DEFAULT_DISPLAY.color,
     var overlay: BossBar.Overlay = RebarConfig.WailaConfig.DEFAULT_DISPLAY.overlay,
     var progress: Float = RebarConfig.WailaConfig.DEFAULT_DISPLAY.progress
 ) {
-
 
     fun color(color: BossBar.Color) = apply { this.color = color }
     fun overlay(overlay: BossBar.Overlay) = apply { this.overlay = overlay }
@@ -46,6 +44,10 @@ class WailaDisplay @ApiStatus.Internal internal constructor(
 
         val seperator = Component.text(" | ")
             .color(TextColor.fromHexString("#b2b2b2"))
+
+        @JvmStatic
+        fun of(text: Component, color: BossBar.Color, overlay: BossBar.Overlay, progress: Float)
+            = WailaDisplay(text, color, overlay, progress)
 
         @JvmSynthetic
         internal fun getWailaBlockPrefix(block: Block, player: Player): Component? {
