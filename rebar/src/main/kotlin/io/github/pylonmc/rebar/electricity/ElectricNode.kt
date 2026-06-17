@@ -10,6 +10,9 @@ import org.bukkit.persistence.PersistentDataType
 import java.util.*
 import java.util.function.Consumer as ConsumerFn
 
+/**
+ * Represents a node in an electric network. This can be a producer, consumer, connector, or acceptor of power.
+ */
 sealed class ElectricNode(
     val id: UUID,
     val name: String,
@@ -17,8 +20,15 @@ sealed class ElectricNode(
     private val internalConnections: MutableSet<UUID>
 ) {
 
+    /**
+     * The IDs of the nodes that this node is directly connected to. Said nodes may not be loaded, which is why we store
+     * the IDs and not references to the nodes themselves.
+     */
     val connections: Set<UUID> get() = internalConnections.toSet()
 
+    /**
+     * The network of this node.
+     */
     val network: ElectricNetwork get() = ElectricityManager.getNodeNetwork(this)
 
     protected var onConnect = ConnectDisconnectHandler { _, _ -> }
@@ -148,6 +158,9 @@ sealed class ElectricNode(
         name: String,
         block: BlockPosition,
         internalConnections: MutableSet<UUID>,
+        /**
+         * The amount of power that this producer produces, measured in watts.
+         */
         var power: Double
     ) : ElectricNode(id, name, block, internalConnections) {
         constructor(
@@ -200,6 +213,10 @@ sealed class ElectricNode(
         name: String,
         block: BlockPosition,
         internalConnections: MutableSet<UUID>,
+        /**
+         * The amount of power that this consumer requires, measured in watts. Should the network not be able to provide this
+         * many watts, [isPowered] will be false and the consumer should not operate.
+         */
         var requiredPower: Double
     ) : ElectricNode(id, name, block, internalConnections) {
 
@@ -209,6 +226,9 @@ sealed class ElectricNode(
             requiredPower: Double
         ) : this(UUID.randomUUID(), name, block, mutableSetOf(), requiredPower)
 
+        /**
+         * Returns `true` if this consumer is receiving at least as much power as it requires, and `false` otherwise.
+         */
         var isPowered: Boolean = false
             @JvmSynthetic
             internal set
@@ -243,7 +263,6 @@ sealed class ElectricNode(
             }
         }
     }
-
     class Acceptor private constructor(
         id: UUID,
         name: String,
@@ -260,6 +279,10 @@ sealed class ElectricNode(
         @set:JvmSynthetic
         internal var handler = AcceptorHandler { 0.0 }
 
+
+        /**
+         * Registers a handler, which is called with surplus power provided by the network.
+         */
         fun onAccept(handler: AcceptorHandler) {
             this.handler = handler
         }

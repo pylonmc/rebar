@@ -119,6 +119,9 @@ class BlockPosition(val worldId: UUID?, val x: Int, val y: Int, val z: Int) {
 
     fun toVector(): Vector = Vector(x.toDouble(), y.toDouble(), z.toDouble())
 
+    /**
+     * Returns a unit cube at this position. **Does not return the actual hitbox of the block.**
+     */
     fun toBoundingBox(): BoundingBox = BoundingBox(x.toDouble(), y.toDouble(), z.toDouble(), x + 1.0, y + 1.0, z + 1.0)
 
     val block: Block

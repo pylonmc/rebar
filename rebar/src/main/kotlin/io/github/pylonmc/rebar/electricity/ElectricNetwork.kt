@@ -8,6 +8,9 @@ import kotlin.collections.ArrayDeque
 import kotlin.math.abs
 import kotlin.math.min
 
+/**
+ * A set of nodes where each node has at least one connection to another node in the set.
+ */
 class ElectricNetwork {
 
     private val nodeMap: MutableMap<UUID, ElectricNode> = mutableMapOf()
@@ -43,6 +46,11 @@ class ElectricNetwork {
 
     fun isPartOfNetwork(node: ElectricNode): Boolean = node.id in nodeMap
 
+    /**
+     * When called, routes power from producers to consumers and acceptors (respecting the requirements of consumers
+     * and the limits of edges), updates the power state of consumers, and calls handlers on producers and acceptors
+     * with the amount of power produced/accepted.
+     */
     // TODO memoization if performance is bad
     fun tick() {
         for (consumer in consumers) {
@@ -192,6 +200,11 @@ class ElectricNetwork {
         }
     }
 
+    /**
+     * Attempts to evenly distribute the given amount across the given keys, without exceeding the limits for any key.
+     * If a key hits its limit, the excess is redistributed among the remaining keys, until either all excess is distributed
+     * or all keys have hit their limits.
+     */
     private fun <K> roundRobinFill(limits: Map<K, Double>, amount: Double): Map<K, Double> {
         val filled = mutableMapOf<K, Double>()
         var remaining = amount
