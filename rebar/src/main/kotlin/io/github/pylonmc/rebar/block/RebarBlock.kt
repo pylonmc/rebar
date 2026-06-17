@@ -3,11 +3,11 @@ package io.github.pylonmc.rebar.block
 import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.block.RebarBlock.Companion.rebarBlockTextureEntityKey
 import io.github.pylonmc.rebar.block.RebarBlock.Companion.register
+import io.github.pylonmc.rebar.block.context.BlockBreakContext
+import io.github.pylonmc.rebar.block.context.BlockCreateContext
 import io.github.pylonmc.rebar.block.interfaces.DirectionalRebarBlock
 import io.github.pylonmc.rebar.block.interfaces.EntityHolderRebarBlock
 import io.github.pylonmc.rebar.block.interfaces.GuiRebarBlock
-import io.github.pylonmc.rebar.block.context.BlockBreakContext
-import io.github.pylonmc.rebar.block.context.BlockCreateContext
 import io.github.pylonmc.rebar.config.ConfigSection
 import io.github.pylonmc.rebar.config.RebarConfig
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter
@@ -29,7 +29,10 @@ import io.github.pylonmc.rebar.waila.WailaDisplay
 import io.github.pylonmc.rebar.waila.WailaSupplier
 import io.papermc.paper.datacomponent.DataComponentTypes
 import net.kyori.adventure.key.Key
-import org.bukkit.*
+import org.bukkit.Keyed
+import org.bukkit.Material
+import org.bukkit.NamespacedKey
+import org.bukkit.World
 import org.bukkit.block.Block
 import org.bukkit.entity.ItemDisplay
 import org.bukkit.entity.Player
@@ -37,8 +40,6 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataAdapterContext
 import org.bukkit.persistence.PersistentDataContainer
 import org.jetbrains.annotations.MustBeInvokedByOverriders
-import org.bukkit.util.Transformation
-import org.joml.Vector3f
 
 /**
  * Represents a Rebar block in the world.
@@ -128,10 +129,8 @@ open class RebarBlock private constructor(val block: Block) : WailaSupplier, Key
      * If you need to use data from these interfaces (such as the amount of fluid stored in
      * a [io.github.pylonmc.rebar.block.interfaces.FluidBufferRebarBlock], you must use this
      * instead of using the data in the load constructor.
-     *
-     * @param pdc the persistent data container used to load the block, in case you need to read any additional data from it
      */
-    protected open fun postLoad(pdc: PersistentDataContainer) {}
+    protected open fun postLoad() {}
 
     /**
      * Called after both the create constructor and the load constructor.
@@ -416,7 +415,7 @@ open class RebarBlock private constructor(val block: Block) : WailaSupplier, Key
                 RebarBlockDeserializeEvent(block.block, block, pdc).callEvent()
                 block.postInitialise()
                 RebarBlockInitializeEvent(block.block, block).callEvent()
-                block.postLoad(pdc)
+                block.postLoad()
                 return block
             } catch (t: Throwable) {
                 Rebar.logger.severe("Error while loading block $key at $position")
