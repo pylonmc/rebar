@@ -7,6 +7,7 @@ import io.github.pylonmc.rebar.event.RebarBlockLoadEvent
 import io.github.pylonmc.rebar.event.RebarBlockPlaceEvent
 import io.github.pylonmc.rebar.event.RebarBlockUnloadEvent
 import net.kyori.adventure.text.Component
+import org.bukkit.Keyed
 import org.bukkit.entity.Player
 import org.bukkit.event.Event
 import org.bukkit.event.EventHandler
@@ -17,7 +18,7 @@ import org.bukkit.inventory.EquipmentSlot
 import xyz.xenondevs.invui.gui.Gui
 import xyz.xenondevs.invui.inventory.VirtualInventory
 import xyz.xenondevs.invui.window.Window
-import java.util.IdentityHashMap
+import java.util.*
 
 /**
  * A simple interface that opens a GUI when the block is right clicked
@@ -30,7 +31,7 @@ import java.util.IdentityHashMap
  * @see VirtualInventory
  * @see io.github.pylonmc.rebar.block.interfaces.VirtualInventoryRebarBlock
  */
-interface GuiRebarBlock : NoVanillaInventoryRebarBlock {
+interface GuiRebarBlock : NoVanillaInventoryRebarBlock, Keyed {
 
     /**
      * Returns the block's GUI. Called when a block is created.
@@ -45,7 +46,7 @@ interface GuiRebarBlock : NoVanillaInventoryRebarBlock {
 
     fun openWindow(player: Player) {
         Window.builder()
-            .setUpperGui(guiBlocks[this] ?: error("GUI not found for block"))
+            .setUpperGui(guiBlocks[this] ?: error("GUI not found for block $key"))
             .setTitle(guiTitle)
             .open(player)
     }
