@@ -109,14 +109,18 @@ class ProgressBar : ComponentLike {
          * Filled bars are colored according to the fluid.
          */
         @JvmStatic
-        fun fluidContents(fluid: RebarFluid?, capacity: Double, amount: Double) = ProgressBar()
-            .barColor(fluid?.color ?: NamedTextColor.BLACK)
-            .proportion(amount / capacity)
-            .suffix(Component.text(" ")
-                .append(Component.text(amount.roundToInt()))
-                .append(Component.text("/"))
-                .append(UnitFormat.MILLIBUCKETS.format(capacity))
-            )
+        fun fluidContents(fluid: RebarFluid?, capacity: Double, amount: Double): ProgressBar {
+            check(capacity != 0.0) { "Capacity cannot be zero" }
+            return ProgressBar()
+                .barColor(fluid?.color ?: NamedTextColor.BLACK)
+                .proportion(amount / capacity)
+                .suffix(
+                    Component.text(" ")
+                        .append(Component.text(amount.roundToInt()))
+                        .append(Component.text("/"))
+                        .append(UnitFormat.MILLIBUCKETS.format(capacity))
+                )
+        }
 
         /**
          * Example: '||||||||||||||||---- 80/100mB (Water)'

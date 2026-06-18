@@ -18,13 +18,16 @@ import kotlin.math.max
  * time, but can store many types of fluids. `RebarFluidTank` implements this
  * pattern.
  *
- * You must call [setCapacity] for this
- * block to work.
+ * To use this interface, call [FluidTankRebarBlock.setCapacity] in your place
+ * constructor and implement [isAllowedFluid] to control which fluids can be
+ * stored in this tank.
  *
  * As with [FluidBufferRebarBlock], you do not need to handle saving buffers
  * or implement any of the [FluidRebarBlock] methods for this; this is all
  * done automatically.
  *
+ * @see FluidBufferRebarBlock
+ * @see FluidRebarBlock
  */
 interface FluidTankRebarBlock : FluidRebarBlock {
 
@@ -60,6 +63,8 @@ interface FluidTankRebarBlock : FluidRebarBlock {
      */
     val fluidSpaceRemaining: Double
             get() = fluidData.capacity - fluidData.amount
+
+    fun isAllowedFluid(fluid: RebarFluid): Boolean
 
     /**
      * Sets the type of fluid in the fluid tank
@@ -134,8 +139,6 @@ interface FluidTankRebarBlock : FluidRebarBlock {
      */
     fun removeFluid(amount: Double): Boolean
             = setFluid(fluidAmount - amount)
-
-    fun isAllowedFluid(fluid: RebarFluid): Boolean
 
     override fun fluidAmountRequested(fluid: RebarFluid): Double{
         if (!isAllowedFluid(fluid)) {

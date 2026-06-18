@@ -1,5 +1,7 @@
 package io.github.pylonmc.rebar.config
 
+import io.github.pylonmc.rebar.Rebar
+import io.github.pylonmc.rebar.addon.RebarAddon
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter
 import io.github.pylonmc.rebar.util.getAddon
 import io.github.pylonmc.rebar.util.mergeResource
@@ -285,7 +287,7 @@ open class ConfigSection private constructor(val name: String?, val internalSect
          */
         @JvmStatic
         fun fromSettings(key: NamespacedKey)
-            = mergeResource(getAddon(key), "settings/${key.key}.yml", "settings/${key.namespace}/${key.key}.yml")
+            = mergeResource(getAddon(key), Rebar, "settings/${key.key}.yml", "settings/${key.namespace}/${key.key}.yml")
 
         /**
          * Copies a resource (i.e. a file) from your addon's `resources` folder to its data folder.
@@ -298,11 +300,17 @@ open class ConfigSection private constructor(val name: String?, val internalSect
          * folder's file.
          */
         @JvmStatic
-        fun copyResource(plugin: Plugin, path: String): ConfigSection {
-            val config = fromResource(plugin, path)
-                ?: throw IllegalArgumentException("Failed to load config from ${File(plugin.dataFolder, path).absolutePath} because it does not exist")
-            config.save(File(plugin.dataFolder, path))
-            return fromDataFolder(plugin, path)!!
+        @JvmOverloads
+        fun copyResource(addon: RebarAddon, path: String, merge: Boolean = true): ConfigSection {
+            val target = File(addon.javaPlugin.dataFolder, path)
+            if (merge && target.exists()) {
+                mergeResource(addon, addon, path, path)
+            } else {
+                val config = fromResource(addon.javaPlugin, path)
+                    ?: throw IllegalArgumentException("Failed to load config from ${File(addon.javaPlugin.dataFolder, path).absolutePath} because it does not exist")
+                config.save(target)
+            }
+            return fromDataFolder(addon.javaPlugin, path)!!
         }
     }
 }

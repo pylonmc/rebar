@@ -22,7 +22,6 @@ import org.bukkit.persistence.PersistentDataContainer
  * TODO: [io.github.pylonmc.rebar.block.interfaces.EntityGroupCulledRebarBlock]
  */
 class FluidSectionMarker : RebarBlock, BlockBreakRebarBlockHandler, EntityHolderRebarBlock, FacadeRebarBlock {
-    override val facadeDefaultBlockType = Material.STRUCTURE_VOID
     override var disableBlockTextureEntity = true
 
     @Suppress("unused")
@@ -47,7 +46,7 @@ class FluidSectionMarker : RebarBlock, BlockBreakRebarBlockHandler, EntityHolder
     }
 
     override fun getWaila(player: Player): WailaDisplay?
-        = WailaDisplay(pipe!!.stack.effectiveName())
+        = WailaDisplay.of(pipe!!.stack.effectiveName())
 
     override fun getDropItem(context: BlockBreakContext) = null
 

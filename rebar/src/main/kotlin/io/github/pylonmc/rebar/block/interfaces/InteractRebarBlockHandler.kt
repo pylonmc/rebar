@@ -13,7 +13,10 @@ import org.jetbrains.annotations.ApiStatus
 interface InteractRebarBlockHandler {
 
     /**
-     * This may be called for both hands, so make sure you check which hand is used.
+     * Called whenever the player interacts with the block (i.e. left or right clicks it).
+     *
+     * This may be called for both hands if it is a right click, so make sure you check which
+     * hand is used.
      */
     fun onInteractedWith(event: PlayerInteractEvent, priority: EventPriority) {}
 

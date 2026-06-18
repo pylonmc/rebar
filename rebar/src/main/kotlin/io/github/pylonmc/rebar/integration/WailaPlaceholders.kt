@@ -1,13 +1,16 @@
-package io.github.pylonmc.rebar.waila
+package io.github.pylonmc.rebar.integration
 
 import io.github.pylonmc.rebar.i18n.customMiniMessage
 import io.github.pylonmc.rebar.util.plainText
-import io.github.pylonmc.rebar.waila.WailaPlaceholders.placeholders
+import io.github.pylonmc.rebar.waila.Waila
 import me.clip.placeholderapi.expansion.PlaceholderExpansion
 import net.kyori.adventure.bossbar.BossBar
 import org.bukkit.OfflinePlayer
 import org.bukkit.entity.Player
 
+/**
+ * Please update https://pylonmc.github.io/home/placeholders if adding/removing/modifying any placeholders.
+ */
 object WailaPlaceholders : PlaceholderExpansion() {
     @JvmField
     val placeholders: List<String> = listOf("text", "plain_text", "color", "overlay", "progress")

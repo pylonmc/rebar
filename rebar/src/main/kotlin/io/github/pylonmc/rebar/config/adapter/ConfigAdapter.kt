@@ -16,6 +16,13 @@ import org.joml.Vector3f
 import org.joml.Vector3i
 import java.lang.reflect.Type
 
+/**
+ * Provides instructions on how to deserialize a specific type of value.
+ *
+ * For info on builtin config adapters, see the [builtin ConfigAdapter docs](https://pylonmc.github.io/documentation/reference/configs/builtin-config-adapters/)
+ *
+ * For info on creating your own config adapters, see the  [custom ConfigAdapter docs](https://pylonmc.github.io/documentation/reference/configs/custom-config-adapters/)
+ */
 interface ConfigAdapter<T> {
 
     val type: Type
@@ -35,55 +42,26 @@ interface ConfigAdapter<T> {
         @JvmField val FLOAT = numberAdapter(Float.MIN_VALUE, Float.MAX_VALUE, Number::toFloat)
         @JvmField val DOUBLE = numberAdapter(Double.MIN_VALUE, Double.MAX_VALUE, Number::toDouble)
         @JvmField val INT_RANGE = IntRangeAdapter
-        @JvmField val CHAR = ConfigAdapter { (it as String).single() }
         @JvmField val BOOLEAN = ConfigAdapter { it as Boolean }
+        @JvmField val CHAR = ConfigAdapter { (it as String).single() }
+        @JvmField val STRING = ConfigAdapter { it.toString() }
         @JvmField val ANY = ConfigAdapter { it }
 
-        @JvmField val STRING = ConfigAdapter { it.toString() }
         @JvmField val LIST = ListConfigAdapter
         @JvmField val SET = SetConfigAdapter
         @JvmField val MAP = MapConfigAdapter
+        @JvmField val WEIGHTED_SET = WeightedSetConfigAdapter
+
         @JvmField val ENUM = EnumConfigAdapter
-
-        @JvmField val UUID = UUIDConfigAdapter
-
         @JvmField val KEYED = KeyedConfigAdapter
+
+        @JvmField val CONFIG_SECTION = ConfigSectionConfigAdapter
+        @JvmField val UUID = UUIDConfigAdapter
         @JvmField val NAMESPACED_KEY = ConfigAdapter { NamespacedKey.fromString(STRING.convert(it))!! }
         @JvmField val MATERIAL = KEYED.fromRegistry(Registry.MATERIAL)
-        @JvmField val ITEM_TYPE_WRAPPER = KEYED.fromGetter { ItemTypeWrapper(it) }
-        @JvmField val ITEM_STACK = ItemStackConfigAdapter
         @JvmField val BLOCK_DATA = ConfigAdapter { Bukkit.createBlockData(STRING.convert(it)) }
-
-         @JvmField val VECTOR_2I = ConfigAdapter {
-            val list = (it as List<*>).filterIsInstance<Int>()
-            check(list.size == 2) { "List must be of size 2" }
-            Vector2i(list[0], list[1])
-        }
-        @JvmField val VECTOR_2F = ConfigAdapter {
-            val list = (it as List<*>).filterIsInstance<Float>()
-            check(list.size == 2) { "List must be of size 2" }
-            Vector2f(list[0], list[1])
-        }
-        @JvmField val VECTOR_2D = ConfigAdapter {
-            val list = (it as List<*>).filterIsInstance<Double>()
-            check(list.size == 2) { "List must be of size 2" }
-            Vector2d(list[0], list[1])
-        }
-        @JvmField val VECTOR_3I = ConfigAdapter {
-            val list = (it as List<*>).filterIsInstance<Int>()
-            check(list.size == 3) { "List must be of size 3" }
-            Vector3i(list[0], list[1], list[2])
-        }
-        @JvmField val VECTOR_3F = ConfigAdapter {
-            val list = (it as List<*>).filterIsInstance<Float>()
-            check(list.size == 3) { "List must be of size 3" }
-            Vector3f(list[0], list[1], list[2])
-        }
-        @JvmField val VECTOR_3D = ConfigAdapter {
-            val list = (it as List<*>).filterIsInstance<Double>()
-            check(list.size == 3) { "List must be of size 3" }
-            Vector3d(list[0], list[1], list[2])
-        }
+        @JvmField val TEXT_COLOR = TextColorConfigAdapter
+        @JvmField val ITEM_TAG = ItemTagConfigAdapter
 
         /**
          * A [ConfigAdapter] for in game [Sound]s,
@@ -128,22 +106,56 @@ interface ConfigAdapter<T> {
          */
         @JvmField val RANDOMIZED_SOUND = RandomizedSoundConfigAdapter
 
+        @JvmField val WAILA_DISPLAY = WailaDisplayConfigAdapter
+        @JvmField val CULLING_PRESET = CullingPresetConfigAdapter
+        @JvmField val CONTRIBUTOR = ContributorConfigAdapter
+
+        @JvmField val VECTOR_2I = ConfigAdapter { value ->
+            var list = (value as List<*>)
+            check(list.size == 2) { "List must be of size 2" }
+            list = list.map { it as? Int ?: error("$it is not an integer") }
+            Vector2i(list[0], list[1])
+        }
+        @JvmField val VECTOR_2F = ConfigAdapter { value ->
+            var list = (value as List<*>)
+            check(list.size == 2) { "List must be of size 2" }
+            list = list.map { (it as? Double ?: it as? Int ?: error("$it is not a float")).toFloat() }
+            Vector2f(list[0], list[1])
+        }
+        @JvmField val VECTOR_2D = ConfigAdapter { value ->
+            var list = (value as List<*>)
+            check(list.size == 2) { "List must be of size 2" }
+            list = list.map { it as? Double ?: error("$it is not a double") }
+            Vector2d(list[0], list[1])
+        }
+        @JvmField val VECTOR_3I = ConfigAdapter { value ->
+            var list = (value as List<*>)
+            check(list.size == 3) { "List must be of size 3" }
+            list = list.map { it as? Int ?: error("$it is not an integer") }
+            Vector3i(list[0], list[1], list[2])
+        }
+        @JvmField val VECTOR_3F = ConfigAdapter { value ->
+            var list = (value as List<*>)
+            check(list.size == 3) { "List must be of size 3" }
+            list = list.map { (it as? Double ?: it as? Int ?: error("$it is not a float")).toFloat() }
+            Vector3f(list[0], list[1], list[2])
+        }
+        @JvmField val VECTOR_3D = ConfigAdapter { value ->
+            var list = (value as List<*>)
+            check(list.size == 3) { "List must be of size 3" }
+            list = list.map { it as? Double ?: error("$it is not a double") }
+            Vector3d(list[0], list[1], list[2])
+        }
+
+
+        @JvmField val ITEM_STACK = ItemStackConfigAdapter
+        @JvmField val ITEM_TYPE_WRAPPER = KEYED.fromGetter { ItemTypeWrapper(it) }
+        @JvmField val ITEM_CHOICE = ItemChoiceConfigAdapter
         @JvmField val REBAR_FLUID = KEYED.fromRegistry(RebarRegistry.FLUIDS)
         @JvmField val FLUID_TEMPERATURE = ENUM.from<FluidTemperature>()
-
         @JvmField val FLUID_CHOICE = FluidChoiceConfigAdapter
-        @JvmField val ITEM_CHOICE = ItemChoiceConfigAdapter
-
         @JvmField val FLUID_OR_ITEM = FluidOrItemConfigAdapter
         @JvmField val FLUID_WITH_AMOUNT = FluidWithAmountConfigAdapter
-
-        @JvmField val ITEM_TAG = ItemTagConfigAdapter
-        @JvmField val WEIGHTED_SET = WeightedSetConfigAdapter
-        @JvmField val CULLING_PRESET = CullingPresetConfigAdapter
-        @JvmField val WAILA_DISPLAY = WailaDisplayConfigAdapter
-        @JvmField val CONFIG_SECTION = ConfigSectionConfigAdapter
-        @JvmField val CONTRIBUTOR = ContributorConfigAdapter
-        @JvmField val TEXT_COLOR = TextColorConfigAdapter
         // @formatter:on
 
         private inline fun <reified T : Number> numberAdapter(

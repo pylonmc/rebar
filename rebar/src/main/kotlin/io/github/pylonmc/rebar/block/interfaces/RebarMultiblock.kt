@@ -15,7 +15,7 @@ import org.jetbrains.annotations.ApiStatus
  * Multiblocks are more difficult than normal Rebar blocks for the simple reason that a multiblock
  * may contain some blocks that have not been loaded because they are in a different chunk.
  *
- * Ticking multiblocks should only tick when `isFormedAndFullyLoaded()` returns true, to avoid
+ * Ticking multiblocks should only tick when [RebarMultiblock.isFormedAndFullyLoaded] returns true, to avoid
  * ticking a multiblock that is either not formed, or not fully loaded (i.e., not all of its components
  * are loaded).
  *

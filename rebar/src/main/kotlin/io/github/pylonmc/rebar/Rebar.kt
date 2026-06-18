@@ -44,7 +44,7 @@ import io.github.pylonmc.rebar.item.interfaces.*
 import io.github.pylonmc.rebar.nms.NmsAccessor
 import io.github.pylonmc.rebar.util.mergeResource
 import io.github.pylonmc.rebar.waila.Waila
-import io.github.pylonmc.rebar.waila.WailaPlaceholders
+import io.github.pylonmc.rebar.integration.WailaPlaceholders
 import io.papermc.paper.ServerBuildInfo
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents
 import kotlinx.coroutines.CoroutineScope
@@ -362,7 +362,7 @@ object Rebar : JavaPlugin(), RebarAddon {
         val start = System.currentTimeMillis()
 
         for (addon in RebarRegistry.ADDONS) {
-            mergeResource(addon, "researches.yml", "researches/${addon.key.namespace}.yml", false)
+            mergeResource(addon, Rebar, "researches.yml", "researches/${addon.key.namespace}.yml", false)
         }
 
         val researchDir = dataPath.resolve("researches")
