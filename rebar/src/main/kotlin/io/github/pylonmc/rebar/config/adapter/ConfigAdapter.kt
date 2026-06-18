@@ -143,6 +143,7 @@ interface ConfigAdapter<T> {
 
         @JvmField val ITEM_STACK = ItemStackConfigAdapter
         @JvmField val ITEM_TYPE_WRAPPER = KEYED.fromGetter { ItemTypeWrapper(it) }
+        @JvmField val ITEM_TAG = ItemTagConfigAdapter
         @JvmField val ITEM_CHOICE = ItemChoiceConfigAdapter
         @JvmField val REBAR_FLUID = KEYED.fromRegistry(RebarRegistry.FLUIDS)
         @JvmField val FLUID_TEMPERATURE = ENUM.from<FluidTemperature>()
