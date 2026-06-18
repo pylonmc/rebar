@@ -7,7 +7,12 @@ import io.github.pylonmc.rebar.config.RebarConfig
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.entity.EntityStorage
 import io.github.pylonmc.rebar.entity.RebarEntity
+import io.github.pylonmc.rebar.event.RebarBlockBreakEvent
+import io.github.pylonmc.rebar.event.RebarBlockPhantomEvent
+import io.github.pylonmc.rebar.event.RebarBlockUnloadEvent
 import io.github.pylonmc.rebar.event.RebarBlockWailaEvent
+import io.github.pylonmc.rebar.event.RebarEntityDeathEvent
+import io.github.pylonmc.rebar.event.RebarEntityUnloadEvent
 import io.github.pylonmc.rebar.event.RebarEntityWailaEvent
 import io.github.pylonmc.rebar.i18n.RebarArgument
 import io.github.pylonmc.rebar.util.breakProgress
@@ -184,7 +189,7 @@ class Waila private constructor(
                     return
                 }
 
-                var display = entityOverrides[targetEntity]?.invoke(player)
+                var display = entityOverrides[targetEntity]?.getWaila(player)
                     ?: entity.let(EntityStorage::get)?.getWaila(player)
 
                 if (display == null && player.wailaConfig.vanillaWailaEnabled) {
@@ -221,7 +226,7 @@ class Waila private constructor(
                     return
                 }
 
-                var display = blockOverrides[targetBlock]?.invoke(player)
+                var display = blockOverrides[targetBlock]?.getWaila(player)
                     ?: block.let(BlockStorage::get)?.getWaila(player)
 
                 if (!BlockStorage.isRebarBlock(block) && display == null && player.wailaConfig.vanillaWailaEnabled) {
@@ -265,8 +270,8 @@ class Waila private constructor(
         private val wailaKey = rebarKey("waila")
         private val wailas = mutableMapOf<UUID, Waila>()
 
-        private val blockOverrides = mutableMapOf<BlockPosition, (Player) -> WailaDisplay?>()
-        private val entityOverrides = mutableMapOf<UUID, (Player) -> WailaDisplay?>()
+        private val blockOverrides = mutableMapOf<BlockPosition, WailaSupplier>()
+        private val entityOverrides = mutableMapOf<UUID, WailaSupplier>()
 
         @JvmStatic
         fun getWaila(player: Player): Waila? {
@@ -353,8 +358,8 @@ class Waila private constructor(
          * old override will be replaced.
          */
         @JvmStatic
-        fun addWailaOverride(position: BlockPosition, provider: (Player) -> WailaDisplay?) {
-            blockOverrides[position] = provider
+        fun addWailaOverride(position: BlockPosition, supplier: WailaSupplier) {
+            blockOverrides[position] = supplier
         }
 
         /**
@@ -367,8 +372,8 @@ class Waila private constructor(
          * old override will be replaced.
          */
         @JvmStatic
-        fun addWailaOverride(block: Block, provider: (Player) -> WailaDisplay?)
-                = addWailaOverride(block.position, provider)
+        fun addWailaOverride(block: Block, supplier: WailaSupplier)
+                = addWailaOverride(block.position, supplier)
 
         /**
          * Adds a WAILA override for the given entity. This will always show the
@@ -379,8 +384,8 @@ class Waila private constructor(
          * old override will be replaced.
          */
         @JvmStatic
-        fun addWailaOverride(entity: Entity, provider: (Player) -> WailaDisplay?) {
-            entityOverrides[entity.uniqueId] = provider
+        fun addWailaOverride(entity: Entity, supplier: WailaSupplier) {
+            entityOverrides[entity.uniqueId] = supplier
         }
 
         /**
@@ -417,6 +422,42 @@ class Waila private constructor(
         @EventHandler(priority = EventPriority.MONITOR)
         private fun onPlayerQuit(event: PlayerQuitEvent) {
             removePlayer(event.player)
+        }
+
+        private fun removeOverrides(block: RebarBlock) {
+            blockOverrides.values.removeIf { it === block }
+            entityOverrides.values.removeIf { it === block }
+        }
+
+        private fun removeOverrides(entity: RebarEntity<*>) {
+            blockOverrides.values.removeIf { it === entity }
+            entityOverrides.values.removeIf { it === entity }
+        }
+
+        @EventHandler(priority = EventPriority.MONITOR)
+        private fun onBlockBreak(event: RebarBlockBreakEvent) {
+            removeOverrides(event.rebarBlock)
+        }
+
+        @EventHandler(priority = EventPriority.MONITOR)
+        private fun onBlockUnload(event: RebarBlockUnloadEvent) {
+            removeOverrides(event.rebarBlock)
+        }
+
+        @EventHandler(priority = EventPriority.MONITOR)
+        private fun onBlockPhantom(event: RebarBlockPhantomEvent) {
+            removeOverrides(event.rebarBlock)
+        }
+
+        @EventHandler(priority = EventPriority.MONITOR)
+        private fun onEntityRemove(event: RebarEntityDeathEvent) {
+            // TODO: this will need changed to RebarEntityRemoveEvent when my other PR is opened & merged
+            removeOverrides(event.rebarEntity)
+        }
+
+        @EventHandler(priority = EventPriority.MONITOR)
+        private fun onEntityUnload(event: RebarEntityUnloadEvent) {
+            removeOverrides(event.rebarEntity)
         }
     }
 }

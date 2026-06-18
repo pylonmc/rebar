@@ -512,7 +512,7 @@ internal fun getContributors(addon: RebarAddon): List<ContributorConfig> {
         return cached
     }
 
-    val config = ConfigSection.fromResource(Rebar, "contributors.yml")
+    val config = ConfigSection.fromResource(addon.javaPlugin, "contributors.yml")
     val contributors = config?.get(
         "contributors",
         ConfigAdapter.LIST.from(ConfigAdapter.CONTRIBUTOR),

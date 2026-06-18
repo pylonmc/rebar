@@ -1,6 +1,7 @@
 package io.github.pylonmc.rebar.block.interfaces
 
 import io.github.pylonmc.rebar.block.BlockStorage
+import io.github.pylonmc.rebar.block.RebarBlock
 import io.github.pylonmc.rebar.block.context.BlockCreateContext
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.event.RebarBlockDeserializeEvent
@@ -287,7 +288,7 @@ interface SimpleRebarMultiblock : RebarMultiblock, GhostBlockHolderRebarBlock, E
             removeGhostBlock(getRotatedPosition(position))
         }
         for (position in components.keys) {
-            Waila.addWailaOverride(getMultiblockBlock(position), this::getWaila)
+            Waila.addWailaOverride(getMultiblockBlock(position), this as RebarBlock)
         }
     }
 

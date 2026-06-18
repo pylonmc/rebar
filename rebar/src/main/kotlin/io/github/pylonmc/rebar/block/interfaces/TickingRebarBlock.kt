@@ -156,13 +156,17 @@ interface TickingRebarBlock {
         private val dispatchers = mutableMapOf<RebarBlockSchema, CoroutineDispatcher>()
 
         private fun startTicker(tickingBlock: TickingRebarBlock) {
+            if (tickingBlock.tickingData.job != null) {
+                tickingBlock.tickingData.job!!.cancel()
+            }
+
             val rebarBlock = tickingBlock as RebarBlock
             val dispatcher = dispatchers.getOrPut(rebarBlock.schema) {
                 if (tickingBlock.isAsync) Dispatchers.Default
                 else Rebar.mainThreadDispatcher
             }
             val scope = ChunkScope(Rebar.scope.coroutineContext.createChildContext(), rebarBlock.block.chunk.position)
-            tickingBlocks[tickingBlock]?.job = scope.launch(dispatcher) {
+            tickingBlock.tickingData.job = scope.launch(dispatcher) {
                 while (true) {
                     delayTicks(tickingBlock.tickInterval.toLong())
                     try {

@@ -377,6 +377,15 @@ guide:
         name: "<white>Guide Sounds: <red>Disabled <dark_gray>(Click to toggle)"
         lore: |-
           <guidearrow> Whether to play sounds in the guide
+    toggle-story-text:
+      enabled:
+        name: "<white>Story text: <green>Enabled <dark_gray>(Click to toggle)"
+        lore: |-
+          <guidearrow> Whether to show <story>story text</story>
+      disabled:
+        name: "<white>Story text: <red>Disabled <dark_gray>(Click to toggle)"
+        lore: |-
+          <guidearrow> Whether to show <story>story text</story>
     info:
       discord:
         name: "<white>Discord"
