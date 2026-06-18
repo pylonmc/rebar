@@ -7,6 +7,7 @@ import io.github.pylonmc.rebar.event.RebarBlockLoadEvent
 import io.github.pylonmc.rebar.event.RebarBlockPlaceEvent
 import io.github.pylonmc.rebar.event.RebarBlockUnloadEvent
 import net.kyori.adventure.text.Component
+import org.bukkit.entity.Player
 import org.bukkit.event.Event
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
@@ -32,15 +33,43 @@ import java.util.IdentityHashMap
 interface GuiRebarBlock : NoVanillaInventoryRebarBlock {
 
     /**
+     * The title of the GUI
+     */
+    val guiTitle: Component
+        get() = (this as RebarBlock).nameTranslationKey
+
+    /**
      * Returns the block's GUI. Called when a block is created.
      */
     fun createGui(): Gui
 
     /**
-     * The title of the GUI
+     * Refreshes the stores GUI by calling [createGui] again.
+     *
+     * If players have the GUI already open, it will be closed and then re-opened with the
+     * new GUI manually.
+     *
+     * Strongly consider [updating individual items](https://docs.xenondevs.xyz/invui/item/)
+     * before you use this method, to prevent having to constantly close and re-open windows.
      */
-    val guiTitle: Component
-        get() = (this as RebarBlock).nameTranslationKey
+    fun refreshGui() {
+        val oldGui = guiBlocks[this]
+        val players = oldGui?.windows?.map { it.viewer } ?: emptyList()
+        oldGui?.windows?.forEach { it.close() }
+        guiBlocks[this] = createGui()
+        for (player in players) {
+            open(player)
+        }
+    }
+
+    fun open(player: Player) {
+            Window.builder()
+                .setUpperGui(guiBlocks[this]!!)
+                .setTitle(guiTitle)
+                .setViewer(player)
+                .build()
+                .open()
+    }
 
     companion object : Listener {
         private val guiBlocks = IdentityHashMap<GuiRebarBlock, Gui>()
@@ -74,12 +103,7 @@ interface GuiRebarBlock : NoVanillaInventoryRebarBlock {
             event.setUseInteractedBlock(Event.Result.DENY)
             event.setUseItemInHand(Event.Result.DENY)
 
-            Window.builder()
-                .setUpperGui(guiBlocks[guiBlock]!!)
-                .setTitle(guiBlock.guiTitle)
-                .setViewer(event.player)
-                .build()
-                .open()
+            guiBlock.open(event.player)
         }
 
         @EventHandler

@@ -28,10 +28,11 @@ import org.bukkit.NamespacedKey
  *
  * ### Custom Tags
  * - `<arrow>`|`<arrow:\[color\]>` - Inserts a right arrow (→) with the specified color (default: 0x666666)
- * - `<guidearrow> - Shorthand for `<arrow:0x3a293>`
+ * - `<guidearrow> - Shorthand for `<arrow:0x653d6d>`
  * - `<diamond>`|`<diamond:\[color\]>` - Inserts a diamond (◆) with the specified color (default: 0x666666)
  * - `<star>`|`<star:\[color\]>` - Inserts a star (★) with the specified color (default: [NamedTextColor.BLUE])
  * - `<insn></insn>` - Applies a yellow styling (0xf9d104), used for instructions
+ * - `<guidehint></guidehint>` - Applies a light purple styling (0xeac5f4), used for guide hints
  * - `<guideinsn></guideinsn>` - Applies a purple styling (0xc907f4), used for guide instructions
  * - `<attr></attr>` - Applies a cyan styling (0xa9d9e8), used for attributes
  * - `<unit:\[prefix\]:[unit]></unit>` - Formats a **constant** number as a unit, with an optional metric prefix
@@ -55,10 +56,11 @@ val customMiniMessage = MiniMessage.builder()
         it.tag("diamond", ::diamond)
         it.tag("star", ::star)
         it.tag("insn") { _, _ -> Tag.styling(TextColor.color(0xf9d104)) }
+        it.tag("guidehint") { _, _ -> Tag.styling(TextColor.color(0xeac5f4), TextDecoration.ITALIC) }
         it.tag("guideinsn") { _, _ -> Tag.styling(TextColor.color(0xc907f4)) }
         it.tag("story") { _, _ ->
             Tag.styling { builder ->
-                builder.color(TextColor.color(0xcc9bf2)).decorate(TextDecoration.ITALIC)
+                builder.color(TextColor.color(0xde76e0)).decorate(TextDecoration.ITALIC)
             }
         }
         it.tag("attr") { _, _ -> Tag.styling(TextColor.color(0xa9d9e8)) }
@@ -79,7 +81,7 @@ private fun arrow(args: ArgumentQueue, @Suppress("unused") ctx: Context): Tag {
 }
 
 private fun guidearrow(args: ArgumentQueue, @Suppress("unused") ctx: Context): Tag {
-    val color = TextColor.color(0x3a293)
+    val color = TextColor.color(0x653d6d)
     return Tag.selfClosingInserting(Component.text("\u2192").color(color))
 }
 

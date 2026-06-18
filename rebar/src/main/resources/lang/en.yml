@@ -63,6 +63,9 @@ message:
     unlocked: "<green>You have discovered %research%"
     click_to_research: "<green>Click to research (%points% points)"
 
+  waila:
+    type-disabled: "<red>This server no longer permits the your previously set %type% WAILA display type, it has been reset to default"
+
   command:
     error:
       no_permission: "<red>You do not have permission to use this command"
@@ -109,8 +112,8 @@ message:
       <gray>Installed Addons:</gray> <dark_gray>(%addon_count%)</dark_gray>
       %addon_list%
 
-  waila:
-    type-disabled: "<red>This server no longer permits the your previously set %type% WAILA display type, it has been reset to default"
+    reloadlang:
+      success: "<green>Language entries reloaded"
 
 gui:
   scroll:
@@ -133,9 +136,7 @@ guide:
     back:
       name: "<white>Back"
       hints: |-
-        
-        <u>Hints</u>
-        <guidearrow> <guideinsn>Shift left click</guideinsn> to go to the main menu
+        <guidehint><guidearrow> <guideinsn>Shift left click</guideinsn> to go to the main menu watermelon</guidehint>
     item-recipes: "<white>Recipe"
     machine-recipes: "<white>Recipes made with this machine"
     search-specifiers:
@@ -155,13 +156,11 @@ guide:
       hints:
         researched: |-
           
-          <u>Hints</u>
-          <guidearrow> <guideinsn>Right click</guideinsn> to see unlocked items
+          <guidehint><guidearrow> <guideinsn>Right click</guideinsn> to see unlocked items</guidehint>
         unresearched: |-
           
-          <u>Hints</u>
-          <guidearrow> <guideinsn>Left click</guideinsn> to research
-          <guidearrow> <guideinsn>Right click</guideinsn> to see unlocked items
+          <guidegint><guidearrow> <guideinsn>Left click</guideinsn> to research</guidehint>
+          <guidehint><guidearrow> <guideinsn>Right click</guideinsn> to see unlocked items</guidehint>
       unlocks-title: |-
       
         <u>Unlocks</u>
@@ -180,8 +179,7 @@ guide:
       hints:
         unresearched: |-
           
-          <u>Hints</u>
-          <guidearrow> <guideinsn>Shift left click</guideinsn> to research
+          <guidehint><guidearrow> <guideinsn>Shift left click</guideinsn> to research</guidehint>
       error: "<red>Item failed to load"
       amount: "%name%: <gray>%amount%%breakdown%"
       amount-breakdown: " (%stacks%x%stack-size% + %remainder%)"
@@ -363,11 +361,11 @@ guide:
       enabled:
         name: "<white>Guide Hints: <green>Enabled <dark_gray>(Click to toggle)"
         lore: |-
-          <guidearrow> Whether to show <guideinsn>hints</guideinsn> in the guide
+          <guidearrow> Whether to show <guidehint>guide hints</guidehint>
       disabled:
         name: "<white>Guide Hints: <red>Disabled <dark_gray>(Click to toggle)"
         lore: |-
-          <guidearrow> Whether to show <guideinsn>hints</guideinsn> in the guide
+          <guidearrow> Whether to show <guidehint>hints</guidehint>
     toggle-guide-sounds:
       enabled:
         name: "<white>Guide Sounds: <green>Enabled <dark_gray>(Click to toggle)"

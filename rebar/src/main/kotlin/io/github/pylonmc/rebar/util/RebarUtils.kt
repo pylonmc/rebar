@@ -473,10 +473,10 @@ val Player.pdc: PersistentDataContainer
 @JvmSynthetic
 internal fun mergeResource(fromAddon: RebarAddon, from: String, to: String, warnMissing: Boolean = true): ConfigSection {
     require(from.endsWith(".yml") || from.endsWith(".yaml")) {
-        "Config file must be a YAML file (addon: ${fromAddon.javaClass.simpleName}, path: $from"
+        "Config file must be a YAML file (addon: ${fromAddon.javaClass.simpleName}, path: $from)"
     }
     require(to.endsWith(".yml") || to.endsWith(".yaml")) {
-        "Config file must be a YAML file (addon: ${fromAddon.javaClass.simpleName}, path: $to"
+        "Config file must be a YAML file (addon: ${fromAddon.javaClass.simpleName}, path: $to)"
     }
 
     val cached = globalConfigCache[from to to]

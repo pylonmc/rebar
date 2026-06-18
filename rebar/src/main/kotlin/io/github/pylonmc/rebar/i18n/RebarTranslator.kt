@@ -28,6 +28,7 @@ import net.kyori.adventure.text.format.Style
 import net.kyori.adventure.translation.GlobalTranslator
 import net.kyori.adventure.translation.Translator
 import org.apache.commons.lang3.LocaleUtils
+import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
 import org.bukkit.entity.Player
@@ -38,8 +39,10 @@ import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerLocaleChangeEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.inventory.ItemStack
+import java.io.File
 import java.text.MessageFormat
 import java.util.*
+import java.util.jar.JarFile
 import kotlin.io.path.exists
 import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.nameWithoutExtension
@@ -55,7 +58,7 @@ class RebarTranslator private constructor(private val addon: RebarAddon) : Trans
 
     private val addonNamespace = addon.key.namespace
 
-    private val translations: Map<Locale, ConfigSection>
+    private val translations: MutableMap<Locale, ConfigSection> = mutableMapOf()
 
     val languages: Set<Locale>
         get() = translations.keys
@@ -63,21 +66,38 @@ class RebarTranslator private constructor(private val addon: RebarAddon) : Trans
     private val translationCache = mutableMapOf<Pair<Locale, String>, Component>()
 
     init {
-        for (lang in addon.languages) {
-            mergeResource(addon, "lang/$lang.yml", "lang/$addonNamespace/$lang.yml")
-        }
+        // Copy builtin language files
+        val jarFile = JarFile(File(addon.javaClass.protectionDomain.codeSource.location.toURI()))
+        jarFile.stream()
+            .filter { it.name.startsWith("lang/") && it.name.endsWith(".yml") }
+            .map { it.name.removePrefix("lang/") }
+            .forEach { file -> mergeResource(addon, "lang/$file", "lang/$addonNamespace/$file") }
+
+        loadTranslations()
+    }
+
+    private fun loadTranslations() {
         val langsDir = Rebar.dataPath.resolve("lang").resolve(addonNamespace)
-        translations = if (!langsDir.exists()) {
-            emptyMap()
-        } else {
-            langsDir.listDirectoryEntries("*.yml").associate {
+        if (langsDir.exists()) {
+            langsDir.listDirectoryEntries("*.yml").forEach {
                 val split = it.nameWithoutExtension.split('_', limit = 3)
-                Locale.of(
+                val locale = Locale.of(
                     split.first(),
                     split.getOrNull(1).orEmpty(),
                     split.getOrNull(2).orEmpty()
-                ) to ConfigSection.fromOrThrow(it)
+                )
+                val config = ConfigSection.fromOrThrow(it)
+                translations[locale] = config
             }
+        }
+    }
+
+    fun reload() {
+        translationCache.clear()
+        translations.clear()
+        loadTranslations()
+        for (player in Bukkit.getOnlinePlayers()) {
+            NmsAccessor.instance.resendInventory(player)
         }
     }
 
@@ -117,7 +137,7 @@ class RebarTranslator private constructor(private val addon: RebarAddon) : Trans
             if (parts.size < 2) return null
             val (addon, key) = parts
             if (addon != addonNamespace) return null
-            val translations = findTranslations(locale) ?: return null
+            val translations = findTranslations(locale) ?: findTranslations(this.addon.defaultLanguage) ?: return null
             val translation = translations.get(key, ConfigAdapter.STRING) ?: return null
             customMiniMessage.deserialize(translation)
         }
@@ -133,7 +153,6 @@ class RebarTranslator private constructor(private val addon: RebarAddon) : Trans
                 .sortedByDescending { it.weight }
         }
         return Locale.lookup(languageRange, this.translations.keys)?.let(translations::get)
-            ?: findTranslations(addon.languages.first())
     }
 
     override fun name(): Key = addon.key
@@ -159,7 +178,7 @@ class RebarTranslator private constructor(private val addon: RebarAddon) : Trans
         @get:JvmName("getTranslatorForAddon")
         val RebarAddon.translator: RebarTranslator
             get() = translators[this.key]
-                ?: error("Addon does not have a translator; did you forget to call registerWithRebar()?")
+                ?: error("Addon ${this.key} does not have a translator; did you forget to call registerWithRebar()?")
 
         /**
          * Modifies the [ItemStack] to translate its name and lore into the locale of the specified [player].

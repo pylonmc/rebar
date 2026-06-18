@@ -4,7 +4,6 @@ import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.block.RebarBlock
 import io.github.pylonmc.rebar.block.context.BlockCreateContext
 import io.github.pylonmc.rebar.config.ConfigSection
-import io.github.pylonmc.rebar.config.RebarConfig
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.entity.RebarEntity
@@ -40,7 +39,6 @@ open class RebarItem(val stack: ItemStack) : Keyed {
      */
     val schema = RebarRegistry.ITEMS.getOrThrow(key)
 
-    val researchBypassPermission = schema.researchBypassPermission
     val addon = schema.addon
     val rebarBlock = schema.rebarBlockKey
     val isDisabled = schema.isDisabled
@@ -117,7 +115,7 @@ open class RebarItem(val stack: ItemStack) : Keyed {
 
             if (isNameValid) {
                 val translator = schema.addon.translator
-                for (locale in schema.addon.languages) {
+                for (locale in schema.addon.translator.languages) {
                     if (!translator.canTranslate(name!!.key(), locale)) {
                         Rebar.logger.warning(
                             "${schema.key.namespace} is missing a name translation key for item ${schema.key} (locale: ${locale.displayName} | expected translation key: ${

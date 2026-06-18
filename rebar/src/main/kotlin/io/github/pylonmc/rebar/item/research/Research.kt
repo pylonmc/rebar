@@ -193,14 +193,14 @@ class Research(
         @JvmStatic
         @JvmOverloads
         @JvmName("canPlayerCraft")
-        fun Player.canCraft(item: RebarItem, sendMessage: Boolean = false, respectBypass: Boolean = true): Boolean
-            = canCraft(item.schema, sendMessage, respectBypass)
+        fun Player.canCraft(item: RebarItem, sendMessage: Boolean = false): Boolean
+            = canCraft(item.schema, sendMessage)
 
         @JvmStatic
         @JvmOverloads
         @JvmName("canPlayerCraft")
-        fun Player.canCraft(key: NamespacedKey, sendMessage: Boolean = false, respectBypass: Boolean = true): Boolean
-                = RebarRegistry.ITEMS[key]?.let { canCraft(it, sendMessage, respectBypass) } ?: false
+        fun Player.canCraft(key: NamespacedKey, sendMessage: Boolean = false): Boolean
+                = RebarRegistry.ITEMS[key]?.let { canCraft(it, sendMessage) } ?: false
 
         /**
          * Checks whether a player can craft an item (ie has the associated research, or
@@ -212,8 +212,8 @@ class Research(
         @JvmStatic
         @JvmOverloads
         @JvmName("canPlayerCraft")
-        fun Player.canCraft(schema: RebarItemSchema, sendMessage: Boolean = false, respectBypass: Boolean = true): Boolean {
-            if (!RebarConfig.ResearchConfig.ENABLED || (respectBypass && this.hasPermission(schema.researchBypassPermission))) return true
+        fun Player.canCraft(schema: RebarItemSchema, sendMessage: Boolean = false): Boolean {
+            if (!RebarConfig.ResearchConfig.ENABLED) return true
 
             val research = schema.research ?: return true
 

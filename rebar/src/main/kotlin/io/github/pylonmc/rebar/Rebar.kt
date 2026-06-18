@@ -54,6 +54,7 @@ import kotlinx.coroutines.launch
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
+import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.BlockDisplay
 import org.bukkit.entity.FallingBlock
 import org.bukkit.entity.Interaction
@@ -95,10 +96,21 @@ object Rebar : JavaPlugin(), RebarAddon {
             logger.severe("!!!!!!!!!!!!!!!!!!!! WARNING !!!!!!!!!!!!!!!!!!!!")
             logger.severe("You are running Rebar on Minecraft version $actualVersion")
             logger.severe("This build of Rebar expects Minecraft version $expectedVersion")
-            logger.severe("Rebar may run fine, but you may encounter bugs ranging from mild to catastrophic")
-            logger.severe("Please update your Rebar version accordingly")
             logger.severe("Please see https://github.com/pylonmc/rebar/releases for available Rebar versions")
+            try {
+                if (RebarConfig.BYPASS_VERSION_CHECK) {
+                    logger.severe("Bypass version set to true in config; proceeding anyway")
+                } else {
+                    logger.severe("Rebar will refuse to start")
+                    logger.severe("You can attempt to start anyway by setting bypass-version-check to true in the config")
+                }
+            } catch (e: Exception){
+                throw RuntimeException("Error while getting value of bypass-version-check", e)
+            }
             logger.severe("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+            if (!RebarConfig.BYPASS_VERSION_CHECK) {
+                throw RuntimeException("The server is running $actualVersion but Rebar expected $expectedVersion")
+            }
         }
 
         InvUI.getInstance().setPlugin(this)
@@ -274,10 +286,6 @@ object Rebar : JavaPlugin(), RebarAddon {
         )
 
         addDefaultPermission("rebar.command.guide")
-        addDefaultPermission("rebar.command.waila")
-        addDefaultPermission("rebar.command.research.list.self")
-        addDefaultPermission("rebar.command.research.discover")
-        addDefaultPermission("rebar.command.research.points.query.self")
         lifecycleManager.registerEventHandler(LifecycleEvents.COMMANDS) {
             it.registrar().register(ROOT_COMMAND)
             it.registrar().register(ROOT_COMMAND_RE_ALIAS)
@@ -404,10 +412,7 @@ object Rebar : JavaPlugin(), RebarAddon {
 
     override val material = Material.BEDROCK
 
-    override val languages: Set<Locale> = setOf(
-        Locale.ENGLISH,
-        Locale.of("enws")
-    )
+    override val defaultLanguage: Locale = RebarConfig.DEFAULT_LANGUAGE
 }
 
 private fun addDefaultPermission(permission: String) {
