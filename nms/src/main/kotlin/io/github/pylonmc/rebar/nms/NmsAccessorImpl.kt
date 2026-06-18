@@ -126,11 +126,7 @@ object NmsAccessorImpl : NmsAccessor {
     override fun resendInventory(player: Player) {
         resendEquipment(player, player)
         val player = (player as CraftPlayer).handle
-        val inventory = player.containerMenu
-        for (slot in 0..45) {
-            val item = inventory.getSlot(slot).item
-            player.containerSynchronizer.sendSlotChange(inventory, slot, item)
-        }
+        player.containerMenu.sendAllDataToRemote()
     }
 
     override fun resendEquipment(player: Player, entity: LivingEntity) {
