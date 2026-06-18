@@ -1,7 +1,11 @@
 package io.github.pylonmc.rebar.electricity
 
 import io.github.pylonmc.rebar.config.RebarConfig
+import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.electricity.nodes.*
+import io.github.pylonmc.rebar.util.rebarKey
+import io.github.pylonmc.rebar.world.storage
+import org.bukkit.World
 import java.util.PriorityQueue
 import java.util.UUID
 import kotlin.collections.ArrayDeque
@@ -88,7 +92,6 @@ class ElectricNetwork {
         }
 
         // Now that we know what consumes and produces what, we can try routing said power
-        val limits = mutableMapOf<Edge, Double>()
         var edgeLoads = mapOf<Edge, Double>()
         val disconnectedEdges = mutableSetOf<Edge>()
         for ((consumer, consumed) in powerConsumedByConsumers) {
@@ -103,19 +106,13 @@ class ElectricNetwork {
                         break
                     }
 
-                    // Determine limits on edges if not already known
-                    for (edge in path) {
-                        if (edge in limits) continue
-                        limits[edge] = EdgeProperty.getProperty<EdgeProperty.PowerLimit>(edge)?.value ?: Double.POSITIVE_INFINITY
-                    }
-
-                    val loadResult = calculateLoadOnEdges(path, edgeLoads, limits, produced)
+                    val loadResult = calculateLoadOnEdges(path, edgeLoads, produced)
                     val powerDelivered = min(loadResult.finalPower, powerLeft)
                     edgeLoads = loadResult.currents
                     powerLeft -= powerDelivered
                     powerTakenFromProducers[producer] = powerTakenFromProducers[producer]!! - powerDelivered
                     for ((edge, load) in loadResult.currents) {
-                        if (load roughlyEquals limits[edge]!!) {
+                        if (load roughlyEquals edge.powerLimit) {
                             disconnectedEdges.add(edge)
                         }
                     }
@@ -157,13 +154,7 @@ class ElectricNetwork {
                     if (path == null) {
                         noPath++
                     } else {
-                        // Determine limits on edges if not already known
-                        for (edge in path) {
-                            if (edge in limits) continue
-                            limits[edge] = EdgeProperty.getProperty<EdgeProperty.PowerLimit>(edge)?.value ?: Double.POSITIVE_INFINITY
-                        }
-
-                        val loadResult = calculateLoadOnEdges(path, edgeLoads, limits, surplus)
+                        val loadResult = calculateLoadOnEdges(path, edgeLoads, surplus)
                         val accepted = acceptor.handler.onAccept(loadResult.finalPower * POWER_ADJUSTMENT)
                         if (accepted roughlyEquals 0.0) {
                             notAccepted++
@@ -173,7 +164,7 @@ class ElectricNetwork {
                             remaining -= accepted
                             surplusPower[producer] = surplusPower[producer]!! - accepted
                             for ((edge, load) in loadResult.currents) {
-                                if (load roughlyEquals limits[edge]!!) {
+                                if (load roughlyEquals edge.powerLimit) {
                                     disconnectedEdges.add(edge)
                                 }
                             }
@@ -265,7 +256,7 @@ class ElectricNetwork {
                     Edge(current, neighbor) in disconnectedEdges ||
                     Edge(neighbor, current) in disconnectedEdges
                 ) continue
-                if (EdgeProperty.Unidirectional in EdgeProperty.getProperties(Edge(neighbor, current))) continue
+                if (Edge(neighbor, current).unidirectional) continue
                 if (neighbor !in inQueue) {
                     queue.add(neighbor)
                     inQueue.add(neighbor)
@@ -279,7 +270,6 @@ class ElectricNetwork {
     private fun calculateLoadOnEdges(
         path: List<Edge>,
         existingLoads: Map<Edge, Double>,
-        limits: Map<Edge, Double>,
         initialPower: Double
     ): LoadResult {
         if (initialPower roughlyEquals 0.0) {
@@ -288,7 +278,7 @@ class ElectricNetwork {
         val loads = existingLoads.toMutableMap()
         var currentPower = initialPower
         for (edge in path) {
-            val remainingCapacity = limits[edge]!! - (loads[edge] ?: 0.0)
+            val remainingCapacity = edge.powerLimit - (loads[edge] ?: 0.0)
             currentPower = min(currentPower, remainingCapacity)
             loads.merge(edge, currentPower, Double::plus)
         }
@@ -296,7 +286,7 @@ class ElectricNetwork {
             LoadResult(loads, currentPower)
         } else {
             // some limit has been hit somewhere, recalculate based on actual power delivered
-            calculateLoadOnEdges(path, existingLoads, limits, currentPower)
+            calculateLoadOnEdges(path, existingLoads, currentPower)
         }
     }
 
@@ -325,7 +315,24 @@ class ElectricNetwork {
         return heuristics
     }
 
-    data class Edge(val from: ElectricNode, val to: ElectricNode)
+    data class Edge(val from: ElectricNode, val to: ElectricNode) {
+        private val world: World
+            get() = from.block.world!!
+
+        private val powerLimitKey by lazy { rebarKey("edge_property_power_limit_${from.id}_${to.id}") }
+        var powerLimit: Double
+            get() = (world.storage[powerLimitKey, RebarSerializers.DOUBLE] ?: Double.MAX_VALUE)
+            set(value) {
+                world.storage[powerLimitKey, RebarSerializers.DOUBLE] = value
+            }
+
+        private val unidirectionalKey by lazy { rebarKey("edge_property_unidirectional_${from.id}_${to.id}") }
+        var unidirectional: Boolean
+            get() = (world.storage[unidirectionalKey, RebarSerializers.BOOLEAN] ?: false)
+            set(value) {
+                world.storage[unidirectionalKey, RebarSerializers.BOOLEAN] = value
+            }
+    }
 
     companion object {
 

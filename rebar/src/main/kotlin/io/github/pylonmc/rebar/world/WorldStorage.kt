@@ -2,7 +2,6 @@ package io.github.pylonmc.rebar.world
 
 import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.config.RebarConfig
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.bukkit.Bukkit
@@ -28,7 +27,14 @@ class WorldStorage private constructor(val worldId: UUID) {
         get() = Bukkit.getWorld(worldId)!!
 
     private val data = mutableMapOf<NamespacedKey, Pair<*, PersistentDataType<*, *>>>()
-    private val dirtyData = mutableMapOf<NamespacedKey, Job>()
+    private val dirtyData = mutableSetOf<NamespacedKey>()
+
+    private val saveJob = Rebar.scope.launch {
+        while (true) {
+            delay(RebarConfig.WORLD_DATA_AUTOSAVE_INTERVAL_SECONDS.seconds)
+            saveAll()
+        }
+    }
 
     operator fun <T : Any> get(key: NamespacedKey, type: PersistentDataType<*, T>): T? {
         val data = data.getOrPut(key) { world.persistentDataContainer.get(key, type) to type }.first
@@ -56,20 +62,12 @@ class WorldStorage private constructor(val worldId: UUID) {
 
     operator fun <T : Any> set(key: NamespacedKey, type: PersistentDataType<*, T>, value: T) {
         data[key] = value to type
-        dirtyData.remove(key)?.cancel()
-        dirtyData[key] = Rebar.scope.launch {
-            delay(RebarConfig.WORLD_DATA_AUTOSAVE_INTERVAL_SECONDS.seconds)
-            saveData(key)
-        }
+        dirtyData.add(key)
     }
 
     fun remove(key: NamespacedKey) {
         data.remove(key)
-        dirtyData.remove(key)?.cancel()
-        dirtyData[key] = Rebar.scope.launch {
-            delay(RebarConfig.WORLD_DATA_AUTOSAVE_INTERVAL_SECONDS.seconds)
-            saveData(key)
-        }
+        dirtyData.add(key)
     }
 
     /**
@@ -80,22 +78,18 @@ class WorldStorage private constructor(val worldId: UUID) {
         get(key, type)
     }
 
-    private fun saveData(key: NamespacedKey) {
-        val pdc = world.persistentDataContainer
-        val unsavedData = data[key]
-        if (unsavedData == null) {
-            pdc.remove(key)
-        } else {
-            @Suppress("UNCHECKED_CAST")
-            pdc.set(key, unsavedData.second as PersistentDataType<*, Any>, unsavedData.first as Any)
-        }
-        dirtyData.remove(key)?.cancel()
-    }
-
     fun saveAll() {
-        for (key in dirtyData.keys.toList()) {
-            saveData(key)
+        for (key in dirtyData) {
+            val pdc = world.persistentDataContainer
+            val unsavedData = data[key]
+            if (unsavedData == null) {
+                pdc.remove(key)
+            } else {
+                @Suppress("UNCHECKED_CAST")
+                pdc.set(key, unsavedData.second as PersistentDataType<*, Any>, unsavedData.first as Any)
+            }
         }
+        dirtyData.clear()
     }
 
     companion object : Listener {
@@ -107,7 +101,13 @@ class WorldStorage private constructor(val worldId: UUID) {
 
         @EventHandler(priority = EventPriority.MONITOR)
         private fun onWorldUnload(event: WorldUnloadEvent) {
-            storages.remove(event.world.uid)?.saveAll()
+            val storage = storages.remove(event.world.uid) ?: return
+            storage.saveJob.cancel()
+            storage.saveAll()
         }
     }
 }
+
+@get:JvmSynthetic
+val World.storage: WorldStorage
+    get() = WorldStorage.getStorage(this)
