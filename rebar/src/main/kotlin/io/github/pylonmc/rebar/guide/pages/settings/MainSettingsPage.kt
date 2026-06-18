@@ -1,10 +1,11 @@
 package io.github.pylonmc.rebar.guide.pages.settings
 
 import io.github.pylonmc.rebar.config.RebarConfig
-import io.github.pylonmc.rebar.guide.button.PageButton
-import io.github.pylonmc.rebar.guide.button.setting.TogglePlayerSettingButton
 import io.github.pylonmc.rebar.content.guide.RebarGuide.Companion.guideHints
 import io.github.pylonmc.rebar.content.guide.RebarGuide.Companion.guideSounds
+import io.github.pylonmc.rebar.guide.button.PageButton
+import io.github.pylonmc.rebar.guide.button.setting.TogglePlayerSettingButton
+import io.github.pylonmc.rebar.i18n.RebarTranslator.Companion.storyText
 import io.github.pylonmc.rebar.item.research.Research.Companion.researchConfetti
 import io.github.pylonmc.rebar.item.research.Research.Companion.researchSounds
 import io.github.pylonmc.rebar.util.rebarKey
@@ -49,6 +50,13 @@ object MainSettingsPage : PlayerSettingsPage(rebarKey("settings")) {
         isEnabled = { player -> player.guideSounds }
     )
 
+    @JvmStatic
+    val storyTextButton = TogglePlayerSettingButton(
+        rebarKey("toggle-story-text"),
+        toggle = { player -> player.storyText = !player.storyText },
+        isEnabled = { player -> player.storyText }
+    )
+
     init {
         if (RebarConfig.WailaConfig.ENABLED) {
             addSetting(wailaSettingsButton)
@@ -67,5 +75,6 @@ object MainSettingsPage : PlayerSettingsPage(rebarKey("settings")) {
 
         addSetting(guideHintsButton)
         addSetting(guideSoundsButton)
+        addSetting(storyTextButton)
     }
 }

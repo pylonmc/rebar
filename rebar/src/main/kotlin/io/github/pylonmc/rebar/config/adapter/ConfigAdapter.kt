@@ -15,6 +15,7 @@ import org.joml.Vector3d
 import org.joml.Vector3f
 import org.joml.Vector3i
 import java.lang.reflect.Type
+import java.util.Locale
 
 /**
  * Provides instructions on how to deserialize a specific type of value.
@@ -60,8 +61,38 @@ interface ConfigAdapter<T> {
         @JvmField val NAMESPACED_KEY = ConfigAdapter { NamespacedKey.fromString(STRING.convert(it))!! }
         @JvmField val MATERIAL = KEYED.fromRegistry(Registry.MATERIAL)
         @JvmField val BLOCK_DATA = ConfigAdapter { Bukkit.createBlockData(STRING.convert(it)) }
-        @JvmField val TEXT_COLOR = TextColorConfigAdapter
-        @JvmField val ITEM_TAG = ItemTagConfigAdapter
+        @JvmField val LOCALE = ConfigAdapter { Locale.of(STRING.convert(it)) }
+
+        @JvmField val VECTOR_2I = ConfigAdapter {
+            val list = (it as List<*>).filterIsInstance<Int>()
+            check(list.size == 2) { "List must be of size 2" }
+            Vector2i(list[0], list[1])
+        }
+        @JvmField val VECTOR_2F = ConfigAdapter {
+            val list = (it as List<*>).filterIsInstance<Float>()
+            check(list.size == 2) { "List must be of size 2" }
+            Vector2f(list[0], list[1])
+        }
+        @JvmField val VECTOR_2D = ConfigAdapter {
+            val list = (it as List<*>).filterIsInstance<Double>()
+            check(list.size == 2) { "List must be of size 2" }
+            Vector2d(list[0], list[1])
+        }
+        @JvmField val VECTOR_3I = ConfigAdapter {
+            val list = (it as List<*>).filterIsInstance<Int>()
+            check(list.size == 3) { "List must be of size 3" }
+            Vector3i(list[0], list[1], list[2])
+        }
+        @JvmField val VECTOR_3F = ConfigAdapter {
+            val list = (it as List<*>).filterIsInstance<Float>()
+            check(list.size == 3) { "List must be of size 3" }
+            Vector3f(list[0], list[1], list[2])
+        }
+        @JvmField val VECTOR_3D = ConfigAdapter {
+            val list = (it as List<*>).filterIsInstance<Double>()
+            check(list.size == 3) { "List must be of size 3" }
+            Vector3d(list[0], list[1], list[2])
+        }
 
         /**
          * A [ConfigAdapter] for in game [Sound]s,
@@ -109,44 +140,6 @@ interface ConfigAdapter<T> {
         @JvmField val WAILA_DISPLAY = WailaDisplayConfigAdapter
         @JvmField val CULLING_PRESET = CullingPresetConfigAdapter
         @JvmField val CONTRIBUTOR = ContributorConfigAdapter
-
-        @JvmField val VECTOR_2I = ConfigAdapter { value ->
-            var list = (value as List<*>)
-            check(list.size == 2) { "List must be of size 2" }
-            list = list.map { it as? Int ?: error("$it is not an integer") }
-            Vector2i(list[0], list[1])
-        }
-        @JvmField val VECTOR_2F = ConfigAdapter { value ->
-            var list = (value as List<*>)
-            check(list.size == 2) { "List must be of size 2" }
-            list = list.map { (it as? Double ?: it as? Int ?: error("$it is not a float")).toFloat() }
-            Vector2f(list[0], list[1])
-        }
-        @JvmField val VECTOR_2D = ConfigAdapter { value ->
-            var list = (value as List<*>)
-            check(list.size == 2) { "List must be of size 2" }
-            list = list.map { it as? Double ?: error("$it is not a double") }
-            Vector2d(list[0], list[1])
-        }
-        @JvmField val VECTOR_3I = ConfigAdapter { value ->
-            var list = (value as List<*>)
-            check(list.size == 3) { "List must be of size 3" }
-            list = list.map { it as? Int ?: error("$it is not an integer") }
-            Vector3i(list[0], list[1], list[2])
-        }
-        @JvmField val VECTOR_3F = ConfigAdapter { value ->
-            var list = (value as List<*>)
-            check(list.size == 3) { "List must be of size 3" }
-            list = list.map { (it as? Double ?: it as? Int ?: error("$it is not a float")).toFloat() }
-            Vector3f(list[0], list[1], list[2])
-        }
-        @JvmField val VECTOR_3D = ConfigAdapter { value ->
-            var list = (value as List<*>)
-            check(list.size == 3) { "List must be of size 3" }
-            list = list.map { it as? Double ?: error("$it is not a double") }
-            Vector3d(list[0], list[1], list[2])
-        }
-
 
         @JvmField val ITEM_STACK = ItemStackConfigAdapter
         @JvmField val ITEM_TYPE_WRAPPER = KEYED.fromGetter { ItemTypeWrapper(it) }

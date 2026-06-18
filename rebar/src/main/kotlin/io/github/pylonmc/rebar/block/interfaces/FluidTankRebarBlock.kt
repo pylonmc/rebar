@@ -67,7 +67,7 @@ interface FluidTankRebarBlock : FluidRebarBlock {
     fun isAllowedFluid(fluid: RebarFluid): Boolean
 
     /**
-     * Sets the type of fluid in the fluid tank
+     * Sets the type of fluid in the fluid tank.
      */
     fun setFluidType(fluid: RebarFluid?) {
         fluidData.fluid = fluid

@@ -18,6 +18,7 @@ import io.github.pylonmc.rebar.content.guide.RebarGuide
 import io.github.pylonmc.rebar.entity.display.transform.Rotation
 import io.github.pylonmc.rebar.gametest.GameTestConfig
 import io.github.pylonmc.rebar.i18n.RebarArgument
+import io.github.pylonmc.rebar.i18n.RebarTranslator.Companion.translator
 import io.github.pylonmc.rebar.i18n.customMiniMessage
 import io.github.pylonmc.rebar.item.ItemTypeWrapper
 import io.github.pylonmc.rebar.item.RebarItem
@@ -681,6 +682,17 @@ private val versions = buildCommand("versions") {
     }
 }
 
+private val reloadlang = buildCommand("reloadlang") {
+    permission("rebar.command.reloadlang")
+    executes { sender ->
+        RebarMetrics.onCommandRun("/rb reloadlang")
+        for (addon in RebarRegistry.ADDONS) {
+            addon.translator.reload()
+        }
+        sender.sendFeedback("reloadlang.success")
+    }
+}
+
 @JvmSynthetic
 internal val ROOT_COMMAND = buildCommand("rebar") {
     permission("rebar.command.guide")
@@ -702,6 +714,7 @@ internal val ROOT_COMMAND = buildCommand("rebar") {
     then(confetti)
     then(fillMultiblock)
     then(versions)
+    then(reloadlang)
 }
 
 @JvmSynthetic

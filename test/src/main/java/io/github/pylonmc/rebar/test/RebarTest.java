@@ -199,11 +199,6 @@ public class RebarTest extends JavaPlugin implements RebarAddon {
         return this;
     }
 
-    @Override
-    public @NotNull Set<@NotNull Locale> getLanguages() {
-        return Set.of();
-    }
-
     public static @NotNull NamespacedKey key(String key) {
         return new NamespacedKey(instance, key);
     }
@@ -211,5 +206,10 @@ public class RebarTest extends JavaPlugin implements RebarAddon {
     @Override
     public @NotNull Material getMaterial() {
         return Material.WAXED_WEATHERED_CUT_COPPER_STAIRS;
+    }
+
+    @Override
+    public @NotNull Locale getDefaultLanguage() {
+        return Locale.of("none");
     }
 }

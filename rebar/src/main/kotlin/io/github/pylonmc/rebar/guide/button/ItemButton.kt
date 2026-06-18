@@ -67,7 +67,7 @@ class ItemButton private constructor(
                 builder.set(DataComponentTypes.ITEM_MODEL, Material.STRUCTURE_VOID.key)
             }
 
-            if (!player.canCraft(itemSchema, respectBypass = false)) {
+            if (!player.canCraft(itemSchema)) {
                 builder.set(DataComponentTypes.ITEM_MODEL, Material.BARRIER.key)
                     .set(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, false)
 
@@ -99,7 +99,7 @@ class ItemButton private constructor(
             }
 
             if (player.guideHints) {
-                if (!player.canCraft(itemSchema, respectBypass = false)) {
+                if (!player.canCraft(itemSchema)) {
                     builder.lore(Component.translatable("rebar.guide.button.item.hints.unresearched"))
                 }
             }
