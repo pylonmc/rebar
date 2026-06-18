@@ -91,6 +91,7 @@ class SmithingTransformRebarRecipe @JvmOverloads constructor(
     override val bukkitRecipe: SmithingTransformRecipe = SmithingTransformRecipe(key, result.item, template.toRepresentativeRecipeChoice(), base.toRepresentativeRecipeChoice(), addition.toRepresentativeRecipeChoice(), copyDataComponents)
 ) : SmithingRebarRecipe(result, copyDataComponents, key) {
     companion object {
+        @JvmStatic
         fun fromVanilla(recipe: SmithingTransformRecipe): SmithingTransformRebarRecipe {
             return SmithingTransformRebarRecipe(
                 recipe.template.toItemChoice(),
@@ -117,6 +118,7 @@ class SmithingTrimRebarRecipe @JvmOverloads constructor(
     override val bukkitRecipe: SmithingTrimRecipe = SmithingTrimRecipe(key, template.toRepresentativeRecipeChoice(), base.toRepresentativeRecipeChoice(), addition.toRepresentativeRecipeChoice(), trimPattern)
 ) : SmithingRebarRecipe(FluidOrItem.Item.EMPTY, true, key) {
     companion object {
+        @JvmStatic
         fun fromVanilla(recipe: SmithingTrimRecipe): SmithingTrimRebarRecipe {
             return SmithingTrimRebarRecipe(
                 recipe.template.toItemChoice(),

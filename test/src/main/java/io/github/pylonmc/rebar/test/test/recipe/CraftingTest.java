@@ -28,7 +28,7 @@ public class CraftingTest extends SyncTest {
 
         // Shaped
         {
-            RecipeType.VANILLA_SHAPED.addRecipe(ShapedRebarRecipe.Companion.fromVanilla(
+            RecipeType.VANILLA_SHAPED.addRecipe(ShapedRebarRecipe.fromVanilla(
                     new ShapedRecipe(RebarTest.key("sticky_stick_shaped"), diamond)
                             .shape(
                                     " s ",
@@ -51,7 +51,7 @@ public class CraftingTest extends SyncTest {
 
         // Shapeless
         {
-            RecipeType.VANILLA_SHAPELESS.addRecipe(ShapelessRebarRecipe.Companion.fromVanilla(
+            RecipeType.VANILLA_SHAPELESS.addRecipe(ShapelessRebarRecipe.fromVanilla(
                     new ShapelessRecipe(RebarTest.key("sticky_stick_shapeless"), normalStick)
                             .addIngredient(Material.DIAMOND)
                             .addIngredient(stickyStick)
@@ -67,7 +67,7 @@ public class CraftingTest extends SyncTest {
 
         // With custom output
         {
-            RecipeType.VANILLA_SHAPED.addRecipe(ShapedRebarRecipe.Companion.fromVanilla(
+            RecipeType.VANILLA_SHAPED.addRecipe(ShapedRebarRecipe.fromVanilla(
                     new ShapedRecipe(RebarTest.key("sticky_stick_shaped_custom_output"), stickyStick)
                             .shape(
                                     " s ",

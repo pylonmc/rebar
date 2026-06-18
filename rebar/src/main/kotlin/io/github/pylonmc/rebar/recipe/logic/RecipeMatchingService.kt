@@ -65,6 +65,7 @@ object RecipeMatchingService {
      *
      * @return The matched [CraftingRebarRecipe] or null if none was found
      */
+    @JvmStatic
     fun matchCraftingRecipe(input: CraftingInput, possibleRecipe: Recipe? = null, lastRecipe: CraftingRebarRecipe? = null): CraftingRebarRecipe? {
         if (possibleRecipe != null) {
             var possibleRebarRecipe = when(possibleRecipe) {
@@ -116,6 +117,7 @@ object RecipeMatchingService {
      *
      * @return The matched [CookingRebarRecipe] or null if none was found
      */
+    @JvmStatic
     fun matchCookingRecipe(type: VanillaRecipeType<out CookingRebarRecipe, DummyCookingRebarRecipe>, input: ItemStack?, output: ItemStack?, possibleRecipe: CookingRecipe<*>?, lastRecipe: CookingRebarRecipe? = null): CookingRebarRecipe? {
         if (possibleRecipe != null) {
             var possibleRebarRecipe = when(possibleRecipe) {
@@ -167,6 +169,7 @@ object RecipeMatchingService {
      *
      * @return The matched [SmithingRebarRecipe] or null if none was found
      */
+    @JvmStatic
     fun matchSmithingRecipe(template: ItemStack?, base: ItemStack?, addition: ItemStack?, possibleRecipe: Recipe?, lastRecipe: SmithingRebarRecipe? = null): SmithingRebarRecipe? {
         if (possibleRecipe != null) {
             var possibleRebarRecipe = when(possibleRecipe) {

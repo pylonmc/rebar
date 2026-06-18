@@ -112,6 +112,7 @@ class BlastingRebarRecipe @JvmOverloads constructor(
     override val displayBlock = Material.BLAST_FURNACE
 
     companion object {
+        @JvmStatic
         fun fromVanilla(recipe: BlastingRecipe): BlastingRebarRecipe {
             return BlastingRebarRecipe(
                 recipe.inputChoice.toItemChoice(),
@@ -149,6 +150,7 @@ class CampfireRebarRecipe @JvmOverloads constructor(
     override val displayBlock = Material.CAMPFIRE
 
     companion object {
+        @JvmStatic
         fun fromVanilla(recipe: CampfireRecipe): CampfireRebarRecipe {
             return CampfireRebarRecipe(
                 recipe.inputChoice.toItemChoice(),
@@ -186,6 +188,7 @@ class SmeltingRebarRecipe @JvmOverloads constructor(
     override val displayBlock = Material.FURNACE
 
     companion object {
+        @JvmStatic
         fun fromVanilla(recipe: FurnaceRecipe): SmeltingRebarRecipe {
             return SmeltingRebarRecipe(
                 recipe.inputChoice.toItemChoice(),
@@ -223,6 +226,7 @@ class SmokingRebarRecipe @JvmOverloads constructor(
     override val displayBlock = Material.SMOKER
 
     companion object {
+        @JvmStatic
         fun fromVanilla(recipe: SmokingRecipe): SmokingRebarRecipe {
             return SmokingRebarRecipe(
                 recipe.inputChoice.toItemChoice(),

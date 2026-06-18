@@ -49,6 +49,7 @@ data class CraftingInput(
          * Currently accepts generic [Inventory] because paper has a bug and doesn't actually return a [CrafterInventory] atm
          * @return A [CraftingInput] of the contents of the [CrafterInventory]
          */
+        @JvmStatic
         fun of(inventory: Inventory): CraftingInput {
             return of(3, 3, inventory.contents.toList())
         }
@@ -56,6 +57,7 @@ data class CraftingInput(
         /**
          * @return A [CraftingInput] of the contents of the [CraftingInventory]
          */
+        @JvmStatic
         fun of(inventory: CraftingInventory): CraftingInput {
             val matrix = inventory.matrix
             val size = when(matrix.size) {
@@ -78,6 +80,7 @@ data class CraftingInput(
          * @param height The full height of the matrix
          * @param items Every item from the matrix (from left to right, top to bottom)
          */
+        @JvmStatic
         fun of(width: Int, height: Int, items: List<ItemStack?>): CraftingInput {
             if (width == 0 || height == 0) return EMPTY
 
@@ -192,6 +195,7 @@ data class CraftingRecipeShape private constructor(
          * @param key The key for this shape
          * @param pattern The pattern for this shape
          */
+        @JvmStatic
         fun of(key: MutableMap<Char, ItemChoice?>, pattern: MutableList<String>): CraftingRecipeShape {
             val pattern = shrinkPattern(key, pattern)
             val key = key.toList().associate { it.first to it.second!! }
@@ -332,6 +336,7 @@ class ShapedRebarRecipe @JvmOverloads constructor(
     override fun matches(input: CraftingInput) = shape.matches(input)
 
     companion object {
+        @JvmStatic
         fun fromVanilla(recipe: ShapedRecipe): ShapedRebarRecipe {
             return ShapedRebarRecipe(
                 CraftingRecipeShape.of(
@@ -406,6 +411,7 @@ class ShapelessRebarRecipe @JvmOverloads constructor(
     }
 
     companion object {
+        @JvmStatic
         fun fromVanilla(recipe: ShapelessRecipe): ShapelessRebarRecipe {
             return ShapelessRebarRecipe(
                 recipe.choiceList.map { it.toItemChoice() },
