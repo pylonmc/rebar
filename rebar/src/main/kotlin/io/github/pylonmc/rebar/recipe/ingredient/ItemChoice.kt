@@ -25,7 +25,7 @@ import java.util.function.Predicate
  * @see ItemChoice.Builder
  */
 class ItemChoice internal constructor(
-    @JvmSynthetic
+    @get:JvmSynthetic
     internal val internalChoices: List<InternalItemChoice>,
     val amount: Int,
 ) : FluidOrItemChoice {
