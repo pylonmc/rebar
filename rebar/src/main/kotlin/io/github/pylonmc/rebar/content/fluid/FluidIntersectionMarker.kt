@@ -8,7 +8,6 @@ import io.github.pylonmc.rebar.block.context.BlockBreakContext
 import io.github.pylonmc.rebar.block.context.BlockBreakContext.PlayerBreak
 import io.github.pylonmc.rebar.block.context.BlockCreateContext
 import io.github.pylonmc.rebar.entity.EntityStorage
-import io.github.pylonmc.rebar.i18n.RebarArgument
 import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.util.rebarKey
 import io.github.pylonmc.rebar.waila.WailaDisplay
@@ -49,19 +48,23 @@ class FluidIntersectionMarker : RebarBlock, EntityHolderRebarBlock, BlockBreakRe
         }
     }
 
-    override fun getWaila(player: Player): WailaDisplay?
-        = WailaDisplay.of(this.pipe.stack.effectiveName())
+    override fun getWaila(player: Player): WailaDisplay? {
+        val pipeItem = pipeOrNull() ?: return null
+        return WailaDisplay.of(pipeItem.stack.effectiveName())
+    }
 
     val pipe: RebarItem
-        get() {
-            check(fluidIntersectionDisplay.connectedPipeDisplays.isNotEmpty())
-            val uuid = fluidIntersectionDisplay.connectedPipeDisplays.iterator().next()
-            return EntityStorage.getAs<FluidPipeDisplay?>(uuid)!!.pipe
-        }
+        get() = pipeOrNull() ?: error("FluidIntersectionMarker has no resolvable pipe display")
+
+    private fun pipeOrNull(): RebarItem? {
+        val display = getHeldRebarEntity(FluidIntersectionDisplay::class.java, "intersection") ?: return null
+        val uuid = display.connectedPipeDisplays.firstOrNull() ?: return null
+        return EntityStorage.getAs<FluidPipeDisplay?>(uuid)?.pipe
+    }
 
     override fun getDropItem(context: BlockBreakContext) = null
 
-    override fun getPickItem(player: Player) = pipe.stack
+    override fun getPickItem(player: Player) = pipeOrNull()?.stack
 
     companion object {
         @JvmField
