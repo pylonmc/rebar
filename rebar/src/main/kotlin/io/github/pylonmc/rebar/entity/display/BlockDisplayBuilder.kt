@@ -47,6 +47,7 @@ open class BlockDisplayBuilder() {
     fun blockData(blockData: BlockData?): BlockDisplayBuilder = apply { this.blockData = blockData }
     fun transformation(transformation: Matrix4f?): BlockDisplayBuilder = apply { this.transformation = transformation }
     fun transformation(builder: TransformBuilder): BlockDisplayBuilder = apply { this.transformation = builder.buildForBlockDisplay() }
+    fun transformation(builder: (TransformBuilder) -> Unit) = transformation(TransformBuilder().apply(builder).build())
     fun brightness(brightness: Brightness): BlockDisplayBuilder = apply { this.brightness = brightness }
     fun brightness(brightness: Int): BlockDisplayBuilder = brightness(Brightness(0, brightness))
     fun glow(glowColor: Color?): BlockDisplayBuilder = apply { this.glowColor = glowColor }

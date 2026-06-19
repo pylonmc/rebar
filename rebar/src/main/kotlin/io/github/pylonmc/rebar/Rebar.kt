@@ -252,6 +252,7 @@ object Rebar : JavaPlugin(), RebarAddon {
         PathfindRebarEntityHandler.register(this, pm)
         PiglinRebarEntityHandler.register(this, pm)
         ProjectileRebarEntityHandler.register(this, pm)
+        RemoveRebarEntityHandler.register(this, pm)
         ResurrectRebarEntityHandler.register(this, pm)
         SlimeRebarEntityHandler.register(this, pm)
         SpellcasterRebarEntityHandler.register(this, pm)

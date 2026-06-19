@@ -4,10 +4,9 @@ import io.github.pylonmc.rebar.block.BlockStorage
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.entity.EntityStorage
 import io.github.pylonmc.rebar.entity.RebarEntity
-import io.github.pylonmc.rebar.entity.interfaces.DeathRebarEntityHandler
 import io.github.pylonmc.rebar.entity.display.ItemDisplayBuilder
 import io.github.pylonmc.rebar.entity.display.transform.TransformBuilder
-import io.github.pylonmc.rebar.event.RebarEntityDeathEvent
+import io.github.pylonmc.rebar.entity.interfaces.RemoveRebarEntityHandler
 import io.github.pylonmc.rebar.fluid.FluidManager
 import io.github.pylonmc.rebar.fluid.FluidPointType
 import io.github.pylonmc.rebar.fluid.VirtualFluidPoint
@@ -19,13 +18,14 @@ import io.papermc.paper.datacomponent.item.CustomModelData
 import org.bukkit.block.Block
 import org.bukkit.entity.ItemDisplay
 import org.bukkit.event.EventPriority
+import org.bukkit.event.entity.EntityRemoveEvent
 import org.bukkit.persistence.PersistentDataContainer
 import java.util.*
 
 /**
  * A 'intersection display' is one of the gray displays that indicates one or more pipes being joined together.
  */
-class FluidIntersectionDisplay : RebarEntity<ItemDisplay>, DeathRebarEntityHandler, FluidPointDisplay {
+class FluidIntersectionDisplay : RebarEntity<ItemDisplay>, RemoveRebarEntityHandler, FluidPointDisplay {
     override val point: VirtualFluidPoint
     override val connectedPipeDisplays: MutableSet<UUID>
 
@@ -104,7 +104,7 @@ class FluidIntersectionDisplay : RebarEntity<ItemDisplay>, DeathRebarEntityHandl
         updateItemDisplay()
     }
 
-    override fun onDeath(event: RebarEntityDeathEvent, priority: EventPriority) {
+    override fun onRemoved(event: EntityRemoveEvent, priority: EventPriority) {
         FluidManager.remove(point)
     }
 

@@ -6,8 +6,9 @@ import io.github.pylonmc.rebar.entity.EntityListener
 import io.github.pylonmc.rebar.entity.RebarEntity
 import io.github.pylonmc.rebar.entity.RebarEntitySchema
 import io.github.pylonmc.rebar.event.RebarEntityAddEvent
-import io.github.pylonmc.rebar.event.RebarEntityDeathEvent
+import io.github.pylonmc.rebar.event.RebarEntityRemoveEvent
 import io.github.pylonmc.rebar.event.RebarEntitySerializeEvent
+import io.github.pylonmc.rebar.event.RebarEntityUnloadEvent
 import io.github.pylonmc.rebar.util.delayTicks
 import io.github.pylonmc.rebar.util.rebarKey
 import kotlinx.coroutines.*
@@ -88,7 +89,7 @@ interface TickingRebarEntity {
         }
 
         @EventHandler
-        private fun onUnload(event: RebarEntitySerializeEvent) {
+        private fun onUnload(event: RebarEntityUnloadEvent) {
             val entity = event.rebarEntity
             if (entity is TickingRebarEntity) {
                 tickingEntities.remove(entity)?.job?.cancel()
@@ -96,7 +97,7 @@ interface TickingRebarEntity {
         }
 
         @EventHandler
-        private fun onDeath(event: RebarEntityDeathEvent) {
+        private fun onRemove(event: RebarEntityRemoveEvent) {
             val entity = event.rebarEntity
             if (entity is TickingRebarEntity) {
                 tickingEntities.remove(entity)?.job?.cancel()

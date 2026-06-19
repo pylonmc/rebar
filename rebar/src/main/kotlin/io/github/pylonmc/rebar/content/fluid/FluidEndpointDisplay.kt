@@ -3,10 +3,9 @@ package io.github.pylonmc.rebar.content.fluid
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.entity.EntityStorage
 import io.github.pylonmc.rebar.entity.RebarEntity
-import io.github.pylonmc.rebar.entity.interfaces.DeathRebarEntityHandler
 import io.github.pylonmc.rebar.entity.display.ItemDisplayBuilder
 import io.github.pylonmc.rebar.entity.display.transform.TransformBuilder
-import io.github.pylonmc.rebar.event.RebarEntityDeathEvent
+import io.github.pylonmc.rebar.entity.interfaces.RemoveRebarEntityHandler
 import io.github.pylonmc.rebar.fluid.FluidManager
 import io.github.pylonmc.rebar.fluid.FluidPointType
 import io.github.pylonmc.rebar.fluid.VirtualFluidPoint
@@ -19,6 +18,7 @@ import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
 import org.bukkit.entity.ItemDisplay
 import org.bukkit.event.EventPriority
+import org.bukkit.event.entity.EntityRemoveEvent
 import org.bukkit.persistence.PersistentDataContainer
 import java.util.*
 import kotlin.math.pow
@@ -27,7 +27,7 @@ import kotlin.math.sqrt
 /**
  * A 'endpoint display' is one of the red/green displays that indicates a block's fluid input/output.
  */
-class FluidEndpointDisplay : RebarEntity<ItemDisplay>, DeathRebarEntityHandler, FluidPointDisplay {
+class FluidEndpointDisplay : RebarEntity<ItemDisplay>, RemoveRebarEntityHandler, FluidPointDisplay {
     override val point: VirtualFluidPoint
     var connectedPipeDisplay: UUID?
     override val connectedPipeDisplays: Set<UUID>
@@ -87,7 +87,7 @@ class FluidEndpointDisplay : RebarEntity<ItemDisplay>, DeathRebarEntityHandler, 
         })
     }
 
-    override fun onDeath(event: RebarEntityDeathEvent, priority: EventPriority) {
+    override fun onRemoved(event: EntityRemoveEvent, priority: EventPriority) {
         pipeDisplay?.delete(null, null)
         FluidManager.remove(point)
     }
