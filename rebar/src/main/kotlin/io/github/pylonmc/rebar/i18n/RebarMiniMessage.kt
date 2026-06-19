@@ -26,6 +26,8 @@ import org.bukkit.NamespacedKey
  * Rebar's custom MiniMessage instance with custom tags. This instance is used when translating
  * any Rebar translation keys.
  *
+ * NOTE: If adding/removing/modifying a tag, please update https://pylonmc.github.io/documentation/reference/language-system/tags/
+ *
  * ### Custom Tags
  * - `<arrow>`|`<arrow:\[color\]>` - Inserts a right arrow (→) with the specified color (default: 0x666666)
  * - `<guidearrow> - Shorthand for `<arrow:0x653d6d>`
@@ -34,6 +36,7 @@ import org.bukkit.NamespacedKey
  * - `<insn></insn>` - Applies a yellow styling (0xf9d104), used for instructions
  * - `<guidehint></guidehint>` - Applies a light purple styling (0xeac5f4), used for guide hints
  * - `<guideinsn></guideinsn>` - Applies a purple styling (0xc907f4), used for guide instructions
+ * - `<story></story>` - Applies a light purple italic styling (0xcc9bf2), used for story text
  * - `<attr></attr>` - Applies a cyan styling (0xa9d9e8), used for attributes
  * - `<unit:\[prefix\]:[unit]></unit>` - Formats a **constant** number as a unit, with an optional metric prefix
  * - `<nbsp></nbsp>` - Replaces spaces with non-breaking spaces ( ), useful for preventing line breaks in lore

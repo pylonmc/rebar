@@ -24,7 +24,6 @@ import org.bukkit.persistence.PersistentDataContainer
  * TODO: [io.github.pylonmc.rebar.block.interfaces.EntityGroupCulledRebarBlock]
  */
 class FluidIntersectionMarker : RebarBlock, EntityHolderRebarBlock, BlockBreakRebarBlockHandler, FacadeRebarBlock {
-    override val facadeDefaultBlockType = Material.STRUCTURE_VOID
     override var disableBlockTextureEntity = true
 
     @Suppress("unused")

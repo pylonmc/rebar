@@ -38,16 +38,21 @@ import kotlin.collections.iterator
 import kotlin.math.min
 
 /**
- * Represents a block that can connect to cargo ducts and use them to interface
- * with other RebarCargoBlocks.
+ * If you are looking to allow logistics systems (including cargo) to add/remove items
+ * from your block, see [LogisticRebarBlock]. This interface is specifically for blocks
+ * which connect to cargo ducts or directly to other CargoRebarBlocks.
+ *
+ * Represents a block that can connect to cargo ducts or directly to other RebarCargoBlocks.
  *
  * Each face can have one logistic group which cargo ducts (or other RebarCargoBlocks)
  * connected to that face are allowed to interface with.
  *
- * In your place constructor, you will need to call [addCargoLogisticGroup] for all
- * the block faces you want to be able to connect cargo ducts to, and also
+ * In your place constructor, you will need to call [CargoRebarBlock.addCargoLogisticGroup]
+ * for all the block faces you want to be able to connect cargo ducts to, and also
  * `setCargoTransferRate` to set the maximum number of items that can be transferred
  * out of this block per cargo tick.
+ *
+ * @see LogisticRebarBlock
  */
 interface CargoRebarBlock : LogisticRebarBlock, EntityHolderRebarBlock {
 
@@ -130,6 +135,12 @@ interface CargoRebarBlock : LogisticRebarBlock, EntityHolderRebarBlock {
         }
     }
 
+    /**
+     * This function will tick each face which has a logistic group by finding the
+     * block and face which the face connects to (either directly or via cargo ducts)
+     * and trying to move items from the source faces on this block to their
+     * corresponding target faces.
+     */
     @ApiStatus.Internal
     fun tickCargo() {
         for ((face, group) in cargoBlockData.groups) {
@@ -153,6 +164,11 @@ interface CargoRebarBlock : LogisticRebarBlock, EntityHolderRebarBlock {
         }
     }
 
+    /**
+     * Attempts to move cargo from [sourceGroup] to [targetGroup]. This assumes that routing
+     * logic has been performed, we know where items need to be transferred to, and now we
+     * just need to actually transfer the items.
+     */
     @ApiStatus.Internal
     fun tickCargoFace(sourceGroup: LogisticGroup, targetGroup: LogisticGroup) {
         for (sourceSlot in sourceGroup.slots) {

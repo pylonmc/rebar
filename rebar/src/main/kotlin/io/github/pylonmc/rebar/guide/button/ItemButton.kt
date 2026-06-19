@@ -13,7 +13,8 @@ import io.github.pylonmc.rebar.item.research.Research.Companion.canUse
 import io.github.pylonmc.rebar.content.guide.RebarGuide.Companion.guideHints
 import io.github.pylonmc.rebar.content.guide.RebarGuide.Companion.playGuideSound
 import io.github.pylonmc.rebar.item.research.Research.Companion.researchPoints
-import io.github.pylonmc.rebar.recipe.RecipeInput
+import io.github.pylonmc.rebar.recipe.ingredient.FluidOrItem
+import io.github.pylonmc.rebar.recipe.ingredient.ItemChoice
 import io.github.pylonmc.rebar.util.gui.unit.UnitFormat
 import io.papermc.paper.datacomponent.DataComponentTypes
 import net.kyori.adventure.text.Component
@@ -23,7 +24,6 @@ import org.bukkit.Registry
 import org.bukkit.entity.Player
 import org.bukkit.event.inventory.ClickType
 import org.bukkit.inventory.ItemStack
-import org.bukkit.inventory.RecipeChoice
 import xyz.xenondevs.invui.Click
 import xyz.xenondevs.invui.gui.SlotElement
 import xyz.xenondevs.invui.gui.get
@@ -246,23 +246,15 @@ class ItemButton private constructor(
         }
 
         @JvmStatic
-        fun of(input: RecipeInput.Item?): Item {
-            if (input == null) {
-                return EMPTY
-            }
-
-            return of(input.representativeItems.toList())
-        }
+        @JvmOverloads
+        fun of(choice: ItemChoice?, preDisplayDecorator: Decorator? = null) = of(choice?.representativeItems, preDisplayDecorator)
 
         @JvmStatic
-        fun of(choice: RecipeChoice?): Item = when (choice) {
-            is RecipeChoice.MaterialChoice -> of(choice.choices.map(ItemStack::of))
-            is RecipeChoice.ExactChoice -> of(choice.choices)
-            else -> EMPTY
-        }
+        @JvmOverloads
+        fun of(fluidOrItem: FluidOrItem.Item?, preDisplayDecorator: Decorator? = null) = of(fluidOrItem?.item, preDisplayDecorator)
 
         @JvmStatic @JvmOverloads
-        fun of(stacks: List<ItemStack?>, preDisplayDecorator: Decorator? = null) = if (stacks.filterNotNull().isEmpty()) {
+        fun of(stacks: List<ItemStack?>?, preDisplayDecorator: Decorator? = null) = if (stacks == null || stacks.filterNotNull().isEmpty()) {
             EMPTY
         } else {
             ItemButton(stacks.filterNotNull(), preDisplayDecorator ?: noDecorator)

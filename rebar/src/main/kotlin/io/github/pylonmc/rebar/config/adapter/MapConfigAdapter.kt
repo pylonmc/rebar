@@ -12,13 +12,38 @@ class MapConfigAdapter<K, V>(
     override val type: Type = TypeUtils.parameterize(Map::class.java, keyAdapter.type, valueAdapter.type)
 
     override fun convert(value: Any): Map<K, V> {
-        if (value is ConfigurationSection) {
-            return convert(value.getValues(false))
-        }
-        return buildMap {
-            for ((k, v) in (value as Map<*, *>)) {
-                @Suppress("UNCHECKED_CAST")
-                put(keyAdapter.convert(k!!), v?.let(valueAdapter::convert) as V)
+        when (value) {
+            is List<*> -> {
+                val map = mutableMapOf<K, V>()
+                for (maybeSection in value) {
+                    val section = STRING_TO_ANY.convert(maybeSection!!)
+                    val key = keyAdapter.convert(
+                        section["key"]
+                            ?: error("An entry in the map is missing 'key'")
+                    )
+                    check(key !in map) { "Map contains duplicate value $key" }
+                    val value = valueAdapter.convert(
+                        section["value"]
+                            ?: error("An entry in the map is missing 'value'")
+                    )
+                    map[key] = value
+                }
+                return map
+            }
+
+            is ConfigurationSection -> {
+                return convert(value.getValues(false))
+            }
+
+            else -> {
+                val map = mutableMapOf<K, V>()
+                    for ((k, v) in (value as Map<*, *>)) {
+                        val key = keyAdapter.convert(k!!)
+                        check(key !in map) { "Map contains duplicate value $key" }
+                        @Suppress("UNCHECKED_CAST")
+                        map[key] = v?.let(valueAdapter::convert) as V
+                    }
+                return map
             }
         }
     }

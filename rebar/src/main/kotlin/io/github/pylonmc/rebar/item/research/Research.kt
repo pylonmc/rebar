@@ -10,7 +10,7 @@ import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.item.RebarItemSchema
 import io.github.pylonmc.rebar.item.research.Research.Companion.canPickUp
 import io.github.pylonmc.rebar.util.ConfettiParticle
-import io.github.pylonmc.rebar.recipe.FluidOrItem
+import io.github.pylonmc.rebar.recipe.ingredient.FluidOrItem
 import io.github.pylonmc.rebar.recipe.RecipeType
 import io.github.pylonmc.rebar.recipe.vanilla.VanillaRecipeType
 import io.github.pylonmc.rebar.registry.RebarRegistry
@@ -90,7 +90,7 @@ class Research(
 
         addResearch(player, this)
         for (recipe in RecipeType.vanillaCraftingRecipes()) {
-            val schema = RebarItemSchema.fromStack(recipe.craftingRecipe.result) ?: continue
+            val schema = RebarItemSchema.fromStack(recipe.result.item) ?: continue
             if (schema.key in unlocks) {
                 player.discoverRecipe(recipe.key)
             }
@@ -131,7 +131,7 @@ class Research(
 
         removeResearch(player, this)
         for (recipe in RecipeType.vanillaCraftingRecipes()) {
-            val schema = RebarItemSchema.fromStack(recipe.craftingRecipe.result) ?: continue
+            val schema = RebarItemSchema.fromStack(recipe.result.item) ?: continue
             if (schema.key in unlocks) {
                 player.undiscoverRecipe(recipe.key)
             }
@@ -349,7 +349,7 @@ class Research(
 
             // discover only the recipes that have no research whenever an ingredient is added to the inventory
             for (recipeType in RebarRegistry.RECIPE_TYPES) {
-                if (recipeType !is VanillaRecipeType<*>) continue
+                if (recipeType !is VanillaRecipeType<*, *>) continue
                 for (recipe in recipeType) {
                     if (recipe.key in VanillaRecipeType.nonRebarRecipes) continue
                     val researches = recipe.results

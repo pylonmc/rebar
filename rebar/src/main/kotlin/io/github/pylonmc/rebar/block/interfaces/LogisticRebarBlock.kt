@@ -1,5 +1,6 @@
 package io.github.pylonmc.rebar.block.interfaces
 
+import io.github.pylonmc.rebar.block.RebarBlock
 import io.github.pylonmc.rebar.event.RebarBlockBreakEvent
 import io.github.pylonmc.rebar.event.RebarBlockUnloadEvent
 import io.github.pylonmc.rebar.logistics.LogisticGroup
@@ -18,15 +19,19 @@ import kotlin.collections.getOrPut
 /**
  * A block which can have items removed or added via a logistics system.
  *
- * Item addition/removal is managed by 'groups' of 'logistic slots'. Each
+ * Item addition/removal is managed by [LogisticGroup]s of [LogisticSlot]s. Each
  * group has a unique name and is either an input or output group.
  *
  * Slots can be in multiple groups. For example, you could have a 'buffer'
  * slot be in both an input and an output group, allowing items to be both
  * inserted and removed.
  *
- * To use this interface, all you need to do is call `createLogisticGroup`
- * to create all the logistic groups you want in `postInitialise`.
+ * To use this interface, all you need to do is call [LogisticRebarBlock.createLogisticGroup]
+ * to create all the logistic groups you want in [RebarBlock.postInitialise].
+ *
+ * @see LogisticGroup
+ * @see LogisticSlot
+ * @see LogisticGroupType
  */
 interface LogisticRebarBlock {
 

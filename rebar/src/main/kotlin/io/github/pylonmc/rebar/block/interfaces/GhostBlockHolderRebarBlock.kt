@@ -219,7 +219,7 @@ interface GhostBlockHolderRebarBlock : EntityHolderRebarBlock {
         }
 
         override fun getWaila(player: Player): WailaDisplay? {
-            return WailaDisplay(Component.translatable(entity.block.placementMaterial.let { it.itemTranslationKey ?: it.blockTranslationKey } ?: return null))
+            return WailaDisplay.of(Component.translatable(entity.block.placementMaterial.let { it.itemTranslationKey ?: it.blockTranslationKey } ?: return null))
         }
 
         override fun getPickItem(player: Player): ItemStack? {
@@ -286,7 +286,7 @@ interface GhostBlockHolderRebarBlock : EntityHolderRebarBlock {
         }
 
         override fun getWaila(player: Player): WailaDisplay {
-            return WailaDisplay(entity.itemStack.effectiveName())
+            return WailaDisplay.of(entity.itemStack.effectiveName())
         }
 
         override fun getPickItem(player: Player): ItemStack? {

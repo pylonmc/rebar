@@ -72,7 +72,14 @@ import kotlin.math.max
 import kotlin.math.min
 import com.mojang.datafixers.util.Pair as NmsPair
 import net.minecraft.world.entity.EquipmentSlot as NmsEquipmentSlot
+import net.minecraft.world.item.ItemStack as NmsItemStack
+import net.minecraft.core.component.DataComponentType as NmsDataComponentType
 
+/**
+ * Documentation is in [NmsAccessor].
+ *
+ * @see NmsAccessor
+ */
 @Suppress("unused")
 object NmsAccessorImpl : NmsAccessor {
 
@@ -337,6 +344,11 @@ object NmsAccessorImpl : NmsAccessor {
         }
     }
 
+    fun getBukkitType(nmsType: NmsDataComponentType<*>): PaperDataComponentType<*, *>? {
+        val bukkitType = PaperDataComponentType.minecraftToBukkit(nmsType) as? PaperDataComponentType<*, *>
+        return if (bukkitType !is PaperDataComponentType.Unimplemented<*, *>) bukkitType else null
+    }
+
     override fun getOverriddenTypes(itemStack: ItemStack): List<DataComponentType> {
         val schema = RebarItemSchema.fromStack(itemStack)
         val nmsStack = (itemStack as CraftItemStack).handle
@@ -346,10 +358,119 @@ object NmsAccessorImpl : NmsAccessor {
             val types = mutableListOf<DataComponentType>()
             for (type in nmsTemplate.components.keySet()) {
                 if (nmsTemplate.get(type) != nmsStack.get(type)) {
-                    types.add(PaperDataComponentType.minecraftToBukkit(type))
+                    types.add(getBukkitType(type) ?: continue)
                 }
             }
+            return types
         }
-        return nmsStack.componentsPatch.entrySet().map { PaperDataComponentType.minecraftToBukkit(it.key) }
+        return nmsStack.componentsPatch.entrySet().mapNotNull { getBukkitType(it.key) }
+    }
+
+    fun <T: Any, NMS: Any> componentMatches(itemStack: NmsItemStack, type: PaperDataComponentType.ValuedImpl<T, NMS>, value: Any?): Boolean {
+        val nmsType = PaperDataComponentType.bukkitToMinecraft<NMS>(type)
+        val nmsValue = itemStack.get(nmsType)
+        if (nmsValue == value) {
+            return true
+        } else if (value == null || nmsValue == null) {
+            return false
+        }
+
+        val adaptedValue = type.adapter.fromVanilla(nmsValue)
+        return adaptedValue == value
+    }
+
+    fun componentMatches(itemStack: NmsItemStack, type: PaperDataComponentType.NonValuedImpl<*, *>, hasValue: Boolean): Boolean {
+        val nmsType = PaperDataComponentType.bukkitToMinecraft<Unit>(type)
+        return itemStack.has(nmsType) == hasValue
+    }
+
+    fun <T: Any, NMS: Any> convertNmsValue(type: PaperDataComponentType<T, NMS>, nmsValue: Any): T {
+        return type.adapter.fromVanilla(nmsValue as NMS)
+    }
+
+    override fun overriddenComponents(itemStack: ItemStack, exact: Boolean): Map<DataComponentType, Any?> {
+        val nmsComponents = mutableMapOf<NmsDataComponentType<*>, Any?>()
+        val schema = RebarItemSchema.fromStack(itemStack)
+        val nmsStack = (itemStack as CraftItemStack).handle
+        if (schema != null && !exact) {
+            val template = schema.getOriginalTemplate()
+            val nmsTemplate = (template as CraftItemStack).handle
+            for (type in nmsTemplate.components.keySet()) {
+                val realValue = nmsStack.get(type)
+                if (nmsTemplate.get(type) != realValue) {
+                    nmsComponents[type] = realValue
+                }
+            }
+        } else {
+            for (component in nmsStack.componentsPatch.entrySet()) {
+                nmsComponents[component.key] = component.value.orElse(null)
+            }
+        }
+
+        val components = mutableMapOf<DataComponentType, Any?>()
+        for (component in nmsComponents) {
+            val bukkitType = getBukkitType(component.key) ?: continue
+            val bukkitValue = component.value?.let { convertNmsValue(bukkitType, it) }
+            components[bukkitType] = bukkitValue
+        }
+        return components
+    }
+
+    override fun hasDefaultComponents(itemStack: ItemStack, components: Set<DataComponentType>): Boolean {
+        val schema = RebarItemSchema.fromStack(itemStack)
+        val nmsStack = (itemStack as CraftItemStack).handle
+        if (schema != null) {
+            val template = schema.getOriginalTemplate()
+            val nmsTemplate = (template as CraftItemStack).handle
+            for (type in components) {
+                val nmsType = PaperDataComponentType.bukkitToMinecraft<Any>(type)
+                if (nmsTemplate.get(nmsType) != nmsStack.get(nmsType)) {
+                    return false
+                }
+            }
+            return true
+        }
+        return components.none {
+            val nmsType = PaperDataComponentType.bukkitToMinecraft<Any>(it)
+            nmsStack.hasNonDefault(nmsType)
+        }
+    }
+
+    override fun isDefaultComponents(itemStack: ItemStack): Boolean {
+        val schema = RebarItemSchema.fromStack(itemStack)
+        val nmsStack = (itemStack as CraftItemStack).handle
+        if (schema != null) {
+            val template = schema.getOriginalTemplate()
+            val nmsTemplate = (template as CraftItemStack).handle
+            for (type in nmsTemplate.components.keySet()) {
+                if (nmsTemplate.get(type) != nmsStack.get(type)) {
+                    return false
+                }
+            }
+            return true
+        }
+        return nmsStack.componentsPatch.size() == 0
+    }
+
+    override fun componentsMatch(itemStack: ItemStack, components: Map<DataComponentType, Any?>): Boolean {
+        val nmsStack = (itemStack as CraftItemStack).handle
+        for (component in components) {
+            val type = component.key
+            val value = component.value
+            val matches = when (type) {
+                is PaperDataComponentType.NonValuedImpl<*, *> -> componentMatches(nmsStack, type, value != null)
+                is PaperDataComponentType.ValuedImpl<*, *> -> componentMatches(nmsStack, type, value)
+                else -> true // should be unreachable
+            }
+            if (!matches) {
+                return false
+            }
+        }
+        return true
+    }
+
+    override fun componentsEqual(itemStack: ItemStack, components: Map<DataComponentType, Any?>): Boolean {
+        val nmsStack = (itemStack as CraftItemStack).handle
+        return componentsMatch(itemStack, components) && nmsStack.componentsPatch.size() == components.size
     }
 }

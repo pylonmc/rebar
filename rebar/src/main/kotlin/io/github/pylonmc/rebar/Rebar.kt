@@ -35,8 +35,8 @@ import io.github.pylonmc.rebar.item.research.Research
 import io.github.pylonmc.rebar.logistics.CargoRoutes
 import io.github.pylonmc.rebar.metrics.RebarMetrics
 import io.github.pylonmc.rebar.recipe.ConfigurableRecipeType
-import io.github.pylonmc.rebar.recipe.RebarRecipeListener
-import io.github.pylonmc.rebar.recipe.RecipeCompletion
+import io.github.pylonmc.rebar.recipe.logic.RebarRecipeListener
+import io.github.pylonmc.rebar.recipe.logic.RecipeCompletion
 import io.github.pylonmc.rebar.recipe.RecipeType
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.util.delayTicks
@@ -44,7 +44,7 @@ import io.github.pylonmc.rebar.item.interfaces.*
 import io.github.pylonmc.rebar.nms.NmsAccessor
 import io.github.pylonmc.rebar.util.mergeResource
 import io.github.pylonmc.rebar.waila.Waila
-import io.github.pylonmc.rebar.waila.WailaPlaceholders
+import io.github.pylonmc.rebar.integration.WailaPlaceholders
 import io.papermc.paper.ServerBuildInfo
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents
 import kotlinx.coroutines.CoroutineScope
@@ -370,7 +370,7 @@ object Rebar : JavaPlugin(), RebarAddon {
         val start = System.currentTimeMillis()
 
         for (addon in RebarRegistry.ADDONS) {
-            mergeResource(addon, "researches.yml", "researches/${addon.key.namespace}.yml", false)
+            mergeResource(addon, Rebar, "researches.yml", "researches/${addon.key.namespace}.yml", false)
         }
 
         val researchDir = dataPath.resolve("researches")

@@ -2,6 +2,8 @@ package io.github.pylonmc.rebar.test.test.recipe;
 
 import io.github.pylonmc.rebar.nms.NmsAccessor;
 import io.github.pylonmc.rebar.recipe.RecipeType;
+import io.github.pylonmc.rebar.recipe.vanilla.ShapedRebarRecipe;
+import io.github.pylonmc.rebar.recipe.vanilla.ShapelessRebarRecipe;
 import io.github.pylonmc.rebar.test.RebarTest;
 import io.github.pylonmc.rebar.test.base.SyncTest;
 import io.github.pylonmc.rebar.test.item.TestItems;
@@ -26,7 +28,7 @@ public class CraftingTest extends SyncTest {
 
         // Shaped
         {
-            RecipeType.VANILLA_SHAPED.addRecipe(
+            RecipeType.VANILLA_SHAPED.addRecipe(ShapedRebarRecipe.fromVanilla(
                     new ShapedRecipe(RebarTest.key("sticky_stick_shaped"), diamond)
                             .shape(
                                     " s ",
@@ -35,6 +37,7 @@ public class CraftingTest extends SyncTest {
                             )
                             .setIngredient('s', Material.STICK)
                             .setIngredient('S', stickyStick)
+                    )
             );
             ItemStack[] crafting = {
                     nothing, normalStick, nothing,
@@ -48,11 +51,11 @@ public class CraftingTest extends SyncTest {
 
         // Shapeless
         {
-            RecipeType.VANILLA_SHAPELESS.addRecipe(
+            RecipeType.VANILLA_SHAPELESS.addRecipe(ShapelessRebarRecipe.fromVanilla(
                     new ShapelessRecipe(RebarTest.key("sticky_stick_shapeless"), normalStick)
                             .addIngredient(Material.DIAMOND)
                             .addIngredient(stickyStick)
-            );
+            ));
             ItemStack[] crafting = new ItemStack[9];
             Arrays.fill(crafting, nothing);
             crafting[0] = stickyStick;
@@ -64,7 +67,7 @@ public class CraftingTest extends SyncTest {
 
         // With custom output
         {
-            RecipeType.VANILLA_SHAPED.addRecipe(
+            RecipeType.VANILLA_SHAPED.addRecipe(ShapedRebarRecipe.fromVanilla(
                     new ShapedRecipe(RebarTest.key("sticky_stick_shaped_custom_output"), stickyStick)
                             .shape(
                                     " s ",
@@ -73,6 +76,7 @@ public class CraftingTest extends SyncTest {
                             )
                             .setIngredient('s', Material.STICK)
                             .setIngredient('D', diamond)
+                    )
             );
             ItemStack[] crafting = {
                     nothing, normalStick, nothing,

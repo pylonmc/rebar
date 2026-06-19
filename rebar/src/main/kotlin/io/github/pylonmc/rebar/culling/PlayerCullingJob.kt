@@ -2,7 +2,7 @@ package io.github.pylonmc.rebar.culling
 
 import io.github.pylonmc.rebar.block.RebarBlock
 import io.github.pylonmc.rebar.block.interfaces.CulledRebarBlock
-import io.github.pylonmc.rebar.block.interfaces.GroupCulledRebarBLock
+import io.github.pylonmc.rebar.block.interfaces.GroupCulledRebarBlock
 import io.github.pylonmc.rebar.config.RebarConfig
 import io.github.pylonmc.rebar.culling.BlockCullingEngine.ChunkData
 import io.github.pylonmc.rebar.culling.BlockCullingEngine.blockTextureOctrees
@@ -16,8 +16,6 @@ import io.github.pylonmc.rebar.culling.BlockCullingEngine.syncJobTasks
 import io.github.pylonmc.rebar.resourcepack.block.BlockTextureEngine.hasCustomBlockTextures
 import io.github.pylonmc.rebar.util.delayTicks
 import io.github.pylonmc.rebar.util.position.BlockPosition
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.currentCoroutineContext
 import org.bukkit.Bukkit
 import org.bukkit.Chunk
 import org.bukkit.block.Block
@@ -83,13 +81,13 @@ class PlayerCullingJob(
         }
         visible.values.toSet().subtract(query.toSet()).forEach {
             it.blockTextureEntity?.removeViewer(playerId)
-            if (it is CulledRebarBlock && it !is GroupCulledRebarBLock) {
+            if (it is CulledRebarBlock && it !is GroupCulledRebarBlock) {
                 syncTasks[it] = false
             }
         }
         visible.values.retainAll(query)
 
-        val cullingGroups = mutableSetOf<GroupCulledRebarBLock.CullingGroup>()
+        val cullingGroups = mutableSetOf<GroupCulledRebarBlock.CullingGroup>()
 
         fun makeBlockVisible(block: RebarBlock, distanceSquared: Double) {
             block.blockTextureEntity?.apply {
@@ -97,7 +95,7 @@ class PlayerCullingJob(
                 lightDelegatePositions.forEach { lightDelegates.getOrPut(it) { CopyOnWriteArraySet() }.add(block) }
             }
 
-            if (block is GroupCulledRebarBLock) {
+            if (block is GroupCulledRebarBlock) {
                 cullingGroups.addAll(block.cullingGroups)
             } else if (block is CulledRebarBlock) {
                 if (block.isCulledAsync) {
@@ -120,7 +118,7 @@ class PlayerCullingJob(
                 }
             }
 
-            if (block is GroupCulledRebarBLock) {
+            if (block is GroupCulledRebarBlock) {
                 cullingGroups.addAll(block.cullingGroups)
             } else if (block is CulledRebarBlock) {
                 if (block.isCulledAsync) {

@@ -17,7 +17,7 @@ import org.bukkit.entity.Player
  * The configuration for a WAILA bossbar (the bar shown at the top of your
  * screen when looking at a block).
  */
-class WailaDisplay @JvmOverloads constructor(
+class WailaDisplay private constructor(
     var text: Component,
     var color: BossBar.Color = RebarConfig.WailaConfig.DEFAULT_DISPLAY.color,
     var overlay: BossBar.Overlay = RebarConfig.WailaConfig.DEFAULT_DISPLAY.overlay,
@@ -44,6 +44,10 @@ class WailaDisplay @JvmOverloads constructor(
 
         val seperator = Component.text(" | ")
             .color(TextColor.fromHexString("#b2b2b2"))
+
+        @JvmStatic
+        fun of(text: Component, color: BossBar.Color, overlay: BossBar.Overlay, progress: Float)
+            = WailaDisplay(text, color, overlay, progress)
 
         @JvmSynthetic
         internal fun getWailaBlockPrefix(block: Block, player: Player): Component? {

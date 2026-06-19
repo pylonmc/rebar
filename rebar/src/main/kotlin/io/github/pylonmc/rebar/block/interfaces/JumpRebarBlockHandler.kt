@@ -11,6 +11,10 @@ import org.bukkit.event.EventPriority
 import org.jetbrains.annotations.ApiStatus
 
 interface JumpRebarBlockHandler {
+
+    /**
+     * Called whenever any player jumps while standing on this block.
+     */
     fun onJumpedOn(event: PlayerJumpEvent, priority: EventPriority) {}
 
     @ApiStatus.Internal

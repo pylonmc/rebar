@@ -14,7 +14,7 @@ import java.util.UUID
  * on the display entities (multiple blocks use the same entity), and therefor should
  * only cull said entities if all blocks using that entity are culled.
  */
-interface EntityGroupCulledRebarBlock : GroupCulledRebarBLock {
+interface EntityGroupCulledRebarBlock : GroupCulledRebarBlock {
     override val cullingGroups: Iterable<EntityCullingGroup>
 
     override val isCulledAsync: Boolean
@@ -25,7 +25,7 @@ interface EntityGroupCulledRebarBlock : GroupCulledRebarBLock {
         return group.entityIds.firstOrNull()?.let { player.isVisibilityInverted(it) } ?: true
     }
 
-    override fun onGroupVisible(player: Player, group: GroupCulledRebarBLock.CullingGroup) {
+    override fun onGroupVisible(player: Player, group: GroupCulledRebarBlock.CullingGroup) {
         if (group !is EntityCullingGroup) return
         for (entityId in group.entityIds) {
             if (player.isVisibilityInverted(entityId)) {
@@ -36,7 +36,7 @@ interface EntityGroupCulledRebarBlock : GroupCulledRebarBLock {
         }
     }
 
-    override fun onGroupCulled(player: Player, group: GroupCulledRebarBLock.CullingGroup) {
+    override fun onGroupCulled(player: Player, group: GroupCulledRebarBlock.CullingGroup) {
         if (group !is EntityCullingGroup) return
         for (entityId in group.entityIds) {
             if (!player.isVisibilityInverted(entityId)) {
@@ -49,7 +49,7 @@ interface EntityGroupCulledRebarBlock : GroupCulledRebarBLock {
 
     class EntityCullingGroup(
         id: String,
-        blocks: MutableSet<GroupCulledRebarBLock> = mutableSetOf(),
+        blocks: MutableSet<GroupCulledRebarBlock> = mutableSetOf(),
         val entityIds: MutableSet<UUID> = mutableSetOf()
-    ) : GroupCulledRebarBLock.CullingGroup(id, blocks)
+    ) : GroupCulledRebarBlock.CullingGroup(id, blocks)
 }

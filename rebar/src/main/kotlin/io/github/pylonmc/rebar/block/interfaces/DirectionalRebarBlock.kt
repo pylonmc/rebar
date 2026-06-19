@@ -16,6 +16,8 @@ import java.util.IdentityHashMap
 /**
  * Represents a block that has a specific facing direction.
  *
+ * You should set [DirectionalRebarBlock.facing] in your place constructor. The face you set will be persisted over reloads.
+ *
  * Internally only used for rotating [RebarBlock.blockTextureEntity]s.
  */
 interface DirectionalRebarBlock : Keyed {

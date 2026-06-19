@@ -212,6 +212,16 @@ open class RebarItem(val stack: ItemStack) : Keyed {
         }
 
         /**
+         * Checks if [stack] is a Rebar item with schema [schema].
+         */
+        @JvmStatic
+        @Contract("null -> false")
+        fun isRebarItem(stack: ItemStack?, schema: RebarItemSchema): Boolean {
+            val otherSchema = RebarItemSchema.fromStack(stack) ?: return false
+            return otherSchema === schema
+        }
+
+        /**
          * Suppresses warnings about missing/incorrect translation keys for the item name and lore
          * for the given item key
          */

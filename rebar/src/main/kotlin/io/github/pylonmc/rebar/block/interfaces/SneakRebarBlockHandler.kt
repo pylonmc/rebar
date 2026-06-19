@@ -11,7 +11,15 @@ import org.bukkit.event.player.PlayerToggleSneakEvent
 import org.jetbrains.annotations.ApiStatus
 
 interface SneakRebarBlockHandler {
+
+    /**
+     * Called whenever any player starts sneaking while standing on this block.
+     */
     fun onSneakStart(event: PlayerToggleSneakEvent, priority: EventPriority) {}
+
+    /**
+     * Called whenever any player stops sneaking while standing on this block.
+     */
     fun onSneakStop(event: PlayerToggleSneakEvent, priority: EventPriority) {}
 
     @ApiStatus.Internal

@@ -471,7 +471,13 @@ val Player.pdc: PersistentDataContainer
  * @return The merged config
  */
 @JvmSynthetic
-internal fun mergeResource(fromAddon: RebarAddon, from: String, to: String, warnMissing: Boolean = true): ConfigSection {
+internal fun mergeResource(
+    fromAddon: RebarAddon,
+    toAddon: RebarAddon,
+    from: String,
+    to: String,
+    warnMissing: Boolean = true
+): ConfigSection {
     require(from.endsWith(".yml") || from.endsWith(".yaml")) {
         "Config file must be a YAML file (addon: ${fromAddon.javaClass.simpleName}, path: $from)"
     }
@@ -484,7 +490,7 @@ internal fun mergeResource(fromAddon: RebarAddon, from: String, to: String, warn
         return cached
     }
 
-    val toConfigFile = Rebar.javaPlugin.dataFolder.resolve(to)
+    val toConfigFile = toAddon.javaPlugin.dataFolder.resolve(to)
     if (!toConfigFile.exists()) {
         toConfigFile.parentFile.mkdirs()
         toConfigFile.createNewFile()
@@ -494,7 +500,7 @@ internal fun mergeResource(fromAddon: RebarAddon, from: String, to: String, warn
     val toConfig = ConfigSection.fromOrThrow(toConfigFile)
     val fromConfig = ConfigSection.fromResource(fromAddon.javaPlugin, from)
     if (fromConfig == null) {
-        if (warnMissing) Rebar.logger.warning("Resource not found: $from")
+        if (warnMissing) toAddon.javaPlugin.logger.warning("Resource not found: $from")
     } else {
         toConfig.merge(fromConfig)
         toConfig.save(toConfigFile)
@@ -748,10 +754,20 @@ fun ItemStack.overriddenDataTypes(): List<DataComponentType> {
     return NmsAccessor.instance.getOverriddenTypes(this)
 }
 
-val Block.isChunkLoaded: Boolean
-    get() = world.isChunkLoaded(x shr 4, z shr 4)
+fun ItemStack.overriddenComponents(exact: Boolean): Map<DataComponentType, Any?>
+    = NmsAccessor.instance.overriddenComponents(this, exact)
 
-const val FLUID_EPSILON = 1.0e-6
+fun ItemStack.matchesComponents(components: Map<DataComponentType, Any?>)
+    = NmsAccessor.instance.componentsMatch(this, components)
+
+fun ItemStack.componentsEqual(components: Map<DataComponentType, Any?>)
+    = NmsAccessor.instance.componentsEqual(this, components)
+
+fun ItemStack.hasDefaultComponents(components: Set<DataComponentType>)
+    = NmsAccessor.instance.hasDefaultComponents(this, components)
+
+val ItemStack.isDefaultComponents: Boolean
+    get() = NmsAccessor.instance.isDefaultComponents(this)
 
 fun Material.getPreferredTool(): Material? {
     if (Tag.MINEABLE_AXE.isTagged(this)) {
@@ -817,3 +833,22 @@ fun Material.getPreferredTool(): Material? {
 
 val Block.breakProgress
     get() = BlockListener.blockBreakProgressMap[position] ?: 0.0F
+
+val Block.isChunkLoaded: Boolean
+    get() = world.isChunkLoaded(x shr 4, z shr 4)
+
+fun isSymmetrical(width: Int, height: Int, list: List<*>): Boolean {
+    if (width == 1) return true
+    val center = width / 2
+    for (y in 0..<height) {
+        for (left in 0..<center) {
+            val right = width - 1 - left
+            if (list[left + y * width] != list[right + y * width]) {
+                return false
+            }
+        }
+    }
+    return true
+}
+
+const val FLUID_EPSILON = 1.0e-6

@@ -71,7 +71,7 @@ class RebarTranslator private constructor(private val addon: RebarAddon) : Trans
         jarFile.stream()
             .filter { it.name.startsWith("lang/") && it.name.endsWith(".yml") }
             .map { it.name.removePrefix("lang/") }
-            .forEach { file -> mergeResource(addon, "lang/$file", "lang/$addonNamespace/$file") }
+            .forEach { file -> mergeResource(addon, Rebar, "lang/$file", "lang/$addonNamespace/$file") }
 
         loadTranslations()
     }

@@ -20,8 +20,6 @@ interface FacadeRebarBlock : InteractRebarBlockHandler {
      */
     val block: Block
 
-    val facadeDefaultBlockType: Material
-
     @MultiHandler(priorities = [EventPriority.MONITOR])
     override fun onInteractedWith(event: PlayerInteractEvent, priority: EventPriority) {
         if (!event.action.isRightClick || event.player.isSneaking || event.hand != EquipmentSlot.HAND) {

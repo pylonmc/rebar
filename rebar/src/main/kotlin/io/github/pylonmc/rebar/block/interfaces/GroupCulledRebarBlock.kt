@@ -3,12 +3,12 @@ package io.github.pylonmc.rebar.block.interfaces
 import org.bukkit.entity.Player
 
 /**
- * A variant of [CulledRebarBlock] that defines groups of [GroupCulledRebarBLock]s that should be culled together.
+ * A variant of [CulledRebarBlock] that defines groups of [GroupCulledRebarBlock]s that should be culled together.
  * (i.e. all blocks in the group must be culled for any of the blocks in the group to be culled)
  *
  * For an example use case, see [EntityGroupCulledRebarBlock]
  */
-interface GroupCulledRebarBLock : CulledRebarBlock {
+interface GroupCulledRebarBlock : CulledRebarBlock {
     val cullingGroups: Iterable<CullingGroup>
 
     /**
@@ -27,6 +27,6 @@ interface GroupCulledRebarBLock : CulledRebarBlock {
 
     open class CullingGroup(
         val id: String,
-        val blocks: MutableSet<GroupCulledRebarBLock> = mutableSetOf()
+        val blocks: MutableSet<GroupCulledRebarBlock> = mutableSetOf()
     )
 }

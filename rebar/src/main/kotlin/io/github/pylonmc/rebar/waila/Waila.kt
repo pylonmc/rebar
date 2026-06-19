@@ -202,9 +202,9 @@ class Waila private constructor(
 
                 if (display == null && player.wailaConfig.vanillaWailaEnabled) {
                     display = if (entity is Item) {
-                        WailaDisplay(entity.itemStack.effectiveName())
+                        WailaDisplay.of(entity.itemStack.effectiveName())
                     } else {
-                        WailaDisplay(Component.translatable(entity.type.translationKey()))
+                        WailaDisplay.of(Component.translatable(entity.type.translationKey()))
                     }
                 }
 
@@ -241,9 +241,9 @@ class Waila private constructor(
                     val name = Component.translatable(block.type.translationKey())
                     val prefix = WailaDisplay.getWailaBlockPrefix(block, player)
                     display = if (prefix != null) {
-                        WailaDisplay(prefix).add(name)
+                        WailaDisplay.of(prefix).add(name)
                     } else {
-                        WailaDisplay(name)
+                        WailaDisplay.of(name)
                     }
                     display = display.progress(1.0F - block.breakProgress)
                 }

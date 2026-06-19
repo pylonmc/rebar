@@ -41,8 +41,10 @@ import kotlin.math.min
  *
  * Automatically handles different possible rotations of your multiblock.
  *
- * If you need something more flexible (eg: a fluid tank that can have up to 10
- * fluid casings added to increase the capacity), see [RebarMultiblock].
+ * If you need something more flexible, see [RebarMultiblock]. For example,
+ * the smeltery in Pylon uses [RebarMultiblock] instead of this interface.
+ *
+ * @see RebarMultiblock
  */
 interface SimpleRebarMultiblock : RebarMultiblock, GhostBlockHolderRebarBlock, EntityCulledRebarBlock {
 
