@@ -41,19 +41,27 @@ class RebarBlockSchema(
         val default = "$prefix.waila"
     }
 
-    private val createConstructor: MethodHandle = blockClass.findConstructorMatching(
-        Block::class.java,
-        BlockCreateContext::class.java
-    ) ?: throw NoSuchMethodException(
-        "Block '$key' ($blockClass) is missing a create constructor (${javaClass.simpleName}, Block, BlockCreateContext)"
-    )
+    private val createConstructor: MethodHandle = try {
+        blockClass.findConstructorMatching(
+            Block::class.java,
+            BlockCreateContext::class.java
+        ) ?: throw NoSuchMethodException(
+            "Block '$key' ($blockClass) is missing a create constructor (${javaClass.simpleName}, Block, BlockCreateContext)"
+        )
+    } catch (e: Exception) {
+        throw RuntimeException("Error while finding the create constructor for $key", e)
+    }
 
-    private val loadConstructor: MethodHandle = blockClass.findConstructorMatching(
-        Block::class.java,
-        PersistentDataContainer::class.java
-    ) ?: throw NoSuchMethodException(
-        "Block '$key' ($blockClass) is missing a load constructor (${javaClass.simpleName}, Block, PersistentDataContainer)"
-    )
+    private val loadConstructor: MethodHandle = try{
+        blockClass.findConstructorMatching(
+            Block::class.java,
+            PersistentDataContainer::class.java
+        ) ?: throw NoSuchMethodException(
+            "Block '$key' ($blockClass) is missing a load constructor (${javaClass.simpleName}, Block, PersistentDataContainer)"
+        )
+    } catch (e: Exception) {
+        throw RuntimeException("Error while finding the load constructor for $key", e)
+    }
 
     @JvmSynthetic
     internal fun create(block: Block, context: BlockCreateContext): RebarBlock {

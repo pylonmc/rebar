@@ -94,12 +94,16 @@ class ProgressBar : ComponentLike {
          * (where | represents a filled bar and - an empty bar)
          */
         @JvmStatic
-        fun fuelRemaining(total: Double, remaining: Double) = ProgressBar()
-            .barColor(TextColor.fromHexString("#e4b09f")!!)
-            .proportion(remaining / total)
-            .suffix(Component.text(" ")
-                .append(UnitFormat.SECONDS.format(remaining).decimalPlaces(0))
-            )
+        fun fuelRemaining(total: Double, remaining: Double): ProgressBar {
+            check(total != 0.0) { "Total fuel cannot be zero" }
+            check(remaining <= total + 1.0e-6) { "Remaining fuel must be less than or equal to total (remaining: $remaining, total: $total)" }
+            return ProgressBar()
+                .barColor(TextColor.fromHexString("#e4b09f")!!)
+                .proportion(remaining / total)
+                .suffix(Component.text(" ")
+                    .append(UnitFormat.SECONDS.format(remaining).decimalPlaces(0))
+                )
+        }
 
         /**
          * Example: '||||||||||||||||---- 80/100mB'
