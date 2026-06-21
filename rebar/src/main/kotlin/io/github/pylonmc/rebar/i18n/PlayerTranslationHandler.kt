@@ -4,14 +4,12 @@ package io.github.pylonmc.rebar.i18n
 
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.fluid.RebarFluid
-import io.github.pylonmc.rebar.i18n.`<no name provided>`.FOOTER_APPENDED
 import io.github.pylonmc.rebar.i18n.RebarTranslator.Companion.translate
 import io.github.pylonmc.rebar.i18n.RebarTranslator.Companion.untranslate
 import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.resourcepack.armor.ArmorTextureEngine
 import io.github.pylonmc.rebar.util.editData
 import io.github.pylonmc.rebar.util.rebarKey
-import io.papermc.paper.datacomponent.DataComponentType
 import io.papermc.paper.datacomponent.DataComponentTypes
 import io.papermc.paper.datacomponent.item.BundleContents
 import io.papermc.paper.datacomponent.item.ChargedProjectiles
