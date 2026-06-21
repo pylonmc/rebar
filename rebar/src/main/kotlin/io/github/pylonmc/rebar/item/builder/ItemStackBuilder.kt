@@ -151,20 +151,10 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
     fun defaultTranslatableLore(key: NamespacedKey) =
         lore(Component.translatable(loreKey(key), ""))
 
-    fun editCustomModelData(editFunction: Consumer<CustomModelData.Builder>) = apply {
-        val customModelData = stack.getData(DataComponentTypes.CUSTOM_MODEL_DATA)
-        val newCustomModelData = CustomModelData.customModelData()
-
-        if (customModelData != null) {
-            newCustomModelData.addFlags(customModelData.flags())
-            newCustomModelData.addStrings(customModelData.strings())
-            newCustomModelData.addFloats(customModelData.floats())
-            newCustomModelData.addColors(customModelData.colors())
-        }
-
+    fun editCustomModelData(editFunction: Consumer<CustomModelDataBuilder>) = apply {
+        val newCustomModelData = CustomModelDataBuilder.of(this)
         editFunction.accept(newCustomModelData)
-
-        stack.setData(DataComponentTypes.CUSTOM_MODEL_DATA, newCustomModelData)
+        stack.setData(DataComponentTypes.CUSTOM_MODEL_DATA, newCustomModelData.build())
     }
 
     /**
