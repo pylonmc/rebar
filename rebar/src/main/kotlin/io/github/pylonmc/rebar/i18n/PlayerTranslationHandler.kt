@@ -11,6 +11,7 @@ import io.github.pylonmc.rebar.resourcepack.armor.ArmorTextureEngine
 import io.github.pylonmc.rebar.util.editData
 import io.github.pylonmc.rebar.util.rebarKey
 import io.papermc.paper.datacomponent.DataComponentTypes
+import io.papermc.paper.datacomponent.item.BundleContents
 import io.papermc.paper.datacomponent.item.ChargedProjectiles
 import io.papermc.paper.datacomponent.item.ItemContainerContents
 import io.papermc.paper.datacomponent.item.ItemLore
@@ -73,6 +74,11 @@ class PlayerTranslationHandler internal constructor(private val player: Player) 
             ItemContainerContents.containerContents(translated)
         }
 
+        stack.editData(DataComponentTypes.BUNDLE_CONTENTS) { bundleContents ->
+            val translated = bundleContents.contents().map { it.apply { handleItem(this) } }
+            BundleContents.bundleContents(translated)
+        }
+
         ArmorTextureEngine.handleItem(player, stack)
     }
 
@@ -96,6 +102,11 @@ class PlayerTranslationHandler internal constructor(private val player: Player) 
                     item
                 }
                 ItemContainerContents.containerContents(translated)
+            }
+
+            stack.editData(DataComponentTypes.BUNDLE_CONTENTS) { bundleContents ->
+                val translated = bundleContents.contents().map { it.apply { resetItem(this) } }
+                BundleContents.bundleContents(translated)
             }
 
             stack.editPersistentDataContainer {
