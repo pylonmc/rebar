@@ -106,6 +106,11 @@ class PlayerTranslationHandler internal constructor(private val player: Player) 
                 ItemContainerContents.containerContents(translated)
             }
 
+            stack.editData(DataComponentTypes.BUNDLE_CONTENTS) { bundleContents ->
+                val translated = bundleContents.contents().map { it.apply { resetItem(this) } }
+                BundleContents.bundleContents(translated)
+            }
+
             stack.editPersistentDataContainer {
                 it.remove(FOOTER_APPENDED)
             }
