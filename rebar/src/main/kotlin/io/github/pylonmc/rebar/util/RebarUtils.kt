@@ -817,3 +817,9 @@ fun Material.getPreferredTool(): Material? {
 
 val Block.breakProgress
     get() = BlockListener.blockBreakProgressMap[position] ?: 0.0F
+
+fun VirtualInventory.unsafeSubtract(slot: Int, amount: Int) {
+    val item = getUnsafeItem(slot)!!
+    item.subtract(amount)
+    if (item.isEmpty) unsafeItems[slot] = null
+}
