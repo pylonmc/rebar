@@ -251,8 +251,9 @@ internal object BlockListener : MultiListener {
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     private fun disallowStructureGrow(event: StructureGrowEvent) {
+        // The block at event.location is handled in StructureGrowRebarBlockHandler
         for (state in event.blocks) {
-            if (BlockStorage.isRebarBlock(state.block)) {
+            if (event.location != state.location && BlockStorage.isRebarBlock(state.block)) {
                 event.isCancelled = true
                 return
             }
