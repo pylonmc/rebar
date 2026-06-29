@@ -15,6 +15,7 @@ import io.github.pylonmc.rebar.util.rebarKey
 import io.github.pylonmc.rebar.util.setNullable
 import io.papermc.paper.datacomponent.DataComponentTypes
 import io.papermc.paper.datacomponent.item.CustomModelData
+import jdk.jfr.internal.StringPool.addString
 import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
 import org.bukkit.entity.ItemDisplay
@@ -79,11 +80,10 @@ class FluidEndpointDisplay : RebarEntity<ItemDisplay>, DeathRebarEntityHandler, 
 
     @Suppress("UnstableApiUsage")
     fun updateItemDisplay() {
-        val modelData = CustomModelData.customModelData()
-        modelData.addString("fluid_point_${point.type.name.lowercase()}:${pipeDisplay?.pipe?.key ?: "none"}")
-        modelData.addString("face=${face.oppositeFace.name.lowercase()}")
         this.entity.setItemStack(this.entity.itemStack.apply {
-            setData(DataComponentTypes.CUSTOM_MODEL_DATA, modelData)
+            setData(DataComponentTypes.CUSTOM_MODEL_DATA, CustomModelData.customModelData()
+                .addString("fluid_point_${point.type.name.lowercase()}:${pipeDisplay?.pipe?.key ?: "none"}")
+                .addString("face=${face.oppositeFace.name.lowercase()}"))
         })
     }
 

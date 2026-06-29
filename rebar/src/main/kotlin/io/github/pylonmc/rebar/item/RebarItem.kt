@@ -212,6 +212,24 @@ open class RebarItem(val stack: ItemStack) : Keyed {
         }
 
         /**
+         * Checks if [stack] is a Rebar item but not castable to [clazz].
+         */
+        @JvmStatic
+        fun isRebarItemAndIsNot(stack: ItemStack?, clazz: Class<*>): Boolean {
+            val schema = RebarItemSchema.fromStack(stack) ?: return false
+            return !schema.isType(clazz)
+        }
+
+        /**
+         * Checks if [stack] is a Rebar item but not with the id [key].
+         */
+        @JvmStatic
+        fun isRebarItemAndIsNot(stack: ItemStack?, key: NamespacedKey): Boolean {
+            val schema = RebarItemSchema.fromStack(stack) ?: return false
+            return schema.key != key
+        }
+
+        /**
          * Suppresses warnings about missing/incorrect translation keys for the item name and lore
          * for the given item key
          */

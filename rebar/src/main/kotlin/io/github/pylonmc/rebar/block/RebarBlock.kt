@@ -30,11 +30,13 @@ import io.papermc.paper.datacomponent.DataComponentTypes
 import net.kyori.adventure.key.Key
 import org.bukkit.*
 import org.bukkit.block.Block
+import org.bukkit.block.data.BlockData
 import org.bukkit.entity.ItemDisplay
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataAdapterContext
 import org.bukkit.persistence.PersistentDataContainer
+import java.util.function.Consumer
 
 /**
  * Represents a Rebar block in the world.
@@ -138,6 +140,18 @@ open class RebarBlock private constructor(val block: Block) : WailaSupplier, Key
      * before [io.github.pylonmc.rebar.event.RebarBlockLoadEvent]
      */
     open fun postInitialise() {}
+
+    @JvmOverloads
+    fun editBlockData(editor: Consumer<BlockData>, applyPhysics: Boolean = true) {
+        editBlockData(BlockData::class.java, editor, applyPhysics)
+    }
+
+    @JvmOverloads
+    fun <D : BlockData> editBlockData(dataType: Class<D>, editor: Consumer<D>, applyPhysics: Boolean = true) {
+        val blockData = block.blockData
+        editor.accept(dataType.cast(blockData))
+        block.setBlockData(blockData, applyPhysics)
+    }
 
     /**
      * Used to initialize [blockTextureEntity].

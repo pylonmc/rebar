@@ -1,6 +1,7 @@
 package io.github.pylonmc.rebar.nms
 
 import com.destroystokyo.paper.event.player.PlayerRecipeBookClickEvent
+import com.google.common.collect.BiMap
 import com.mojang.brigadier.StringReader
 import com.mojang.brigadier.exceptions.CommandSyntaxException
 import io.github.pylonmc.rebar.Rebar
@@ -10,6 +11,7 @@ import io.github.pylonmc.rebar.entity.packet.BlockTextureEntity
 import io.github.pylonmc.rebar.i18n.PlayerTranslationHandler
 import io.github.pylonmc.rebar.item.ItemTypeWrapper
 import io.github.pylonmc.rebar.item.RebarItemSchema
+import io.github.pylonmc.rebar.item.loot.LootTableResultBuilder
 import io.github.pylonmc.rebar.nms.entity.BlockTextureEntityImpl
 import io.github.pylonmc.rebar.nms.inventory.KeyedContainerListener
 import io.github.pylonmc.rebar.nms.packet.PlayerPacketHandler
@@ -23,7 +25,6 @@ import io.papermc.paper.datacomponent.PaperDataComponentType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import net.kyori.adventure.text.Component
-import net.minecraft.advancements.AdvancementRewards.Builder.recipe
 import net.minecraft.commands.arguments.item.ItemParser
 import net.minecraft.core.BlockPos
 import net.minecraft.core.registries.Registries
@@ -31,26 +32,34 @@ import net.minecraft.nbt.TextComponentTagVisitor
 import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket
 import net.minecraft.network.protocol.game.ClientboundPlaceGhostRecipePacket
 import net.minecraft.network.protocol.game.ClientboundSetEquipmentPacket
+import net.minecraft.resources.Identifier
 import net.minecraft.resources.ResourceKey
 import net.minecraft.server.MinecraftServer
+import net.minecraft.util.context.ContextKeySet
 import net.minecraft.world.inventory.AbstractCraftingMenu
 import net.minecraft.world.inventory.RecipeBookMenu.PostPlaceAction
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.crafting.RecipeManager
 import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity
 import net.minecraft.world.level.block.state.properties.Property
+import net.minecraft.world.level.storage.loot.LootParams
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams
 import net.minecraft.world.phys.BlockHitResult
-import org.bukkit.Bukkit
+import net.minecraft.world.phys.Vec3
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
 import org.bukkit.World
 import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
 import org.bukkit.craftbukkit.CraftEquipmentSlot
+import org.bukkit.craftbukkit.CraftLootTable
 import org.bukkit.craftbukkit.CraftRegistry
-import org.bukkit.craftbukkit.CraftServer
 import org.bukkit.craftbukkit.CraftWorld
 import org.bukkit.craftbukkit.block.CraftBlock
+import org.bukkit.craftbukkit.block.CraftBlockEntityState
+import org.bukkit.craftbukkit.block.data.CraftBlockData
+import org.bukkit.craftbukkit.damage.CraftDamageSource
 import org.bukkit.craftbukkit.entity.CraftEntity
 import org.bukkit.craftbukkit.entity.CraftLivingEntity
 import org.bukkit.craftbukkit.entity.CraftPlayer
@@ -61,6 +70,7 @@ import org.bukkit.entity.Entity
 import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Player
 import org.bukkit.inventory.*
+import org.bukkit.loot.LootTable
 import org.bukkit.persistence.PersistentDataContainer
 import java.lang.invoke.MethodHandle
 import java.lang.invoke.MethodHandles
@@ -71,10 +81,13 @@ import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.math.max
 import kotlin.math.min
 import com.mojang.datafixers.util.Pair as NmsPair
+import net.minecraft.util.Unit as NmsUnit
 import net.minecraft.world.entity.EquipmentSlot as NmsEquipmentSlot
 
 @Suppress("unused")
 object NmsAccessorImpl : NmsAccessor {
+
+    private val CONTEXT_KEY_SET_REGISTRY: BiMap<Identifier, ContextKeySet>
 
     // We use both the field and the handle because the handle will have significantly better performance
     // getting the field value but cannot be used for setting so we still need the raw field.
@@ -84,6 +97,11 @@ object NmsAccessorImpl : NmsAccessor {
 
     init {
         try {
+            val contextKeySetRegistryField = LootContextParamSets::class.java.getDeclaredField("REGISTRY")
+            contextKeySetRegistryField.isAccessible = true
+            @Suppress("UNCHECKED_CAST")
+            CONTEXT_KEY_SET_REGISTRY = contextKeySetRegistryField.get(null) as BiMap<Identifier, ContextKeySet>
+
             furnaceQuickCheckField = AbstractFurnaceBlockEntity::class.java.getDeclaredField("quickCheck")
             furnaceQuickCheckField.isAccessible = true
 
@@ -351,5 +369,32 @@ object NmsAccessorImpl : NmsAccessor {
             }
         }
         return nmsStack.componentsPatch.entrySet().map { PaperDataComponentType.minecraftToBukkit(it.key) }
+    }
+
+    override fun getRandomItems(world: World, contextSet: NamespacedKey, lootTable: LootTable, optionalRandomLootSeed: Long?, lootContext: LootTableResultBuilder): Collection<ItemStack> {
+        val contextParamSet = CONTEXT_KEY_SET_REGISTRY[CraftNamespacedKey.toMinecraft(contextSet)] ?: throw IllegalArgumentException("Invalid context set $contextSet")
+        val nmsTable = (lootTable as CraftLootTable).handle
+        val lootParams = LootParams.Builder((world as CraftWorld).handle)
+            .withOptionalParameter(LootContextParams.THIS_ENTITY, lootContext.thisEntity?.let { (it as CraftEntity).handle })
+            .withOptionalParameter(LootContextParams.INTERACTING_ENTITY, lootContext.interactingEntity?.let { (it as CraftEntity).handle })
+            .withOptionalParameter(LootContextParams.TARGET_ENTITY, lootContext.targetEntity?.let { (it as CraftEntity).handle })
+            .withOptionalParameter(LootContextParams.LAST_DAMAGE_PLAYER, lootContext.lastDamagePlayer?.let { (it as CraftPlayer).handle })
+            .withOptionalParameter(LootContextParams.DAMAGE_SOURCE, lootContext.damageSource?.let { (it as CraftDamageSource).handle })
+            .withOptionalParameter(LootContextParams.ATTACKING_ENTITY, lootContext.attackingEntity?.let { (it as CraftEntity).handle })
+            .withOptionalParameter(LootContextParams.DIRECT_ATTACKING_ENTITY, lootContext.directAttackingEntity?.let { (it as CraftEntity).handle })
+            .withOptionalParameter(LootContextParams.ORIGIN, lootContext.origin?.let { Vec3(it.x, it.y, it.z) })
+            .withOptionalParameter(LootContextParams.BLOCK_STATE, lootContext.blockData?.let { (it as CraftBlockData).state })
+            .withOptionalParameter(LootContextParams.BLOCK_ENTITY, lootContext.blockState?.let { (it as? CraftBlockEntityState<*>)?.blockEntity })
+            .withOptionalParameter(LootContextParams.TOOL, lootContext.tool?.let { (it as CraftItemStack).handle })
+            .withOptionalParameter(LootContextParams.EXPLOSION_RADIUS, lootContext.explosionRadius)
+            .withOptionalParameter(LootContextParams.ENCHANTMENT_LEVEL, lootContext.enchantmentLevel)
+            .withOptionalParameter(LootContextParams.ENCHANTMENT_ACTIVE, lootContext.enchantmentActive)
+            .withOptionalParameter(LootContextParams.ADDITIONAL_COST_COMPONENT_ALLOWED, lootContext.additionalCostComponentAllowed?.let { NmsUnit.INSTANCE })
+            .create(contextParamSet)
+        return if (optionalRandomLootSeed != null) {
+            nmsTable.getRandomItems(lootParams, optionalRandomLootSeed)
+        } else {
+            nmsTable.getRandomItems(lootParams)
+        }.map { it.asBukkitMirror() }
     }
 }
