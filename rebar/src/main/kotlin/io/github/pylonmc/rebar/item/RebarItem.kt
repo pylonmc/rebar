@@ -4,7 +4,6 @@ import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.block.RebarBlock
 import io.github.pylonmc.rebar.block.context.BlockCreateContext
 import io.github.pylonmc.rebar.config.ConfigSection
-import io.github.pylonmc.rebar.config.RebarConfig
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.entity.RebarEntity
@@ -202,6 +201,13 @@ open class RebarItem(val stack: ItemStack) : Keyed {
             val schema = RebarItemSchema.fromStack(stack) ?: return false
             return schema.isType(clazz)
         }
+
+        /**
+         * Checks if [stack] is a Rebar item castable to [T].
+         */
+        @JvmSynthetic
+        @JvmName("isRebarItemReified")
+        inline fun <reified T> isRebarItem(stack: ItemStack?): Boolean = isRebarItem(stack, T::class.java)
 
         /**
          * Checks if [stack] is a Rebar item with the id [key].

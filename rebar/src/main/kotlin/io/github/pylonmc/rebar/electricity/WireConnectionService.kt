@@ -1,18 +1,24 @@
 package io.github.pylonmc.rebar.electricity
 
+import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.block.BlockStorage
 import io.github.pylonmc.rebar.block.interfaces.ElectricRebarBlock
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.electricity.nodes.ElectricNode
 import io.github.pylonmc.rebar.entity.display.ItemDisplayBuilder
-import io.github.pylonmc.rebar.entity.display.transform.TransformBuilder
+import io.github.pylonmc.rebar.entity.display.transform.LineBuilder
 import io.github.pylonmc.rebar.event.RebarBlockBreakEvent
 import io.github.pylonmc.rebar.i18n.RebarArgument
 import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
 import io.github.pylonmc.rebar.item.interfaces.WireRebarItem
 import io.github.pylonmc.rebar.registry.RebarRegistry
+import io.github.pylonmc.rebar.util.minus
 import io.github.pylonmc.rebar.util.rebarKey
+import io.papermc.paper.event.player.PlayerInventorySlotChangeEvent
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import org.bukkit.Bukkit
@@ -26,12 +32,17 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.entity.PlayerDeathEvent
-import org.bukkit.event.player.*
+import org.bukkit.event.player.PlayerInteractEntityEvent
+import org.bukkit.event.player.PlayerItemHeldEvent
+import org.bukkit.event.player.PlayerMoveEvent
+import org.bukkit.event.player.PlayerQuitEvent
+import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
 import org.joml.Matrix4f
 import java.util.*
 import kotlin.math.ceil
 import kotlin.math.min
+import kotlin.time.Duration.Companion.seconds
 
 internal object WireConnectionService : Listener {
 
@@ -40,6 +51,8 @@ internal object WireConnectionService : Listener {
     private val CONNECTING_KEY = rebarKey("connecting")
     private val CONNECTING_NODE_KEY = rebarKey("connecting_node")
     private val WIRE_TYPE_KEY = rebarKey("wire_type")
+
+    private val messageTasks = mutableMapOf<UUID, Job>()
 
     fun addInteraction(interaction: Interaction, node: ElectricNode) {
         interactions[interaction] = node
@@ -57,86 +70,35 @@ internal object WireConnectionService : Listener {
         val thisLocation = locations[thisNode] ?: return
         val thisBlock = BlockStorage.getAsOrThrow<ElectricRebarBlock>(thisNode.block)
         val player = event.player
-        val playerPdc = player.persistentDataContainer
         val playerInv = player.inventory
 
         val connectingEntity = player.connectingEntity
         if (connectingEntity == null) {
-            if (RebarItem.fromStack(playerInv.getItem(event.hand)) !is WireRebarItem) {
-                player.sendMessage(Component.translatable("rebar.message.electricity.need_wire"))
-                return
+            // Player is not currently connecting any wires
+            if (startConnection(player, event.hand, thisNode, thisBlock)) {
+                event.isCancelled = true
+                player.swingHand(event.hand)
             }
-
-            val existingConnection = thisNode.connections.firstOrNull {
-                val node = ElectricityManager.getNodeById(it) ?: return@firstOrNull false
-                thisBlock.isHeldEntityPresent(getConnectionName(thisNode, node))
-            }?.let(ElectricityManager::getNodeById)
-
-            val playerLocation = player.eyeLocation.subtract(0.0, 0.5, 0.0)
-            val (wireItem, node) = if (existingConnection != null) {
-                val wireEntity =
-                    thisBlock.getHeldEntityOrThrow(getConnectionName(thisNode, existingConnection)) as ItemDisplay
-                val wireType = RebarRegistry.ITEMS.getOrThrow(
-                    wireEntity.persistentDataContainer.get(
-                        WIRE_TYPE_KEY,
-                        RebarSerializers.NAMESPACED_KEY
-                    )!!
-                )
-                val wireItem = wireType.createNewItemStack()
-
-                if (player.gameMode != GameMode.CREATIVE) {
-                    // Give the player the wire items back, dropping any excess on the ground
-                    val mainHandItem = playerInv.itemInMainHand
-
-                    var amount = ceil(locations[existingConnection]!!.distance(thisLocation)).toInt()
-                    val takenAmount = min(amount, wireItem.maxStackSize)
-                    playerInv.setItemInMainHand(wireItem.asQuantity(takenAmount))
-                    amount -= takenAmount
-
-                    val noFit = mutableListOf<ItemStack>()
-                    while (amount > 0) {
-                        val takenAmount = min(amount, wireItem.maxStackSize)
-                        val excess = playerInv.addItem(wireItem.asQuantity(takenAmount))
-                        noFit.addAll(excess.values)
-                        amount -= takenAmount
-                    }
-                    noFit.addAll(playerInv.addItem(mainHandItem).values)
-
-                    for (item in noFit) {
-                        player.world.dropItem(player.location, item)
-                    }
-                }
-
-                thisNode.disconnectFrom(existingConnection)
-                wireItem to existingConnection
-            } else {
-                playerInv.getItem(event.hand) to thisNode
-            }
-
-            val wire = RebarItem.from<WireRebarItem>(wireItem) ?: return
-            val otherEnd = locations[node] ?: return
-            val display = ItemDisplayBuilder()
-                .transformation(getDisplayTransform(otherEnd, playerLocation))
-                .material(wire.displayMaterial)
-                .build(getMidpoint(otherEnd, playerLocation))
-            display.persistentDataContainer.set(CONNECTING_NODE_KEY, RebarSerializers.UUID, node.id)
-            playerPdc.set(CONNECTING_KEY, RebarSerializers.UUID, display.uniqueId)
-            checkCanRunWire(player, node, playerLocation)
-            event.isCancelled = true
             return
         }
 
+        // Player has right clicked a port while connecting a wire, so we will attempt to connect the wire to this port
         event.isCancelled = true
+        player.swingHand(event.hand)
 
         val connectingNodeId =
             connectingEntity.persistentDataContainer.get(CONNECTING_NODE_KEY, RebarSerializers.UUID) ?: return
+
+        // The node the wire is connected to
         val connectingNode = ElectricityManager.getNodeById(connectingNodeId) ?: return
         if (connectingNode == thisNode) {
+            // Player has right clicked the same port they started connecting from, so we will cancel the connection
             deleteConnecting(player)
             return
         }
 
         if (connectingNode.isConnectedTo(thisNode)) {
+            // If the two ports are already connected, we will disconnect them instead of connecting them
             deleteConnecting(player)
             connectingNode.disconnectFrom(thisNode)
             return
@@ -148,13 +110,15 @@ internal object WireConnectionService : Listener {
         val wireItem = playerInv.getItem(event.hand)
         val wire = RebarItem.from<WireRebarItem>(wireItem) ?: return
         connectingNode.connect(thisNode)
+
         ElectricNetwork.Edge(thisNode, connectingNode).powerLimit = wire.maxPower
         ElectricNetwork.Edge(connectingNode, thisNode).powerLimit = wire.maxPower
 
+        // Move it so that it'll connect the two ports
         val connectingLocation = locations[connectingNode] ?: return
-        connectingEntity.setTransformationMatrix(getDisplayTransform(connectingLocation, thisLocation))
-        connectingEntity.teleportAsync(getMidpoint(connectingLocation, thisLocation))
+        connectingEntity.setTransformationMatrix(getDisplayTransform(connectingLocation, thisLocation, connectingEntity.location))
 
+        // Kinda cursed solution: make both blocks own the same entity so that it will be removed when either block is broken
         val connectingBlock = BlockStorage.getAsOrThrow<ElectricRebarBlock>(connectingNode.block)
         thisBlock.addEntity(getConnectionName(thisNode, connectingNode), connectingEntity)
         connectingBlock.addEntity(getConnectionName(connectingNode, thisNode), connectingEntity)
@@ -167,6 +131,7 @@ internal object WireConnectionService : Listener {
         player.persistentDataContainer.remove(CONNECTING_KEY)
 
         if (player.gameMode != GameMode.CREATIVE) {
+            // Remove the wire items from the player's inventory
             var remaining = ceil(connectingLocation.distance(thisLocation)).toInt()
             while (remaining > 0) {
                 for (i in playerInv.contents.indices) {
@@ -181,10 +146,88 @@ internal object WireConnectionService : Listener {
         }
     }
 
+    private fun startConnection(player: Player, hand: EquipmentSlot, thisNode: ElectricNode, thisBlock: ElectricRebarBlock): Boolean {
+        val playerInv = player.inventory
+        val thisLocation = locations[thisNode]!!
+
+        val existingConnection = thisNode.connections.firstOrNull {
+            val node = ElectricityManager.getNodeById(it) ?: return@firstOrNull false
+            thisBlock.isHeldEntityPresent(getConnectionName(thisNode, node))
+        }?.let(ElectricityManager::getNodeById)
+
+        val playerLocation = player.eyeLocation.subtract(0.0, 0.5, 0.0)
+        val (wireItem, node) = if (existingConnection != null) {
+            // Clicked a node that is already connected to another node, so we will disconnect it and give the player the wire items back
+            val wireEntity =
+                thisBlock.getHeldEntityOrThrow(getConnectionName(thisNode, existingConnection)) as ItemDisplay
+            val wireType = RebarRegistry.ITEMS.getOrThrow(
+                wireEntity.persistentDataContainer.get(
+                    WIRE_TYPE_KEY,
+                    RebarSerializers.NAMESPACED_KEY
+                )!!
+            )
+            val wireItem = wireType.createNewItemStack()
+
+            if (player.gameMode != GameMode.CREATIVE) {
+                // Give the player the wire items back, dropping any excess on the ground
+                val mainHandItem = playerInv.itemInMainHand
+
+                var amount = ceil(locations[existingConnection]!!.distance(thisLocation)).toInt()
+                val takenAmount = min(amount, wireItem.maxStackSize)
+                playerInv.setItemInMainHand(wireItem.asQuantity(takenAmount))
+                amount -= takenAmount
+
+                val noFit = mutableListOf<ItemStack>()
+                while (amount > 0) {
+                    val takenAmount = min(amount, wireItem.maxStackSize)
+                    val excess = playerInv.addItem(wireItem.asQuantity(takenAmount))
+                    noFit.addAll(excess.values)
+                    amount -= takenAmount
+                }
+                noFit.addAll(playerInv.addItem(mainHandItem).values)
+
+                for (item in noFit) {
+                    player.world.dropItem(player.location, item)
+                }
+            }
+
+            thisNode.disconnectFrom(existingConnection)
+            wireItem to existingConnection
+        } else {
+            // Clicked a node that is not connected to another node, so we will start a new connection
+            val handItem = playerInv.getItem(hand)
+            if (!RebarItem.isRebarItem<WireRebarItem>(handItem)) {
+                player.sendMessage(Component.translatable("rebar.message.electricity.need_wire"))
+                return false
+            }
+            handItem to thisNode
+        }
+
+        val wire = RebarItem.from<WireRebarItem>(wireItem) ?: return false
+        val otherEnd = locations[node] ?: return false
+        val display = ItemDisplayBuilder()
+            .transformation(getDisplayTransform(otherEnd, playerLocation, otherEnd))
+            .material(wire.displayMaterial)
+            .build(otherEnd)
+        display.persistentDataContainer.set(CONNECTING_NODE_KEY, RebarSerializers.UUID, node.id)
+        player.persistentDataContainer.set(CONNECTING_KEY, RebarSerializers.UUID, display.uniqueId)
+        messageTasks[player.uniqueId] = Rebar.scope.launch {
+            while (true) {
+                checkCanRunWire(player, node, player.location)
+                delay(1.seconds) // resend every second no matter when the player moves
+            }
+        }
+        return true
+    }
+
     private fun getConnectionName(from: ElectricNode, to: ElectricNode): String {
         return "connection_${from.id}->${to.id}"
     }
 
+    /**
+     * Returns true if there are no blocks between the two locations, and the player has enough wire items to connect them.
+     * If there are blocks in the way, or the player does not have enough wire items, a message will be sent to the player.
+     */
     private fun checkCanRunWire(
         player: Player,
         connectingFromNode: ElectricNode,
@@ -205,6 +248,7 @@ internal object WireConnectionService : Listener {
             player.sendActionBar(Component.translatable("rebar.message.electricity.blocking"))
             return false
         }
+
         val wireItem = player.inventory.itemInMainHand
         check(RebarItem.fromStack(wireItem) is WireRebarItem) { "Held item must be a wire" }
         val totalWires = player.inventory.sumOf { if (it != null && it.isSimilar(wireItem)) it.amount else 0 }
@@ -221,7 +265,39 @@ internal object WireConnectionService : Listener {
                     )
                 )
         )
+
         return hasEnough
+    }
+
+    private fun deleteConnecting(player: Player) {
+        player.connectingEntity?.remove()
+        player.persistentDataContainer.remove(CONNECTING_KEY)
+        player.sendActionBar(Component.empty())
+        messageTasks.remove(player.uniqueId)?.cancel()
+    }
+
+    private fun updateWireMaterial(player: Player, item: WireRebarItem) {
+        val connectingEntity = player.connectingEntity ?: return
+        val material = item.displayMaterial
+        connectingEntity.setItemStack(ItemStackBuilder.of(material).addCustomModelDataString("wire").build())
+    }
+
+    /**
+     * The wire display entities a player is currently connecting
+     */
+    private val Player.connectingEntity: ItemDisplay?
+        get() {
+            val connectingEntityId = persistentDataContainer.get(CONNECTING_KEY, RebarSerializers.UUID) ?: return null
+            return Bukkit.getEntity(connectingEntityId) as? ItemDisplay
+        }
+
+    private fun getDisplayTransform(from: Location, to: Location, entityLocation: Location): Matrix4f {
+        return LineBuilder()
+            .from(from.toVector() - entityLocation.toVector())
+            .to(to.toVector() - entityLocation.toVector())
+            .thickness(0.05)
+            .build()
+            .buildForItemDisplay()
     }
 
     @EventHandler(priority = EventPriority.LOW)
@@ -247,11 +323,13 @@ internal object WireConnectionService : Listener {
             ?.let(ElectricityManager::getNodeById) ?: return
         val connectingLocation = locations[connectingNode] ?: return
         val playerLocation = player.eyeLocation.subtract(0.0, 0.5, 0.0)
-        connectingEntity.teleportDuration = 1
+        if (connectingLocation.world != playerLocation.world) {
+            deleteConnecting(player)
+            return
+        }
         connectingEntity.interpolationDelay = 0
         connectingEntity.interpolationDuration = 1
-        connectingEntity.setTransformationMatrix(getDisplayTransform(connectingLocation, playerLocation))
-        connectingEntity.teleportAsync(getMidpoint(connectingLocation, playerLocation))
+        connectingEntity.setTransformationMatrix(getDisplayTransform(connectingLocation, playerLocation, connectingEntity.location))
         checkCanRunWire(player, connectingNode, playerLocation)
     }
 
@@ -282,43 +360,15 @@ internal object WireConnectionService : Listener {
     }
 
     @EventHandler
-    private fun onPlayerSwap(event: PlayerSwapHandItemsEvent) {
+    private fun onPlayerInventorySlotChange(event: PlayerInventorySlotChangeEvent) {
         val player = event.player
+        if (player.inventory.heldItemSlot != event.slot) return
         if (!player.persistentDataContainer.has(CONNECTING_KEY)) return
-        val item = RebarItem.fromStack(event.mainHandItem)
+        val item = RebarItem.fromStack(event.newItemStack)
         if (item !is WireRebarItem) {
             deleteConnecting(player)
         } else {
             updateWireMaterial(player, item)
         }
-    }
-
-    private fun deleteConnecting(player: Player) {
-        player.connectingEntity?.remove()
-        player.persistentDataContainer.remove(CONNECTING_KEY)
-        player.sendActionBar(Component.empty())
-    }
-
-    private fun updateWireMaterial(player: Player, item: WireRebarItem) {
-        val connectingEntity = player.connectingEntity ?: return
-        val material = item.displayMaterial
-        connectingEntity.setItemStack(ItemStackBuilder.of(material).addCustomModelDataString("wire").build())
-    }
-
-    private val Player.connectingEntity: ItemDisplay?
-        get() {
-            val connectingEntityId = persistentDataContainer.get(CONNECTING_KEY, RebarSerializers.UUID) ?: return null
-            return Bukkit.getEntity(connectingEntityId) as? ItemDisplay
-        }
-
-    private fun getDisplayTransform(from: Location, to: Location): Matrix4f {
-        return TransformBuilder()
-            .lookAlong(from, to)
-            .scale(0.05, 0.05, from.distance(to))
-            .buildForItemDisplay()
-    }
-
-    private fun getMidpoint(a: Location, b: Location): Location {
-        return a.clone().add(b).multiply(0.5)
     }
 }
