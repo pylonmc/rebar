@@ -142,6 +142,8 @@ sealed class ElectricNode(
                 pdc.set(BLOCK_KEY, RebarSerializers.BLOCK_POSITION, complex.block)
                 pdc.set(CONNECTIONS_KEY, CONNECTIONS_TYPE, complex.internalConnections)
 
+                complex.serialize(pdc)
+
                 return pdc
             }
 
