@@ -841,3 +841,9 @@ fun VirtualInventory.unsafeSubtract(slot: Int, amount: Int) {
     if (item.isEmpty) unsafeItems[slot] = null
     notifyWindows(slot)
 }
+
+fun ItemStack.isBroken(): Boolean {
+    val maxDamage = getData(DataComponentTypes.MAX_DAMAGE) ?: return false
+    val damage = getData(DataComponentTypes.DAMAGE) ?: return false
+    return damage >= maxDamage && !hasData(DataComponentTypes.UNBREAKABLE);
+}
