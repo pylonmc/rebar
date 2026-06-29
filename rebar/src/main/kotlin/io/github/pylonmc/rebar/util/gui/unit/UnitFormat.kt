@@ -119,12 +119,12 @@ class UnitFormat @JvmOverloads constructor(
         fun ignorePrefixes(prefixes: Collection<MetricPrefix>) = apply { badPrefixes.addAll(prefixes) }
 
         /**
-         * [selectPrefixAndRescale] will not use any of these prefixes when automatically selecting a prefix.
+         * [selectPrefixAndRescale] will not use any of these [prefixes] when automatically selecting a prefix.
          */
         fun ignorePrefixes(vararg prefixes: MetricPrefix) = apply { badPrefixes.addAll(prefixes) }
 
         /**
-         * Ignores the prefixes in [MetricPrefix.COMMONLY_UNUSED_PREFIXES]
+         * Same as [ignorePrefixes] but for [MetricPrefix.COMMONLY_UNUSED_PREFIXES]
          */
         fun ignoreCommonlyUnusedPrefixes() = ignorePrefixes(MetricPrefix.COMMONLY_UNUSED_PREFIXES)
 
@@ -148,7 +148,7 @@ class UnitFormat @JvmOverloads constructor(
                 val exponent = value.precision() - value.scale() - if (value.signum() == 0) 0 else 1
                 var prefix = MetricPrefix.entries.firstOrNull { it.scale <= exponent } ?: defaultPrefix
                 while (prefix in badPrefixes) {
-                    prefix = MetricPrefix.entries[MetricPrefix.entries.indexOf(prefix) + 1]
+                    prefix = MetricPrefix.entries.getOrNull(MetricPrefix.entries.indexOf(prefix) + 1) ?: break
                 }
                 usedValue = usedValue.movePointRight(prefix.scale)
                 prefix
