@@ -10,6 +10,7 @@ import net.kyori.adventure.text.minimessage.translation.Argument.tag
 import org.bukkit.Material
 import org.bukkit.Tag
 import org.bukkit.inventory.ItemStack
+import org.jetbrains.annotations.Contract
 import kotlin.collections.associate
 import kotlin.collections.emptyMap
 import kotlin.to
@@ -50,6 +51,7 @@ sealed interface RecipeInput {
             representativeItems.first()
         }
 
+        @Contract("null -> false")
         fun matches(itemStack: ItemStack?): Boolean {
             if (itemStack == null || itemStack.amount < amount) return false
             return matchesIgnoringAmount(itemStack)
