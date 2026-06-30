@@ -22,7 +22,9 @@ import org.jetbrains.annotations.ApiStatus
 
 @ApiStatus.Internal
 class PlayerTranslationHandler internal constructor(private val player: Player) {
-    fun handleItem(stack: ItemStack) {
+    fun handleItem(stack: ItemStack?) {
+        if (stack == null || stack.isEmpty) return
+
         val rebarItem = RebarItem.fromStack(stack)
         val rebarFluid = RebarFluid.fromStack(stack)
         val placeholders = rebarItem?.getPlaceholders().orEmpty()
@@ -56,7 +58,8 @@ class PlayerTranslationHandler internal constructor(private val player: Player) 
         stack.editData(DataComponentTypes.CHARGED_PROJECTILES) { chargedProjectiles ->
             val translated = chargedProjectiles.projectiles().map { projectile ->
                 handleItem(projectile)
-                projectile
+                @Suppress("USELESS_ELVIS") // For some reason paper *does* pass null here instead of empty
+                projectile ?: ItemStack.empty()
             }
             ChargedProjectiles.chargedProjectiles(translated)
         }
@@ -64,7 +67,8 @@ class PlayerTranslationHandler internal constructor(private val player: Player) 
         stack.editData(DataComponentTypes.CONTAINER) { container ->
             val translated = container.contents().map { item ->
                 handleItem(item)
-                item
+                @Suppress("USELESS_ELVIS") // For some reason paper *does* pass null here instead of empty
+                item ?: ItemStack.empty()
             }
             ItemContainerContents.containerContents(translated)
         }

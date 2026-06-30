@@ -172,8 +172,16 @@ class Waila private constructor(
         this.targetEntity = null
         this.targetBlock = null
 
-        rayTraceResult?.hitEntity?.let { entity -> this.targetEntity = entity.uniqueId }
-        rayTraceResult?.hitBlock?.let { block -> this.targetBlock = block.position }
+        rayTraceResult?.hitEntity?.let { entity ->
+            if (entity.isValid) {
+                this.targetEntity = entity.uniqueId
+            }
+        }
+        rayTraceResult?.hitBlock?.let { block ->
+            if (!block.isEmpty) { // Not sure this is possible, but just in case
+                this.targetBlock = block.position
+            }
+        }
 
         updateContents()
     }

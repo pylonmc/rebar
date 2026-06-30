@@ -1,3 +1,10 @@
+# If set to true, Rebar will attempt to start even if the server is not running the expected Minecraft version
+# It is recommended to take a backup before enabling this, just in case
+bypass-version-check: false
+
+# The language to fall back to if a language entry is not found for the user's language
+default-language: en
+
 rebar-guide:
   # Should players be given the Rebar guide book when they first join?
   give-on-first-join: true

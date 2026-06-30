@@ -6,6 +6,7 @@ import io.github.pylonmc.rebar.block.context.BlockCreateContext
 import io.github.pylonmc.rebar.config.RebarConfig
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.event.PreRebarBlockPlaceEvent
+import io.github.pylonmc.rebar.item.interfaces.VanillaBlockItem
 import io.github.pylonmc.rebar.item.research.Research
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.registry.RegistryHandler
@@ -63,16 +64,14 @@ class RebarItemSchema @JvmOverloads internal constructor(
     val research: Research?
         get() = RebarRegistry.RESEARCHES.find { key in it.unlocks }
 
-    val researchBypassPermission = "rebar.item.${key.namespace}.${key.key}"
-
     @JvmSynthetic
     internal val loadConstructor: MethodHandle = itemClass.findConstructorMatching(ItemStack::class.java)
         ?: throw NoSuchMethodException("Item '$key' (${itemClass.simpleName}) is missing a load constructor (ItemStack)")
 
     fun prePlace(context: BlockCreateContext): Boolean {
-        if (rebarBlockKey == null) {
-            return false
-        }
+        if (isType(VanillaBlockItem::class.java)) return true
+        else if (rebarBlockKey == null) return false
+
         val blockSchema = RebarRegistry.BLOCKS[rebarBlockKey]
         check(blockSchema != null) { "Block $rebarBlockKey not found" }
         check(template.type == blockSchema.material) {
@@ -90,6 +89,7 @@ class RebarItemSchema @JvmOverloads internal constructor(
      * Does nothing if no block is associated with this item.
      */
     fun place(context: BlockCreateContext): RebarBlock? {
+        if (isType(VanillaBlockItem::class.java)) return null
         check(rebarBlockKey != null) { "Item $key does not place a block" }
         val blockSchema = RebarRegistry.BLOCKS[rebarBlockKey]
         check(blockSchema != null) { "Block $rebarBlockKey not found" }

@@ -18,7 +18,9 @@ import org.bukkit.event.Listener
 import org.bukkit.event.server.PluginDisableEvent
 import org.bukkit.plugin.java.JavaPlugin
 import org.jetbrains.annotations.ApiStatus
+import java.io.File
 import java.util.Locale
+import java.util.jar.JarFile
 
 /**
  * Welcome to the place where it all begins: the Rebar addon!
@@ -31,14 +33,16 @@ interface RebarAddon : Keyed {
     val javaPlugin: JavaPlugin
 
     /**
-     * The set of [Locale]s this addon has translations for.
-     */
-    val languages: Set<Locale>
-
-    /**
      * The material to represent this addon in menus.
      */
     val material: Material
+
+    /**
+     * The language to fall back to if a language entry is not found for the user's language.
+     *
+     * It is recommended to make this configurable in your addon's config.yml
+     */
+    val defaultLanguage: Locale
 
     /**
      * The name used to represent this addon in the guide and other places.
@@ -77,7 +81,7 @@ interface RebarAddon : Keyed {
 
         RebarRegistry.ADDONS.register(this)
         if (!suppressAddonNameWarning) {
-            for (locale in languages) {
+            for (locale in translator.languages) {
                 if (!translator.canTranslate("${key.namespace}.addon", locale)) {
                     Rebar.logger.warning("${key.namespace} is missing the 'addon' translation key for ${locale.displayName}")
                 }

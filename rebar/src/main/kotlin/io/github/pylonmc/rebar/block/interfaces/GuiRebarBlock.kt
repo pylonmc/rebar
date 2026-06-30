@@ -34,21 +34,42 @@ import java.util.*
 interface GuiRebarBlock : NoVanillaInventoryRebarBlock, Keyed {
 
     /**
-     * Returns the block's GUI. Called when a block is created.
-     */
-    fun createGui(): Gui
-
-    /**
      * The title of the GUI
      */
     val guiTitle: Component
         get() = (this as RebarBlock).nameTranslationKey
 
-    fun openWindow(player: Player) {
-        Window.builder()
-            .setUpperGui(guiBlocks[this] ?: error("GUI not found for block $key"))
-            .setTitle(guiTitle)
-            .open(player)
+    /**
+     * Returns the block's GUI. Called when a block is created.
+     */
+    fun createGui(): Gui
+
+    /**
+     * Refreshes the stores GUI by calling [createGui] again.
+     *
+     * If players have the GUI already open, it will be closed and then re-opened with the
+     * new GUI manually.
+     *
+     * Strongly consider [updating individual items](https://docs.xenondevs.xyz/invui/item/)
+     * before you use this method, to prevent having to constantly close and re-open windows.
+     */
+    fun refreshGui() {
+        val oldGui = guiBlocks[this]
+        val players = oldGui?.windows?.map { it.viewer } ?: emptyList()
+        oldGui?.windows?.forEach { it.close() }
+        guiBlocks[this] = createGui()
+        for (player in players) {
+            open(player)
+        }
+    }
+
+    fun open(player: Player) {
+            Window.builder()
+                .setUpperGui(guiBlocks[this]!!)
+                .setTitle(guiTitle)
+                .setViewer(player)
+                .build()
+                .open()
     }
 
     companion object : Listener {
@@ -83,7 +104,7 @@ interface GuiRebarBlock : NoVanillaInventoryRebarBlock, Keyed {
             event.setUseInteractedBlock(Event.Result.DENY)
             event.setUseItemInHand(Event.Result.DENY)
 
-            guiBlock.openWindow(event.player)
+            guiBlock.open(event.player)
         }
 
         @EventHandler

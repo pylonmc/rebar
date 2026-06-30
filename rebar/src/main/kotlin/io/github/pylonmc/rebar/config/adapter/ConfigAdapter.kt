@@ -10,6 +10,7 @@ import org.bukkit.NamespacedKey
 import org.bukkit.Registry
 import org.joml.*
 import java.lang.reflect.Type
+import java.util.Locale
 
 interface ConfigAdapter<T> {
 
@@ -48,6 +49,7 @@ interface ConfigAdapter<T> {
         @JvmField val ITEM_TYPE_WRAPPER = KEYED.fromGetter { ItemTypeWrapper(it) }
         @JvmField val ITEM_STACK = ItemStackConfigAdapter
         @JvmField val BLOCK_DATA = ConfigAdapter { Bukkit.createBlockData(STRING.convert(it)) }
+        @JvmField val LOCALE = ConfigAdapter { Locale.of(STRING.convert(it)) }
 
          @JvmField val VECTOR_2I = ConfigAdapter {
             val list = (it as List<*>).filterIsInstance<Int>()

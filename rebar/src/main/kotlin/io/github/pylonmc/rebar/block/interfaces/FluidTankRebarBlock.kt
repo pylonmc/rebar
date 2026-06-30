@@ -62,7 +62,7 @@ interface FluidTankRebarBlock : FluidRebarBlock {
             get() = fluidData.capacity - fluidData.amount
 
     /**
-     * Sets the type of fluid in the fluid tank
+     * Sets the type of fluid in the fluid tank.
      */
     fun setFluidType(fluid: RebarFluid?) {
         fluidData.fluid = fluid

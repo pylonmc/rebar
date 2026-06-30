@@ -45,6 +45,7 @@ interface FluidBufferRebarBlock : FluidRebarBlock {
      * @param output whether this buffer can be taken from by fluid output points
      */
     fun createFluidBuffer(fluid: RebarFluid, capacity: Double, input: Boolean, output: Boolean) {
+        check(fluid !in fluidBuffers) { "Fluid $fluid already has a buffer" }
         fluidBuffers[fluid] = FluidBufferData(0.0, capacity, input, output)
     }
 
