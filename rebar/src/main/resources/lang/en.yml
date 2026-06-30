@@ -113,8 +113,7 @@ message:
     type-disabled: "<red>This server no longer permits the your previously set %type% WAILA display type, it has been reset to default"
 
   electricity:
-    default: "<insn>Right click a port</insn> to connect, <insn>stop holding a wire</insn> to cancel <gray>(%wires%/%total%)"
-    blocking: "<red>There is a block in the way of this connection"
+    wiring: "<insn>Right click a port</insn> to connect, <insn>stop holding a wire</insn> to cancel <gray>(%wires%/%total%)"
     need_wire: "<red>You need to be holding a wire"
 
 gui:

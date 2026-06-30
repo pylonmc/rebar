@@ -22,7 +22,6 @@ import kotlinx.coroutines.launch
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import org.bukkit.Bukkit
-import org.bukkit.FluidCollisionMode
 import org.bukkit.GameMode
 import org.bukkit.Location
 import org.bukkit.entity.Interaction
@@ -110,7 +109,7 @@ internal object WireConnectionService : Listener {
             return
         }
 
-        if (!checkCanRunWire(player, connectingNode, thisLocation)) return
+        if (!checkCanRunWire(player, locations[connectingNode]!!, thisLocation)) return
         player.sendActionBar(Component.empty())
 
         val wireItem = playerInv.getItem(event.hand)
@@ -137,16 +136,9 @@ internal object WireConnectionService : Listener {
 
         val length = ceil(connectingLocation.distance(thisLocation)).toInt()
         connectingEntity.isPersistent = true
-        connectingEntity.persistentDataContainer.set(
-            WIRE_TYPE_KEY,
-            RebarSerializers.NAMESPACED_KEY,
-            (wire as RebarItem).key
-        )
-        connectingEntity.persistentDataContainer.set(
-            LENGTH_KEY,
-            RebarSerializers.INTEGER,
-            length
-        )
+        val pdc = connectingEntity.persistentDataContainer
+        pdc.set(WIRE_TYPE_KEY, RebarSerializers.NAMESPACED_KEY, (wire as RebarItem).key)
+        pdc.set(LENGTH_KEY, RebarSerializers.INTEGER, length)
 
         wiresConnecting.remove(connectingEntity)
         playersConnecting.remove(player.uniqueId)
@@ -232,7 +224,7 @@ internal object WireConnectionService : Listener {
         playersConnecting[player.uniqueId] = display
         messageTasks[player.uniqueId] = Rebar.scope.launch {
             while (true) {
-                checkCanRunWire(player, node, player.location)
+                checkCanRunWire(player, thisLocation, player.location)
                 delay(1.seconds) // resend every second no matter when the player moves
             }
         }
@@ -244,30 +236,14 @@ internal object WireConnectionService : Listener {
     }
 
     /**
-     * Returns true if there are no blocks between the two locations, and the player has enough wire items to connect them.
-     * If there are blocks in the way, or the player does not have enough wire items, a message will be sent to the player.
+     * Returns true if the player has enough wire items to connect them.
+     * If the player does not have enough wire items, a message will be sent to the player.
      */
     private fun checkCanRunWire(
         player: Player,
-        connectingFromNode: ElectricNode,
+        connectingFromLocation: Location,
         connectionLocation: Location
     ): Boolean {
-        val connectingFromLocation = locations[connectingFromNode] ?: return false
-        val direction = connectionLocation.toVector().subtract(connectingFromLocation.toVector()).normalize()
-        val startLocation = connectingFromLocation.clone().add(direction.multiply(0.1))
-        val endLocation = connectionLocation.clone().subtract(direction.multiply(0.1))
-        val rayTraceResult = startLocation.world.rayTraceBlocks(
-            startLocation,
-            direction,
-            startLocation.distance(endLocation),
-            FluidCollisionMode.ALWAYS,
-            true
-        )
-        if (rayTraceResult != null) {
-            player.sendActionBar(Component.translatable("rebar.message.electricity.blocking"))
-            return false
-        }
-
         val wireItem = player.inventory.itemInMainHand
         if (!RebarItem.isRebarItem<WireRebarItem>(wireItem)) return false
         val totalWires = wireItem.amount
@@ -275,7 +251,7 @@ internal object WireConnectionService : Listener {
         val hasEnough = neededWires <= totalWires || player.gameMode == GameMode.CREATIVE
         player.sendActionBar(
             Component.translatable(
-                "rebar.message.electricity.default",
+                "rebar.message.electricity.wiring",
                 RebarArgument.of(
                     "wires",
                     Component.text(neededWires).color(if (hasEnough) NamedTextColor.GREEN else NamedTextColor.RED)
@@ -350,7 +326,7 @@ internal object WireConnectionService : Listener {
                 connectingEntity.location
             )
         )
-        checkCanRunWire(player, connectingNode, playerLocation)
+        checkCanRunWire(player, connectingLocation, playerLocation)
     }
 
     @EventHandler
