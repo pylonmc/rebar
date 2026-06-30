@@ -27,7 +27,6 @@ import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -96,6 +95,7 @@ public class RebarTest extends JavaPlugin implements RebarAddon {
         tests.add(new MultipleProducerElectricNetworkTest());
         tests.add(new LimitedElectricNetworkTest());
         tests.add(new UnidirectionalElectricNetworkTest());
+        tests.add(new MergeElectricNetworkTest());
 
         return tests;
     }

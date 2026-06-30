@@ -10,7 +10,10 @@ import kotlin.collections.ArrayDeque
 
 object ElectricityManager {
 
-    private val networks = mutableSetOf<ElectricNetwork>()
+    private val _networks = mutableSetOf<ElectricNetwork>()
+
+    @get:JvmStatic
+    val networks: Set<ElectricNetwork> get() = _networks.toSet()
 
     private val nodes = mutableMapOf<UUID, ElectricNode>()
 
@@ -27,7 +30,7 @@ object ElectricityManager {
     @JvmStatic
     fun addNode(node: ElectricNode) {
         nodes[node.id] = node
-        networks.add(ElectricNetwork().also { it.addNode(node) })
+        _networks.add(ElectricNetwork().also { it.addNode(node) })
         mergeNetworks()
     }
 
@@ -59,7 +62,7 @@ object ElectricityManager {
     @JvmStatic
     @Deprecated("For testing purposes only")
     fun tick() {
-        for (network in networks) {
+        for (network in _networks) {
             network.tick()
         }
     }
@@ -67,9 +70,9 @@ object ElectricityManager {
     @JvmSynthetic
     internal fun refreshNetworks(vararg networks: ElectricNetwork) {
         for (network in networks.toSet()) {
-            this.networks.remove(network)
+            this._networks.remove(network)
             for (node in network.nodes) {
-                this.networks.add(ElectricNetwork().also { it.addNode(node) })
+                this._networks.add(ElectricNetwork().also { it.addNode(node) })
             }
         }
         mergeNetworks()
@@ -77,8 +80,8 @@ object ElectricityManager {
 
     @JvmSynthetic
     internal fun mergeNetworks() {
-        val candidates = ArrayDeque(networks)
-        networks.clear()
+        val candidates = ArrayDeque(_networks)
+        _networks.clear()
         while (candidates.isNotEmpty()) {
             var network = candidates.removeFirst()
             do {
@@ -94,11 +97,11 @@ object ElectricityManager {
                     }
                 }
             } while (merged)
-            networks.add(network)
+            _networks.add(network)
         }
     }
 
     @JvmSynthetic
     internal fun getNodeNetwork(node: ElectricNode): ElectricNetwork =
-        networks.find { it.isPartOfNetwork(node) } ?: error("Node ${node.id} is not part of any network")
+        _networks.find { it.isPartOfNetwork(node) } ?: error("Node ${node.id} is not part of any network")
 }
