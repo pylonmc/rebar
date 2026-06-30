@@ -15,6 +15,7 @@ import org.bukkit.Bukkit
 import org.bukkit.block.Block
 import org.bukkit.entity.Entity
 import org.bukkit.event.EventHandler
+import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.entity.EntityRemoveEvent
 import org.bukkit.persistence.PersistentDataContainer
@@ -174,7 +175,7 @@ interface EntityHolderRebarBlock {
             holders.remove(block)
         }
 
-        @EventHandler
+        @EventHandler(priority = EventPriority.HIGHEST) // remove entities after as many break handlers before as possible have run
         private fun onBreak(event: RebarBlockBreakEvent) {
             val block = event.rebarBlock
             if (block is EntityHolderRebarBlock) {
