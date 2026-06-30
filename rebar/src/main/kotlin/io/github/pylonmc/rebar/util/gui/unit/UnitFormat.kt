@@ -2,6 +2,7 @@ package io.github.pylonmc.rebar.util.gui.unit
 
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.ComponentLike
+import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.Style
 import net.kyori.adventure.text.format.TextColor
 import java.math.BigDecimal
@@ -77,6 +78,7 @@ class UnitFormat @JvmOverloads constructor(
         private var forceDecimalPlaces = false
         private var abbreviate = true
         private var unitStyle = defaultStyle
+        private var valueStyle = Style.empty()
         private var prefix: MetricPrefix? = defaultPrefix
         private val badPrefixes = EnumSet.noneOf(MetricPrefix::class.java)
 
@@ -108,6 +110,11 @@ class UnitFormat @JvmOverloads constructor(
          * Overrides the style of the unit.
          */
         fun unitStyle(style: Style) = apply { this.unitStyle = style }
+
+        /**
+         * Overrides the style of the value.
+         */
+        fun valueStyle(style: Style) = apply { this.valueStyle = style }
 
         /**
          * Overrides the default prefix (and adjusts the value shown accordingly).
@@ -153,7 +160,7 @@ class UnitFormat @JvmOverloads constructor(
 
             usedValue = usedValue.movePointLeft(usedPrefix.scale - defaultPrefix.scale)
 
-            val number = Component.text(usedValue.toPlainString())
+            val number = Component.text(usedValue.toPlainString()).style(valueStyle)
             var unit = Component.empty().style(unitStyle)
             unit = if (abbreviate && abbreviation != null) {
                 unit
@@ -165,7 +172,9 @@ class UnitFormat @JvmOverloads constructor(
                     .append(if (usedValue == BigDecimal.ONE) singular else plural)
             }
 
-            return number.append(Component.text(" ")).append(unit)
+            return number
+                .append(Component.text(" "))
+                .append(unit)
         }
     }
 

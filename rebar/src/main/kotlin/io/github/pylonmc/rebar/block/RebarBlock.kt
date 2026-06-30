@@ -182,7 +182,11 @@ open class RebarBlock private constructor(val block: Block) : WailaSupplier, Key
     open fun getBlockTextureProperties(): MutableMap<String, Pair<String, Int>> {
         val properties = mutableMapOf<String, Pair<String, Int>>()
         if (this is DirectionalRebarBlock) {
-            properties["facing"] = facing.name.lowercase() to IMMEDIATE_FACES.size
+            try {
+                properties["facing"] = facing.name.lowercase() to IMMEDIATE_FACES.size
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
         return properties
     }
