@@ -17,9 +17,8 @@ object ElectricityManager {
     init {
         Rebar.scope.launch {
             while (true) {
-                for (network in networks) {
-                    network.tick()
-                }
+                @Suppress("DEPRECATION")
+                tick()
                 delayTicks(RebarConfig.ELECTRICITY_TICK_INTERVAL.toLong())
             }
         }
@@ -42,6 +41,28 @@ object ElectricityManager {
 
     @JvmStatic
     fun getNodeById(id: UUID): ElectricNode? = nodes[id]
+
+    /**
+     * Only exposed for testing purposes
+     */
+    @JvmStatic
+    @Deprecated("For testing purposes only")
+    fun clear() {
+        for (node in nodes.values.toList()) {
+            removeNode(node)
+        }
+    }
+
+    /**
+     * Only exposed for testing purposes
+     */
+    @JvmStatic
+    @Deprecated("For testing purposes only")
+    fun tick() {
+        for (network in networks) {
+            network.tick()
+        }
+    }
 
     @JvmSynthetic
     internal fun refreshNetworks(vararg networks: ElectricNetwork) {

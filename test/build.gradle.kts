@@ -41,7 +41,9 @@ tasks.runServer {
     val runFolder = project.projectDir.resolve("run")
     val testsFailedFile = runFolder.resolve("tests-failed")
     doFirst {
-        runFolder.deleteRecursively()
+        if (!System.getenv("NO_DELETE_RUN").toBoolean()) {
+            runFolder.deleteRecursively()
+        }
         runFolder.mkdirs()
         runFolder.resolve("eula.txt").writeText("eula=true")
         testsFailedFile.delete()
@@ -50,6 +52,8 @@ tasks.runServer {
         pluginFolder.mkdirs()
         val archive = project(":rebar").tasks.shadowJar.map { it.archiveFile }.get().get().asFile
         archive.copyTo(pluginFolder.resolve(archive.name), overwrite = true)
+
+        runFolder.resolve("gametests").deleteRecursively()
     }
     maxHeapSize = "2G"
     minecraftVersion(minecraftVersion)
