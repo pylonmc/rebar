@@ -96,7 +96,7 @@ class ElectricNetwork {
         // If any consumer isn't getting enough power, we remove the one with the lowest requirement and try again,
         // until all remaining consumers are getting enough power, or we run out of consumers.
         while (powerConsumedByConsumers.any { (consumer, power) -> power < consumer.requiredPower }) {
-            validConsumers.remove(validConsumers.minBy { it.value }.key)
+            validConsumers.remove(validConsumers.maxBy { it.value }.key)
             powerConsumedByConsumers = roundRobinFill(
                 validConsumers,
                 totalPowerProduced
