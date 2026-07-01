@@ -29,7 +29,7 @@ class ElectricNetwork {
      */
     private var heuristics: Map<ElectricNode, Map<ElectricNode, Int>>? = null
 
-    private var snapshot: ConsumptionSnapshot? = null
+    private var snapshot: ConsumerSnapshot? = null
 
     fun addNode(node: ElectricNode) {
         nodeMap[node.id] = node
@@ -162,10 +162,10 @@ class ElectricNetwork {
             surplusPower[producer] = surplusPower[producer]!! + taken
         }
 
-        snapshot = ConsumptionSnapshot(surplusPower, disconnectedEdges, edgeLoads)
+        snapshot = ConsumerSnapshot(surplusPower, disconnectedEdges, edgeLoads)
     }
 
-    private data class ConsumptionSnapshot(
+    private data class ConsumerSnapshot(
         val surplusPower: Map<ElectricProducerNode, Double>,
         val disconnectedEdges: Set<Edge>,
         val edgeLoads: Map<Edge, Double>

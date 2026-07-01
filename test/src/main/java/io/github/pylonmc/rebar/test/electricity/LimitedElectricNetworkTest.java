@@ -6,6 +6,8 @@ import io.github.pylonmc.rebar.electricity.nodes.ElectricConnectorNode;
 import io.github.pylonmc.rebar.electricity.nodes.ElectricConsumerNode;
 import io.github.pylonmc.rebar.electricity.nodes.ElectricProducerNode;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 public class LimitedElectricNetworkTest extends ElectricityTest {
 
     @SuppressWarnings("deprecation")
@@ -23,17 +25,17 @@ public class LimitedElectricNetworkTest extends ElectricityTest {
         connector.connect(consumer);
         new ElectricNetwork.Edge(connector, consumer).setPowerLimit(5);
         new ElectricNetwork.Edge(consumer, connector).setPowerLimit(5);
-        assertConsumer(consumer).isNotPowered();
+        assertThat(consumer.isPowered()).isFalse();
 
         ElectricityManager.tick();
-        assertConsumer(consumer).isNotPowered();
+        assertThat(consumer.isPowered()).isFalse();
 
         producer.setPower(10);
         ElectricityManager.tick();
-        assertConsumer(consumer).isNotPowered();
+        assertThat(consumer.isPowered()).isFalse();
 
         producer.connect(consumer);
         ElectricityManager.tick();
-        assertConsumer(consumer).isPowered();
+        assertThat(consumer.isPowered()).isTrue();
     }
 }
