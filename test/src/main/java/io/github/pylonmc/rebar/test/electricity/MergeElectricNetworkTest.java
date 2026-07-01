@@ -11,10 +11,10 @@ public class MergeElectricNetworkTest extends ElectricityTest {
     protected void test() {
         ElectricityManager.clear();
 
-        ElectricConnectorNode node1 = new ElectricConnectorNode("", POSITION);
-        ElectricConnectorNode node2 = new ElectricConnectorNode("", POSITION);
-        ElectricConnectorNode node3 = new ElectricConnectorNode("", POSITION);
-        ElectricConnectorNode node4 = new ElectricConnectorNode("", POSITION);
+        ElectricConnectorNode node1 = new ElectricConnectorNode("1", POSITION);
+        ElectricConnectorNode node2 = new ElectricConnectorNode("2", POSITION);
+        ElectricConnectorNode node3 = new ElectricConnectorNode("3", POSITION);
+        ElectricConnectorNode node4 = new ElectricConnectorNode("4", POSITION);
         ElectricityManager.addNode(node1);
         ElectricityManager.addNode(node2);
         ElectricityManager.addNode(node3);

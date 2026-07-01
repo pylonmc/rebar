@@ -41,7 +41,7 @@ sealed class ElectricNode(
         onConnect.handle(this, other)
         other.onConnect.handle(other, this)
 
-        ElectricityManager.mergeNetworks()
+        ElectricityManager.mergeNetworks(listOf(this.network, other.network))
     }
 
     fun isConnectedTo(other: ElectricNode) = other.id in internalConnections
@@ -52,7 +52,7 @@ sealed class ElectricNode(
 
         onDisconnect.handle(this, other)
         other.onDisconnect.handle(other, this)
-        ElectricityManager.refreshNetworks(network, other.network)
+        ElectricityManager.refreshNetwork(network)
     }
 
     fun disconnectAll() {

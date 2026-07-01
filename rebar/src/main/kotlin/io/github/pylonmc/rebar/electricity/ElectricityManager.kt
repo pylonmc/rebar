@@ -31,7 +31,7 @@ object ElectricityManager {
     fun addNode(node: ElectricNode) {
         nodes[node.id] = node
         _networks.add(ElectricNetwork().also { it.addNode(node) })
-        mergeNetworks()
+        mergeNetworks(_networks)
     }
 
     @JvmStatic
@@ -39,7 +39,7 @@ object ElectricityManager {
         nodes.remove(node.id)
         val network = node.network
         network.removeNode(node)
-        refreshNetworks(network)
+        refreshNetwork(network)
     }
 
     @JvmStatic
@@ -68,20 +68,21 @@ object ElectricityManager {
     }
 
     @JvmSynthetic
-    internal fun refreshNetworks(vararg networks: ElectricNetwork) {
-        for (network in networks.toSet()) {
-            this._networks.remove(network)
-            for (node in network.nodes) {
-                this._networks.add(ElectricNetwork().also { it.addNode(node) })
-            }
+    internal fun refreshNetwork(network: ElectricNetwork) {
+        val candidates = mutableListOf<ElectricNetwork>()
+        _networks.remove(network)
+        for (node in network.nodes) {
+            candidates.add(ElectricNetwork().also { it.addNode(node) })
         }
-        mergeNetworks()
+        mergeNetworks(candidates)
     }
 
     @JvmSynthetic
-    internal fun mergeNetworks() {
-        val candidates = ArrayDeque(_networks)
-        _networks.clear()
+    internal fun mergeNetworks(candidates: Collection<ElectricNetwork>) {
+        val candidates = ArrayDeque(candidates)
+        for (candidate in candidates) {
+            _networks.remove(candidate)
+        }
         while (candidates.isNotEmpty()) {
             var network = candidates.removeFirst()
             do {
