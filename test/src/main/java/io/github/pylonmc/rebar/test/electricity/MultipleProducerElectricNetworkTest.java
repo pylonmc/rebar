@@ -31,5 +31,8 @@ public class MultipleProducerElectricNetworkTest extends ElectricityTest {
         producer2.setPower(5);
         ElectricityManager.tick();
         assertConsumer(consumer).isPowered();
+
+        ElectricityManager.tick();
+        assertConsumer(consumer).isPowered();
     }
 }

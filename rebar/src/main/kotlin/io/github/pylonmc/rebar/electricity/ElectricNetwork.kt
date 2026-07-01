@@ -29,6 +29,8 @@ class ElectricNetwork {
      */
     private var heuristics: Map<ElectricNode, Map<ElectricNode, Int>>? = null
 
+    private var snapshot: ConsumptionSnapshot? = null
+
     fun addNode(node: ElectricNode) {
         nodeMap[node.id] = node
         when (node) {
@@ -50,13 +52,33 @@ class ElectricNetwork {
 
     fun isPartOfNetwork(node: ElectricNode): Boolean = node.id in nodeMap
 
+    fun markDirty() {
+        snapshot = null
+    }
+
     /**
      * When called, routes power from producers to consumers and acceptors (respecting the requirements of consumers
      * and the limits of edges), updates the power state of consumers, and calls handlers on producers and acceptors
      * with the amount of power produced/accepted.
      */
-    // TODO memoization if performance is bad
     fun tick() {
+        if (snapshot == null) {
+            distributePowerToConsumers()
+        }
+
+        val surplusPower = snapshot!!.surplusPower.toMutableMap()
+        val disconnectedEdges = snapshot!!.disconnectedEdges.toMutableSet()
+        val edgeLoads = snapshot!!.edgeLoads
+
+        distributePowerToAcceptors(surplusPower, disconnectedEdges, edgeLoads)
+
+        for (producer in producers) {
+            val taken = producer.power * POWER_ADJUSTMENT - (surplusPower[producer] ?: 0.0)
+            producer.powerTakeHandler.accept(taken)
+        }
+    }
+
+    private fun distributePowerToConsumers() {
         for (consumer in consumers) {
             consumer.isPowered = consumer.requiredPower roughlyEquals 0.0
         }
@@ -135,10 +157,26 @@ class ElectricNetwork {
             }
         }
 
+        // Add any power that failed to be routed
         for ((producer, taken) in powerTakenFromProducers) {
             surplusPower[producer] = surplusPower[producer]!! + taken
         }
 
+        snapshot = ConsumptionSnapshot(surplusPower, disconnectedEdges, edgeLoads)
+    }
+
+    private data class ConsumptionSnapshot(
+        val surplusPower: Map<ElectricProducerNode, Double>,
+        val disconnectedEdges: Set<Edge>,
+        val edgeLoads: Map<Edge, Double>
+    )
+
+    private fun distributePowerToAcceptors(
+        surplusPower: MutableMap<ElectricProducerNode, Double>,
+        disconnectedEdges: MutableSet<Edge>,
+        edgeLoads: Map<Edge, Double>
+    ) {
+        var edgeLoads = edgeLoads
         do {
             var notAccepted = 0
             acceptorLoop@ for (acceptor in acceptors) {
@@ -184,11 +222,6 @@ class ElectricNetwork {
                 }
             }
         } while (notAccepted != acceptors.size)
-
-        for (producer in producers) {
-            val taken = producer.power * POWER_ADJUSTMENT - (surplusPower[producer] ?: 0.0)
-            producer.powerTakeHandler.accept(taken)
-        }
     }
 
     /**
@@ -324,6 +357,7 @@ class ElectricNetwork {
             get() = (world.storage[powerLimitKey, RebarSerializers.DOUBLE] ?: Double.MAX_VALUE)
             set(value) {
                 world.storage[powerLimitKey, RebarSerializers.DOUBLE] = value
+                from.network.markDirty()
             }
 
         private val unidirectionalKey by lazy { rebarKey("edge_property_unidirectional_${from.id}_${to.id}") }
@@ -331,6 +365,7 @@ class ElectricNetwork {
             get() = (world.storage[unidirectionalKey, RebarSerializers.BOOLEAN] ?: false)
             set(value) {
                 world.storage[unidirectionalKey, RebarSerializers.BOOLEAN] = value
+                from.network.markDirty()
             }
     }
 

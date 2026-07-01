@@ -41,6 +41,8 @@ sealed class ElectricNode(
         onConnect.handle(this, other)
         other.onConnect.handle(other, this)
 
+        this.network.markDirty()
+        other.network.markDirty()
         ElectricityManager.mergeNetworks(listOf(this.network, other.network))
     }
 

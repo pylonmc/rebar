@@ -28,5 +28,8 @@ public class SinglyConnectedElectricNetworkTest extends ElectricityTest {
         producer.setPower(10);
         ElectricityManager.tick();
         assertConsumer(consumer).isPowered();
+
+        ElectricityManager.tick();
+        assertConsumer(consumer).isPowered();
     }
 }

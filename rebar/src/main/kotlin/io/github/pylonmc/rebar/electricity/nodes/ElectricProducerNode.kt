@@ -12,16 +12,22 @@ class ElectricProducerNode private constructor(
     name: String,
     block: BlockPosition,
     internalConnections: MutableSet<UUID>,
-    /**
-     * The amount of power that this producer produces, measured in watts.
-     */
-    var power: Double
+    power: Double
 ) : ElectricNode(id, name, block, internalConnections) {
     constructor(
         name: String,
         block: BlockPosition,
         power: Double
     ) : this(UUID.randomUUID(), name, block, mutableSetOf(), power)
+
+    /**
+     * The amount of power that this producer produces, measured in watts.
+     */
+    var power = power
+        set(value) {
+            field = value
+            network.markDirty()
+        }
 
     @get:JvmSynthetic
     @set:JvmSynthetic

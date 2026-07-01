@@ -11,11 +11,7 @@ class ElectricConsumerNode private constructor(
     name: String,
     block: BlockPosition,
     internalConnections: MutableSet<UUID>,
-    /**
-     * The amount of power that this consumer requires, measured in watts. Should the network not be able to provide this
-     * many watts, [isPowered] will be false and the consumer should not operate.
-     */
-    var requiredPower: Double
+    requiredPower: Double
 ) : ElectricNode(id, name, block, internalConnections) {
 
     constructor(
@@ -23,6 +19,16 @@ class ElectricConsumerNode private constructor(
         block: BlockPosition,
         requiredPower: Double
     ) : this(UUID.randomUUID(), name, block, mutableSetOf(), requiredPower)
+
+    /**
+     * The amount of power that this consumer requires, measured in watts. Should the network not be able to provide this
+     * many watts, [isPowered] will be false and the consumer should not operate.
+     */
+    var requiredPower = requiredPower
+        set(value) {
+            field = value
+            network.markDirty()
+        }
 
     /**
      * Returns `true` if this consumer is receiving at least as much power as it requires, and `false` otherwise.
