@@ -61,6 +61,7 @@ interface ElectricRebarBlock : EntityHolderRebarBlock {
                     .scale(PORT_SCALE)
                     .rotate(face.direction.toVector3d(), PI / 4)
                 )
+                .brightness(15)
                 .build(block.location.toCenterLocation().add(face.direction * expandedRadius + offset))
         )
         val interaction = addEntity(
