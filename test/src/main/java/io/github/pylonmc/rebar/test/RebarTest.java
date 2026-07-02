@@ -1,5 +1,6 @@
 package io.github.pylonmc.rebar.test;
 
+import io.github.pylonmc.rebar.Rebar;
 import io.github.pylonmc.rebar.addon.RebarAddon;
 import io.github.pylonmc.rebar.test.base.Test;
 import io.github.pylonmc.rebar.test.base.TestResult;
@@ -204,6 +205,8 @@ public class RebarTest extends JavaPlugin implements RebarAddon {
         if (Boolean.parseBoolean(System.getenv("NO_TEST"))) {
             return;
         }
+
+        Rebar.INSTANCE.setDebugMode(true);
 
         TestUtil.runAsync(RebarTest::run, 1);
     }

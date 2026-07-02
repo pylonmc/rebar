@@ -20,8 +20,10 @@ object ElectricityManager {
     init {
         Rebar.scope.launch {
             while (true) {
-                @Suppress("DEPRECATION")
-                tick()
+                if (!Rebar.debugMode) {
+                    @Suppress("DEPRECATION")
+                    tick()
+                }
                 delayTicks(RebarConfig.ELECTRICITY_TICK_INTERVAL.toLong())
             }
         }

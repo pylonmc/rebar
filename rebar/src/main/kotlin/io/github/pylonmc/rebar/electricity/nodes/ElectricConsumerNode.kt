@@ -26,8 +26,10 @@ class ElectricConsumerNode private constructor(
      */
     var requiredPower = requiredPower
         set(value) {
+            if (field != value) {
+                network.markDirty()
+            }
             field = value
-            network.markDirty()
         }
 
     /**

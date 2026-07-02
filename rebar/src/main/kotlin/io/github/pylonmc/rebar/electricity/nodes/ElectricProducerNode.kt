@@ -12,21 +12,38 @@ class ElectricProducerNode private constructor(
     name: String,
     block: BlockPosition,
     internalConnections: MutableSet<UUID>,
-    power: Double
+    power: Double,
+    priority: Int
 ) : ElectricNode(id, name, block, internalConnections) {
+
+    @JvmOverloads
     constructor(
         name: String,
         block: BlockPosition,
-        power: Double
-    ) : this(UUID.randomUUID(), name, block, mutableSetOf(), power)
+        power: Double,
+        priority: Int = 0
+    ) : this(UUID.randomUUID(), name, block, mutableSetOf(), power, priority)
 
     /**
      * The amount of power that this producer produces, measured in watts.
      */
     var power = power
         set(value) {
+            if (field != value) {
+                network.producerChangedPower(this, value, value > field)
+            }
             field = value
-            network.markDirty()
+        }
+
+    /**
+     * Higher priority means the producer will be less prioritized when taking power from
+     */
+    var priority = priority
+        set(value) {
+            if (field != value) {
+                network.markDirty()
+            }
+            field = value
         }
 
     @get:JvmSynthetic
@@ -39,11 +56,13 @@ class ElectricProducerNode private constructor(
 
     override fun serialize(pdc: PersistentDataContainer) {
         pdc.set(POWER_KEY, RebarSerializers.DOUBLE, power)
+        pdc.set(PRIORITY_KEY, RebarSerializers.INTEGER, priority)
     }
 
     companion object {
 
         private val POWER_KEY = rebarKey("power")
+        private val PRIORITY_KEY = rebarKey("priority")
 
         @JvmSynthetic
         internal fun deserialize(
@@ -54,7 +73,8 @@ class ElectricProducerNode private constructor(
             pdc: PersistentDataContainer
         ): ElectricProducerNode {
             val power = pdc.get(POWER_KEY, RebarSerializers.DOUBLE)!!
-            return ElectricProducerNode(id, name, block, internalConnections, power)
+            val priority = pdc.get(PRIORITY_KEY, RebarSerializers.INTEGER)!!
+            return ElectricProducerNode(id, name, block, internalConnections, power, priority)
         }
     }
 }

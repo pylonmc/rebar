@@ -36,14 +36,13 @@ import io.github.pylonmc.rebar.item.interfaces.*
 import io.github.pylonmc.rebar.item.research.Research
 import io.github.pylonmc.rebar.logistics.CargoRoutes
 import io.github.pylonmc.rebar.metrics.RebarMetrics
+import io.github.pylonmc.rebar.nms.NmsAccessor
 import io.github.pylonmc.rebar.recipe.ConfigurableRecipeType
 import io.github.pylonmc.rebar.recipe.RebarRecipeListener
 import io.github.pylonmc.rebar.recipe.RecipeCompletion
 import io.github.pylonmc.rebar.recipe.RecipeType
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.util.delayTicks
-import io.github.pylonmc.rebar.item.interfaces.*
-import io.github.pylonmc.rebar.nms.NmsAccessor
 import io.github.pylonmc.rebar.util.mergeResource
 import io.github.pylonmc.rebar.waila.Waila
 import io.github.pylonmc.rebar.waila.WailaPlaceholders
@@ -57,7 +56,6 @@ import kotlinx.coroutines.launch
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
-import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.BlockDisplay
 import org.bukkit.entity.FallingBlock
 import org.bukkit.entity.Interaction
@@ -89,6 +87,8 @@ object Rebar : JavaPlugin(), RebarAddon {
     @get:JvmSynthetic
     @get:ApiStatus.Internal
     val scope by lazy { CoroutineScope(SupervisorJob() + mainThreadDispatcher) }
+
+    var debugMode = false
 
     override fun onEnable() {
         val start = System.currentTimeMillis()

@@ -5,6 +5,10 @@ import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.electricity.nodes.*
 import io.github.pylonmc.rebar.util.rebarKey
 import io.github.pylonmc.rebar.world.storage
+import it.unimi.dsi.fastutil.objects.Object2DoubleAVLTreeMap
+import it.unimi.dsi.fastutil.objects.Object2DoubleMap
+import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap
+import it.unimi.dsi.fastutil.objects.Object2DoubleSortedMap
 import org.bukkit.World
 import java.util.PriorityQueue
 import java.util.UUID
@@ -56,6 +60,18 @@ class ElectricNetwork {
         snapshot = null
     }
 
+    @JvmSynthetic
+    internal fun producerChangedPower(producer: ElectricProducerNode, newPower: Double, increased: Boolean) {
+        if (snapshot != null) {
+            val snapshot = snapshot!!
+            if (producer in snapshot.surplusProducers && !(increased && snapshot.hasUnpoweredConsumers)) {
+                snapshot.surplusPower.put(producer, newPower)
+            } else {
+                this.snapshot = null
+            }
+        }
+    }
+
     /**
      * When called, routes power from producers to consumers and acceptors (respecting the requirements of consumers
      * and the limits of edges), updates the power state of consumers, and calls handlers on producers and acceptors
@@ -66,7 +82,7 @@ class ElectricNetwork {
             distributePowerToConsumers()
         }
 
-        val surplusPower = snapshot!!.surplusPower.toMutableMap()
+        val surplusPower = Object2DoubleAVLTreeMap(snapshot!!.surplusPower)
         val disconnectedEdges = snapshot!!.disconnectedEdges.toMutableSet()
         val edgeLoads = snapshot!!.edgeLoads
 
@@ -79,49 +95,55 @@ class ElectricNetwork {
     }
 
     private fun distributePowerToConsumers() {
+        val validConsumers = Object2DoubleOpenHashMap<ElectricConsumerNode>()
         for (consumer in consumers) {
-            consumer.isPowered = consumer.requiredPower roughlyEquals 0.0
+            val power = consumer.requiredPower
+            if (power roughlyEquals 0.0) {
+                consumer.isPowered = true
+            } else {
+                consumer.isPowered = false
+                validConsumers.put(consumer, power)
+            }
         }
-
-        val surplusPower = producers.associateWithTo(mutableMapOf()) { it.power }
 
         // First, we distribute power from producers to consumers
         val totalPowerProduced = producers.sumOf { it.power }
-        val validConsumers = consumers.associateWith { it.requiredPower }.filterTo(mutableMapOf()) { it.value > 0 }
         var powerConsumedByConsumers = roundRobinFill(
             validConsumers,
             totalPowerProduced
         )
 
+        var hasUnpoweredConsumers = false
         // If any consumer isn't getting enough power, we remove the one with the lowest requirement and try again,
         // until all remaining consumers are getting enough power, or we run out of consumers.
         while (powerConsumedByConsumers.any { (consumer, power) -> power < consumer.requiredPower }) {
-            validConsumers.remove(validConsumers.maxBy { it.value }.key)
+            validConsumers.removeDouble(validConsumers.maxBy { it.value }.key)
             powerConsumedByConsumers = roundRobinFill(
                 validConsumers,
                 totalPowerProduced
             )
+            hasUnpoweredConsumers = true
         }
 
-        // Then we invert that: knowing how much power was consumed, we calculate how much was taken from each producer
-        val powerTakenFromProducers = roundRobinFill(
-            producers.associateWith { it.power }.filterValues { it > 0 },
-            powerConsumedByConsumers.values.sum()
-        ).toMutableMap()
-
-        for ((producer, taken) in powerTakenFromProducers) {
-            surplusPower[producer] = surplusPower[producer]!! - taken
+        val sortedProducers = Object2DoubleAVLTreeMap(
+            compareBy<ElectricProducerNode> { it.priority }
+                .thenComparing { it.id }
+        )
+        for (producer in producers) {
+            if (producer.power roughlyEquals 0.0) continue
+            sortedProducers.put(producer, producer.power)
         }
 
         // Now that we know what consumes and produces what, we can try routing said power
-        var edgeLoads = mapOf<Edge, Double>()
+        var edgeLoads: Object2DoubleMap<Edge> = Object2DoubleOpenHashMap()
         val disconnectedEdges = mutableSetOf<Edge>()
         for ((consumer, consumed) in powerConsumedByConsumers) {
             var powerLeft = consumed
             while (!(powerLeft roughlyEquals 0.0)) {
                 var noPath = 0
-                for ((producer, produced) in powerTakenFromProducers) {
-                    if (produced roughlyEquals 0.0) continue
+                sortedProducers.object2DoubleEntrySet().removeIf { it.doubleValue roughlyEquals 0.0 }
+                for (pair in sortedProducers.object2DoubleEntrySet()) {
+                    val (producer, produced) = pair
                     val path = findBestPath(producer, consumer, disconnectedEdges)
                     if (path == null) {
                         noPath++
@@ -132,49 +154,43 @@ class ElectricNetwork {
                     val powerDelivered = min(loadResult.finalPower, powerLeft)
                     edgeLoads = loadResult.currents
                     powerLeft -= powerDelivered
-                    powerTakenFromProducers[producer] = powerTakenFromProducers[producer]!! - powerDelivered
+                    pair.setValue(produced - powerDelivered)
                     for ((edge, load) in loadResult.currents) {
                         if (load roughlyEquals edge.powerLimit) {
                             disconnectedEdges.add(edge)
                         }
                     }
+                    if (powerLeft roughlyEquals 0.0) break
                 }
 
-                for ((producer, produced) in powerTakenFromProducers.toList()) {
-                    if (produced roughlyEquals 0.0) {
-                        powerTakenFromProducers.remove(producer)
-                    }
-                }
-
-                if (noPath == powerTakenFromProducers.size) {
+                if (noPath == sortedProducers.size) {
                     // no paths from any producer to this consumer, give up
                     break
                 }
             }
 
-            if (powerLeft roughlyEquals 0.0 && consumed roughlyEquals consumer.requiredPower) {
+            if (powerLeft roughlyEquals 0.0) {
                 consumer.isPowered = true
             }
         }
 
-        // Add any power that failed to be routed
-        for ((producer, taken) in powerTakenFromProducers) {
-            surplusPower[producer] = surplusPower[producer]!! + taken
-        }
+        val surplusProducers = sortedProducers.filter { it.value roughlyEquals it.key.power }.keys
 
-        snapshot = ConsumerSnapshot(surplusPower, disconnectedEdges, edgeLoads)
+        snapshot = ConsumerSnapshot(sortedProducers, disconnectedEdges, edgeLoads, surplusProducers, hasUnpoweredConsumers)
     }
 
     private data class ConsumerSnapshot(
-        val surplusPower: Map<ElectricProducerNode, Double>,
+        val surplusPower: Object2DoubleSortedMap<ElectricProducerNode>,
         val disconnectedEdges: Set<Edge>,
-        val edgeLoads: Map<Edge, Double>
+        val edgeLoads: Object2DoubleMap<Edge>,
+        val surplusProducers: Set<ElectricProducerNode>,
+        val hasUnpoweredConsumers: Boolean,
     )
 
     private fun distributePowerToAcceptors(
-        surplusPower: MutableMap<ElectricProducerNode, Double>,
+        surplusPower: Object2DoubleSortedMap<ElectricProducerNode>,
         disconnectedEdges: MutableSet<Edge>,
-        edgeLoads: Map<Edge, Double>
+        edgeLoads: Object2DoubleMap<Edge>
     ) {
         var edgeLoads = edgeLoads
         do {
@@ -186,8 +202,9 @@ class ElectricNetwork {
                     continue
                 }
                 var noPath = 0
-                for ((producer, surplus) in surplusPower) {
-                    if (surplus roughlyEquals 0.0) continue
+                surplusPower.object2DoubleEntrySet().removeIf { it.doubleValue roughlyEquals 0.0 }
+                for (pair in surplusPower) {
+                    val (producer, surplus) = pair
                     val path = findBestPath(producer, acceptor, disconnectedEdges)
                     if (path == null) {
                         noPath++
@@ -200,7 +217,7 @@ class ElectricNetwork {
                         } else {
                             edgeLoads = loadResult.currents
                             remaining -= accepted
-                            surplusPower[producer] = surplusPower[producer]!! - accepted
+                            pair.setValue(surplus - accepted)
                             for ((edge, load) in loadResult.currents) {
                                 if (load roughlyEquals edge.powerLimit) {
                                     disconnectedEdges.add(edge)
@@ -214,12 +231,6 @@ class ElectricNetwork {
                     // no paths from any producer to this acceptor, give up
                     notAccepted++
                 }
-
-                for ((producer, surplus) in surplusPower.toList()) {
-                    if (surplus roughlyEquals 0.0) {
-                        surplusPower.remove(producer)
-                    }
-                }
             }
         } while (notAccepted != acceptors.size)
     }
@@ -229,18 +240,18 @@ class ElectricNetwork {
      * If a key hits its limit, the excess is redistributed among the remaining keys, until either all excess is distributed
      * or all keys have hit their limits.
      */
-    private fun <K> roundRobinFill(limits: Map<K, Double>, amount: Double): Map<K, Double> {
-        val filled = mutableMapOf<K, Double>()
+    private fun <K> roundRobinFill(limits: Object2DoubleMap<K>, amount: Double): Object2DoubleMap<K> {
+        val filled = Object2DoubleOpenHashMap<K>(limits.size)
         var remaining = amount
-        val limits = limits.toMutableMap()
+        val limits = Object2DoubleOpenHashMap(limits)
         while (!(remaining roughlyEquals 0.0) && limits.isNotEmpty()) {
             val fillAmount = remaining / limits.size
-            for ((key, limit) in limits.toList()) {
+            for ((key, limit) in limits.object2DoubleEntrySet().toList()) {
                 val toFill = min(limit, fillAmount)
-                filled.merge(key, toFill, Double::plus)
+                filled.mergeDouble(key, toFill, Double::plus)
                 remaining -= toFill
                 if (toFill >= limit) {
-                    limits.remove(key)
+                    limits.removeDouble(key)
                 } else {
                     limits[key] = limit - toFill
                 }
@@ -302,18 +313,18 @@ class ElectricNetwork {
 
     private fun calculateLoadOnEdges(
         path: List<Edge>,
-        existingLoads: Map<Edge, Double>,
+        existingLoads: Object2DoubleMap<Edge>,
         initialPower: Double
     ): LoadResult {
         if (initialPower roughlyEquals 0.0) {
             return LoadResult(existingLoads, 0.0)
         }
-        val loads = existingLoads.toMutableMap()
+        val loads = Object2DoubleOpenHashMap(existingLoads)
         var currentPower = initialPower
         for (edge in path) {
             val remainingCapacity = edge.powerLimit - (loads[edge] ?: 0.0)
             currentPower = min(currentPower, remainingCapacity)
-            loads.merge(edge, currentPower, Double::plus)
+            loads.mergeDouble(edge, currentPower, Double::plus)
         }
         return if (currentPower roughlyEquals initialPower) {
             LoadResult(loads, currentPower)
@@ -323,7 +334,7 @@ class ElectricNetwork {
         }
     }
 
-    private data class LoadResult(val currents: Map<Edge, Double>, val finalPower: Double)
+    private data class LoadResult(val currents: Object2DoubleMap<Edge>, val finalPower: Double)
 
     private fun calculateDistanceHeuristics(): Map<ElectricNode, Map<ElectricNode, Int>> {
         val heuristics = mutableMapOf<ElectricNode, Map<ElectricNode, Int>>()
