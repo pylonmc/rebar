@@ -16,7 +16,7 @@ import java.util.IdentityHashMap
 /**
  * Represents a block that has a specific facing direction.
  *
- * Internally only used for rotating [RebarBlock.blockTextureEntity]s.
+ * Internally used for the rotations of [SimpleRebarMultiblock] & [RebarBlock.blockTextureEntity].
  */
 interface DirectionalRebarBlock : Keyed {
 
@@ -25,6 +25,10 @@ interface DirectionalRebarBlock : Keyed {
         set(value) {
             directionalBlocks[this] = value
         }
+
+    fun setFacingIfAbsent(facing: BlockFace) {
+        directionalBlocks.computeIfAbsent(this) { facing }
+    }
 
     @ApiStatus.Internal
     companion object : Listener {

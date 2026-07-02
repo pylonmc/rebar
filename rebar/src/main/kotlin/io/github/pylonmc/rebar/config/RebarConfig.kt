@@ -43,6 +43,9 @@ object RebarConfig {
     val ENTITY_DATA_AUTOSAVE_INTERVAL_SECONDS = config.getOrThrow("entity-data-autosave-interval-seconds", ConfigAdapter.LONG)
 
     @JvmField
+    val WORLD_DATA_AUTOSAVE_INTERVAL_SECONDS = config.getOrThrow("world-data-autosave-interval-seconds", ConfigAdapter.LONG)
+
+    @JvmField
     val PIPE_PLACEMENT_TASK_INTERVAL_TICKS = config.getOrThrow("pipe-placement.tick-interval", ConfigAdapter.LONG)
 
     @JvmField
@@ -68,6 +71,9 @@ object RebarConfig {
 
     @JvmField
     val CARGO_TRANSFER_RATE_MULTIPLIER = config.getOrThrow("cargo-transfer-rate-multiplier", ConfigAdapter.INTEGER)
+
+    @JvmField
+    val ELECTRICITY_TICK_INTERVAL = config.getOrThrow("electricity-tick-interval", ConfigAdapter.INTEGER)
 
     @JvmField
     val GHOST_BLOCK_TICK_INTERVAL = config.getOrThrow("ghost-block-tick-interval", ConfigAdapter.INTEGER)

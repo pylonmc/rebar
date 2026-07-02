@@ -15,12 +15,12 @@ import org.bukkit.Bukkit
 import org.bukkit.block.Block
 import org.bukkit.entity.Entity
 import org.bukkit.event.EventHandler
+import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.entity.EntityRemoveEvent
 import org.bukkit.persistence.PersistentDataContainer
 import org.jetbrains.annotations.ApiStatus
-import java.util.IdentityHashMap
-import java.util.UUID
+import java.util.*
 import java.util.function.Consumer
 
 /**
@@ -37,16 +37,19 @@ interface EntityHolderRebarBlock {
     val heldEntities: MutableMap<String, UUID>
         get() = holders.getOrPut(this) { mutableMapOf() }
 
-    fun addEntity(name: String, entity: Entity) {
+    fun <T : Entity> addEntity(name: String, entity: T): T {
         heldEntities[name] = entity.uniqueId
         entity.persistentDataContainer.set(blockKey, RebarSerializers.BLOCK_POSITION, block.position)
+        return entity
     }
 
-    fun addEntity(name: String, entity: RebarEntity<*>)
-        = addEntity(name, entity.entity)
+    fun <E : Entity, T : RebarEntity<E>> addEntity(name: String, entity: T): T {
+        addEntity(name, entity.entity)
+        return entity
+    }
 
     fun tryRemoveEntity(name: String) {
-        val uuid = heldEntities[name] ?: return
+        val uuid = heldEntities.remove(name) ?: return
         Bukkit.getEntity(uuid)?.remove()
     }
 
@@ -172,7 +175,7 @@ interface EntityHolderRebarBlock {
             holders.remove(block)
         }
 
-        @EventHandler
+        @EventHandler(priority = EventPriority.HIGHEST) // remove entities after as many break handlers before as possible have run
         private fun onBreak(event: RebarBlockBreakEvent) {
             val block = event.rebarBlock
             if (block is EntityHolderRebarBlock) {

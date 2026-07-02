@@ -8,12 +8,7 @@ import net.kyori.adventure.sound.Sound
 import org.bukkit.Bukkit
 import org.bukkit.NamespacedKey
 import org.bukkit.Registry
-import org.joml.Vector2d
-import org.joml.Vector2f
-import org.joml.Vector2i
-import org.joml.Vector3d
-import org.joml.Vector3f
-import org.joml.Vector3i
+import org.joml.*
 import java.lang.reflect.Type
 import java.util.Locale
 
@@ -133,6 +128,7 @@ interface ConfigAdapter<T> {
         @JvmField val REBAR_FLUID = KEYED.fromRegistry(RebarRegistry.FLUIDS)
         @JvmField val FLUID_TEMPERATURE = ENUM.from<FluidTemperature>()
         @JvmField val FLUID_OR_ITEM = FluidOrItemConfigAdapter
+        @JvmField val FLUID_WITH_AMOUNT = FluidWithAmountConfigAdapter
         @JvmField val RECIPE_INPUT = RecipeInputConfigAdapter
         @JvmField val RECIPE_INPUT_ITEM = RecipeInputItemAdapter
         @JvmField val RECIPE_INPUT_FLUID = RecipeInputFluidAdapter

@@ -82,7 +82,7 @@ internal object RebarRecipeListener : Listener {
                 return
             }
 
-            val resultItem = firstSchema.getItemStack()
+            val resultItem = firstSchema.createNewItemStack()
             val durability = max(firstItem.getData(DataComponentTypes.MAX_DAMAGE)!!, secondItem.getData(DataComponentTypes.MAX_DAMAGE)!!)
             val firstRemaining = firstItem.getData(DataComponentTypes.MAX_DAMAGE)!! - firstItem.getData(DataComponentTypes.DAMAGE)!!
             val secondRemaining = secondItem.getData(DataComponentTypes.MAX_DAMAGE)!! - secondItem.getData(DataComponentTypes.DAMAGE)!!

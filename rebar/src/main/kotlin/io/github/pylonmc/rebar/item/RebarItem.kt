@@ -136,7 +136,7 @@ open class RebarItem(val stack: ItemStack) : Keyed {
             RebarRegistry.ITEMS.register(schema)
 
             // pre-merge configs and check for constructor errors
-            schema.getRebarItem()
+            schema.createNewRebarItem()
         }
 
         @JvmStatic
@@ -177,7 +177,7 @@ open class RebarItem(val stack: ItemStack) : Keyed {
         }
 
         @JvmSynthetic
-        inline fun <reified T : RebarItem> from(stack: ItemStack?): T? {
+        inline fun <reified T> from(stack: ItemStack?): T? {
             val rebarItem = fromStack(stack) ?: return null
             return rebarItem as? T
         }
@@ -200,6 +200,13 @@ open class RebarItem(val stack: ItemStack) : Keyed {
             val schema = RebarItemSchema.fromStack(stack) ?: return false
             return schema.isType(clazz)
         }
+
+        /**
+         * Checks if [stack] is a Rebar item castable to [T].
+         */
+        @JvmSynthetic
+        @JvmName("isRebarItemReified")
+        inline fun <reified T> isRebarItem(stack: ItemStack?): Boolean = isRebarItem(stack, T::class.java)
 
         /**
          * Checks if [stack] is a Rebar item with the id [key].

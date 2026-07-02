@@ -8,7 +8,7 @@ import java.math.BigDecimal
 import java.math.MathContext
 import java.math.RoundingMode
 import java.time.Duration
-import java.util.EnumSet
+import java.util.*
 
 /**
  * Handles formatting of a specific unit. Call [format] to format a value using this unit.
@@ -18,10 +18,9 @@ import java.util.EnumSet
  * @param plural A component representing the long plural form of this unit (kilograms, meters, liters, etc)
  * @param abbreviation A component representing the abbreviated form of this unit (kg, m, L, etc)
  * @param defaultPrefix The prefix (kilo, nano, etc) used for this unit unless specified while formatting.
- * For example, if you create a 'grams' unit and specify 'kilo' as the default prefix, calling [format] with
- * 100 will return '100 kilograms'
- * @param defaultStyle The style to apply to the unit (not the value)
- * to the output.
+ * For example, if you create a 'grams' unit and specify [MetricPrefix.KILO] as the default prefix, calling
+ * [format] with 100 will return '100 kilograms'
+ * @param defaultStyle The style to apply to the unit (not the value) to the output.
  */
 class UnitFormat @JvmOverloads constructor(
     val name: String,
@@ -36,13 +35,13 @@ class UnitFormat @JvmOverloads constructor(
         name: String,
         color: TextColor,
         abbreviate: Boolean,
-        prefix: MetricPrefix? = null,
+        prefix: MetricPrefix = MetricPrefix.NONE,
     ) : this(
         name = name,
         singular = Component.translatable("rebar.unit.$name.singular"),
         plural = Component.translatable("rebar.unit.$name.plural"),
         abbreviation = Component.translatable("rebar.unit.$name.abbr").takeIf { abbreviate },
-        defaultPrefix = prefix ?: MetricPrefix.NONE,
+        defaultPrefix = prefix,
         defaultStyle = Style.style(color),
     )
 
@@ -110,25 +109,30 @@ class UnitFormat @JvmOverloads constructor(
         fun unitStyle(style: Style) = apply { this.unitStyle = style }
 
         /**
-         * Overrides the default prefix (and adjusts the value shown accordingly).
+         * Overrides the default prefix. **This will not rescale the number like [selectPrefixAndRescale] does.**
          */
         fun prefix(prefix: MetricPrefix) = apply { this.prefix = prefix }
 
         /**
-         * Sets what prefixes should not be used.
+         * [selectPrefixAndRescale] will not use any prefixes in this collection when automatically selecting a prefix.
          */
         fun ignorePrefixes(prefixes: Collection<MetricPrefix>) = apply { badPrefixes.addAll(prefixes) }
 
         /**
-         * Sets what prefixes should not be used.
+         * [selectPrefixAndRescale] will not use any of these [prefixes] when automatically selecting a prefix.
          */
         fun ignorePrefixes(vararg prefixes: MetricPrefix) = apply { badPrefixes.addAll(prefixes) }
 
         /**
-         * Sets whether the prefix should be automatically selected instead of using the default
-         * prefix (if set).
+         * Same as [ignorePrefixes] but for [MetricPrefix.COMMONLY_UNUSED_PREFIXES]
          */
-        fun autoSelectPrefix() = apply { prefix = null }
+        fun ignoreCommonlyUnusedPrefixes() = ignorePrefixes(MetricPrefix.COMMONLY_UNUSED_PREFIXES)
+
+        /**
+         * Automatically selects an appropriate prefix based on the value and rescales the value accordingly.
+         * **Default prefix is ignored when using this method.**
+         */
+        fun selectPrefixAndRescale() = apply { prefix = null }
 
         /**
          * Builds a component representing the value and unit.
@@ -140,18 +144,17 @@ class UnitFormat @JvmOverloads constructor(
                 usedValue = usedValue.stripTrailingZeros()
             }
 
-            var usedPrefix = if (prefix == null) {
+            val usedPrefix = if (prefix == null) {
                 val exponent = value.precision() - value.scale() - if (value.signum() == 0) 0 else 1
-                val prefix = MetricPrefix.entries.firstOrNull { it.scale <= exponent }
-                prefix ?: defaultPrefix
+                var prefix = MetricPrefix.entries.firstOrNull { it.scale <= exponent } ?: defaultPrefix
+                while (prefix in badPrefixes) {
+                    prefix = MetricPrefix.entries.getOrNull(MetricPrefix.entries.indexOf(prefix) + 1) ?: break
+                }
+                usedValue = usedValue.movePointRight(prefix.scale)
+                prefix
             } else {
                 prefix!!
             }
-            while (usedPrefix in badPrefixes) {
-                usedPrefix = MetricPrefix.entries[MetricPrefix.entries.indexOf(usedPrefix) + 1]
-            }
-
-            usedValue = usedValue.movePointLeft(usedPrefix.scale - defaultPrefix.scale)
 
             val number = Component.text(usedValue.toPlainString())
             var unit = Component.empty().style(unitStyle)
@@ -185,8 +188,7 @@ class UnitFormat @JvmOverloads constructor(
         val BLOCKS_PER_SECOND = UnitFormat(
             "blocks_per_second",
             TextColor.color(0x0ae256),
-            abbreviate = true,
-            prefix = MetricPrefix.NONE
+            abbreviate = true
         )
 
         @JvmField
@@ -273,22 +275,6 @@ class UnitFormat @JvmOverloads constructor(
         )
 
         @JvmField
-        val JOULES = UnitFormat(
-            "joules",
-            TextColor.color(0xF2A900),
-            abbreviate = true,
-            prefix = MetricPrefix.NONE
-        )
-
-        @JvmField
-        val WATTS = UnitFormat(
-            "watts",
-            TextColor.color(0xF2A900),
-            abbreviate = true,
-            prefix = MetricPrefix.NONE
-        )
-
-        @JvmField
         val EXPERIENCE = UnitFormat(
             "experience",
             TextColor.color(0xb2e01a),
@@ -328,8 +314,28 @@ class UnitFormat @JvmOverloads constructor(
         val CYCLES_PER_SECOND = UnitFormat(
             "cycles_per_second",
             TextColor.color(0xb672bf),
-            abbreviate = true,
-            prefix = MetricPrefix.NONE
+            abbreviate = true
+        )
+
+        @JvmField
+        val JOULES = UnitFormat(
+            "joules",
+            TextColor.color(0xF2A900),
+            abbreviate = true
+        )
+
+        @JvmField
+        val WATTS = UnitFormat(
+            "watts",
+            TextColor.color(0xF2A900),
+            abbreviate = true
+        )
+
+        @JvmField
+        val WATTS_PER_MILLIBUCKET = UnitFormat(
+            "watts_per_millibucket",
+            TextColor.color(0xF2A900),
+            abbreviate = true
         )
 
         /**

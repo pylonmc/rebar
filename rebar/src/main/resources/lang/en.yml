@@ -115,6 +115,10 @@ message:
     reloadlang:
       success: "<green>Language entries reloaded"
 
+  electricity:
+    wiring: "<insn>Right click a port</insn> to connect, <insn>stop holding a wire</insn> to cancel <gray>(%wires%/%total%)"
+    need_wire: "<red>You need to be holding a wire"
+
 gui:
   scroll:
     up: "Scroll up"
@@ -598,14 +602,6 @@ unit:
     singular: "second"
     plural: "seconds"
     abbr: "s"
-  joules:
-    singular: "joule"
-    plural: "joules"
-    abbr: "J"
-  watts:
-    singular: "watt"
-    plural: "watts"
-    abbr: "W"
   experience:
     singular: "experience point"
     plural: "experience points"
@@ -628,3 +624,15 @@ unit:
     singular: "cycle per second"
     plural: "cycles per second"
     abbr: "cycles/s"
+  joules:
+    singular: "joule"
+    plural: "joules"
+    abbr: "J"
+  watts:
+    singular: "watt"
+    plural: "watts"
+    abbr: "W"
+  watts_per_millibucket:
+    singular: "watt per millibucket"
+    plural: "watts per millibucket"
+    abbr: "W/mB"
