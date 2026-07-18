@@ -3,7 +3,6 @@
 package io.github.pylonmc.rebar
 
 import io.github.pylonmc.rebar.addon.RebarAddon
-import io.github.pylonmc.rebar.advancements.AdvancementsManager.registerAdvancements
 import io.github.pylonmc.rebar.advancements.base.UnlockOnItemCriteriaType
 import io.github.pylonmc.rebar.advancements.base.UnlockOnJoinCriteriaType
 import io.github.pylonmc.rebar.async.BukkitMainThreadDispatcher
@@ -15,6 +14,7 @@ import io.github.pylonmc.rebar.command.ROOT_COMMAND
 import io.github.pylonmc.rebar.command.ROOT_COMMAND_RE_ALIAS
 import io.github.pylonmc.rebar.config.ConfigSection
 import io.github.pylonmc.rebar.config.RebarConfig
+import io.github.pylonmc.rebar.config.adapter.ConfigAdapter
 import io.github.pylonmc.rebar.content.cargo.CargoDuct
 import io.github.pylonmc.rebar.content.debug.DebugWaxedWeatheredCutCopperStairs
 import io.github.pylonmc.rebar.content.fluid.*
@@ -429,6 +429,32 @@ object Rebar : JavaPlugin(), RebarAddon {
 
         val end = System.currentTimeMillis()
         logger.info("Loaded researches in ${(end - start) / 1000.0}s")
+    }
+
+    private fun registerAdvancements() {
+        Rebar.logger.info("Beginning to load advancements")
+        val start = System.currentTimeMillis()
+        for (addon in RebarRegistry.ADDONS) {
+            mergeResource(addon, Rebar, "advancements.yml", "advancements/${addon.key.namespace}.yml", false)
+            registerAdvancementsForAddon(addon)
+        }
+        val end = System.currentTimeMillis()
+        Rebar.logger.info("Finished loading advancements in ${(end - start) / 1000.0}s")
+    }
+
+    private fun registerAdvancementsForAddon(addon: RebarAddon) {
+        try {
+            val config = ConfigSection.from(Path(Rebar.dataPath.toString(), "advancements/${addon.key.namespace}.yml")) ?: return
+            config.keys.forEach { it ->
+                NmsAccessor.instance.registerAdvancement(
+                    config.getOrThrow(it, ConfigAdapter.ADVANCEMENT)
+                    , ConfigAdapter.NAMESPACED_KEY.convert(it)
+                )
+            }
+        } catch (e: Exception) {
+            Rebar.logger.severe("Error while loading advancement at advancements/${addon.key.namespace}.yml: \n${e.message}")
+            e.printStackTrace()
+        }
     }
 
     @JvmSynthetic
