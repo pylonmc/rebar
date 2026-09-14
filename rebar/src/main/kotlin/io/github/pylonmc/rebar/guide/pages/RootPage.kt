@@ -33,7 +33,7 @@ class RootPage : SimpleStaticGuidePage(
             )
             .addIngredient('#', GuiItems.background())
             .addIngredient('e', RebarGuide.mainSettingsButton)
-            .addIngredient('s', RebarGuide.searchItemsAndFluidsButton)
+            .addIngredient('s', RebarGuide.getSearchButton(player))
             .addIngredient('x', Markers.CONTENT_LIST_SLOT_HORIZONTAL)
             .addPageChangeHandler { _, newPage -> saveCurrentPage(player, newPage) }
 
