@@ -45,7 +45,8 @@ enum class MetricPrefix(
 
     companion object {
         /**
-         * [HECTO], [DECA], and [DECI]
+         * [HECTO], [DECA], and [DECI] are rarely seen in practical contexts. They are provided here as a convenience both
+         * for the API consumer and for [UnitFormat.Formatted.ignoreCommonlyUnusedPrefixes]
          */
         @JvmField
         val COMMONLY_UNUSED_PREFIXES = setOf(HECTO, DECA, DECI)

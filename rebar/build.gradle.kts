@@ -25,7 +25,7 @@ repositories {
     }
 }
 
-val minecraftVersion = property("minecraft.version").toString()
+val minecraftVersion = providers.gradleProperty("minecraft.version").get()
 
 dependencies {
     fun paperLibraryApi(dependency: Any) {

@@ -1,12 +1,19 @@
 package io.github.pylonmc.rebar.item
 
+import io.github.pylonmc.rebar.block.RebarBlockTag
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.util.rebarKey
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
 import org.bukkit.Tag
 import org.bukkit.inventory.ItemStack
+import org.bukkit.inventory.ItemType
 
+/**
+ * A tag that can contain both Vanilla and Rebar item types.
+ *
+ * For blocks, see [RebarBlockTag].
+ */
 class RebarItemTag(private val key: NamespacedKey, items: Set<ItemTypeWrapper>) : Tag<ItemTypeWrapper> {
 
     constructor(key: NamespacedKey, vararg materials: Material) : this(key, materials.map { ItemTypeWrapper(it) }.toSet())
@@ -26,6 +33,10 @@ class RebarItemTag(private val key: NamespacedKey, items: Set<ItemTypeWrapper>) 
     fun add(item: ItemStack) = add(ItemTypeWrapper(item))
 
     override fun isTagged(item: ItemTypeWrapper): Boolean = item in items
+    fun isTagged(material: Material): Boolean = ItemTypeWrapper(material) in items
+    fun isTagged(itemType: ItemType): Boolean = ItemTypeWrapper(itemType) in items
+    fun isTagged(schema: RebarItemSchema): Boolean = ItemTypeWrapper(schema) in items
+    fun isTagged(key: NamespacedKey): Boolean = ItemTypeWrapper(key) in items
     override fun getValues(): Set<ItemTypeWrapper> = items.toSet()
     override fun getKey(): NamespacedKey = key
 

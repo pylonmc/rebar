@@ -9,6 +9,7 @@ import org.bukkit.entity.Display.Brightness
 import org.bukkit.entity.TextDisplay
 import org.bukkit.entity.TextDisplay.TextAlignment
 import org.joml.Matrix4f
+import java.util.function.Consumer
 
 
 @Suppress("unused")
@@ -44,6 +45,7 @@ open class TextDisplayBuilder() {
     fun text(text: Component?): TextDisplayBuilder = apply { this.text = text }
     fun transformation(transformation: Matrix4f?): TextDisplayBuilder = apply { this.transformation = transformation }
     fun transformation(builder: TransformBuilder): TextDisplayBuilder = apply { this.transformation = builder.buildForTextDisplay() }
+    fun transformation(builder: Consumer<TransformBuilder>) = transformation(TransformBuilder().apply(builder::accept).buildForTextDisplay())
     fun brightness(brightness: Brightness): TextDisplayBuilder = apply { this.brightness = brightness }
     fun brightness(brightness: Int): TextDisplayBuilder = brightness(Brightness(0, brightness))
     fun glow(glowColor: Color?): TextDisplayBuilder = apply { this.glowColor = glowColor }

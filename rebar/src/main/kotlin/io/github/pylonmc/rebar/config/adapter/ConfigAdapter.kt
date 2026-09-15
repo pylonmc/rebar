@@ -1,5 +1,6 @@
 package io.github.pylonmc.rebar.config.adapter
 
+import io.github.pylonmc.rebar.block.BlockTypeWrapper
 import io.github.pylonmc.rebar.fluid.tags.FluidTemperature
 import io.github.pylonmc.rebar.item.ItemTypeWrapper
 import io.github.pylonmc.rebar.registry.RebarRegistry
@@ -145,6 +146,9 @@ interface ConfigAdapter<T> {
         @JvmField val FLUID_CHOICE = FluidChoiceConfigAdapter
         @JvmField val FLUID_OR_ITEM = FluidOrItemConfigAdapter
         @JvmField val FLUID_WITH_AMOUNT = FluidWithAmountConfigAdapter
+
+        @JvmField val BLOCK_TYPE_WRAPPER = KEYED.fromGetter { BlockTypeWrapper(it) }
+        @JvmField val BLOCK_TAG = BlockTagConfigAdapter
         // @formatter:on
 
         private inline fun <reified T : Number> numberAdapter(

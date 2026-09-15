@@ -317,7 +317,7 @@ class PlayerPacketHandler(private val player: ServerPlayer, val handler: PlayerT
     }
 
     private fun translate(itemCost: ItemCost): ItemCost {
-        val costStack = translate(itemCost.itemStack)
+        val costStack = translate(itemCost.itemStack.copy())
         val costPredicate = DataComponentExactPredicate.allOf(PatchedDataComponentMap.fromPatch(DataComponentMap.EMPTY, costStack.componentsPatch))
         return ItemCost(costStack.typeHolder(), costStack.count, costPredicate, costStack)
     }
