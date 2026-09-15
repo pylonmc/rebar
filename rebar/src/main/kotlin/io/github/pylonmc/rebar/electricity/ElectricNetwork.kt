@@ -144,7 +144,7 @@ class ElectricNetwork {
                         continue
                     }
 
-                    val loadResult = calculateLoadOnEdges(path, currentEdgeLoads, produced)
+                    val loadResult = calculateLoadOnEdges(path, currentEdgeLoads, min(produced, powerLeft))
                     val powerDelivered = min(loadResult.finalPower, powerLeft)
                     currentEdgeLoads = loadResult.currents
                     powerLeft -= powerDelivered

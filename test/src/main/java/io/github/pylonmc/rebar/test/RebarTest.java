@@ -99,6 +99,7 @@ public class RebarTest extends JavaPlugin implements RebarAddon {
         tests.add(new LimitedElectricNetworkTest());
         tests.add(new UnidirectionalElectricNetworkTest());
         tests.add(new MergeElectricNetworkTest());
+        tests.add(new SeriesConsumerElectricNetworkTest());
 
         return tests;
     }
