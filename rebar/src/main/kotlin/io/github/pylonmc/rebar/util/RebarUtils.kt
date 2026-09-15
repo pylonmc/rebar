@@ -28,6 +28,7 @@ import kotlinx.coroutines.delay
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.TranslatableComponent
 import net.kyori.adventure.text.TranslationArgumentLike
+import net.kyori.adventure.text.format.Style
 import net.kyori.adventure.text.format.TextColor
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import org.bukkit.*
@@ -998,3 +999,5 @@ fun Player.addToInventoryOrDrop(vararg items: ItemStack) {
 }
 
 const val FLUID_EPSILON = 1.0e-6
+
+fun Component.removeStyle(): Component = this.style(Style.empty()).children(this.children().map(Component::removeStyle))
