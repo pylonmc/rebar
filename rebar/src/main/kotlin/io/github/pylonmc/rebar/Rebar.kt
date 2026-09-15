@@ -357,7 +357,7 @@ object Rebar : JavaPlugin(), RebarAddon {
     private fun validateItems() {
         for (itemSchema in RebarRegistry.ITEMS) {
             // pre-merge configs and check for constructor errors
-            itemSchema.getRebarItem()
+            itemSchema.createNewRebarItem()
         }
     }
 
