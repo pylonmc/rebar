@@ -3,6 +3,8 @@ package io.github.pylonmc.rebar.electricity
 import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.config.RebarConfig
 import io.github.pylonmc.rebar.electricity.nodes.ElectricNode
+import io.github.pylonmc.rebar.event.RebarElectricNodeAddEvent
+import io.github.pylonmc.rebar.event.RebarElectricNodeRemoveEvent
 import io.github.pylonmc.rebar.util.delayTicks
 import kotlinx.coroutines.launch
 import java.util.UUID
@@ -39,10 +41,12 @@ object ElectricityManager {
         nodes[node.id] = node
         networks.add(ElectricNetwork().also { it.addNode(node) })
         mergeNetworks(networks)
+        RebarElectricNodeAddEvent(node).callEvent()
     }
 
     @JvmStatic
     fun removeNode(node: ElectricNode) {
+        RebarElectricNodeRemoveEvent(node).callEvent()
         nodes.remove(node.id)
         val network = node.network
         network.removeNode(node)

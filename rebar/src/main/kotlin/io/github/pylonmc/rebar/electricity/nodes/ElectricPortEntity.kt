@@ -1,5 +1,6 @@
 package io.github.pylonmc.rebar.electricity.nodes
 
+import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.electricity.ElectricNetwork
 import io.github.pylonmc.rebar.electricity.ElectricityManager
@@ -10,6 +11,7 @@ import io.github.pylonmc.rebar.entity.RebarEntity
 import io.github.pylonmc.rebar.entity.display.ItemDisplayBuilder
 import io.github.pylonmc.rebar.entity.display.transform.TransformBuilder
 import io.github.pylonmc.rebar.entity.interfaces.RemoveRebarEntityHandler
+import io.github.pylonmc.rebar.event.RebarElectricNodeRemoveEvent
 import io.github.pylonmc.rebar.i18n.RebarArgument
 import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
@@ -17,15 +19,19 @@ import io.github.pylonmc.rebar.item.interfaces.WireRebarItem
 import io.github.pylonmc.rebar.util.Either
 import io.github.pylonmc.rebar.util.rebarKey
 import net.kyori.adventure.text.Component
+import org.bukkit.Bukkit
 import org.bukkit.GameMode
 import org.bukkit.block.Block
 import org.bukkit.entity.ItemDisplay
+import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
+import org.bukkit.event.HandlerList
+import org.bukkit.event.Listener
 import org.bukkit.event.entity.EntityRemoveEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import kotlin.math.PI
 
-class ElectricPortEntity : RebarEntity<ItemDisplay>, RemoveRebarEntityHandler {
+class ElectricPortEntity : RebarEntity<ItemDisplay>, RemoveRebarEntityHandler, Listener {
 
     val node: ElectricNode by lazy { ElectricityManager.getNodeById(entity.persistentDataContainer.get(nodeKey, RebarSerializers.UUID)!!)!! }
 
@@ -55,6 +61,10 @@ class ElectricPortEntity : RebarEntity<ItemDisplay>, RemoveRebarEntityHandler {
     @Suppress("unused")
     constructor(entity: ItemDisplay) : super(entity)
 
+    init {
+        Bukkit.getPluginManager().registerEvents(this, Rebar)
+    }
+
     val connectedWires: List<WireEntity>
         get() = WireEntity.loadedWires.filter { wire -> wire.port.node == node || (wire.otherEnd as? Either.Right)?.value?.node == node }
 
@@ -66,8 +76,15 @@ class ElectricPortEntity : RebarEntity<ItemDisplay>, RemoveRebarEntityHandler {
         }
     }
 
+    @EventHandler
+    private fun onNodeRemove(event: RebarElectricNodeRemoveEvent) {
+        if (event.node == node) {
+            dropConnectedWires()
+        }
+    }
+
     override fun onRemoved(event: EntityRemoveEvent, priority: EventPriority) {
-        dropConnectedWires()
+        HandlerList.unregisterAll(this)
     }
 
     fun onInteractedWith(event: PlayerInteractEvent) {
