@@ -95,7 +95,8 @@ class ElectricNetwork {
 
         // producer tick
         for ((producer, remaining) in remainingPower) {
-            val taken = producer.power * POWER_ADJUSTMENT - remaining
+            val taken = (producer.power - remaining) * POWER_ADJUSTMENT
+            if (taken roughlyEquals 0.0) continue // prevent floating point errors from producing phantom power
             producer.powerTakeHandler.accept(taken)
         }
     }
