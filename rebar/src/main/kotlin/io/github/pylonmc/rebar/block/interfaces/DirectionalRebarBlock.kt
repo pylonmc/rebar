@@ -18,7 +18,7 @@ import java.util.IdentityHashMap
  *
  * You should set [DirectionalRebarBlock.facing] in your place constructor. The face you set will be persisted over reloads.
  *
- * Internally only used for rotating [RebarBlock.blockTextureEntity]s.
+ * Internally used for the rotations of [SimpleRebarMultiblock] & [RebarBlock.blockTextureEntity].
  */
 interface DirectionalRebarBlock : Keyed {
 
@@ -27,6 +27,10 @@ interface DirectionalRebarBlock : Keyed {
         set(value) {
             directionalBlocks[this] = value
         }
+
+    fun setFacingIfAbsent(facing: BlockFace) {
+        directionalBlocks.computeIfAbsent(this) { facing }
+    }
 
     @ApiStatus.Internal
     companion object : Listener {

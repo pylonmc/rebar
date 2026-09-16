@@ -3,15 +3,11 @@ package io.github.pylonmc.rebar.block.interfaces
 import io.github.pylonmc.rebar.block.BlockStorage
 import io.github.pylonmc.rebar.block.RebarBlock
 import io.github.pylonmc.rebar.block.context.BlockCreateContext
-import io.github.pylonmc.rebar.datatypes.RebarSerializers
-import io.github.pylonmc.rebar.event.RebarBlockDeserializeEvent
 import io.github.pylonmc.rebar.event.RebarBlockPlaceEvent
-import io.github.pylonmc.rebar.event.RebarBlockSerializeEvent
-import io.github.pylonmc.rebar.event.RebarBlockUnloadEvent
+import io.github.pylonmc.rebar.util.CARDINAL_FACES
 import io.github.pylonmc.rebar.util.getRelative
 import io.github.pylonmc.rebar.util.position.ChunkPosition
 import io.github.pylonmc.rebar.util.position.position
-import io.github.pylonmc.rebar.util.rebarKey
 import io.github.pylonmc.rebar.util.rotateVectorToFace
 import io.github.pylonmc.rebar.waila.Waila
 import io.github.pylonmc.rebar.waila.WailaDisplay
@@ -30,7 +26,6 @@ import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.MustBeInvokedByOverriders
 import org.joml.Vector3i
 import java.util.*
-import kotlin.collections.iterator
 import kotlin.math.abs
 import kotlin.math.min
 
@@ -44,9 +39,11 @@ import kotlin.math.min
  * If you need something more flexible, see [RebarMultiblock]. For example,
  * the smeltery in Pylon uses [RebarMultiblock] instead of this interface.
  *
+ * As this implements [DirectionalRebarBlock] you must set [DirectionalRebarBlock.facing] in your create constructor.
+ *
  * @see RebarMultiblock
  */
-interface SimpleRebarMultiblock : RebarMultiblock, GhostBlockHolderRebarBlock, EntityCulledRebarBlock {
+interface SimpleRebarMultiblock : RebarMultiblock, GhostBlockHolderRebarBlock, EntityCulledRebarBlock, DirectionalRebarBlock {
 
     /**
      * Represents a single block of a multiblock.
@@ -153,9 +150,6 @@ interface SimpleRebarMultiblock : RebarMultiblock, GhostBlockHolderRebarBlock, E
         }
     }
 
-    private val simpleMultiblockData: SimpleMultiblockData
-        get() = simpleMultiblocks.getOrPut(this) { SimpleMultiblockData(null) }
-
     /**
      * The positions and corresponding components of the multiblock.
      *
@@ -168,41 +162,6 @@ interface SimpleRebarMultiblock : RebarMultiblock, GhostBlockHolderRebarBlock, E
      * Automatically implemented by RebarBlock
      */
     fun getWaila(player: Player): WailaDisplay?
-
-    /**
-     * Sets the 'direction' we expect the multiblock to be built in. North is considered the default facing direction -
-     * ie setFacing(BlockFace.NORTH) will preserve the original multiblock structure without rotating it.
-     *
-     * Leave this unset to accept any direction.
-     */
-    fun setMultiblockDirection(direction: BlockFace?) {
-        simpleMultiblockData.direction = direction
-    }
-
-    /**
-     * The 'direction' we expect the multiblock to be built in. This is not the *actual* direction that
-     * the multiblock has been built in.
-     */
-    fun getMultiblockDirection(): BlockFace?
-            = simpleMultiblockData.direction
-
-    /**
-     * Returns all the valid configurations of the multiblock. If any of these is satisfied, the multiblock
-     * will be considered complete.
-     */
-    fun validStructures(): List<Map<Vector3i, MultiblockComponent>> {
-        val facing = simpleMultiblockData.direction
-        return if (facing == null) {
-            listOf(
-                components,
-                rotateComponentsToFace(components, BlockFace.EAST),
-                rotateComponentsToFace(components, BlockFace.SOUTH),
-                rotateComponentsToFace(components, BlockFace.WEST)
-            )
-        } else {
-            listOf(rotateComponentsToFace(components, facing))
-        }
-    }
 
     // Just assumes any rotation of the multiblock is valid, probably not worth the extra logic to account for
     // different facing directions.
@@ -231,17 +190,9 @@ interface SimpleRebarMultiblock : RebarMultiblock, GhostBlockHolderRebarBlock, E
     val maxCorner: Vector3i
         get() = Vector3i(horizontalRadius, components.keys.maxOf { it.y }, horizontalRadius)
 
-    fun getMultiblockBlock(position: Vector3i)
-        = block.getRelative(getRotatedPosition(position))
+    fun getRotatedPosition(position: Vector3i) = rotateVectorToFace(position, facing)
 
-    fun getRotatedPosition(rotatedPosition: Vector3i): Vector3i {
-        val direction = getMultiblockDirection()
-        return if (direction != null) {
-            rotateVectorToFace(rotatedPosition, direction)
-        } else {
-            rotatedPosition
-        }
-    }
+    fun getMultiblockBlock(position: Vector3i) = block.getRelative(getRotatedPosition(position))
 
     fun getMultiblockComponent(position: Vector3i) =
         BlockStorage.get(getMultiblockBlock(position))
@@ -253,7 +204,8 @@ interface SimpleRebarMultiblock : RebarMultiblock, GhostBlockHolderRebarBlock, E
         getMultiblockComponent(position) ?: throw IllegalStateException("There is no Rebar block at $position")
 
     fun <T> getMultiblockComponentOrThrow(clazz: Class<T>, position: Vector3i) =
-        getMultiblockComponent(clazz, position) ?: throw IllegalStateException("There is no Rebar block at $position or it is not of type $clazz")
+        getMultiblockComponent(clazz, position)
+            ?: throw IllegalStateException("There is no Rebar block at $position or it is not of type $clazz")
 
     override val chunksOccupied: Set<ChunkPosition>
         get() {
@@ -270,11 +222,10 @@ interface SimpleRebarMultiblock : RebarMultiblock, GhostBlockHolderRebarBlock, E
         }
 
     override fun checkFormed(): Boolean {
+        check(facing in CARDINAL_FACES) { "Multiblock's facing must be NORTH, SOUTH, EAST, or WEST" }
         // Actual formed checking logic
-        val formed = validStructures().any { struct ->
-            struct.all {
-                it.value.matches(block.location.add(Vector.fromJOML(it.key)).block)
-            }
+        val formed = rotateComponentsToFace(components, facing).all {
+            it.value.matches(block.location.add(Vector.fromJOML(it.key)).block)
         }
 
         for ((position, component) in components) {
@@ -306,9 +257,8 @@ interface SimpleRebarMultiblock : RebarMultiblock, GhostBlockHolderRebarBlock, E
         }
     }
 
-    override fun isPartOfMultiblock(otherBlock: Block): Boolean = validStructures().any {
-        it.contains((otherBlock.position - block.position).vector3i)
-    }
+    override fun isPartOfMultiblock(otherBlock: Block): Boolean =
+        (otherBlock.position - block.position).toVector3i() in rotateComponentsToFace(components, facing)
 
     override val culledEntityIds: Iterable<UUID>
         get() = heldEntities.values
@@ -316,47 +266,18 @@ interface SimpleRebarMultiblock : RebarMultiblock, GhostBlockHolderRebarBlock, E
     @ApiStatus.Internal
     companion object : Listener {
 
-        internal data class SimpleMultiblockData(var direction: BlockFace?)
-
-        private val simpleMultiblockKey = rebarKey("simple_multiblock_data")
-
-        private val simpleMultiblocks = IdentityHashMap<SimpleRebarMultiblock, SimpleMultiblockData>()
-
         @EventHandler
         private fun onPlace(event: RebarBlockPlaceEvent) {
             val block = event.rebarBlock
             if (block !is SimpleRebarMultiblock) return
+            block.setFacingIfAbsent(BlockFace.NORTH)
             for ((position, component) in block.components) {
                 component.spawnGhostBlock(block, block.getRotatedPosition(position))
             }
         }
 
-        @EventHandler
-        private fun onDeserialize(event: RebarBlockDeserializeEvent) {
-            val block = event.rebarBlock
-            if (block is SimpleRebarMultiblock) {
-                event.pdc.get(simpleMultiblockKey, RebarSerializers.SIMPLE_MULTIBLOCK_DATA)?.let { simpleMultiblocks[block] = it }
-            }
-        }
-
-        @EventHandler
-        private fun onSerialize(event: RebarBlockSerializeEvent) {
-            val block = event.rebarBlock
-            if (block is SimpleRebarMultiblock) {
-                event.pdc.set(simpleMultiblockKey, RebarSerializers.SIMPLE_MULTIBLOCK_DATA, simpleMultiblocks[block] ?: return)
-            }
-        }
-
-        @EventHandler
-        private fun onUnload(event: RebarBlockUnloadEvent) {
-            val block = event.rebarBlock
-            if (block is SimpleRebarMultiblock) {
-                simpleMultiblocks.remove(block)
-            }
-        }
-
         @JvmStatic
-        fun rotateComponentsToFace(components: Map<Vector3i, MultiblockComponent>, face: BlockFace)
-                = components.mapKeys { rotateVectorToFace(it.key, face) }
+        fun rotateComponentsToFace(components: Map<Vector3i, MultiblockComponent>, face: BlockFace) =
+            components.mapKeys { rotateVectorToFace(it.key, face) }
     }
 }

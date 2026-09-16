@@ -3,11 +3,11 @@ package io.github.pylonmc.rebar.block
 import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.block.RebarBlock.Companion.rebarBlockTextureEntityKey
 import io.github.pylonmc.rebar.block.RebarBlock.Companion.register
+import io.github.pylonmc.rebar.block.context.BlockBreakContext
+import io.github.pylonmc.rebar.block.context.BlockCreateContext
 import io.github.pylonmc.rebar.block.interfaces.DirectionalRebarBlock
 import io.github.pylonmc.rebar.block.interfaces.EntityHolderRebarBlock
 import io.github.pylonmc.rebar.block.interfaces.GuiRebarBlock
-import io.github.pylonmc.rebar.block.context.BlockBreakContext
-import io.github.pylonmc.rebar.block.context.BlockCreateContext
 import io.github.pylonmc.rebar.config.ConfigSection
 import io.github.pylonmc.rebar.config.RebarConfig
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter
@@ -15,6 +15,7 @@ import io.github.pylonmc.rebar.content.debug.DebugWaxedWeatheredCutCopperStairs
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.entity.packet.BlockTextureEntity
 import io.github.pylonmc.rebar.event.RebarBlockDeserializeEvent
+import io.github.pylonmc.rebar.event.RebarBlockInitializeEvent
 import io.github.pylonmc.rebar.event.RebarBlockSerializeEvent
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
 import io.github.pylonmc.rebar.nms.NmsAccessor
@@ -30,7 +31,10 @@ import io.github.pylonmc.rebar.waila.WailaDisplay
 import io.github.pylonmc.rebar.waila.WailaSupplier
 import io.papermc.paper.datacomponent.DataComponentTypes
 import net.kyori.adventure.key.Key
-import org.bukkit.*
+import org.bukkit.Keyed
+import org.bukkit.Material
+import org.bukkit.NamespacedKey
+import org.bukkit.World
 import org.bukkit.block.Block
 import org.bukkit.block.data.BlockData
 import org.bukkit.entity.ItemDisplay
@@ -39,6 +43,7 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataAdapterContext
 import org.bukkit.persistence.PersistentDataContainer
 import java.util.function.Consumer
+import org.jetbrains.annotations.MustBeInvokedByOverriders
 
 /**
  * Represents a Rebar block in the world.
@@ -202,6 +207,7 @@ open class RebarBlock private constructor(val block: Block) : WailaSupplier, Key
      * instead of returning a new map entirely, to ensure that any properties provided by superclasses
      * are preserved. (e.g. [DirectionalRebarBlock])
      */
+    @MustBeInvokedByOverriders
     open fun getBlockTextureProperties(): MutableMap<String, Pair<String, Int>> {
         val properties = mutableMapOf<String, Pair<String, Int>>()
         if (this is DirectionalRebarBlock) {
@@ -232,7 +238,7 @@ open class RebarBlock private constructor(val block: Block) : WailaSupplier, Key
      */
     open fun getBlockTextureItem(): ItemStack {
         val builder = if (defaultItem != null) {
-            ItemStackBuilder.of(defaultItem.getItemStack())
+            ItemStackBuilder.of(defaultItem.createNewItemStack())
         } else {
             ItemStackBuilder.of(schema.material)
                 .addCustomModelDataString(key.toString())
@@ -269,7 +275,7 @@ open class RebarBlock private constructor(val block: Block) : WailaSupplier, Key
      */
     open fun getDropItem(context: BlockBreakContext): ItemStack? {
         return if (context.normallyDrops) {
-            defaultItem?.getItemStack()
+            defaultItem?.createNewItemStack()
         } else {
             null
         }
@@ -283,7 +289,7 @@ open class RebarBlock private constructor(val block: Block) : WailaSupplier, Key
      *
      * @return the item the block should give when middle clicked, or null if none
      */
-    open fun getPickItem(player: Player) = defaultItem?.getItemStack()
+    open fun getPickItem(player: Player) = defaultItem?.createNewItemStack()
 
     /**
      * Called when debug info is requested for the block by someone
@@ -435,6 +441,7 @@ open class RebarBlock private constructor(val block: Block) : WailaSupplier, Key
 
                 RebarBlockDeserializeEvent(block.block, block, pdc).callEvent()
                 block.postInitialise()
+                RebarBlockInitializeEvent(block.block, block).callEvent()
                 block.postLoad()
                 return block
             } catch (t: Throwable) {

@@ -52,7 +52,7 @@ sealed interface BlockTypeWrapper : Keyed {
     @JvmRecord
     data class Rebar(val blockSchema: RebarBlockSchema) : BlockTypeWrapper {
         override fun matches(block: Block?) = block != null && BlockStorage.get(block)?.schema == blockSchema
-        override fun createItemStack(count: Int) = blockSchema.defaultItem?.getItemStack(count) ?: throw IllegalArgumentException("Block schema ${blockSchema.key} does not have an item representation.")
+        override fun createItemStack(count: Int) = blockSchema.defaultItem?.createNewItemStack(count) ?: throw IllegalArgumentException("Block schema ${blockSchema.key} does not have an item representation.")
         // TODO: use player place api when its introduced
         override fun placeBlock(block: Block?, player: Player?) =
             block != null && BlockStorage.placeBlock(block, blockSchema.key, BlockCreateContext.Default(player, block)) != null

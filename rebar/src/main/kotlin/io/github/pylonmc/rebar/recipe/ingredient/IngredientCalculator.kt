@@ -238,6 +238,6 @@ private fun FluidOrItem.asOne(): FluidOrItem = when (this) {
 
 private val FluidOrItem.amount: Double
     get() = when (this) {
-        is FluidWithAmount -> this.amountMillibuckets
+        is FluidWithAmount -> this.amount
         is FluidOrItem.Item -> this.item.amount.toDouble()
     }

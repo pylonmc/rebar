@@ -18,11 +18,7 @@ import io.github.pylonmc.rebar.item.RebarItemSchema
 import io.github.pylonmc.rebar.nms.NmsAccessor
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.util.delayTicks
-import io.github.pylonmc.rebar.util.findRebar
-import io.github.pylonmc.rebar.util.findType
-import io.github.pylonmc.rebar.util.rebarKey
-import io.github.pylonmc.rebar.util.setNullable
-import io.github.pylonmc.rebar.util.swapItem
+import io.github.pylonmc.rebar.util.*
 import io.github.pylonmc.rebar.waila.WailaDisplay
 import io.papermc.paper.util.Tick
 import kotlinx.coroutines.launch
@@ -273,7 +269,7 @@ interface GhostBlockHolderRebarBlock : EntityHolderRebarBlock {
         constructor(ghostBlockHolder: Block, position: Vector3i, items: MutableList<NamespacedKey>) : super(
             KEY,
             ItemDisplayBuilder()
-                .itemStack(RebarRegistry.ITEMS.getOrThrow(items.first()).getItemStack())
+                .itemStack(RebarRegistry.ITEMS.getOrThrow(items.first()).createNewItemStack())
                 .glow(Color.WHITE)
                 .transformation(TransformBuilder().scale(0.501))
                 .build(ghostBlockHolder.location.toCenterLocation().add(Vector.fromJOML(position))),
@@ -298,7 +294,7 @@ interface GhostBlockHolderRebarBlock : EntityHolderRebarBlock {
                 firstSchema = currentSchema
                 val index = player.inventory.findRebar(currentSchema)
                 if (index != null) {
-                    return firstSchema.getItemStack()
+                    return firstSchema.createNewItemStack()
                 }
             }
 
@@ -307,11 +303,11 @@ interface GhostBlockHolderRebarBlock : EntityHolderRebarBlock {
                 if (firstSchema == null) firstSchema = schema
                 val index = player.inventory.findRebar(schema)
                 if (index != null) {
-                    return schema.getItemStack()
+                    return schema.createNewItemStack()
                 }
             }
 
-            return firstSchema?.getItemStack()
+            return firstSchema?.createNewItemStack()
         }
 
         fun setSize(size: Double) {
@@ -319,7 +315,7 @@ interface GhostBlockHolderRebarBlock : EntityHolderRebarBlock {
         }
 
         fun setIndex(i: Int) {
-            entity.setItemStack(RebarRegistry.ITEMS.getOrThrow(rebarBlocks[i]).getItemStack())
+            entity.setItemStack(RebarRegistry.ITEMS.getOrThrow(rebarBlocks[i]).createNewItemStack())
         }
 
         companion object {
