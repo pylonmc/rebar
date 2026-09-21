@@ -1,4 +1,4 @@
-package io.github.pylonmc.rebar.test.electricity;
+package io.github.pylonmc.rebar.test.test.electricity;
 
 import io.github.pylonmc.rebar.electricity.ElectricNetwork;
 import io.github.pylonmc.rebar.electricity.ElectricityManager;

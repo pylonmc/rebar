@@ -1,4 +1,4 @@
-package io.github.pylonmc.rebar.test.electricity;
+package io.github.pylonmc.rebar.test.test.electricity;
 
 import com.google.common.util.concurrent.AtomicDouble;
 import io.github.pylonmc.rebar.electricity.ElectricityManager;

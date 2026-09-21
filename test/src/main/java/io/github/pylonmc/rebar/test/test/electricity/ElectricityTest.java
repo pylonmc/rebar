@@ -1,4 +1,4 @@
-package io.github.pylonmc.rebar.test.electricity;
+package io.github.pylonmc.rebar.test.test.electricity;
 
 import io.github.pylonmc.rebar.test.base.SyncTest;
 import io.github.pylonmc.rebar.util.position.BlockPosition;

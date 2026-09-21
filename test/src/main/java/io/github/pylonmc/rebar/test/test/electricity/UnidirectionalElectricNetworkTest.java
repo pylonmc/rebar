@@ -1,4 +1,4 @@
-package io.github.pylonmc.rebar.test.electricity;
+package io.github.pylonmc.rebar.test.test.electricity;
 
 import io.github.pylonmc.rebar.electricity.ElectricNetwork;
 import io.github.pylonmc.rebar.electricity.ElectricityManager;
@@ -8,7 +8,7 @@ import io.github.pylonmc.rebar.electricity.nodes.ElectricProducerNode;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class LimitedElectricNetworkTest extends ElectricityTest {
+public class UnidirectionalElectricNetworkTest extends ElectricityTest {
 
     @SuppressWarnings("deprecation")
     @Override
@@ -21,10 +21,11 @@ public class LimitedElectricNetworkTest extends ElectricityTest {
         ElectricityManager.addNode(connector);
         ElectricityManager.addNode(consumer);
 
+        ElectricNetwork.Edge edge = new ElectricNetwork.Edge(consumer, connector);
+
         producer.connect(connector);
         connector.connect(consumer);
-        new ElectricNetwork.Edge(connector, consumer).setPowerLimit(5);
-        new ElectricNetwork.Edge(consumer, connector).setPowerLimit(5);
+        edge.setUnidirectional(true);
         assertThat(consumer.isPowered()).isFalse();
 
         ElectricityManager.tick();
@@ -34,7 +35,7 @@ public class LimitedElectricNetworkTest extends ElectricityTest {
         ElectricityManager.tick();
         assertThat(consumer.isPowered()).isFalse();
 
-        producer.connect(consumer);
+        edge.setUnidirectional(false);
         ElectricityManager.tick();
         assertThat(consumer.isPowered()).isTrue();
     }
