@@ -4,6 +4,10 @@ import org.joml.*
 import kotlin.math.max
 import kotlin.math.min
 
+/**
+ * A [BVH tree](https://en.wikipedia.org/wiki/Bounding_volume_hierarchy) storing exactly two children per node.
+ * This gives an intersection testing complexity of O(log n).
+ */
 class BinaryBvhTree<E : BinaryBvhTree.Element> {
 
     private var tree: TreeNode<E>? = null
@@ -63,18 +67,79 @@ class BinaryBvhTree<E : BinaryBvhTree.Element> {
         }
 
         var oldNode = path.removeLast()
-        var node = Branch(oldNode, element)
+        var newNode = Branch(oldNode, element)
         while (path.isNotEmpty()) {
             val branch = path.removeLast() as Branch
-            node = if (branch.left == oldNode) {
-                Branch(node, branch.right)
+            newNode = if (branch.left == oldNode) {
+                Branch(newNode, branch.right)
             } else {
-                Branch(branch.left, node)
+                Branch(branch.left, newNode)
             }
             oldNode = branch
         }
 
-        this.tree = node
+        this.tree = newNode
+    }
+
+    fun remove(element: E): Boolean {
+        val tree = this.tree ?: return false
+
+        val tempLeaf = Leaf(element)
+        var path: ArrayDeque<TreeNode<E>>? = null
+        val paths = ArrayDeque<List<TreeNode<E>>>()
+        paths.add(listOf(tree))
+        while (paths.isNotEmpty()) {
+            val candidatePath = paths.removeLast()
+            when (val node = candidatePath.last()) {
+                is Leaf -> if (node.element == element) {
+                    path = ArrayDeque(candidatePath)
+                    break
+                }
+
+                is Branch -> {
+                    val leftInt = node.left.boundingBox.intersectionArea(tempLeaf.boundingBox)
+                    val rightInt = node.right.boundingBox.intersectionArea(tempLeaf.boundingBox)
+
+                    if (!(leftInt == 0f && rightInt == 0f)) {
+                        if (leftInt == 0f) {
+                            paths.add(candidatePath + node.right)
+                        } else if (rightInt == 0f) {
+                            paths.add(candidatePath + node.left)
+                        } else if (leftInt > rightInt) {
+                            // search the one with more intersection first
+                            paths.add(candidatePath + node.right)
+                            paths.add(candidatePath + node.left)
+                        } else {
+                            paths.add(candidatePath + node.left)
+                            paths.add(candidatePath + node.right)
+                        }
+                    }
+                }
+            }
+        }
+
+        if (path == null) return false
+
+        val leaf = path.removeLast()
+        var oldNode = path.removeLast() as Branch
+        var newNode = if (oldNode.left == leaf) {
+            oldNode.right
+        } else {
+            oldNode.left
+        }
+        while (path.isNotEmpty()) {
+            val branch = path.removeLast() as Branch
+            newNode = if (branch.left == oldNode) {
+                Branch(newNode, branch.right)
+            } else {
+                Branch(branch.left, newNode)
+            }
+            oldNode = branch
+        }
+
+        this.tree = newNode
+
+        return true
     }
 
     interface Element {
@@ -100,7 +165,7 @@ class BinaryBvhTree<E : BinaryBvhTree.Element> {
         }
     }
 
-    private data class Leaf<E : Element>(val element: E) : TreeNode<E> {
+    private class Leaf<E : Element>(val element: E) : TreeNode<E> {
 
         override val boundingBox by lazy {
             val transform = element.boundingBoxTransform
@@ -182,6 +247,11 @@ private data class BoundingBox(val min: Vector3fc, val max: Vector3fc) {
             max(max.z(), other.max.z())
         )
     )
+
+    fun intersectionArea(other: BoundingBox): Float {
+        fun axisIntersection(axis: Int): Float = max(0f, min(this.max[axis], other.max[axis]) - max(this.min[axis], other.min[axis]))
+        return axisIntersection(0) * axisIntersection(1) * axisIntersection(2)
+    }
 
     companion object {
         val UNIT = BoundingBox(Vector3f(-0.5f, -0.5f, -0.5f), Vector3f(0.5f, 0.5f, 0.5f))
