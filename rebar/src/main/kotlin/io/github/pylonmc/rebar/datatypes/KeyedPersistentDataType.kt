@@ -1,7 +1,9 @@
 package io.github.pylonmc.rebar.datatypes
 
+import io.github.pylonmc.rebar.registry.RebarRegistry
 import org.bukkit.Keyed
 import org.bukkit.NamespacedKey
+import org.bukkit.Registry
 import org.bukkit.persistence.PersistentDataAdapterContext
 import org.bukkit.persistence.PersistentDataType
 
@@ -53,5 +55,21 @@ abstract class KeyedPersistentDataType<T : Keyed>(val type: Class<T>) : Persiste
                 override fun retrieve(key: NamespacedKey): T = retrievalFunction(key)
             }
         }
+
+        @JvmStatic
+        fun <T : Keyed> fromRegistry(type: Class<T>, registry: Registry<T>): PersistentDataType<String, T> = object : KeyedPersistentDataType<T>(type) {
+            override fun retrieve(key: NamespacedKey): T = registry.getOrThrow(key)
+        }
+
+        @JvmSynthetic
+        inline fun <reified T : Keyed> fromRegistry(registry: Registry<T>) = fromRegistry(T::class.java, registry)
+
+        @JvmStatic
+        fun <T : Keyed> fromRegistry(type: Class<T>, registry: RebarRegistry<T>): PersistentDataType<String, T> = object : KeyedPersistentDataType<T>(type) {
+            override fun retrieve(key: NamespacedKey): T = registry.getOrThrow(key)
+        }
+
+        @JvmSynthetic
+        inline fun <reified T : Keyed> fromRegistry(registry: RebarRegistry<T>) = fromRegistry(T::class.java, registry)
     }
 }

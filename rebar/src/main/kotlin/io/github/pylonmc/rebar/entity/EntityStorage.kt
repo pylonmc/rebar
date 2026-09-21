@@ -19,11 +19,10 @@ import org.bukkit.entity.Entity
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
-import org.bukkit.event.entity.EntityDeathEvent
 import org.bukkit.event.entity.EntityRemoveEvent
 import org.bukkit.event.world.EntitiesLoadEvent
 import org.bukkit.event.world.EntitiesUnloadEvent
-import java.util.UUID
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import java.util.function.Consumer
@@ -292,8 +291,8 @@ object EntityStorage : Listener {
 
         lockEntityWrite {
             entities.remove(rebarEntity.uuid)
-            entitiesByKey[rebarEntity.schema.key]!!.remove(rebarEntity)
-            if (entitiesByKey[rebarEntity.schema.key]!!.isEmpty()) {
+            entitiesByKey[rebarEntity.schema.key]?.remove(rebarEntity)
+            if (entitiesByKey[rebarEntity.schema.key]?.isEmpty() == true) {
                 entitiesByKey.remove(rebarEntity.schema.key)
             }
             entityAutosaveTasks.remove(rebarEntity.uuid)?.cancel()
@@ -311,8 +310,8 @@ object EntityStorage : Listener {
 
             lockEntityWrite {
                 entities.remove(rebarEntity.uuid)
-                entitiesByKey[rebarEntity.schema.key]!!.remove(rebarEntity)
-                if (entitiesByKey[rebarEntity.schema.key]!!.isEmpty()) {
+                entitiesByKey[rebarEntity.schema.key]?.remove(rebarEntity)
+                if (entitiesByKey[rebarEntity.schema.key]?.isEmpty() == true) {
                     entitiesByKey.remove(rebarEntity.schema.key)
                 }
                 entityAutosaveTasks.remove(rebarEntity.uuid)?.cancel()

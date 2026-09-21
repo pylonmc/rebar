@@ -5,12 +5,13 @@ import io.github.pylonmc.rebar.event.RebarBlockDeserializeEvent
 import io.github.pylonmc.rebar.event.RebarBlockSerializeEvent
 import io.github.pylonmc.rebar.event.RebarBlockUnloadEvent
 import io.github.pylonmc.rebar.fluid.RebarFluid
+import io.github.pylonmc.rebar.recipe.ingredient.FluidWithAmount
 import io.github.pylonmc.rebar.util.FLUID_EPSILON
 import io.github.pylonmc.rebar.util.rebarKey
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.jetbrains.annotations.ApiStatus
-import java.util.IdentityHashMap
+import java.util.*
 import kotlin.math.max
 
 /**
@@ -103,6 +104,12 @@ interface FluidTankRebarBlock : FluidRebarBlock {
             = (fluid == null || fluidData.fluid == null || fluid == fluidData.fluid) && (fluid == null || isAllowedFluid(fluid)) && canSetFluid(fluidData.amount + amount)
 
     /**
+     * Checks if adding a certain amount of fluid of a certain type would
+     * result in a valid fluid amount.
+     */
+    fun canAddFluid(fluidWithAmount: FluidWithAmount) = canAddFluid(fluidWithAmount.fluid, fluidWithAmount.amount)
+
+    /**
      * Sets the fluid amount only if the new amount of fluid is greater
      * than zero and fits in the tank.
      *
@@ -123,6 +130,18 @@ interface FluidTankRebarBlock : FluidRebarBlock {
     }
 
     /**
+     * Sets the fluid amount only if the new amount of fluid is greater
+     * than zero and fits in the tank. Also sets the fluid type to the
+     * specified type.
+     *
+     * @return true only if the fluid amount was set successfully
+     */
+    fun setFluid(fluid: RebarFluid, amount: Double): Boolean {
+        setFluidType(fluid)
+        return setFluid(amount)
+    }
+
+    /**
      * Adds to the tank only if the new amount of fluid is greater
      * than zero and fits in the tank.
      *
@@ -130,6 +149,18 @@ interface FluidTankRebarBlock : FluidRebarBlock {
      */
     fun addFluid(amount: Double): Boolean
             = setFluid(fluidAmount + amount)
+
+    /**
+     * Adds to the tank only if the new amount of fluid is greater
+     * than zero and fits in the tank. Also sets the fluid type to
+     * the specified type.
+     *
+     * @return true only if the tank was added to successfully
+     */
+    fun addFluid(fluid: RebarFluid, amount: Double): Boolean {
+        setFluidType(fluid)
+        return addFluid(amount)
+    }
 
     /**
      * Removes from the tank only if the new amount of fluid is greater

@@ -18,6 +18,8 @@ import org.bukkit.NamespacedKey
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataContainer
 import org.jetbrains.annotations.Contract
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
 
 /**
  * RebarItems are wrappers around ItemStacks that allow you to easily add extra functionality.
@@ -98,6 +100,7 @@ open class RebarItem(val stack: ItemStack) : Keyed {
      */
     open fun place(context: BlockCreateContext): RebarBlock? = schema.place(context)
 
+    @OptIn(ExperimentalContracts::class)
     companion object {
 
         private val nameWarningsSuppressed: MutableSet<NamespacedKey> = mutableSetOf()
@@ -137,7 +140,7 @@ open class RebarItem(val stack: ItemStack) : Keyed {
 
             if (!Rebar.loading) {
                 // pre-merge configs and check for constructor errors
-                schema.getRebarItem()
+                schema.createNewRebarItem()
             }
         }
 
@@ -150,8 +153,8 @@ open class RebarItem(val stack: ItemStack) : Keyed {
             register(T::class.java, template, rebarBlockKey)
 
         /**
-         * Gets a RebarItem from an ItemStack if the item is a Rebar item
-         * Returns null if the ItemStack is not a Rebar item
+         * Gets a RebarItem from an [ItemStack] if the item is a Rebar item
+         * Returns null if the [ItemStack] is not a Rebar item
          *
          * If you only want [RebarItem]s of a specific type, use the class specific method for better performance,
          * it will check the underlying [RebarItemSchema.itemClass] *before* it constructs the [RebarItem]
@@ -166,8 +169,8 @@ open class RebarItem(val stack: ItemStack) : Keyed {
         }
 
         /**
-         * Converts a regular ItemStack to a RebarItem of class [clazz]
-         * Returns null if the ItemStack is not a Rebar item or is not of the specified [clazz]
+         * Converts a regular [ItemStack] to a [RebarItem] of class [clazz]
+         * Returns null if the [ItemStack] is not a Rebar item or is not of the specified [clazz]
          */
         @JvmStatic
         @Contract("null -> null")
@@ -177,11 +180,14 @@ open class RebarItem(val stack: ItemStack) : Keyed {
             if (!schema.isType(clazz)) return null
             return schema.itemClass.cast(schema.loadConstructor.invoke(stack)) as T?
         }
-
+        /**
+         * Converts a regular [ItemStack] to a [RebarItem] of class [T]
+         * Returns null if the [ItemStack] is not a Rebar item or is not of the specified class
+         */
         @JvmSynthetic
-        inline fun <reified T : RebarItem> from(stack: ItemStack?): T? {
-            val rebarItem = fromStack(stack) ?: return null
-            return rebarItem as? T
+        inline fun <reified T> fromStack(stack: ItemStack?): T? {
+            contract { returnsNotNull() implies (stack != null) }
+            return fromStack(stack, T::class.java)
         }
 
         /**
@@ -190,6 +196,7 @@ open class RebarItem(val stack: ItemStack) : Keyed {
         @JvmStatic
         @Contract("null -> false")
         fun isRebarItem(stack: ItemStack?): Boolean {
+            contract { returns(true) implies (stack != null) }
             return stack != null && stack.persistentDataContainer.has(RebarItemSchema.rebarItemKeyKey)
         }
 
@@ -199,8 +206,19 @@ open class RebarItem(val stack: ItemStack) : Keyed {
         @JvmStatic
         @Contract("null, _ -> false")
         fun isRebarItem(stack: ItemStack?, clazz: Class<*>): Boolean {
+            contract { returns(true) implies (stack != null) }
             val schema = RebarItemSchema.fromStack(stack) ?: return false
             return schema.isType(clazz)
+        }
+
+        /**
+         * Checks if [stack] is a Rebar item castable to [T].
+         */
+        @JvmSynthetic
+        @JvmName("isRebarItemReified")
+        inline fun <reified T> isRebarItem(stack: ItemStack?): Boolean {
+            contract { returns(true) implies (stack != null) }
+            return isRebarItem(stack, T::class.java)
         }
 
         /**

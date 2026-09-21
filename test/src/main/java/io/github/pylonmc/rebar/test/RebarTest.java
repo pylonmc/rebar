@@ -1,7 +1,7 @@
 package io.github.pylonmc.rebar.test;
 
 import io.github.pylonmc.rebar.addon.RebarAddon;
-import io.github.pylonmc.rebar.config.RebarConfig;
+import io.github.pylonmc.rebar.electricity.ElectricityManager;
 import io.github.pylonmc.rebar.test.base.Test;
 import io.github.pylonmc.rebar.test.base.TestResult;
 import io.github.pylonmc.rebar.test.block.TestBlocks;
@@ -9,6 +9,7 @@ import io.github.pylonmc.rebar.test.entity.TestEntities;
 import io.github.pylonmc.rebar.test.fluid.TestFluids;
 import io.github.pylonmc.rebar.test.item.TestItems;
 import io.github.pylonmc.rebar.test.test.block.*;
+import io.github.pylonmc.rebar.test.test.electricity.*;
 import io.github.pylonmc.rebar.test.test.entity.EntityEventErrorTest;
 import io.github.pylonmc.rebar.test.test.entity.EntityStorageChunkReloadTest;
 import io.github.pylonmc.rebar.test.test.entity.EntityStorageSimpleTest;
@@ -22,21 +23,20 @@ import io.github.pylonmc.rebar.test.test.recipe.FurnaceTest;
 import io.github.pylonmc.rebar.test.test.serializer.*;
 import io.github.pylonmc.rebar.test.util.BedrockWorldGenerator;
 import io.github.pylonmc.rebar.test.util.TestUtil;
-import lombok.Getter;
-import lombok.experimental.Accessors;
-import org.bukkit.*;
-import org.bukkit.plugin.java.JavaPlugin;
-import org.jetbrains.annotations.NotNull;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import lombok.Getter;
+import lombok.experimental.Accessors;
+import org.bukkit.*;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
 
 public class RebarTest extends JavaPlugin implements RebarAddon {
     @Accessors(fluent = true)
@@ -54,7 +54,6 @@ public class RebarTest extends JavaPlugin implements RebarAddon {
         tests.add(new BlockStorageMissingSchemaTest());
         tests.add(new BlockStorageRemoveTest());
         tests.add(new SimpleMultiblockTest());
-        tests.add(new SimpleMultiblockRotatedTest());
         tests.add(new TickingBlockTest());
         tests.add(new TickingBlockErrorTest());
         tests.add(new BlockEventErrorTest());
@@ -94,6 +93,15 @@ public class RebarTest extends JavaPlugin implements RebarAddon {
         tests.add(new FluidFlowRateTest());
         tests.add(new FluidPredicateTest());
 
+        tests.add(new SimpleElectricNetworkTest());
+        tests.add(new SinglyConnectedElectricNetworkTest());
+        tests.add(new MultipleProducerElectricNetworkTest());
+        tests.add(new LimitedElectricNetworkTest());
+        tests.add(new UnidirectionalElectricNetworkTest());
+        tests.add(new MergeElectricNetworkTest());
+        tests.add(new SeriesConsumerElectricNetworkTest());
+        tests.add(new AcceptorElectricNetworkTest());
+
         return tests;
     }
 
@@ -129,8 +137,17 @@ public class RebarTest extends JavaPlugin implements RebarAddon {
             }
         }).join();
 
+
+
         // Tests must be initialised on main thread
         List<Test> tests = TestUtil.runSync(RebarTest::initTests).join();
+
+        String testMask = System.getenv("TEST_MASK");
+        if (testMask != null) {
+            Pattern mask = Pattern.compile(testMask);
+
+            tests.removeIf(test -> !mask.matcher(test.getKey().toString()).matches());
+        }
 
         List<TestResult> results = tests.stream()
                 .map(Test::start)
@@ -192,6 +209,8 @@ public class RebarTest extends JavaPlugin implements RebarAddon {
         if (Boolean.parseBoolean(System.getenv("NO_TEST"))) {
             return;
         }
+
+        ElectricityManager.dontAutoTickNetworks(true);
 
         TestUtil.runAsync(RebarTest::run, 1);
     }

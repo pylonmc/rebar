@@ -3,7 +3,7 @@ import net.minecrell.pluginyml.bukkit.BukkitPluginDescription
 plugins {
     java
     id("com.gradleup.shadow")
-    id("net.minecrell.plugin-yml.bukkit")
+    id("de.eldoria.plugin-yml.bukkit") version "0.9.0"
     id("xyz.jpenilla.run-paper") version "3.1.0"
     id("io.freefair.lombok") version "9.5.0"
 }
@@ -41,7 +41,9 @@ tasks.runServer {
     val runFolder = project.projectDir.resolve("run")
     val testsFailedFile = runFolder.resolve("tests-failed")
     doFirst {
-        runFolder.deleteRecursively()
+        if (!System.getenv("NO_DELETE_RUN").toBoolean()) {
+            runFolder.deleteRecursively()
+        }
         runFolder.mkdirs()
         runFolder.resolve("eula.txt").writeText("eula=true")
         testsFailedFile.delete()
@@ -50,6 +52,8 @@ tasks.runServer {
         pluginFolder.mkdirs()
         val archive = project(":rebar").tasks.shadowJar.map { it.archiveFile }.get().get().asFile
         archive.copyTo(pluginFolder.resolve(archive.name), overwrite = true)
+
+        runFolder.resolve("gametests").deleteRecursively()
     }
     maxHeapSize = "2G"
     minecraftVersion(minecraftVersion)

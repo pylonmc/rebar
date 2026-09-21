@@ -24,7 +24,6 @@ import net.kyori.adventure.text.format.Style
 import net.kyori.adventure.translation.GlobalTranslator
 import net.kyori.adventure.translation.Translator
 import org.apache.commons.lang3.LocaleUtils
-import org.jetbrains.annotations.ApiStatus
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
@@ -36,6 +35,7 @@ import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerLocaleChangeEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.inventory.ItemStack
+import org.jetbrains.annotations.ApiStatus
 import java.io.File
 import java.text.MessageFormat
 import java.util.*
@@ -266,7 +266,7 @@ class RebarTranslator private constructor(private val addon: RebarAddon) : Trans
                 val rebarItemSchema = RebarItemSchema.fromStack(this)
                 if (rebarItemSchema != null && player.storyText) {
                     val storyKey = "${rebarItemSchema.key.namespace}.item.${rebarItemSchema.key.key}.story"
-                    if (translators[rebarItemSchema.addon.key]!!.canTranslate(storyKey, locale)) {
+                    if (translators[rebarItemSchema.addon.key]!!.canTranslate(storyKey, locale) && originalLore.none { it is TranslatableComponent && it.key() == storyKey }) {
                         if (originalLore.isNotEmpty()) {
                             originalLore.add(Component.empty()) // newline
                         }
