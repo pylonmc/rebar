@@ -30,9 +30,15 @@ public class BinaryBvhTreeTest extends AsyncTest {
         rayThatMissesElementReturnsNoIntersections();
         rayTooShortToReachElementReturnsNoIntersections();
         removeExistingElementRemovesItsIntersections();
+        removeExistingElementReturnsTrue();
+        removeNonexistentElementReturnsFalse();
+        removeFindsElementWhenBoundingBoxesOverlap();
         removeOnlyElementLeavesTreeEmpty();
+        removeFromEmptyTreeReturnsFalse();
+        removeFromMultipleElementTreePreservesOtherElements();
         rotatedBoundingBoxCanBeIntersected();
         scaledBoundingBoxIsIntersectedCorrectly();
+        translatedElementIsIntersectedAtCorrectPosition();
         singleElementIsIntersected();
         startsEmpty();
     }
