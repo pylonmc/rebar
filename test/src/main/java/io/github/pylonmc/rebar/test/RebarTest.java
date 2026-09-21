@@ -10,10 +10,7 @@ import io.github.pylonmc.rebar.test.fluid.TestFluids;
 import io.github.pylonmc.rebar.test.item.TestItems;
 import io.github.pylonmc.rebar.test.test.block.*;
 import io.github.pylonmc.rebar.test.test.electricity.*;
-import io.github.pylonmc.rebar.test.test.entity.EntityEventErrorTest;
-import io.github.pylonmc.rebar.test.test.entity.EntityStorageChunkReloadTest;
-import io.github.pylonmc.rebar.test.test.entity.EntityStorageSimpleTest;
-import io.github.pylonmc.rebar.test.test.entity.EntityStorageUnregisteredEntityTest;
+import io.github.pylonmc.rebar.test.test.entity.*;
 import io.github.pylonmc.rebar.test.test.fluid.*;
 import io.github.pylonmc.rebar.test.test.i18n.TranslationFallbackTest;
 import io.github.pylonmc.rebar.test.test.item.RebarItemStackInterfaceTest;
@@ -101,6 +98,8 @@ public class RebarTest extends JavaPlugin implements RebarAddon {
         tests.add(new MergeElectricNetworkTest());
         tests.add(new SeriesConsumerElectricNetworkTest());
         tests.add(new AcceptorElectricNetworkTest());
+
+        tests.add(new BinaryBvhTreeTest());
 
         return tests;
     }

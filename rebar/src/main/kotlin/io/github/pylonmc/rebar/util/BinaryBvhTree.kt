@@ -6,9 +6,12 @@ import kotlin.math.min
 
 /**
  * A [BVH tree](https://en.wikipedia.org/wiki/Bounding_volume_hierarchy) storing exactly two children per node.
- * This gives an intersection testing complexity of O(log n).
+ * This gives an intersection testing complexity of O(log2 n).
  */
 class BinaryBvhTree<E : BinaryBvhTree.Element> {
+
+    var size: Int = 0
+        private set
 
     private var tree: TreeNode<E>? = null
 
@@ -39,19 +42,23 @@ class BinaryBvhTree<E : BinaryBvhTree.Element> {
         return intersections
     }
 
-    fun insert(element: E) {
+    /**
+     * Returns false if the element is already in the tree
+     */
+    fun insert(element: E): Boolean {
         val element = Leaf(element)
         val tree = this.tree
         if (tree == null) {
             this.tree = element
-            return
+            size++
+            return true
         }
 
         val path = ArrayDeque<TreeNode<E>>()
         path.add(tree)
         while (true) {
             when (val node = path.last()) {
-                is Leaf -> break
+                is Leaf -> if (node.element == element.element) return false else break
                 is Branch -> {
                     val leftBox = node.left.boundingBox
                     val rightBox = node.right.boundingBox
@@ -79,10 +86,22 @@ class BinaryBvhTree<E : BinaryBvhTree.Element> {
         }
 
         this.tree = newNode
+        size++
+
+        return true
     }
 
     fun remove(element: E): Boolean {
         val tree = this.tree ?: return false
+        if (tree is Leaf) {
+            if (tree.element == element) {
+                this.tree = null
+                size--
+                return true
+            } else {
+                return false
+            }
+        }
 
         val tempLeaf = Leaf(element)
         var path: ArrayDeque<TreeNode<E>>? = null
@@ -138,6 +157,7 @@ class BinaryBvhTree<E : BinaryBvhTree.Element> {
         }
 
         this.tree = newNode
+        size--
 
         return true
     }
