@@ -8,10 +8,12 @@ import kotlin.math.min
  * A [BVH tree](https://en.wikipedia.org/wiki/Bounding_volume_hierarchy) storing exactly two children per node.
  * This gives an intersection testing complexity of O(log2 n).
  */
-class BinaryBvhTree<E : BinaryBvhTree.Element> {
+class BinaryBvhTree<E : BinaryBvhTree.Element> : Collection<E> {
 
-    var size: Int = 0
+    override var size: Int = 0
         private set
+
+    override fun isEmpty() = size == 0
 
     private var tree: TreeNode<E>? = null
 
@@ -22,8 +24,8 @@ class BinaryBvhTree<E : BinaryBvhTree.Element> {
      * @param origin the origin of the ray
      * @param direction the direction and distance of the ray
      */
-    fun getIntersections(origin: Vector3fc, direction: Vector3fc): List<Vector3fc> {
-        val intersections = mutableListOf<Vector3fc>()
+    fun getIntersections(origin: Vector3fc, direction: Vector3fc): List<Pair<E, Vector3fc>> {
+        val intersections = mutableListOf<Pair<E, Vector3fc>>()
         val toTest = ArrayDeque<TreeNode<E>>()
 
         tree?.let { toTest.add(it) }
@@ -34,11 +36,11 @@ class BinaryBvhTree<E : BinaryBvhTree.Element> {
                     toTest.add(node.right)
                 }
 
-                is Leaf -> node.getIntersection(origin, direction)?.let { intersections.add(it) }
+                is Leaf -> node.getIntersection(origin, direction)?.let { intersections.add(node.element to it) }
             }
         }
 
-        intersections.sortBy { it.distanceSquared(origin) }
+        intersections.sortBy { it.second.distanceSquared(origin) }
         return intersections
     }
 
@@ -91,6 +93,9 @@ class BinaryBvhTree<E : BinaryBvhTree.Element> {
         return true
     }
 
+    /**
+     * Returns `true` if the element was removed
+     */
     fun remove(element: E): Boolean {
         val tree = this.tree ?: return false
         if (tree is Leaf) {
@@ -103,15 +108,45 @@ class BinaryBvhTree<E : BinaryBvhTree.Element> {
             }
         }
 
+        val path = findPath(element)?.let(::ArrayDeque) ?: return false
+        val leaf = path.removeLast()
+        var oldNode = path.removeLast() as Branch
+        var newNode = if (oldNode.left == leaf) {
+            oldNode.right
+        } else {
+            oldNode.left
+        }
+        while (path.isNotEmpty()) {
+            val branch = path.removeLast() as Branch
+            newNode = if (branch.left == oldNode) {
+                Branch(newNode, branch.right)
+            } else {
+                Branch(branch.left, newNode)
+            }
+            oldNode = branch
+        }
+
+        this.tree = newNode
+        size--
+
+        return true
+    }
+
+    override fun contains(element: E) = findPath(element) != null
+
+    override fun containsAll(elements: Collection<E>) = elements.all(::contains)
+
+    private fun findPath(element: E): List<TreeNode<E>>? {
+        val tree = this.tree ?: return null
         val tempLeaf = Leaf(element)
-        var path: ArrayDeque<TreeNode<E>>? = null
+        var path: List<TreeNode<E>>? = null
         val paths = ArrayDeque<List<TreeNode<E>>>()
         paths.add(listOf(tree))
         while (paths.isNotEmpty()) {
             val candidatePath = paths.removeLast()
             when (val node = candidatePath.last()) {
                 is Leaf -> if (node.element == element) {
-                    path = ArrayDeque(candidatePath)
+                    path = candidatePath
                     break
                 }
 
@@ -137,35 +172,39 @@ class BinaryBvhTree<E : BinaryBvhTree.Element> {
             }
         }
 
-        if (path == null) return false
-
-        val leaf = path.removeLast()
-        var oldNode = path.removeLast() as Branch
-        var newNode = if (oldNode.left == leaf) {
-            oldNode.right
-        } else {
-            oldNode.left
-        }
-        while (path.isNotEmpty()) {
-            val branch = path.removeLast() as Branch
-            newNode = if (branch.left == oldNode) {
-                Branch(newNode, branch.right)
-            } else {
-                Branch(branch.left, newNode)
-            }
-            oldNode = branch
-        }
-
-        this.tree = newNode
-        size--
-
-        return true
+        return path
     }
 
+    /**
+     * Iteration is in no particular order
+     */
+    override fun iterator() = object : Iterator<E> {
+
+        private val stack = ArrayDeque(listOfNotNull(tree))
+
+        override fun hasNext() = stack.isNotEmpty()
+
+        override fun next(): E {
+            while (true) {
+                when (val node = stack.removeLast()) {
+                    is Leaf -> return node.element
+                    is Branch -> {
+                        stack.add(node.left)
+                        stack.add(node.right)
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * An element that can be stored in a [BinaryBvhTree]. **The tree will not work if either
+     * [boundingBoxTransform] or [position] change while in the tree.**
+     */
     interface Element {
         /**
          * The transformation matrix that would need to be applied on a 1x1x1 bounding box to result in this
-         * element's bounding box
+         * element's bounding box.
          */
         val boundingBoxTransform: Matrix4fc
 
