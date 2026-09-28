@@ -159,7 +159,7 @@ guide:
           <guidehint><guidearrow> <guideinsn>Right click</guideinsn> to see unlocked items</guidehint>
         unresearched: |-
           
-          <guidegint><guidearrow> <guideinsn>Left click</guideinsn> to research</guidehint>
+          <guidehint><guidearrow> <guideinsn>Left click</guideinsn> to research</guidehint>
           <guidehint><guidearrow> <guideinsn>Right click</guideinsn> to see unlocked items</guidehint>
       unlocks-title: |-
       
