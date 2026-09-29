@@ -231,8 +231,8 @@ class BinaryBvhTree<E : BinaryBvhTree.Element> : Collection<E> {
                 when (val node = stack.removeLast()) {
                     is Leaf -> return node
                     is Branch -> {
-                        stack.add(node.left)
                         stack.add(node.right)
+                        stack.add(node.left)
                     }
                 }
             }
