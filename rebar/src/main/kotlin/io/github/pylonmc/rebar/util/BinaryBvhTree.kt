@@ -34,19 +34,21 @@ class BinaryBvhTree<E : BinaryBvhTree.Element> : Collection<E> {
      */
     fun getIntersections(origin: Vector3fc, direction: Vector3fc): List<Pair<E, Vector3fc>> {
         val intersections = mutableListOf<Pair<E, Vector3fc>>()
-        val toTest = ArrayDeque<TreeNode<E>>()
 
-        tree?.let { toTest.add(it) }
-        while (toTest.isNotEmpty()) {
-            when (val node = toTest.removeLast()) {
+        fun test(node: TreeNode<E>?) {
+            when (node) {
+                null -> {}
+
                 is Branch -> if (node.boundingBox.rayIntersection(origin, direction) in 0f..1f) {
-                    toTest.add(node.left)
-                    toTest.add(node.right)
+                    test(node.left)
+                    test(node.right)
                 }
 
                 is Leaf -> node.getIntersection(origin, direction)?.let { intersections.add(node.element to it) }
             }
         }
+
+        test(tree)
 
         intersections.sortBy { it.second.distanceSquared(origin) }
         return intersections
@@ -56,46 +58,27 @@ class BinaryBvhTree<E : BinaryBvhTree.Element> : Collection<E> {
      * Returns false if the element is already in the tree
      */
     fun insert(element: E): Boolean {
-        val element = Leaf(element)
-        val tree = this.tree
-        if (tree == null) {
-            this.tree = element
-            size++
-            return true
-        }
+        if (element in this) return false
 
-        val path = ArrayDeque<TreeNode<E>>()
-        path.add(tree)
-        while (true) {
-            when (val node = path.last()) {
-                is Leaf -> if (node.element == element.element) return false else break
-                is Branch -> {
-                    val leftBox = node.left.boundingBox
-                    val rightBox = node.right.boundingBox
-                    val leftCost = leftBox.union(element.boundingBox).surfaceArea - leftBox.surfaceArea
-                    val rightCost = rightBox.union(element.boundingBox).surfaceArea - rightBox.surfaceArea
-                    if (leftCost < rightCost) {
-                        path.add(node.left)
-                    } else {
-                        path.add(node.right)
-                    }
+        val leaf = Leaf(element)
+
+        fun insert(node: TreeNode<E>?): TreeNode<E> = when (node) {
+            null -> leaf
+            is Leaf -> Branch(node, leaf)
+            is Branch -> {
+                val leftBox = node.left.boundingBox
+                val rightBox = node.right.boundingBox
+                val leftCost = leftBox.union(leaf.boundingBox).surfaceArea - leftBox.surfaceArea
+                val rightCost = rightBox.union(leaf.boundingBox).surfaceArea - rightBox.surfaceArea
+                if (leftCost < rightCost) {
+                    Branch(insert(node.left), node.right)
+                } else {
+                    Branch(node.left, insert(node.right))
                 }
             }
         }
 
-        var oldNode = path.removeLast()
-        var newNode = Branch(oldNode, element)
-        while (path.isNotEmpty()) {
-            val branch = path.removeLast() as Branch
-            newNode = if (branch.left == oldNode) {
-                Branch(newNode, branch.right)
-            } else {
-                Branch(branch.left, newNode)
-            }
-            oldNode = branch
-        }
-
-        this.tree = newNode
+        tree = insert(tree)
         size++
 
         return true
@@ -105,83 +88,77 @@ class BinaryBvhTree<E : BinaryBvhTree.Element> : Collection<E> {
      * Returns `true` if the element was removed
      */
     fun remove(element: E): Boolean {
-        val tree = this.tree ?: return false
-        if (tree is Leaf) {
-            if (tree.element == element) {
-                this.tree = null
-                size--
-                return true
+        val leaf = Leaf(element)
+
+        var found = false
+        fun remove(node: TreeNode<E>?): TreeNode<E>? = when (node) {
+            null -> null
+
+            is Leaf -> if (node.element == element) {
+                found = true
+                null
             } else {
-                return false
+                node
             }
-        }
 
-        val path = findPath(element)?.let(::ArrayDeque) ?: return false
-        val leaf = path.removeLast()
-        var oldNode = path.removeLast() as Branch
-        var newNode = if (oldNode.left == leaf) {
-            oldNode.right
-        } else {
-            oldNode.left
-        }
-        while (path.isNotEmpty()) {
-            val branch = path.removeLast() as Branch
-            newNode = if (branch.left == oldNode) {
-                Branch(newNode, branch.right)
-            } else {
-                Branch(branch.left, newNode)
-            }
-            oldNode = branch
-        }
-
-        this.tree = newNode
-        size--
-
-        return true
-    }
-
-    override fun contains(element: E) = findPath(element) != null
-
-    override fun containsAll(elements: Collection<E>) = elements.all(::contains)
-
-    private fun findPath(element: E): List<TreeNode<E>>? {
-        val tree = this.tree ?: return null
-        val tempLeaf = Leaf(element)
-        var path: List<TreeNode<E>>? = null
-        val paths = ArrayDeque<List<TreeNode<E>>>()
-        paths.add(listOf(tree))
-        while (paths.isNotEmpty()) {
-            val candidatePath = paths.removeLast()
-            when (val node = candidatePath.last()) {
-                is Leaf -> if (node.element == element) {
-                    path = candidatePath
-                    break
-                }
-
-                is Branch -> {
-                    val leftInt = node.left.boundingBox.intersectionArea(tempLeaf.boundingBox)
-                    val rightInt = node.right.boundingBox.intersectionArea(tempLeaf.boundingBox)
-
-                    if (!(leftInt == 0f && rightInt == 0f)) {
-                        if (leftInt == 0f) {
-                            paths.add(candidatePath + node.right)
-                        } else if (rightInt == 0f) {
-                            paths.add(candidatePath + node.left)
-                        } else if (leftInt > rightInt) {
-                            // search the one with more intersection first
-                            paths.add(candidatePath + node.right)
-                            paths.add(candidatePath + node.left)
+            is Branch -> {
+                val intersectionLeft = node.left.boundingBox.intersectionArea(leaf.boundingBox)
+                val intersectionRight = node.right.boundingBox.intersectionArea(leaf.boundingBox)
+                if (!(intersectionLeft == 0f && intersectionRight == 0f)) {
+                    if (intersectionLeft == 0f) {
+                        val right = remove(node.right)
+                        if (right == null) node.left else Branch(node.left, right)
+                    } else if (intersectionRight == 0f) {
+                        val left = remove(node.left)
+                        if (left == null) node.right else Branch(left, node.right)
+                    } else {
+                        val left = remove(node.left)
+                        val right = remove(node.right)
+                        if (left != null) {
+                            if (right != null) Branch(left, right) else left
                         } else {
-                            paths.add(candidatePath + node.left)
-                            paths.add(candidatePath + node.right)
+                            right
                         }
                     }
+                } else {
+                    node
                 }
             }
         }
 
-        return path
+        tree = remove(tree)
+        if (found) size--
+
+        return found
     }
+
+    override fun contains(element: E): Boolean {
+        val leaf = Leaf(element)
+        fun contains(node: TreeNode<E>?): Boolean = when (node) {
+            null -> false
+            is Leaf -> node.element == element
+            is Branch -> {
+                val intersectionLeft = node.left.boundingBox.intersectionArea(leaf.boundingBox)
+                val intersectionRight = node.right.boundingBox.intersectionArea(leaf.boundingBox)
+                if (!(intersectionLeft == 0f && intersectionRight == 0f)) {
+                    if (intersectionLeft == 0f) {
+                        contains(node.right)
+                    } else if (intersectionRight == 0f) {
+                        contains(node.left)
+                    } else if (intersectionLeft > intersectionRight) {
+                        contains(node.left) || contains(node.right)
+                    } else {
+                        contains(node.right) || contains(node.left)
+                    }
+                } else {
+                    false
+                }
+            }
+        }
+        return contains(tree)
+    }
+
+    override fun containsAll(elements: Collection<E>) = elements.all(::contains)
 
     /**
      * Rebuilds the tree for higher lookup efficiency. This has a time complexity of O(n^3) so should be used carefully.
@@ -211,14 +188,24 @@ class BinaryBvhTree<E : BinaryBvhTree.Element> : Collection<E> {
 
             val i = nodes[bestI]
             val j = nodes[bestJ]
-            nodes.removeAt(bestJ)
             nodes[bestI] = Branch(i, j)
+            nodes.removeAt(bestJ)
         }
 
         tree = nodes.single()
 
         mutationsSinceLastRebuild = 0
     }
+
+    val depth: Int
+        get() {
+            fun depth(node: TreeNode<E>, depth: Int): Int = when (node) {
+                is Branch -> max(depth(node.left, depth + 1), depth(node.right, depth + 1))
+                is Leaf -> depth + 1
+            }
+
+            return if (tree == null) 0 else depth(tree!!, 0)
+        }
 
     private fun leafIterator() = object : Iterator<Leaf<E>> {
         private val stack = ArrayDeque(listOfNotNull(tree))
