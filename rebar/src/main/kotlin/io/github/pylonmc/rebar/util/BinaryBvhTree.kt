@@ -216,6 +216,8 @@ class BinaryBvhTree<E : BinaryBvhTree.Element> : Collection<E> {
         }
 
         tree = nodes.single()
+
+        mutationsSinceLastRebuild = 0
     }
 
     private fun leafIterator() = object : Iterator<Leaf<E>> {
