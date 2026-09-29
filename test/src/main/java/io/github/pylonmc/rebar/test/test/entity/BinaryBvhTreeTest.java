@@ -41,6 +41,27 @@ public class BinaryBvhTreeTest extends AsyncTest {
         translatedElementIsIntersectedAtCorrectPosition();
         singleElementIsIntersected();
         startsEmpty();
+
+//        TestElement testElement = element();
+//        BinaryBvhTree<TestElement> tree = new BinaryBvhTree<>();
+//        tree.insert(testElement);
+//
+//        for (int i = 0; i < 1_000; i++) {
+//            tree.insert(element(ThreadLocalRandom.current().nextFloat(1_000), ThreadLocalRandom.current().nextFloat(1_000), ThreadLocalRandom.current().nextFloat(1_000)));
+//        }
+//        println("Inserted");
+//
+//        long time = System.nanoTime();
+//        assertThat(tree.getIntersections(new Vector3f(0, 0, 0), new Vector3f(0.5f, 0, 0))).size().isGreaterThan(0);
+//        println(System.nanoTime() - time);
+//
+//        time = System.nanoTime();
+//        tree.rebuild();
+//        println(System.nanoTime() - time);
+//
+//        time = System.nanoTime();
+//        assertThat(tree.getIntersections(new Vector3f(0, 0, 0), new Vector3f(0.5f, 0, 0))).size().isGreaterThan(0);
+//        println(System.nanoTime() - time);
     }
 
     private record TestElement(
@@ -150,11 +171,11 @@ public class BinaryBvhTreeTest extends AsyncTest {
         );
 
         assertThat(intersections).hasSize(1);
-        assertThat(intersections.getFirst().x())
+        assertThat(intersections.getFirst().getSecond().x())
                 .isCloseTo(0f, offset(1e-6f));
-        assertThat(intersections.getFirst().y())
+        assertThat(intersections.getFirst().getSecond().y())
                 .isCloseTo(0f, offset(1e-6f));
-        assertThat(intersections.getFirst().z())
+        assertThat(intersections.getFirst().getSecond().z())
                 .isCloseTo(-0.5f, offset(1e-6f));
     }
 
@@ -192,7 +213,7 @@ public class BinaryBvhTreeTest extends AsyncTest {
         );
 
         assertThat(intersections).hasSize(1);
-        assertThat(intersections.getFirst().z())
+        assertThat(intersections.getFirst().getSecond().z())
                 .isCloseTo(-0.5f, offset(1e-6f));
     }
 
@@ -206,7 +227,7 @@ public class BinaryBvhTreeTest extends AsyncTest {
         );
 
         assertThat(intersections).hasSize(1);
-        assertThat(intersections.getFirst().z())
+        assertThat(intersections.getFirst().getSecond().z())
                 .isCloseTo(4.5f, offset(1e-6f));
     }
 
@@ -224,7 +245,7 @@ public class BinaryBvhTreeTest extends AsyncTest {
         );
 
         assertThat(intersections).hasSize(1);
-        assertThat(intersections.getFirst().x())
+        assertThat(intersections.getFirst().getSecond().x())
                 .isCloseTo(-1f, offset(1e-6f));
     }
 
@@ -259,14 +280,14 @@ public class BinaryBvhTreeTest extends AsyncTest {
 
         assertThat(intersections).hasSize(3);
 
-        assertThat(intersections.get(0).distanceSquared(origin))
+        assertThat(intersections.get(0).getSecond().distanceSquared(origin))
                 .isLessThanOrEqualTo(
-                        intersections.get(1).distanceSquared(origin)
+                        intersections.get(1).getSecond().distanceSquared(origin)
                 );
 
-        assertThat(intersections.get(1).distanceSquared(origin))
+        assertThat(intersections.get(1).getSecond().distanceSquared(origin))
                 .isLessThanOrEqualTo(
-                        intersections.get(2).distanceSquared(origin)
+                        intersections.get(2).getSecond().distanceSquared(origin)
                 );
     }
 
@@ -283,9 +304,9 @@ public class BinaryBvhTreeTest extends AsyncTest {
         );
 
         assertThat(intersections).hasSize(2);
-        assertThat(intersections.get(0).z())
+        assertThat(intersections.get(0).getSecond().z())
                 .isCloseTo(1.5f, offset(1e-6f));
-        assertThat(intersections.get(1).z())
+        assertThat(intersections.get(1).getSecond().z())
                 .isCloseTo(5.5f, offset(1e-6f));
     }
 
@@ -348,9 +369,9 @@ public class BinaryBvhTreeTest extends AsyncTest {
         );
 
         assertThat(intersections).hasSize(2);
-        assertThat(intersections.get(0).z())
+        assertThat(intersections.get(0).getSecond().z())
                 .isCloseTo(1.5f, offset(1e-6f));
-        assertThat(intersections.get(1).z())
+        assertThat(intersections.get(1).getSecond().z())
                 .isCloseTo(7.5f, offset(1e-6f));
     }
 
@@ -378,11 +399,11 @@ public class BinaryBvhTreeTest extends AsyncTest {
         );
 
         assertThat(intersections).hasSize(1);
-        assertThat(intersections.getFirst().x())
+        assertThat(intersections.getFirst().getSecond().x())
                 .isCloseTo(0f, offset(1e-6f));
-        assertThat(intersections.getFirst().y())
+        assertThat(intersections.getFirst().getSecond().y())
                 .isCloseTo(0f, offset(1e-6f));
-        assertThat(intersections.getFirst().z())
+        assertThat(intersections.getFirst().getSecond().z())
                 .isCloseTo(0f, offset(1e-6f));
     }
 
@@ -396,7 +417,7 @@ public class BinaryBvhTreeTest extends AsyncTest {
         );
 
         assertThat(intersections).hasSize(1);
-        assertThat(intersections.getFirst().x())
+        assertThat(intersections.getFirst().getSecond().x())
                 .isCloseTo(-0.5f, offset(1e-6f));
     }
 

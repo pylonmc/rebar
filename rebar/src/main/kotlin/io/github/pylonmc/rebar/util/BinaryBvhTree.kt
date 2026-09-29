@@ -6,11 +6,19 @@ import kotlin.math.min
 
 /**
  * A [BVH tree](https://en.wikipedia.org/wiki/Bounding_volume_hierarchy) storing exactly two children per node.
- * This gives an intersection testing complexity of O(log2 n).
+ * This gives a sublinear intersection testing complexity, with best-case O(log2 n) and worst-case O(n).
  */
 class BinaryBvhTree<E : BinaryBvhTree.Element> : Collection<E> {
 
+    @field:Volatile
     override var size: Int = 0
+        private set(value) {
+            field = value
+            mutationsSinceLastRebuild++
+        }
+
+    @field:Volatile
+    var mutationsSinceLastRebuild: Int = 0
         private set
 
     override fun isEmpty() = size == 0
@@ -176,18 +184,50 @@ class BinaryBvhTree<E : BinaryBvhTree.Element> : Collection<E> {
     }
 
     /**
-     * Iteration is in no particular order
+     * Rebuilds the tree for higher lookup efficiency. This has a time complexity of O(n^3) so should be used carefully.
      */
-    override fun iterator() = object : Iterator<E> {
+    fun rebuild() {
+        if (tree == null || tree is Leaf) return
 
+        val nodes = leafIterator().asSequence().toMutableList<TreeNode<E>>()
+        tree = null
+
+        while (nodes.size > 1) {
+            var bestI = 0
+            var bestJ = 1
+            var bestCost = Float.POSITIVE_INFINITY
+
+            @Suppress("ReplaceManualRangeWithIndicesCalls")
+            for (i in 0 until nodes.size) {
+                for (j in (i - REBUILD_SEARCH_WINDOW).coerceAtLeast(0) until (i + REBUILD_SEARCH_WINDOW).coerceAtMost(nodes.size)) {
+                    if (i == j) continue
+                    val cost = nodes[i].boundingBox.union(nodes[j].boundingBox).surfaceArea
+                    if (cost >= bestCost) continue
+                    bestI = i
+                    bestJ = j
+                    bestCost = cost
+                }
+            }
+
+            val i = nodes[bestI]
+            val j = nodes[bestJ]
+            nodes.removeAt(bestJ)
+            nodes[bestI] = Branch(i, j)
+        }
+
+        tree = nodes.single()
+    }
+
+    private fun leafIterator() = object : Iterator<Leaf<E>> {
         private val stack = ArrayDeque(listOfNotNull(tree))
 
         override fun hasNext() = stack.isNotEmpty()
 
-        override fun next(): E {
+        override fun next(): Leaf<E> {
             while (true) {
+                if (stack.isEmpty()) throw NoSuchElementException()
                 when (val node = stack.removeLast()) {
-                    is Leaf -> return node.element
+                    is Leaf -> return node
                     is Branch -> {
                         stack.add(node.left)
                         stack.add(node.right)
@@ -195,6 +235,25 @@ class BinaryBvhTree<E : BinaryBvhTree.Element> : Collection<E> {
                 }
             }
         }
+    }
+
+    /**
+     * Iteration is in no particular order
+     */
+    override fun iterator() = object : Iterator<E> {
+
+        private val it = leafIterator()
+
+        override fun hasNext() = it.hasNext()
+
+        override fun next(): E = it.next().element
+    }
+
+    companion object {
+        /**
+         *  A DFS flattened BVH probably already has pretty good spatial locality, so we can search for the minimum node in a smaller window around the value
+         */
+        const val REBUILD_SEARCH_WINDOW = 64
     }
 
     /**
