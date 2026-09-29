@@ -15,7 +15,7 @@ import xyz.xenondevs.invui.item.Item
 /**
  * Allows you to search all items and fluids by hijacking the anvil GUI.
  */
-class SearchItemsAndFluidsPage : SearchPage(rebarKey("search")) {
+class LatinSearchItemsAndFluidsPage : SearchPage(rebarKey("search")) {
 
     fun getItemButtons(player: Player): MutableList<Pair<Item, String>> = RebarRegistry.ITEMS.filter {
         it.key !in RebarGuide.hiddenItems || (it.key in RebarGuide.adminOnlyItems && player.hasPermission("rebar.guide.cheat"))
