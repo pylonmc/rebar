@@ -44,8 +44,12 @@ interface RecipeProcessorRebarBlock<T: RebarRecipe> {
 
     val currentRecipe: T?
         @ApiStatus.NonExtendable
-        // cast should always be safe due to type restriction when starting recipe
         get() = recipeProcessorData.currentRecipe
+
+    val recipeType: RecipeType<T>?
+        @ApiStatus.NonExtendable
+        @Suppress("UNCHECKED_CAST")
+        get() = recipeProcessorData.recipeType as RecipeType<T>?
 
     val recipeTicksRemaining: Int?
         @ApiStatus.NonExtendable

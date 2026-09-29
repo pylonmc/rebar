@@ -109,20 +109,20 @@ open class FluidButton private constructor(
          */
         @JvmStatic
         @JvmOverloads
-        fun of(fluids: List<RebarFluid?>, amount: Double?, preDisplayDecorator: Decorator? = null): Item = if (fluids.filterNotNull().isEmpty()) {
+        fun of(fluids: List<RebarFluid?>, amount: Double?, preDisplayDecorator: Decorator = { it }): Item = if (fluids.filterNotNull().isEmpty()) {
             EMPTY
         } else {
-            FluidButton(fluids.filterNotNull().map { it to amount}, preDisplayDecorator ?: { it })
+            FluidButton(fluids.filterNotNull().map { it to amount}, preDisplayDecorator)
         }
 
         @JvmStatic
         @JvmOverloads
-        fun of(fluidChoice: FluidChoice, preDisplayDecorator: Decorator? = null)
-                = of(fluidChoice.fluids.toList(), fluidChoice.amount, preDisplayDecorator ?: { it })
+        fun of(fluidChoice: FluidChoice, preDisplayDecorator: Decorator = { it })
+                = of(fluidChoice.fluids.toList(), fluidChoice.amount, preDisplayDecorator)
 
         @JvmStatic
         @JvmOverloads
-        fun of(fluid: FluidWithAmount, preDisplayDecorator: Decorator? = null)
-            = of(listOf(fluid.fluid), fluid.amountMillibuckets, preDisplayDecorator ?: { it })
+        fun of(fluid: FluidWithAmount, preDisplayDecorator: Decorator =  { it })
+            = of(listOf(fluid.fluid), fluid.amount, preDisplayDecorator)
     }
 }

@@ -13,9 +13,9 @@ import io.github.pylonmc.rebar.config.adapter.ConfigAdapter
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.i18n.customMiniMessage
 import io.github.pylonmc.rebar.item.ItemTypeWrapper
+import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.item.RebarItemSchema
 import io.github.pylonmc.rebar.item.interfaces.ProjectileRebarItemHandler
-import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.nms.NmsAccessor
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.util.position.BlockPosition
@@ -28,6 +28,7 @@ import kotlinx.coroutines.delay
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.TranslatableComponent
 import net.kyori.adventure.text.TranslationArgumentLike
+import net.kyori.adventure.text.format.Style
 import net.kyori.adventure.text.format.TextColor
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import org.bukkit.*
@@ -35,9 +36,6 @@ import org.bukkit.attribute.Attribute
 import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
 import org.bukkit.block.data.BlockData
-import org.bukkit.entity.Entity
-import org.bukkit.entity.LivingEntity
-import org.bukkit.entity.Player
 import org.bukkit.entity.*
 import org.bukkit.event.Event
 import org.bukkit.inventory.EquipmentSlot
@@ -48,8 +46,11 @@ import org.bukkit.persistence.PersistentDataHolder
 import org.bukkit.persistence.PersistentDataType
 import org.bukkit.util.BoundingBox
 import org.bukkit.util.Vector
+import org.joml.Intersectionf
 import org.joml.Matrix3f
+import org.joml.Quaternionf
 import org.joml.RoundingMode
+import org.joml.Vector2f
 import org.joml.Vector3d
 import org.joml.Vector3f
 import org.joml.Vector3i
@@ -411,7 +412,7 @@ inline fun <T : Any> ItemStack.editDataOrSet(
  *
  * @param value The value to set. If this is null, the key will be removed from the container
  */
-fun <P, C> PersistentDataContainer.setNullable(key: NamespacedKey, type: PersistentDataType<P, C>, value: C?) {
+fun <P, C : Any> PersistentDataContainer.setNullable(key: NamespacedKey, type: PersistentDataType<P, C>, value: C?) {
     if (value != null) {
         set(key, type, value)
     } else {
@@ -559,7 +560,7 @@ fun blocksBetween(from: BlockPosition, to: BlockPosition): List<Block> = NmsAcce
  */
 fun blocksOnPath(from: BlockPosition, to: BlockPosition): List<Block> {
     val originBlock = from.block
-    val offset = to.location
+    val offset = to.toLocation()
         .subtract(originBlock.location)
         .toVector().toVector3i()
 
@@ -595,7 +596,7 @@ fun findClosestPointBetweenSkewLines(p1: Vector3f, d1: Vector3f, p2: Vector3f, d
  *
  * @return Supposing the equation of the line is p1 + t*d1, returns the t representing the closest point
  *
- * @see <a href="https://math.stackexchange.com/questions/1905533/find-perpendicular-distance-from-point-to-line-in-3d">
+ * @see <a href="https://math.stackexchange.com/questions/1905533/find-perpendicular-distance-from-point-to-line-in-3d">https://math.stackexchange.com/questions/1905533/find-perpendicular-distance-from-point-to-line-in-3d</a>
  */
 fun findClosestPointToOtherPointOnLine(p: Vector3f, p1: Vector3f, d1: Vector3f): Float {
     val v = Vector3f(p).sub(p1)
@@ -610,7 +611,7 @@ fun findClosestPointToOtherPointOnLine(p: Vector3f, p1: Vector3f, d1: Vector3f):
  * @param p1 The starting point of the line
  * @param d1 The direction of the line
  *
- * @see <a href="https://math.stackexchange.com/questions/1905533/find-perpendicular-distance-from-point-to-line-in-3d">
+ * @see <a href="https://math.stackexchange.com/questions/1905533/find-perpendicular-distance-from-point-to-line-in-3d">https://math.stackexchange.com/questions/1905533/find-perpendicular-distance-from-point-to-line-in-3d</a>
  */
 fun findClosestDistanceBetweenLineAndPoint(p: Vector3f, p1: Vector3f, d1: Vector3f): Float {
     val t = max(0.0F, findClosestPointToOtherPointOnLine(p, p1, d1))
@@ -618,12 +619,19 @@ fun findClosestDistanceBetweenLineAndPoint(p: Vector3f, p1: Vector3f, d1: Vector
     return (Vector3f(closestPoint).sub(p)).length()
 }
 
-@JvmSynthetic
-internal fun getTargetEntity(player: Player, maxDistanceBetweenRayAndEntity: Float): Entity? {
-    val range = player.getAttribute(Attribute.ENTITY_INTERACTION_RANGE)!!.value
-    val entities = player.getNearbyEntities(range, range, range)
-    val eyeLocation = player.eyeLocation.toVector().toVector3f()
-    val eyeDirection = player.eyeLocation.getDirection().toVector3f()
+/**
+ * Returns the entity the player is "looking" at if the entity's location is within [maxDistanceBetweenRayAndEntity]
+ * of a ray extending from the player's eyes, going in the direction the player is looking at, and terminating at the
+ * player's entity interaction range.
+ *
+ * This is useful for determining interaction with relatively symmetrical display entities, as those don't have
+ * hitboxes and thus aren't targetable by methods like [Player.getTargetEntity].
+ */
+fun Player.getTargetEntityByLocation(maxDistanceBetweenRayAndEntity: Float): Entity? {
+    val range = getAttribute(Attribute.ENTITY_INTERACTION_RANGE)!!.value
+    val entities = getNearbyEntities(range, range, range)
+    val eyeLocation = this.eyeLocation.toVector().toVector3f()
+    val eyeDirection = this.eyeLocation.getDirection().toVector3f()
 
     for (entity in entities) {
         val distance = findClosestDistanceBetweenLineAndPoint(
@@ -637,6 +645,47 @@ internal fun getTargetEntity(player: Player, maxDistanceBetweenRayAndEntity: Flo
     }
 
     return null
+}
+
+/**
+ * Returns the closest intersection of a line and a cylinder, if it exists.
+ * Also returns null if the line is parallel to the cylinder.
+ *
+ * @param cyPos position of cylinder's origin
+ * @param cyVec vector of cylinder (with length being cylinder length)
+ * @param cyRad radius of cylinder
+ * @param linPos position of line's origin
+ * @param linVec vector of line (with length being line length)
+ *
+ * @see <a href="https://math.stackexchange.com/a/2613826/1291722">https://math.stackexchange.com/a/2613826/1291722</a>
+ */
+fun intersectionOfLineAndCylinder(cyPos: Vector3f, cyVec: Vector3f, cyRad: Float, linPos: Vector3f, linVec: Vector3f): Vector3f? {
+    val linPosOffset = linPos - cyPos
+
+    // rotate coordinate system such that the problem becomes a line-circle intersection problem in 2d
+    val cyAxis = cyVec.normalize(Vector3f())
+    val cyRotation = Quaternionf().rotationTo(cyAxis, Vector3f(0f, 0f, 1f))
+
+    val rotLinPosOffset = linPosOffset.rotate(cyRotation, Vector3f())
+    val rotLinVec = linVec.rotate(cyRotation, Vector3f())
+    if (rotLinVec.x == 0f && rotLinVec.y == 0f) return null
+
+    // project to 2d
+    val rotLinPosOffset2d = Vector2f(rotLinPosOffset.x(), rotLinPosOffset.y())
+    val linDir2d = Vector2f(rotLinVec.x, rotLinVec.y).normalize()
+
+    val result = Vector2f()
+    if (!Intersectionf.intersectRayCircle(rotLinPosOffset2d, linDir2d, Vector2f(0f, 0f), cyRad * cyRad, result)) return null
+    val closestT = result.x
+    // intersection is outside our line segment
+    if (closestT < 0 || closestT * closestT > rotLinVec.lengthSquared()) return null
+
+    // reproject to 3d
+    val intersection3d = (rotLinPosOffset + rotLinVec.normalize(Vector3f()) * closestT).rotate(cyRotation.conjugate())
+    val z = intersection3d.dot(cyAxis)
+    if (z < 0 || z > cyVec.length()) return null
+
+    return intersection3d + cyPos
 }
 
 fun pickaxeMineable() = Registry.BLOCK.getTag(BlockTypeTagKeys.MINEABLE_PICKAXE)
@@ -943,4 +992,12 @@ fun ItemStack.hasOneDurabilityLeft(): Boolean {
     return !hasData(DataComponentTypes.UNBREAKABLE) && damage == maxDamage - 1
 }
 
+fun Player.addToInventoryOrDrop(vararg items: ItemStack) {
+    for (item in inventory.addItem(*items).values) {
+        location.world.dropItemNaturally(location, item)
+    }
+}
+
 const val FLUID_EPSILON = 1.0e-6
+
+fun Component.removeStyle(): Component = this.style(Style.empty()).children(this.children().map(Component::removeStyle))

@@ -2,8 +2,10 @@
 
 package io.github.pylonmc.rebar.i18n
 
+import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.util.gui.unit.MetricPrefix
 import io.github.pylonmc.rebar.util.gui.unit.UnitFormat
+import io.github.pylonmc.rebar.util.removeStyle
 import io.papermc.paper.registry.RegistryAccess
 import io.papermc.paper.registry.RegistryKey
 import net.kyori.adventure.text.Component
@@ -40,7 +42,8 @@ import org.bukkit.NamespacedKey
  * - `<attr></attr>` - Applies a cyan styling (0xa9d9e8), used for attributes
  * - `<unit:\[prefix\]:[unit]></unit>` - Formats a **constant** number as a unit, with an optional metric prefix
  * - `<nbsp></nbsp>` - Replaces spaces with non-breaking spaces ( ), useful for preventing line breaks in lore
- * - `<item:\[item_name\]>` - Renders the translated name of a vanilla/rebar item (e.g., `<item:stone>` → "Stone", `<item:pylon:loupe>` → "Loupe")
+ * - `<item:\[item_name\]>` - Renders the translated name of a vanilla/Rebar item (e.g., `<item:stone>` → "Stone", `<item:pylon:loupe>` → "Loupe")
+ * - `<fluid:\[fluid_name\]` - Renders the translated name of a vanilla/Rebar fluid (e.g., `<item:water>` → "Water", `<item:pylon:steam>` → "Steam")
  * - `<entity:\[entity_type\]>` - Renders the translated name of an entity type (e.g., `<entity:creeper>` → "Creeper")
  * - `<effect:\[effect_type\]>` - Renders the translated name of a potion effect (e.g., `<effect:speed>` → "Speed")
  * - `<enchant:\[enchant_name\]>` - Renders the translated name of an enchantment (e.g., `<enchant:sharpness>` → "Sharpness")
@@ -70,6 +73,7 @@ val customMiniMessage = MiniMessage.builder()
         it.tag("unit", ::unit)
         it.tag("nbsp", ::nbsp)
         it.tag("item", ::item)
+        it.tag("fluid", ::fluid)
         it.tag("entity", ::entity)
         it.tag("effect", ::effect)
         it.tag("enchant", ::enchantment)
@@ -128,15 +132,27 @@ private val nbspReplacement = TextReplacementConfig.builder()
 
 private fun item(args: ArgumentQueue, ctx: Context): Tag {
     val nsKey = parseNamespacedKey(args, ctx)
-    val translationKey = if (nsKey.namespace == NamespacedKey.MINECRAFT) {
+    val name = if (nsKey.namespace == NamespacedKey.MINECRAFT) {
         val material = Material.matchMaterial(nsKey.key)
             ?: throw ctx.newException("Unknown material: $nsKey")
-        material.translationKey()
+        Component.translatable(material.translationKey())
     } else {
-        "${nsKey.namespace}.item.${nsKey.key}.name"
+        RebarRegistry.ITEMS[nsKey]?.getOriginalTemplate()?.effectiveName()?.removeStyle()
+            ?: throw ctx.newException("Unknown item: $nsKey")
     }
+    return Tag.selfClosingInserting(name)
+}
 
-    return Tag.selfClosingInserting(Component.translatable(translationKey))
+private fun fluid(args: ArgumentQueue, ctx: Context): Tag {
+    val nsKey = parseNamespacedKey(args, ctx)
+    val name = if (nsKey.namespace == NamespacedKey.MINECRAFT) {
+        val fluid = RegistryAccess.registryAccess().getRegistry(RegistryKey.FLUID).get(nsKey)
+            ?: throw ctx.newException("Unknown fluid: $nsKey")
+        Component.translatable("block.minecraft.${fluid.key.key}")
+    } else {
+        RebarRegistry.FLUIDS[nsKey]?.name ?: throw ctx.newException("Unknown fluid: $nsKey")
+    }
+    return Tag.selfClosingInserting(name)
 }
 
 private fun entity(args: ArgumentQueue, ctx: Context): Tag {

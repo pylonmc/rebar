@@ -7,6 +7,7 @@ import io.github.pylonmc.rebar.event.RebarBlockLoadEvent
 import io.github.pylonmc.rebar.event.RebarBlockPlaceEvent
 import io.github.pylonmc.rebar.event.RebarBlockUnloadEvent
 import net.kyori.adventure.text.Component
+import org.bukkit.Keyed
 import org.bukkit.entity.Player
 import org.bukkit.event.Event
 import org.bukkit.event.EventHandler
@@ -17,7 +18,7 @@ import org.bukkit.inventory.EquipmentSlot
 import xyz.xenondevs.invui.gui.Gui
 import xyz.xenondevs.invui.inventory.VirtualInventory
 import xyz.xenondevs.invui.window.Window
-import java.util.IdentityHashMap
+import java.util.*
 
 /**
  * A simple interface that opens a GUI when the block is right clicked.
@@ -41,7 +42,7 @@ import java.util.IdentityHashMap
  * @see VirtualInventory
  * @see VirtualInventoryRebarBlock
  */
-interface GuiRebarBlock : NoVanillaInventoryRebarBlock {
+interface GuiRebarBlock : NoVanillaInventoryRebarBlock, Keyed {
 
     /**
      * The title of the GUI

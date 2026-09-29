@@ -9,14 +9,9 @@ import net.kyori.adventure.sound.Sound
 import org.bukkit.Bukkit
 import org.bukkit.NamespacedKey
 import org.bukkit.Registry
-import org.joml.Vector2d
-import org.joml.Vector2f
-import org.joml.Vector2i
-import org.joml.Vector3d
-import org.joml.Vector3f
-import org.joml.Vector3i
+import org.joml.*
 import java.lang.reflect.Type
-import java.util.Locale
+import java.util.*
 
 /**
  * Provides instructions on how to deserialize a specific type of value.

@@ -58,7 +58,7 @@ open class ItemIngredientsPage(val input: FluidOrItem) : TabbedGuidePage {
 
     private val ingredientsTab = ItemListDisplayTab(calculation.inputs.sortedByDescending {
         when (it) {
-            is FluidWithAmount -> it.amountMillibuckets
+            is FluidWithAmount -> it.amount
             is FluidOrItem.Item -> it.item.amount.toDouble()
         }
     }.map(::fluidOrItemButton))
@@ -68,7 +68,7 @@ open class ItemIngredientsPage(val input: FluidOrItem) : TabbedGuidePage {
 
     private val byproductsTab = ItemListDisplayTab(calculation.byproducts.sortedByDescending {
         when (it) {
-            is FluidWithAmount -> it.amountMillibuckets
+            is FluidWithAmount -> it.amount
             is FluidOrItem.Item -> it.item.amount.toDouble()
         }
     }.map(::fluidOrItemButton))
@@ -110,7 +110,7 @@ private val AMOUNT_KEY = rebarKey("actual_amount")
 private fun fluidOrItemButton(fluidOrItem: FluidOrItem) = when (fluidOrItem) {
     is FluidWithAmount -> FluidButton.of(fluidOrItem) { stack ->
         stack.editPdc { pdc ->
-            pdc.set(AMOUNT_KEY, RebarSerializers.DOUBLE, fluidOrItem.amountMillibuckets)
+            pdc.set(AMOUNT_KEY, RebarSerializers.DOUBLE, fluidOrItem.amount)
         }
     }
 

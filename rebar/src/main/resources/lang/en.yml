@@ -115,6 +115,13 @@ message:
     reloadlang:
       success: "<green>Language entries reloaded"
 
+  wiring:
+    instructions: "<insn>Right click a port</insn> to connect, <insn>stop holding a wire</insn> or <insn>right click the original port</insn> to cancel"
+    wiring: "This will require %wires% wires (you have %total% wires)"
+    too_long: "<red>Wires cannot be any longer than %blocks% blocks"
+    obstructed: "<red>The wire is obstructed"
+    more_wires: "<red>You do not have enough wires (need %total% wires, you have %wires% wires)"
+
 gui:
   scroll:
     up: "Scroll up"

@@ -23,7 +23,7 @@ import org.bukkit.persistence.PersistentDataContainer
  * Represents a Rebar entity in the world.
  *
  * All custom Rebar entities extend this class. Every instance of this class is wrapping a real entity
- * in the world, and is stored in [EntityStorage]. All new block *types* must be registered using [register],
+ * in the world, and is stored in [EntityStorage]. All new entity *types* must be registered using [register],
  * and all new Rebar entities must be added to [EntityStorage] with [EntityStorage.add].
  *
  * You are responsible for creating your Rebar entities; there are no place constructors as with
@@ -32,7 +32,7 @@ import org.bukkit.persistence.PersistentDataContainer
  */
 abstract class RebarEntity<out E: Entity>(val entity: E) : WailaSupplier, Keyed {
 
-    @JvmField val key = entity.persistentDataContainer.get(rebarEntityKeyKey, RebarSerializers.NAMESPACED_KEY)
+    private val key = entity.persistentDataContainer.get(rebarEntityKeyKey, RebarSerializers.NAMESPACED_KEY)
         ?: throw IllegalStateException("Entity did not have a Rebar key; did you mean to call RebarEntity(NamespacedKey, Entity) instead of RebarEntity(Entity)?")
     val schema = RebarRegistry.ENTITIES.getOrThrow(key)
     val uuid = entity.uniqueId
@@ -47,7 +47,7 @@ abstract class RebarEntity<out E: Entity>(val entity: E) : WailaSupplier, Keyed 
      *
      * This will only be called for the player if the player has WAILA enabled.
      *
-     * @return the WAILA configuration, or null if WAILA should not be shown for this block.
+     * @return the WAILA configuration, or null if WAILA should not be shown for this entity.
      */
     override fun getWaila(player: Player): WailaDisplay? = null
 
@@ -85,6 +85,10 @@ abstract class RebarEntity<out E: Entity>(val entity: E) : WailaSupplier, Keyed 
      * Called when the entity is unloaded, not including when it is deleted.
      */
     open fun onUnload() {}
+
+    fun remove() {
+        entity.remove()
+    }
 
     /**
      * Returns settings associated with the entity.

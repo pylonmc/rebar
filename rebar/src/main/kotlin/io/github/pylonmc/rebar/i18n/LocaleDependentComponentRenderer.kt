@@ -3,6 +3,7 @@ package io.github.pylonmc.rebar.i18n
 import io.github.pylonmc.rebar.util.gui.unit.UnitFormat
 import io.github.pylonmc.rebar.util.rebarKey
 import net.kyori.adventure.text.*
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import net.kyori.adventure.translation.GlobalTranslator
 import java.util.*
 
@@ -15,6 +16,8 @@ import java.util.*
 fun interface LocaleDependentComponentRenderer : VirtualComponentRenderer<Locale>, ComponentLike {
 
     override fun asComponent() = create(this)
+
+    override fun fallbackString() = PlainTextComponentSerializer.plainText().serialize(apply(Locale.ENGLISH).asComponent())
 
     /**
      * The translator handling [LocaleDependentComponentRenderer]s. Automatically registered.

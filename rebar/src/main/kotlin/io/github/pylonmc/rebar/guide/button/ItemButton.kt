@@ -230,7 +230,7 @@ class ItemButton private constructor(
             } else {
                 // Rebar item handling
                 val amount = if (click.clickType.isShiftClick) 99 else 1 // the schema will automatically cap the amount to the max stack size
-                val clonedRebar = itemSchema.getItemStack(amount)
+                val clonedRebar = itemSchema.createNewItemStack(amount)
                 return clonedRebar
             }
         }

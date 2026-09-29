@@ -38,6 +38,7 @@ import java.util.*
  * [format] with 100 will return '100 kilograms'
  * @param defaultStyle The style to apply to the unit (not the value) to the output.
  */
+
 class UnitFormat @JvmOverloads constructor(
     val name: String,
     val forms: Map<PluralForm, Component>,

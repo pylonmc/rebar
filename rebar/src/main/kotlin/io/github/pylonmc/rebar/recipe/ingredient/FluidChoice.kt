@@ -2,15 +2,27 @@ package io.github.pylonmc.rebar.recipe.ingredient
 
 import io.github.pylonmc.rebar.fluid.RebarFluid
 import io.github.pylonmc.rebar.guide.button.FluidButton
+import org.jetbrains.annotations.Contract
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
 
 /**
  * Represents a fluid input to a recipe.
  */
+@OptIn(ExperimentalContracts::class)
 class FluidChoice private constructor(val fluids: Set<RebarFluid>, val amount: Double) : FluidOrItemChoice {
 
-    fun matches(fluid: RebarFluid, amount: Double) = amount >= this.amount && fluids.contains(fluid)
+    @Contract("null, _ -> false")
+    fun matches(fluid: RebarFluid?, amount: Double): Boolean {
+        contract { returns(true) implies (fluid != null) }
+        return fluid != null && amount >= this.amount && fluid in fluids
+    }
 
-    fun matchesIgnoringAmount(fluid: RebarFluid) = fluids.contains(fluid)
+    @Contract("null -> false")
+    fun matchesIgnoringAmount(fluid: RebarFluid?): Boolean {
+        contract { returns(true) implies (fluid != null) }
+        return fluid != null && fluid in fluids
+    }
 
     override fun button() = FluidButton.of(this)
 
@@ -33,6 +45,6 @@ class FluidChoice private constructor(val fluids: Set<RebarFluid>, val amount: D
          * Creates a [FluidChoice] which accepts at least the given amount of the given fluid
          */
         @JvmStatic
-        fun of(fluidWithAmount: FluidWithAmount) = of(fluidWithAmount.fluid, fluidWithAmount.amountMillibuckets)
+        fun of(fluidWithAmount: FluidWithAmount) = of(fluidWithAmount.fluid, fluidWithAmount.amount)
     }
 }
