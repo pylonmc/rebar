@@ -11,6 +11,7 @@ import io.github.pylonmc.rebar.config.ConfigSection
 import io.github.pylonmc.rebar.config.ContributorConfig
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
+import io.github.pylonmc.rebar.entity.interfaces.InteractableItemDisplayRebarEntity
 import io.github.pylonmc.rebar.i18n.customMiniMessage
 import io.github.pylonmc.rebar.item.ItemTypeWrapper
 import io.github.pylonmc.rebar.item.RebarItem
@@ -60,10 +61,7 @@ import java.lang.invoke.MethodHandle
 import java.lang.invoke.MethodHandles
 import java.util.function.Consumer
 import kotlin.coroutines.CoroutineContext
-import kotlin.math.absoluteValue
-import kotlin.math.max
-import kotlin.math.round
-import kotlin.math.roundToInt
+import kotlin.math.*
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
@@ -71,8 +69,7 @@ import kotlin.reflect.KProperty
  * Checks whether a [NamespacedKey] is from [addon]
  */
 @JvmName("isKeyFromAddon")
-fun NamespacedKey.isFromAddon(addon: RebarAddon): Boolean
-    = namespace == addon.key.namespace
+fun NamespacedKey.isFromAddon(addon: RebarAddon): Boolean = namespace == addon.key.namespace
 
 /**
  * Converts an orthogonal vector to a [BlockFace]
@@ -186,8 +183,8 @@ fun rotateVectorToFace(vector: Vector3d, face: BlockFace) = when (face) {
  * @param face Must be a horizontal cardinal direction (north, east, south, west)
  * @return The rotated vector
  */
-fun rotateFaceToReference(referenceFace: BlockFace, face: BlockFace)
-    = vectorToBlockFace(rotateVectorToFace(face.direction.toVector3d(), referenceFace))
+fun rotateFaceToReference(referenceFace: BlockFace, face: BlockFace) =
+    vectorToBlockFace(rotateVectorToFace(face.direction.toVector3d(), referenceFace))
 
 /**
  * @return Whether [vector] is a cardinal direction
@@ -199,8 +196,7 @@ fun isCardinalDirection(vector: Vector3i) = (vector.x != 0 && vector.y == 0 && v
 /**
  * @return Whether [vector] is a cardinal direction
  */
-fun isCardinalDirection(vector: Vector3f)
-    = (vector.x.absoluteValue > 1.0e-6 && vector.y.absoluteValue < 1.0e-6 && vector.z.absoluteValue < 1.0e-6)
+fun isCardinalDirection(vector: Vector3f) = (vector.x.absoluteValue > 1.0e-6 && vector.y.absoluteValue < 1.0e-6 && vector.z.absoluteValue < 1.0e-6)
         || (vector.x.absoluteValue < 1.0e-6 && vector.y.absoluteValue > 1.0e-6 && vector.z.absoluteValue < 1.0e-6)
         || (vector.x.absoluteValue < 1.0e-6 && vector.y.absoluteValue < 1.0e-6 && vector.z.absoluteValue > 1.0e-6)
 
@@ -533,14 +529,13 @@ private val contributorsCache: MutableMap<RebarAddon, List<ContributorConfig>> =
 val Block.replaceableOrAir: Boolean
     get() = type.isAir || isReplaceable
 
-fun ItemStack.vanillaDisplayName(): Component
-    = effectiveName().let {
-        val wrapped = Component.translatable("chat.square_brackets", it)
-        if (!this.isEmpty) {
-            wrapped.hoverEvent(this.asHoverEvent())
-        }
-        return wrapped
+fun ItemStack.vanillaDisplayName(): Component = effectiveName().let {
+    val wrapped = Component.translatable("chat.square_brackets", it)
+    if (!this.isEmpty) {
+        wrapped.hoverEvent(this.asHoverEvent())
     }
+    return wrapped
+}
 
 val Component.plainText: String
     get() = PlainTextComponentSerializer.plainText().serialize(this)
@@ -644,6 +639,44 @@ fun Player.getTargetEntityByLocation(maxDistanceBetweenRayAndEntity: Float): Ent
     return null
 }
 
+sealed interface PlayerTarget {
+
+    val location: Location
+
+    data class Block(val block: org.bukkit.block.Block, override val location: Location) : PlayerTarget
+    data class Entity(val entity: org.bukkit.entity.Entity, override val location: Location) : PlayerTarget
+    data class InteractableItemDisplay(val display: InteractableItemDisplayRebarEntity, override val location: Location) : PlayerTarget
+}
+
+/**
+ * Gets the target block/entity of a player, including [InteractableItemDisplayRebarEntity]s
+ */
+fun Player.getTargetIncludingInteractableDisplays(): PlayerTarget? {
+    val targets = mutableListOf<PlayerTarget>()
+
+    rayTraceBlocks(getAttribute(Attribute.BLOCK_INTERACTION_RANGE)!!.value)?.let {
+        targets.add(PlayerTarget.Block(it.hitBlock!!, it.hitPosition.toLocation(world)))
+    }
+
+    val eyeLocation = eyeLocation
+    val entityRange = getAttribute(Attribute.ENTITY_INTERACTION_RANGE)!!.value.toFloat()
+    rayTraceEntities(ceil(entityRange).toInt())?.let {
+        if (it.hitPosition.distanceSquared(eyeLocation.toVector()) <= entityRange * entityRange) {
+            targets.add(PlayerTarget.Entity(it.hitEntity!!, it.hitPosition.toLocation(world)))
+        }
+    }
+
+    InteractableItemDisplayRebarEntity.getIntersectedEntities(
+        world,
+        eyeLocation.toVector().toVector3f(),
+        eyeLocation.direction.toVector3f() * entityRange
+    ).firstOrNull()?.let { (entity, loc) ->
+        targets.add(PlayerTarget.InteractableItemDisplay(entity, Vector.fromJOML(loc).toLocation(world)))
+    }
+
+    return targets.minByOrNull { it.location.distanceSquared(eyeLocation) }
+}
+
 fun pickaxeMineable() = Registry.BLOCK.getTag(BlockTypeTagKeys.MINEABLE_PICKAXE)
 fun axeMineable() = Registry.BLOCK.getTag(BlockTypeTagKeys.MINEABLE_AXE)
 fun shovelMineable() = Registry.BLOCK.getTag(BlockTypeTagKeys.MINEABLE_SHOVEL)
@@ -677,8 +710,7 @@ val DISALLOW_PLAYERS_FROM_ADDING_ITEMS_HANDLER = Consumer<ItemPreUpdateEvent> { 
 class MachineUpdateReason : UpdateReason
 
 // https://minecraft.wiki/w/Breaking#Calculation
-fun getBlockBreakTicks(tool: ItemStack, block: Block)
-    = round(100 * block.type.getHardness() / block.getDestroySpeed(tool, true))
+fun getBlockBreakTicks(tool: ItemStack, block: Block) = round(100 * block.type.getHardness() / block.getDestroySpeed(tool, true))
 
 /**
  * Schedules the entity to be removed next tick
@@ -702,7 +734,7 @@ fun CoroutineContext.createChildContext(): CoroutineContext = this + Job(this[Jo
 fun Entity.hasTracker() = NmsAccessor.instance.hasTracker(this)
 
 fun Projectile.sourceItem(): ItemStack? {
-    return when(this) {
+    return when (this) {
         is ThrowableProjectile -> this.item
         is SizedFireball -> this.displayItem
         is AbstractArrow -> this.itemStack
@@ -761,17 +793,13 @@ fun ItemStack.overriddenDataTypes(): List<DataComponentType> {
     return NmsAccessor.instance.getOverriddenTypes(this)
 }
 
-fun ItemStack.overriddenComponents(exact: Boolean): Map<DataComponentType, Any?>
-    = NmsAccessor.instance.overriddenComponents(this, exact)
+fun ItemStack.overriddenComponents(exact: Boolean): Map<DataComponentType, Any?> = NmsAccessor.instance.overriddenComponents(this, exact)
 
-fun ItemStack.matchesComponents(components: Map<DataComponentType, Any?>)
-    = NmsAccessor.instance.componentsMatch(this, components)
+fun ItemStack.matchesComponents(components: Map<DataComponentType, Any?>) = NmsAccessor.instance.componentsMatch(this, components)
 
-fun ItemStack.componentsEqual(components: Map<DataComponentType, Any?>)
-    = NmsAccessor.instance.componentsEqual(this, components)
+fun ItemStack.componentsEqual(components: Map<DataComponentType, Any?>) = NmsAccessor.instance.componentsEqual(this, components)
 
-fun ItemStack.hasDefaultComponents(components: Set<DataComponentType>)
-    = NmsAccessor.instance.hasDefaultComponents(this, components)
+fun ItemStack.hasDefaultComponents(components: Set<DataComponentType>) = NmsAccessor.instance.hasDefaultComponents(this, components)
 
 val ItemStack.isDefaultComponents: Boolean
     get() = NmsAccessor.instance.isDefaultComponents(this)
@@ -915,16 +943,17 @@ fun VirtualInventory.unsafeSubtract(slot: Int, amount: Int) {
 fun Block.editBlockData(editor: Consumer<BlockData>, applyPhysics: Boolean = true) = editBlockDataAs(BlockData::class.java, editor, applyPhysics)
 
 @JvmOverloads
-fun <D: BlockData> Block.editBlockDataAs(dataType: Class<D>, editor: Consumer<D>, applyPhysics: Boolean = true) {
+fun <D : BlockData> Block.editBlockDataAs(dataType: Class<D>, editor: Consumer<D>, applyPhysics: Boolean = true) {
     val blockData = getBlockData(dataType)
     editor.accept(blockData)
     setBlockData(blockData, applyPhysics)
 }
 
 @JvmSynthetic
-inline fun <reified D: BlockData> Block.editBlockDataAs(editor: Consumer<D>, applyPhysics: Boolean = true) = editBlockDataAs(D::class.java, editor, applyPhysics)
+inline fun <reified D : BlockData> Block.editBlockDataAs(editor: Consumer<D>, applyPhysics: Boolean = true) =
+    editBlockDataAs(D::class.java, editor, applyPhysics)
 
-fun <D: BlockData> Block.getBlockData(dataType: Class<D>): D {
+fun <D : BlockData> Block.getBlockData(dataType: Class<D>): D {
     val blockData = this.blockData
     Preconditions.checkState(dataType.isInstance(blockData))
     return dataType.cast(this.blockData)

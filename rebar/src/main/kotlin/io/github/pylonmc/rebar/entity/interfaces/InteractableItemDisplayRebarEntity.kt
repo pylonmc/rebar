@@ -5,17 +5,16 @@ import io.github.pylonmc.rebar.entity.display.transform.TransformUtil.toMatrix
 import io.github.pylonmc.rebar.event.RebarEntityAddEvent
 import io.github.pylonmc.rebar.event.RebarEntityRemoveEvent
 import io.github.pylonmc.rebar.util.BinaryBvhTree
-import io.github.pylonmc.rebar.util.times
+import io.github.pylonmc.rebar.util.PlayerTarget
+import io.github.pylonmc.rebar.util.getTargetIncludingInteractableDisplays
 import org.bukkit.Location
 import org.bukkit.World
-import org.bukkit.attribute.Attribute
 import org.bukkit.entity.ItemDisplay
 import org.bukkit.event.Event
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
 import org.bukkit.event.player.PlayerInteractEvent
-import org.bukkit.util.Vector
 import org.jetbrains.annotations.ApiStatus
 import org.joml.Matrix4fc
 import org.joml.Vector3fc
@@ -47,29 +46,25 @@ interface InteractableItemDisplayRebarEntity : BinaryBvhTree.Element {
         private val positions = WeakIdentityHashMap<InteractableItemDisplayRebarEntity, Vector3fc>()
         private val worlds = WeakIdentityHashMap<InteractableItemDisplayRebarEntity, World>()
 
+        /**
+         * Obtains the [InteractableItemDisplayRebarEntity]s intersected by the ray starting from [origin] and going in [direction], with a maximum
+         * length equal to [direction]
+         */
+        @JvmStatic
+        fun getIntersectedEntities(world: World, origin: Vector3fc, direction: Vector3fc): List<Pair<InteractableItemDisplayRebarEntity, Vector3fc>> {
+            val tree = trees[world] ?: return emptyList()
+            tree.toList().forEach { it.checkForUpdates() }
+            return tree.getIntersections(origin, direction)
+        }
+
         @EventHandler
         private fun onPlayerInteract(event: PlayerInteractEvent) {
             if (event.action == Action.PHYSICAL) return
 
-            val player = event.player
-            val tree = trees[player.world] ?: return
-            tree.toList().forEach { it.checkForUpdates() }
-
-            val entityRange = player.getAttribute(Attribute.ENTITY_INTERACTION_RANGE)!!.value.toFloat()
-            val eyeLocation = player.eyeLocation
-            val (entity, interactionPoint) = tree.getIntersections(
-                eyeLocation.toVector().toVector3f(),
-                eyeLocation.direction.toVector3f() * entityRange
-            ).firstOrNull() ?: return
-            val interactionLocation = Vector.fromJOML(interactionPoint).toLocation(entity.entity.world)
-
-            val blockInteractionPoint = event.interactionPoint
-                ?: player.rayTraceBlocks(player.getAttribute(Attribute.BLOCK_INTERACTION_RANGE)!!.value)?.hitPosition?.toLocation(player.world)
-                ?: Location(player.world, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY)
-            if (eyeLocation.distanceSquared(blockInteractionPoint) < eyeLocation.distanceSquared(interactionLocation)) return
+            val target = event.player.getTargetIncludingInteractableDisplays() as? PlayerTarget.InteractableItemDisplay ?: return
 
             event.setUseInteractedBlock(Event.Result.DENY)
-            entity.onInteract(event, interactionLocation)
+            target.display.onInteract(event, target.location)
         }
 
         @EventHandler
