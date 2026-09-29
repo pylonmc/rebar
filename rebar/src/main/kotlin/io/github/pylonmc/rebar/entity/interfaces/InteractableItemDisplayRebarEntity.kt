@@ -37,7 +37,7 @@ interface InteractableItemDisplayRebarEntity : BinaryBvhTree.Element {
     @get:ApiStatus.NonExtendable
     override val position: Vector3fc get() = positions[this]!!
 
-    fun onInteract(event: PlayerInteractEvent, interactionLocation: Location)
+    fun onInteract(event: PlayerInteractEvent, interactionLocation: Location) {}
 
     companion object : Listener {
         private val trees = WeakHashMap<World, BinaryBvhTree<InteractableItemDisplayRebarEntity>>()
