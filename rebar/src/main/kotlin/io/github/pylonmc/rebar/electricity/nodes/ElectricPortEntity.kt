@@ -31,6 +31,7 @@ import org.bukkit.event.HandlerList
 import org.bukkit.event.Listener
 import org.bukkit.event.entity.EntityRemoveEvent
 import org.bukkit.event.player.PlayerInteractEvent
+import org.bukkit.inventory.EquipmentSlot
 import kotlin.math.PI
 
 class ElectricPortEntity : RebarEntity<ItemDisplay>, RemoveRebarEntityHandler, Listener, InteractableItemDisplayRebarEntity {
@@ -90,6 +91,7 @@ class ElectricPortEntity : RebarEntity<ItemDisplay>, RemoveRebarEntityHandler, L
     }
 
     override fun onInteract(event: PlayerInteractEvent, interactionLocation: Location) {
+        if (event.hand != EquipmentSlot.HAND) return
         if (event.action.isRightClick) {
             handleWireConnection(event)
         } else if (RebarItem.isRebarItem<WireRebarItem>(event.player.inventory.itemInMainHand)) {

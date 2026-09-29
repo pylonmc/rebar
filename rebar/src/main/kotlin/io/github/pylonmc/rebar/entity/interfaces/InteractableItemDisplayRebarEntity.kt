@@ -63,12 +63,9 @@ interface InteractableItemDisplayRebarEntity : BinaryBvhTree.Element {
             ).firstOrNull() ?: return
             val interactionLocation = Vector.fromJOML(interactionPoint).toLocation(entity.entity.world)
 
-            val blockInteractionPoint = event.interactionPoint ?: Location(
-                player.world,
-                Double.MAX_VALUE,
-                Double.MAX_VALUE,
-                Double.MAX_VALUE
-            )
+            val blockInteractionPoint = event.interactionPoint
+                ?: player.rayTraceBlocks(player.getAttribute(Attribute.BLOCK_INTERACTION_RANGE)!!.value)?.hitPosition?.toLocation(player.world)
+                ?: Location(player.world, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY)
             if (eyeLocation.distanceSquared(blockInteractionPoint) < eyeLocation.distanceSquared(interactionLocation)) return
 
             event.setUseInteractedBlock(Event.Result.DENY)
