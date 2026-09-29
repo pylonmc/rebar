@@ -10,11 +10,13 @@ import org.bukkit.Location
 import org.bukkit.World
 import org.bukkit.attribute.Attribute
 import org.bukkit.entity.ItemDisplay
+import org.bukkit.event.Event
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.util.Vector
+import org.jetbrains.annotations.ApiStatus
 import org.joml.Matrix4fc
 import org.joml.Vector3fc
 import java.util.*
@@ -30,8 +32,10 @@ interface InteractableItemDisplayRebarEntity : BinaryBvhTree.Element {
     // automatically implemented by RebarEntity
     val entity: ItemDisplay
 
+    @get:ApiStatus.NonExtendable
     override val boundingBoxTransform: Matrix4fc get() = boxes[this]!!
 
+    @get:ApiStatus.NonExtendable
     override val position: Vector3fc get() = positions[this]!!
 
     fun onInteract(event: PlayerInteractEvent, interactionLocation: Location)
@@ -67,12 +71,16 @@ interface InteractableItemDisplayRebarEntity : BinaryBvhTree.Element {
             )
             if (eyeLocation.distanceSquared(blockInteractionPoint) < eyeLocation.distanceSquared(interactionLocation)) return
 
+            event.setUseInteractedBlock(Event.Result.DENY)
             entity.onInteract(event, interactionLocation)
         }
 
         @EventHandler
         private fun onRebarEntityAdd(event: RebarEntityAddEvent) {
             val entity = event.rebarEntity as? InteractableItemDisplayRebarEntity ?: return
+            boxes[entity] = entity.entity.transformation.toMatrix()
+            worlds[entity] = entity.entity.world
+            positions[entity] = entity.entity.location.toVector().toVector3f()
             trees.getOrPut(entity.entity.world, ::BinaryBvhTree).insert(entity)
         }
 
@@ -80,6 +88,9 @@ interface InteractableItemDisplayRebarEntity : BinaryBvhTree.Element {
         private fun onRebarEntityRemove(event: RebarEntityRemoveEvent) {
             val entity = event.rebarEntity as? InteractableItemDisplayRebarEntity ?: return
             trees[entity.entity.world]!!.remove(entity)
+            boxes.remove(entity)
+            worlds.remove(entity)
+            positions.remove(entity)
         }
 
         private fun InteractableItemDisplayRebarEntity.checkForUpdates() {

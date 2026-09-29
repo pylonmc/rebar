@@ -7,7 +7,9 @@ import io.github.pylonmc.rebar.entity.EntityStorage
 import io.github.pylonmc.rebar.entity.RebarEntity
 import io.github.pylonmc.rebar.entity.display.ItemDisplayBuilder
 import io.github.pylonmc.rebar.entity.display.transform.LineBuilder
+import io.github.pylonmc.rebar.entity.interfaces.InteractableItemDisplayRebarEntity
 import io.github.pylonmc.rebar.entity.interfaces.RemoveRebarEntityHandler
+import io.github.pylonmc.rebar.event.RebarPlayerInteractWireEvent
 import io.github.pylonmc.rebar.i18n.RebarArgument
 import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.item.RebarItemSchema
@@ -24,13 +26,14 @@ import org.bukkit.entity.ItemDisplay
 import org.bukkit.entity.Player
 import org.bukkit.event.EventPriority
 import org.bukkit.event.entity.EntityRemoveEvent
+import org.bukkit.event.player.PlayerInteractEvent
 import org.joml.Matrix4f
 import java.util.*
 import java.util.concurrent.ThreadLocalRandom
 import kotlin.math.ceil
 import kotlin.math.min
 
-class WireEntity : RebarEntity<ItemDisplay>, RemoveRebarEntityHandler {
+class WireEntity : RebarEntity<ItemDisplay>, RemoveRebarEntityHandler, InteractableItemDisplayRebarEntity {
 
     var port: ConnectedPort
         private set
@@ -153,6 +156,13 @@ class WireEntity : RebarEntity<ItemDisplay>, RemoveRebarEntityHandler {
                 item.asQuantity(toDrop)
             )
         }
+    }
+
+    override fun onInteract(event: PlayerInteractEvent, interactionLocation: Location) {
+        RebarPlayerInteractWireEvent(this, event, interactionLocation).callEvent()
+        if (!event.action.isLeftClick || !RebarItem.isRebarItem<WireRebarItem>(event.player.inventory.itemInMainHand)) return
+        dropItemsAt(interactionLocation)
+        remove()
     }
 
     override fun onUnload() {
