@@ -153,8 +153,8 @@ class RebarTranslator private constructor(private val addon: RebarAddon) : Trans
         }
     }
 
-    private fun findTranslations(locale: Locale): Sequence<ConfigSection> =
-        LocaleUtils.localeLookupList(locale).asSequence().mapNotNull {
+    private fun findTranslations(locale: Locale): List<ConfigSection> =
+        LocaleUtils.localeLookupList(locale).mapNotNull {
             Locale.lookup(listOf(Locale.LanguageRange(it.toLanguageTag())), languages)
                 ?.let(translations::get)
         }
