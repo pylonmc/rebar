@@ -26,6 +26,16 @@ class BinaryBvhTree<E : BinaryBvhTree.Element> : Collection<E> {
     @field:Volatile
     private var tree: TreeNode<E>? = null
 
+    val depth: Int
+        get() {
+            fun depth(node: TreeNode<E>, depth: Int): Int = when (node) {
+                is Branch -> max(depth(node.left, depth + 1), depth(node.right, depth + 1))
+                is Leaf -> depth + 1
+            }
+
+            return if (tree == null) 0 else depth(tree!!, 0)
+        }
+
     /**
      * Returns the intersection points of the ray and elements in the tree. The list is sorted by distance from
      * the origin.
@@ -161,26 +171,19 @@ class BinaryBvhTree<E : BinaryBvhTree.Element> : Collection<E> {
 
     override fun containsAll(elements: Collection<E>) = elements.all(::contains)
 
-    val depth: Int
-        get() {
-            fun depth(node: TreeNode<E>, depth: Int): Int = when (node) {
-                is Branch -> max(depth(node.left, depth + 1), depth(node.right, depth + 1))
-                is Leaf -> depth + 1
-            }
-
-            return if (tree == null) 0 else depth(tree!!, 0)
-        }
-
-    private fun leafIterator() = object : Iterator<Leaf<E>> {
+    /**
+     * Iteration is in no particular order
+     */
+    override fun iterator() = object : Iterator<E> {
         private val stack = ArrayDeque(listOfNotNull(tree))
 
         override fun hasNext() = stack.isNotEmpty()
 
-        override fun next(): Leaf<E> {
+        override fun next(): E {
             while (true) {
                 if (stack.isEmpty()) throw NoSuchElementException()
                 when (val node = stack.removeLast()) {
-                    is Leaf -> return node
+                    is Leaf -> return node.element
                     is Branch -> {
                         stack.add(node.right)
                         stack.add(node.left)
@@ -188,18 +191,6 @@ class BinaryBvhTree<E : BinaryBvhTree.Element> : Collection<E> {
                 }
             }
         }
-    }
-
-    /**
-     * Iteration is in no particular order
-     */
-    override fun iterator() = object : Iterator<E> {
-
-        private val it = leafIterator()
-
-        override fun hasNext() = it.hasNext()
-
-        override fun next(): E = it.next().element
     }
 
     companion object {
