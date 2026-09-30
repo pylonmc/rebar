@@ -102,8 +102,8 @@ class BinaryBvhTree<E : BinaryBvhTree.Element> : Collection<E> {
             }
 
             is Branch -> {
-                val intersectionLeft = node.left.boundingBox.intersectionArea(leaf.boundingBox)
-                val intersectionRight = node.right.boundingBox.intersectionArea(leaf.boundingBox)
+                val intersectionLeft = node.left.boundingBox.intersectionVolume(leaf.boundingBox)
+                val intersectionRight = node.right.boundingBox.intersectionVolume(leaf.boundingBox)
                 if (!(intersectionLeft == 0f && intersectionRight == 0f)) {
                     if (intersectionLeft == 0f) {
                         val right = remove(node.right)
@@ -138,8 +138,8 @@ class BinaryBvhTree<E : BinaryBvhTree.Element> : Collection<E> {
             null -> false
             is Leaf -> node.element == element
             is Branch -> {
-                val intersectionLeft = node.left.boundingBox.intersectionArea(leaf.boundingBox)
-                val intersectionRight = node.right.boundingBox.intersectionArea(leaf.boundingBox)
+                val intersectionLeft = node.left.boundingBox.intersectionVolume(leaf.boundingBox)
+                val intersectionRight = node.right.boundingBox.intersectionVolume(leaf.boundingBox)
                 if (!(intersectionLeft == 0f && intersectionRight == 0f)) {
                     if (intersectionLeft == 0f) {
                         contains(node.right)
@@ -355,7 +355,7 @@ private data class BoundingBox(val min: Vector3fc, val max: Vector3fc) {
         )
     )
 
-    fun intersectionArea(other: BoundingBox): Float {
+    fun intersectionVolume(other: BoundingBox): Float {
         fun axisIntersection(axis: Int): Float = max(0f, min(this.max[axis], other.max[axis]) - max(this.min[axis], other.min[axis]))
         return axisIntersection(0) * axisIntersection(1) * axisIntersection(2)
     }
