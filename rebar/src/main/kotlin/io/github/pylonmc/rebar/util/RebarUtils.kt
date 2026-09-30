@@ -11,7 +11,7 @@ import io.github.pylonmc.rebar.config.ConfigSection
 import io.github.pylonmc.rebar.config.ContributorConfig
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
-import io.github.pylonmc.rebar.entity.interfaces.InteractableItemDisplayRebarEntity
+import io.github.pylonmc.rebar.entity.interfaces.InteractableRebarItemDisplay
 import io.github.pylonmc.rebar.i18n.customMiniMessage
 import io.github.pylonmc.rebar.item.ItemTypeWrapper
 import io.github.pylonmc.rebar.item.RebarItem
@@ -617,11 +617,11 @@ sealed interface PlayerTarget {
 
     data class Block(val block: org.bukkit.block.Block, override val location: Location) : PlayerTarget
     data class Entity(val entity: org.bukkit.entity.Entity, override val location: Location) : PlayerTarget
-    data class InteractableItemDisplay(val display: InteractableItemDisplayRebarEntity, override val location: Location) : PlayerTarget
+    data class InteractableItemDisplay(val display: InteractableRebarItemDisplay, override val location: Location) : PlayerTarget
 }
 
 /**
- * Gets the target block/entity of a player, including [InteractableItemDisplayRebarEntity]s
+ * Gets the target block/entity of a player, including [InteractableRebarItemDisplay]s
  */
 fun Player.getTargetIncludingInteractableDisplays(): PlayerTarget? {
     val targets = mutableListOf<PlayerTarget>()
@@ -638,7 +638,7 @@ fun Player.getTargetIncludingInteractableDisplays(): PlayerTarget? {
         }
     }
 
-    InteractableItemDisplayRebarEntity.getIntersectedEntities(
+    InteractableRebarItemDisplay.getIntersectedEntities(
         world,
         eyeLocation.toVector().toVector3f(),
         eyeLocation.direction.toVector3f() * entityRange

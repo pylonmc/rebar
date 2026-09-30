@@ -34,7 +34,7 @@ import kotlin.time.Duration.Companion.seconds
  * for item displays to allow interactions to be detected.
  * **Important: this only works for item displays that are 1x1x1 cubes, such as acacia logs, sea lanterns, or crafting tables.**
  */
-interface InteractableItemDisplayRebarEntity : BinaryBvhTree.Element {
+interface InteractableRebarItemDisplay : BinaryBvhTree.Element {
 
     // automatically implemented by RebarEntity
     val entity: ItemDisplay
@@ -48,18 +48,18 @@ interface InteractableItemDisplayRebarEntity : BinaryBvhTree.Element {
     fun onInteract(event: PlayerInteractEvent, interactionLocation: Location) {}
 
     companion object : Listener {
-        private val trees = WeakHashMap<World, ReadWriteLockableReference<BinaryBvhTree<InteractableItemDisplayRebarEntity>>>()
+        private val trees = WeakHashMap<World, ReadWriteLockableReference<BinaryBvhTree<InteractableRebarItemDisplay>>>()
 
-        private val boxes = WeakIdentityHashMap<InteractableItemDisplayRebarEntity, Matrix4fc>()
-        private val positions = WeakIdentityHashMap<InteractableItemDisplayRebarEntity, Vector3fc>()
-        private val worlds = WeakIdentityHashMap<InteractableItemDisplayRebarEntity, World>()
+        private val boxes = WeakIdentityHashMap<InteractableRebarItemDisplay, Matrix4fc>()
+        private val positions = WeakIdentityHashMap<InteractableRebarItemDisplay, Vector3fc>()
+        private val worlds = WeakIdentityHashMap<InteractableRebarItemDisplay, World>()
 
         /**
-         * Obtains the [InteractableItemDisplayRebarEntity]s intersected by the ray starting from [origin] and going in [direction], with a maximum
+         * Obtains the [InteractableRebarItemDisplay]s intersected by the ray starting from [origin] and going in [direction], with a maximum
          * length equal to [direction]
          */
         @JvmStatic
-        fun getIntersectedEntities(world: World, origin: Vector3fc, direction: Vector3fc): List<Pair<InteractableItemDisplayRebarEntity, Vector3fc>> {
+        fun getIntersectedEntities(world: World, origin: Vector3fc, direction: Vector3fc): List<Pair<InteractableRebarItemDisplay, Vector3fc>> {
             val tree = trees[world] ?: return emptyList()
             val elements = tree.read { it.toList() }
             elements.forEach { it.checkForUpdates() }
@@ -78,7 +78,7 @@ interface InteractableItemDisplayRebarEntity : BinaryBvhTree.Element {
 
         @EventHandler
         private fun onRebarEntityAdd(event: RebarEntityAddEvent) {
-            val entity = event.rebarEntity as? InteractableItemDisplayRebarEntity ?: return
+            val entity = event.rebarEntity as? InteractableRebarItemDisplay ?: return
             val world = entity.entity.world
             boxes[entity] = entity.entity.transformation.toMatrix()
             worlds[entity] = world
@@ -88,7 +88,7 @@ interface InteractableItemDisplayRebarEntity : BinaryBvhTree.Element {
 
         @EventHandler
         private fun onRebarEntityRemove(event: RebarEntityRemoveEvent) {
-            val entity = event.rebarEntity as? InteractableItemDisplayRebarEntity ?: return
+            val entity = event.rebarEntity as? InteractableRebarItemDisplay ?: return
             val world = entity.entity.world
             trees[world]!!.write { it.get().remove(entity) }
             boxes.remove(entity)
@@ -98,7 +98,7 @@ interface InteractableItemDisplayRebarEntity : BinaryBvhTree.Element {
 
         @EventHandler
         private fun onWorldLoad(event: WorldLoadEvent) {
-            val tree = ReadWriteLockableReference(BinaryBvhTree<InteractableItemDisplayRebarEntity>())
+            val tree = ReadWriteLockableReference(BinaryBvhTree<InteractableRebarItemDisplay>())
             trees[event.world] = tree
 
             // occasionally rebuild trees that have been modified a lot in order to improve performance
@@ -121,7 +121,7 @@ interface InteractableItemDisplayRebarEntity : BinaryBvhTree.Element {
             }
         }
 
-        private fun InteractableItemDisplayRebarEntity.checkForUpdates() {
+        private fun InteractableRebarItemDisplay.checkForUpdates() {
             val entityTransform = entity.transformation.toMatrix()
             val transformChanged = entityTransform != boundingBoxTransform
             val entityPosition = entity.location.toVector().toVector3f()

@@ -244,7 +244,7 @@ object Rebar : JavaPlugin(), RebarAddon {
 
         // Rebar Entities
         pm.registerEvents(TickingRebarEntity, this)
-        pm.registerEvents(InteractableItemDisplayRebarEntity, this)
+        pm.registerEvents(InteractableRebarItemDisplay, this)
         BatRebarEntityHandler.register(this)
         BreakDoorRebarEntityHandler.register(this)
         BreedRebarEntityHandler.register(this)

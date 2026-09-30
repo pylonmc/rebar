@@ -7,7 +7,7 @@ import io.github.pylonmc.rebar.entity.EntityStorage
 import io.github.pylonmc.rebar.entity.RebarEntity
 import io.github.pylonmc.rebar.entity.display.ItemDisplayBuilder
 import io.github.pylonmc.rebar.entity.display.transform.LineBuilder
-import io.github.pylonmc.rebar.entity.interfaces.InteractableItemDisplayRebarEntity
+import io.github.pylonmc.rebar.entity.interfaces.InteractableRebarItemDisplay
 import io.github.pylonmc.rebar.entity.interfaces.RemoveRebarEntityHandler
 import io.github.pylonmc.rebar.event.RebarPlayerInteractWireEvent
 import io.github.pylonmc.rebar.i18n.RebarArgument
@@ -33,7 +33,7 @@ import java.util.concurrent.ThreadLocalRandom
 import kotlin.math.ceil
 import kotlin.math.min
 
-class WireEntity : RebarEntity<ItemDisplay>, RemoveRebarEntityHandler, InteractableItemDisplayRebarEntity {
+class WireEntity : RebarEntity<ItemDisplay>, RemoveRebarEntityHandler, InteractableRebarItemDisplay {
 
     var port: ConnectedPort
         private set
