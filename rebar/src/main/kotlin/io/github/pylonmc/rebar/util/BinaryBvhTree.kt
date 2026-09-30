@@ -14,15 +14,16 @@ class BinaryBvhTree<E : BinaryBvhTree.Element> : Collection<E> {
     override var size: Int = 0
         private set(value) {
             field = value
-            mutationsSinceLastRebuild++
+            mutationsSinceCreation++
         }
 
     @field:Volatile
-    var mutationsSinceLastRebuild: Int = 0
+    var mutationsSinceCreation: Int = 0
         private set
 
     override fun isEmpty() = size == 0
 
+    @field:Volatile
     private var tree: TreeNode<E>? = null
 
     /**
@@ -165,73 +166,7 @@ class BinaryBvhTree<E : BinaryBvhTree.Element> : Collection<E> {
      */
     @JvmOverloads
     fun rebuild(binCount: Int = 16) {
-        if (tree == null || tree is Leaf) return
 
-        val nodes = leafIterator().asSequence().toList<TreeNode<E>>()
-        tree = null
-
-        fun sahSplit(nodes: List<TreeNode<E>>): TreeNode<E> {
-            if (nodes.size == 1) {
-                return nodes.single()
-            }
-
-            data class SahSplit(val axis: Int, val splitIndex: Int, val cost: Float)
-
-            val bins = Array<Array<MutableList<TreeNode<E>>>>(3) { Array(binCount) { mutableListOf() } }
-            var bestSplit = SahSplit(-1, -1, Float.POSITIVE_INFINITY)
-            for (axis in 0..2) {
-                val min = nodes.minOf { it.boundingBox.centroid[axis] }
-                val max = nodes.maxOf { it.boundingBox.centroid[axis] }
-                val range = max - min
-                if (range <= 0f) continue
-
-                val axisBins = bins[axis]
-                for (node in nodes) {
-                    val bin = ((node.boundingBox.centroid[axis] - min) / range * binCount).toInt().coerceAtMost(binCount - 1)
-                    axisBins[bin].add(node)
-                }
-
-                val binBoundsAndSize = axisBins.map { bin ->
-                    bin.map { it.boundingBox }.reduceOrNull(BoundingBox::union) to bin.size
-                }
-
-                for (splitIndex in 1 until binCount) {
-                    val left = binBoundsAndSize.take(splitIndex)
-                    val leftElementCount = left.sumOf { it.second }
-                    if (leftElementCount == 0) continue
-
-                    val right = binBoundsAndSize.drop(splitIndex)
-                    val rightElementCount = right.sumOf { it.second }
-                    if (rightElementCount == 0) continue
-
-                    val leftSah = left.mapNotNull { it.first }.reduce(BoundingBox::union).surfaceArea * leftElementCount
-                    val rightSah = right.mapNotNull { it.first }.reduce(BoundingBox::union).surfaceArea * rightElementCount
-                    val cost = leftSah + rightSah
-                    if (cost < bestSplit.cost) {
-                        bestSplit = SahSplit(axis, splitIndex, cost)
-                    }
-                }
-            }
-
-            val (left, right) = if (bestSplit.axis == -1) {
-                // centroids are all the same for some reason, fall back to median split along longest axis
-                val axis = (0..2).maxBy { axis ->
-                    nodes.maxOf { it.boundingBox.centroid[axis] } - nodes.minOf { it.boundingBox.centroid[axis] }
-                }
-                val sorted = nodes.sortedBy { it.boundingBox.centroid[axis] }
-                sorted.take(sorted.size / 2) to sorted.drop(sorted.size / 2)
-            } else {
-                val bestBins = bins[bestSplit.axis]
-                val left = bestBins.take(bestSplit.splitIndex).flatten()
-                val right = bestBins.drop(bestSplit.splitIndex).flatten()
-                left to right
-            }
-            return Branch(sahSplit(left), sahSplit(right))
-        }
-
-        tree = sahSplit(nodes)
-
-        mutationsSinceLastRebuild = 0
     }
 
     val depth: Int
@@ -273,6 +208,84 @@ class BinaryBvhTree<E : BinaryBvhTree.Element> : Collection<E> {
         override fun hasNext() = it.hasNext()
 
         override fun next(): E = it.next().element
+    }
+
+    companion object {
+        @JvmStatic
+        @JvmOverloads
+        fun <E : Element> buildFromElements(elements: Collection<E>, binCount: Int = 16): BinaryBvhTree<E> {
+            val nodes = elements.map(::Leaf)
+
+            fun sahSplit(nodes: List<TreeNode<E>>): TreeNode<E> {
+                if (nodes.size == 1) {
+                    return nodes.single()
+                }
+
+                data class SahSplit(val axis: Int, val splitIndex: Int, val cost: Float)
+
+                val bins = Array<Array<MutableList<TreeNode<E>>>>(3) { Array(binCount) { mutableListOf() } }
+                var bestSplit = SahSplit(-1, -1, Float.POSITIVE_INFINITY)
+                for (axis in 0..2) {
+                    val min = nodes.minOf { it.boundingBox.centroid[axis] }
+                    val max = nodes.maxOf { it.boundingBox.centroid[axis] }
+                    val range = max - min
+                    if (range <= 0f) continue
+
+                    val axisBins = bins[axis]
+                    for (node in nodes) {
+                        val bin = ((node.boundingBox.centroid[axis] - min) / range * binCount).toInt().coerceAtMost(binCount - 1)
+                        axisBins[bin].add(node)
+                    }
+
+                    val binBoundsAndSize = axisBins.map { bin ->
+                        bin.map { it.boundingBox }.reduceOrNull(BoundingBox::union) to bin.size
+                    }
+
+                    for (splitIndex in 1 until binCount) {
+                        val left = binBoundsAndSize.take(splitIndex)
+                        val leftElementCount = left.sumOf { it.second }
+                        if (leftElementCount == 0) continue
+
+                        val right = binBoundsAndSize.drop(splitIndex)
+                        val rightElementCount = right.sumOf { it.second }
+                        if (rightElementCount == 0) continue
+
+                        val leftSah = left.mapNotNull { it.first }.reduce(BoundingBox::union).surfaceArea * leftElementCount
+                        val rightSah = right.mapNotNull { it.first }.reduce(BoundingBox::union).surfaceArea * rightElementCount
+                        val cost = leftSah + rightSah
+                        if (cost < bestSplit.cost) {
+                            bestSplit = SahSplit(axis, splitIndex, cost)
+                        }
+                    }
+                }
+
+                val (left, right) = if (bestSplit.axis == -1) {
+                    // centroids are all the same for some reason, fall back to median split along longest axis
+                    val axis = (0..2).maxBy { axis ->
+                        nodes.maxOf { it.boundingBox.centroid[axis] } - nodes.minOf { it.boundingBox.centroid[axis] }
+                    }
+                    val sorted = nodes.sortedBy { it.boundingBox.centroid[axis] }
+                    sorted.take(sorted.size / 2) to sorted.drop(sorted.size / 2)
+                } else {
+                    val bestBins = bins[bestSplit.axis]
+                    val left = bestBins.take(bestSplit.splitIndex).flatten()
+                    val right = bestBins.drop(bestSplit.splitIndex).flatten()
+                    left to right
+                }
+                return Branch(sahSplit(left), sahSplit(right))
+            }
+
+            val tree = BinaryBvhTree<E>()
+            tree.size = nodes.size
+            tree.tree = when (nodes.size) {
+                0 -> null
+                1 -> nodes.single()
+                else -> sahSplit(nodes)
+            }
+            tree.mutationsSinceCreation = 0
+
+            return tree
+        }
     }
 
     /**

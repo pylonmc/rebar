@@ -1,12 +1,17 @@
 package io.github.pylonmc.rebar.entity.interfaces
 
 import com.jogamp.common.util.WeakIdentityHashMap
+import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.entity.display.transform.TransformUtil.toMatrix
 import io.github.pylonmc.rebar.event.RebarEntityAddEvent
 import io.github.pylonmc.rebar.event.RebarEntityRemoveEvent
 import io.github.pylonmc.rebar.util.BinaryBvhTree
 import io.github.pylonmc.rebar.util.PlayerTarget
+import io.github.pylonmc.rebar.util.ReadWriteLockableReference
 import io.github.pylonmc.rebar.util.getTargetIncludingInteractableDisplays
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.bukkit.Location
 import org.bukkit.World
 import org.bukkit.entity.ItemDisplay
@@ -15,10 +20,13 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
 import org.bukkit.event.player.PlayerInteractEvent
+import org.bukkit.event.world.WorldLoadEvent
 import org.jetbrains.annotations.ApiStatus
 import org.joml.Matrix4fc
 import org.joml.Vector3fc
+import java.lang.ref.WeakReference
 import java.util.*
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * Implemented by item displays that wish to listen for player interactions. Normally, display entities cannot
@@ -40,7 +48,7 @@ interface InteractableItemDisplayRebarEntity : BinaryBvhTree.Element {
     fun onInteract(event: PlayerInteractEvent, interactionLocation: Location) {}
 
     companion object : Listener {
-        private val trees = WeakHashMap<World, BinaryBvhTree<InteractableItemDisplayRebarEntity>>()
+        private val trees = WeakHashMap<World, ReadWriteLockableReference<BinaryBvhTree<InteractableItemDisplayRebarEntity>>>()
 
         private val boxes = WeakIdentityHashMap<InteractableItemDisplayRebarEntity, Matrix4fc>()
         private val positions = WeakIdentityHashMap<InteractableItemDisplayRebarEntity, Vector3fc>()
@@ -53,8 +61,9 @@ interface InteractableItemDisplayRebarEntity : BinaryBvhTree.Element {
         @JvmStatic
         fun getIntersectedEntities(world: World, origin: Vector3fc, direction: Vector3fc): List<Pair<InteractableItemDisplayRebarEntity, Vector3fc>> {
             val tree = trees[world] ?: return emptyList()
-            tree.toList().forEach { it.checkForUpdates() }
-            return tree.getIntersections(origin, direction)
+            val elements = tree.read { it.toList() }
+            elements.forEach { it.checkForUpdates() }
+            return tree.read { it.getIntersections(origin, direction) }
         }
 
         @EventHandler
@@ -70,19 +79,46 @@ interface InteractableItemDisplayRebarEntity : BinaryBvhTree.Element {
         @EventHandler
         private fun onRebarEntityAdd(event: RebarEntityAddEvent) {
             val entity = event.rebarEntity as? InteractableItemDisplayRebarEntity ?: return
+            val world = entity.entity.world
             boxes[entity] = entity.entity.transformation.toMatrix()
-            worlds[entity] = entity.entity.world
+            worlds[entity] = world
             positions[entity] = entity.entity.location.toVector().toVector3f()
-            trees.getOrPut(entity.entity.world, ::BinaryBvhTree).insert(entity)
+            trees[world]!!.write { it.get().insert(entity) }
         }
 
         @EventHandler
         private fun onRebarEntityRemove(event: RebarEntityRemoveEvent) {
             val entity = event.rebarEntity as? InteractableItemDisplayRebarEntity ?: return
-            trees[entity.entity.world]!!.remove(entity)
+            val world = entity.entity.world
+            trees[world]!!.write { it.get().remove(entity) }
             boxes.remove(entity)
             worlds.remove(entity)
             positions.remove(entity)
+        }
+
+        @EventHandler
+        private fun onWorldLoad(event: WorldLoadEvent) {
+            val tree = ReadWriteLockableReference(BinaryBvhTree<InteractableItemDisplayRebarEntity>())
+            trees[event.world] = tree
+
+            // occasionally rebuild trees that have been modified a lot in order to improve performance
+            val world = WeakReference(event.world)
+            Rebar.scope.launch(Dispatchers.IO) {
+                while (true) {
+                    delay(10.seconds)
+                    if (world.get() == null) break
+                    val mutations = tree.read { it.mutationsSinceCreation }
+                    if (mutations < 64) continue
+
+                    val elements = tree.read { it.toList() }
+                    val newTree = BinaryBvhTree.buildFromElements(elements)
+
+                    tree.write {
+                        if (tree.get().mutationsSinceCreation != mutations) continue // tree has been modified while rebuilding, try again next loop
+                        tree.set(newTree)
+                    }
+                }
+            }
         }
 
         private fun InteractableItemDisplayRebarEntity.checkForUpdates() {
@@ -93,15 +129,14 @@ interface InteractableItemDisplayRebarEntity : BinaryBvhTree.Element {
             val positionChanged = entityPosition != position || entity.world != world
 
             if (transformChanged || positionChanged) {
-                val tree = trees[world]!!
-                tree.remove(this)
+                trees[world]!!.write { it.get().remove(this) }
 
                 boxes[this] = entityTransform
                 world = entity.world
                 worlds[this] = world
                 positions[this] = entityPosition
 
-                trees.getOrPut(world, ::BinaryBvhTree).insert(this)
+                trees[world]!!.write { it.get().insert(this) }
             }
         }
     }
