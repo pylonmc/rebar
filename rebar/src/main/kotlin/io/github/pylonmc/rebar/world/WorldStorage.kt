@@ -83,7 +83,7 @@ class WorldStorage private constructor(val worldId: UUID) {
         for (key in dirtyData) {
             val pdc = world.persistentDataContainer
             val unsavedData = data[key]
-            if (unsavedData == null) {
+            if (unsavedData == null || unsavedData.first == null) {
                 pdc.remove(key)
             } else {
                 @Suppress("UNCHECKED_CAST")
