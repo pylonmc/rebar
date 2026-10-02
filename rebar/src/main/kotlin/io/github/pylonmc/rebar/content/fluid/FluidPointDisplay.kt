@@ -1,11 +1,10 @@
 package io.github.pylonmc.rebar.content.fluid
 
+import io.github.pylonmc.rebar.entity.interfaces.InteractableRebarItemDisplay
 import io.github.pylonmc.rebar.fluid.VirtualFluidPoint
-import org.bukkit.entity.ItemDisplay
-import java.util.UUID
+import java.util.*
 
-interface FluidPointDisplay {
-    val entity: ItemDisplay
+interface FluidPointDisplay : InteractableRebarItemDisplay {
     val uuid: UUID
     val point: VirtualFluidPoint
     val connectedPipeDisplays: Set<UUID>

@@ -122,6 +122,10 @@ abstract class RebarEntity<out E: Entity>(val entity: E) : WailaSupplier, Keyed 
     fun <T> getSettingOrThrow(key: String, adapter: ConfigAdapter<T>)
         = getSettings().getOrThrow(key, adapter)
 
+    override fun equals(other: Any?) = other is RebarEntity<*> && entity == other.entity
+
+    override fun hashCode() = entity.hashCode()
+
     companion object {
 
         val rebarEntityKeyKey = rebarKey("rebar_entity_key")
