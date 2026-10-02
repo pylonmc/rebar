@@ -5,13 +5,7 @@ on:
     tags: ['*']
 
 jobs:
-  build:
-    uses: ./.github/workflows/gradle.yml
-    with:
-      version: ${{ github.ref_name }}
-      
   github-release:
-    needs: [build]
     runs-on: ubuntu-latest
 
     steps:
