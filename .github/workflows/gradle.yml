@@ -41,13 +41,13 @@ jobs:
         uses: gradle/actions/setup-gradle@v4.2.2
 
       - name: Build with Gradle Wrapper
-        run: ./gradlew :rebar:shadowJar -Pversion=${{ inputs.version }}
+        run: ./gradlew :rebar:shadowJar -Pversion=${{ inputs.version || github.sha }}
 
       - name: Upload the artifact
         uses: actions/upload-artifact@v7
         with:
-          name: rebar-${{ inputs.version }}.jar
-          path: 'rebar/build/libs/rebar-${{ inputs.version }}.jar'
+          name: rebar-${{ inputs.version || github.sha }}.jar
+          path: 'rebar/build/libs/rebar-${{ inputs.version || github.sha }}.jar'
           archive: false
 
   dependency-submission:
