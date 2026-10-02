@@ -34,4 +34,4 @@ jobs:
           prerelease: false
           automatic_release_tag: ${{ github.ref_name }}
           title: Release ${{ github.ref_name }}
-          files: rebar-*.jar
+          files: rebar/build/libs/rebar-*.jar
