@@ -18,7 +18,7 @@ on:
   workflow_call:
     inputs:
       version:
-        default: ${{ github.run_number }}
+        default: ${{ github.sha }}
         required: false
         type: string
 
@@ -42,13 +42,13 @@ jobs:
         uses: gradle/actions/setup-gradle@v4.2.2
 
       - name: Build with Gradle Wrapper
-        run: ./gradlew :rebar:shadowJar -Pversion=${{ inputs.version || github.run_number }}
+        run: ./gradlew :rebar:shadowJar -Pversion=${{ inputs.version }}
 
       - name: Upload the artifact
         uses: actions/upload-artifact@v7
         with:
-          name: rebar-${{ inputs.version || github.run_number }}
-          path: 'rebar/build/libs/rebar-${{ inputs.version || github.run_number }}.jar'
+          name: rebar-${{ inputs.version }}
+          path: 'rebar/build/libs/rebar-${{ inputs.version }}.jar'
           archive: false
 
   dependency-submission:
