@@ -18,7 +18,7 @@ jobs:
     - name: Download Rebar
       uses: actions/download-artifact@v4.1.8
       with:
-        name: rebar-${{ github.ref_name }}
+        name: rebar-${{ github.ref_name }}.jar
 
     - name: Create Release
       uses: marvinpinto/action-automatic-releases@latest
