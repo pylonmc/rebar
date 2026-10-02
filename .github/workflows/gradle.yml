@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+    tags: ['*']
     paths:
       - 'rebar/**'
       - 'test/**'
