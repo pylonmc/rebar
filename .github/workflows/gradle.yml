@@ -8,16 +8,18 @@ on:
       - 'rebar/**'
       - 'test/**'
       - 'build.gradle.kts'
+      - '.github/workflows/gradle.yml'
   pull_request:
     branches: [ "*" ]
     paths:
       - 'rebar/**'
       - 'test/**'
       - 'build.gradle.kts'
+      - '.github/workflows/gradle.yml'
   workflow_call:
     inputs:
       version:
-        default: ${{ github.sha }}
+        default: ${{ github.run_number }}
         required: false
         type: string
 
@@ -41,13 +43,13 @@ jobs:
         uses: gradle/actions/setup-gradle@v4.2.2
 
       - name: Build with Gradle Wrapper
-        run: ./gradlew :rebar:shadowJar -Pversion=${{ inputs.version || github.sha }}
+        run: ./gradlew :rebar:shadowJar -Pversion=${{ inputs.version || github.run_number }}
 
       - name: Upload the artifact
         uses: actions/upload-artifact@v7
         with:
-          name: rebar-${{ inputs.version || github.sha }}.jar
-          path: 'rebar/build/libs/rebar-${{ inputs.version || github.sha }}.jar'
+          name: rebar-${{ inputs.version || github.run_number }}.jar
+          path: 'rebar/build/libs/rebar-${{ inputs.version || github.run_number }}.jar'
           archive: false
 
   dependency-submission:
