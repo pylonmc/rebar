@@ -14,3 +14,4 @@ test:
   translation:
     present_both: "English value"
     default_only: "English fallback value"
+    prefer_lang: "English value (default)"

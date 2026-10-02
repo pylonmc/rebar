@@ -1,5 +1,5 @@
-# Intentionally incomplete: test.translation.default_only and the item/fluid names
-# are only present in en.yml to exercise per-key fallback (see pylonmc/rebar#591).
+# Intentionally incomplete: item/fluid names are omitted to exercise the missing-key
+# warnings; test.translation.default_only exists only in en.yml (see pylonmc/rebar#591).
 addon: "RebarTest"
 
 test:
