@@ -8,6 +8,7 @@ import net.minecraft.world.item.crafting.RecipeHolder
 import net.minecraft.world.item.crafting.ShapedRecipePattern
 import net.minecraft.world.item.crafting.SmeltingRecipe
 import net.minecraft.world.item.crafting.StonecutterRecipe
+import net.minecraft.world.item.crafting.TransmuteResult
 import org.bukkit.craftbukkit.CraftServer
 import org.bukkit.craftbukkit.inventory.CraftItemStack
 import org.bukkit.craftbukkit.inventory.CraftRecipe
@@ -197,7 +198,7 @@ object RecipeMapper {
             CraftRecipe.toIngredient(recipe.input, true),
             CraftRecipe.toIngredient(recipe.material, true),
             NmsTransmuteRecipe.DEFAULT_MATERIAL_COUNT,
-            CraftItemStack.asTemplate(recipe.result),
+            TransmuteResult.fromTemplate(CraftItemStack.asTemplate(recipe.result)),
             false
         )
     }

@@ -26,7 +26,7 @@ import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.EntityType
 import net.minecraft.world.entity.EntityTypes
 import net.minecraft.world.entity.Pose
-import net.minecraft.world.entity.PositionMoveRotation
+import net.minecraft.world.entity.PositionPath
 import net.minecraft.world.item.ItemDisplayContext
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.phys.Vec3
@@ -211,7 +211,7 @@ class BlockTextureEntityImpl : BlockTextureEntity, SyncedDataHolder {
         set(value) = entityData.set(EntityDataAccess.DISPLAY_DATA_BRIGHTNESS_OVERRIDE_ID, value?.let { LightCoordsUtil.pack(value.blockLight, value.skyLight) } ?: -1)
 
     override var itemStack: ItemStack?
-        get() = entityData.get(EntityDataAccess.ITEM_DISPLAY_DATA_ITEM_STACK_ID).asBukkitCopy()
+        get() = CraftItemStack.asBukkitCopy(entityData.get(EntityDataAccess.ITEM_DISPLAY_DATA_ITEM_STACK_ID))
         set(value) = entityData.set(EntityDataAccess.ITEM_DISPLAY_DATA_ITEM_STACK_ID, (value as? CraftItemStack)?.handle ?: NmsItemStack.EMPTY)
     override var itemDisplayTransform: ItemDisplay.ItemDisplayTransform
         get() = ItemDisplay.ItemDisplayTransform.entries[entityData.get(EntityDataAccess.ITEM_DISPLAY_DATA_ITEM_DISPLAY_ID).toInt()]
@@ -330,7 +330,7 @@ class BlockTextureEntityImpl : BlockTextureEntity, SyncedDataHolder {
         this.refreshesFrozen = true
         this.refreshesFrozenExpireTime = System.currentTimeMillis() + 1000L
 
-        val positionPacket = ClientboundEntityPositionSyncPacket(id, PositionMoveRotation(this.position, ZERO_VEC, 0.0F, 0.0F), false)
+        val positionPacket = ClientboundEntityPositionSyncPacket(id, PositionPath.of(this.position), 0.0F, 0.0F, false)
         for (viewer in viewers.toSet()) {
             sendPacket(viewer, ClientboundBundlePacket(mutableListOf<Packet<in ClientGamePacketListener>>(
                 positionPacket,

@@ -26,6 +26,7 @@ repositories {
 }
 
 val minecraftVersion = providers.gradleProperty("minecraft.version").get()
+val invuiVersion = "2.5.1"
 
 dependencies {
     fun paperLibraryApi(dependency: Any) {
@@ -41,8 +42,8 @@ dependencies {
 
     compileOnly("io.papermc.paper:paper-api:$minecraftVersion.build.+")
 
-    paperLibraryApi("xyz.xenondevs.invui:invui:2.3.0")
-    paperLibraryApi("xyz.xenondevs.invui:invui-kotlin:2.3.0")
+    paperLibraryApi("xyz.xenondevs.invui:invui:$invuiVersion")
+    paperLibraryApi("xyz.xenondevs.invui:invui-kotlin:$invuiVersion")
     compileOnly("me.clip:placeholderapi:2.12.2")
     implementation("info.debatty:java-string-similarity:2.0.0")
     implementation("org.bstats:bstats-bukkit:2.2.1")
@@ -98,8 +99,8 @@ dokka {
             packageListUrl("https://javadoc.io/doc/net.kyori/adventure-api/latest/element-list")
         }
         externalDocumentationLinks.register("InvUI") {
-            url("https://repo.xenondevs.xyz/javadoc/releases/xyz/xenondevs/invui/invui/2.1.0/raw/")
-            packageListUrl("https://repo.xenondevs.xyz/javadoc/releases/xyz/xenondevs/invui/invui/2.1.0/raw/element-list")
+            url("https://repo.xenondevs.xyz/javadoc/releases/xyz/xenondevs/invui/invui/$invuiVersion/raw/")
+            packageListUrl("https://repo.xenondevs.xyz/javadoc/releases/xyz/xenondevs/invui/invui/$invuiVersion/raw/element-list")
         }
         sourceLink {
             localDirectory.set(file("src/main/kotlin"))
