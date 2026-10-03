@@ -1,0 +1,15 @@
+addon: "RebarTest"
+
+item:
+  simple_block:
+    name: "简单方块（zh）"
+  simple_multiblock:
+    name: "简单多方块结构（zh）"
+
+fluid:
+  water: "水（zh）"
+  lava: "岩浆（zh）"
+
+test:
+  translation:
+    prefer_lang: "语言层优先值"

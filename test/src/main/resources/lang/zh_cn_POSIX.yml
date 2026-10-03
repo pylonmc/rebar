@@ -1,0 +1,11 @@
+addon: "RebarTest"
+
+item:
+  simple_block:
+    name: "简单方块（zh_CN_POSIX）"
+  simple_multiblock:
+    name: "简单多方块结构（zh_CN_POSIX）"
+
+fluid:
+  water: "水（zh_CN_POSIX）"
+  lava: "岩浆（zh_CN_POSIX）"

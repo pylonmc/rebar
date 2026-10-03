@@ -111,7 +111,7 @@ class RebarTranslator private constructor(private val addon: RebarAddon) : Trans
     fun canTranslateExact(key: String, locale: Locale): Boolean {
         val parts = key.split('.', limit = 2)
         if (parts.size < 2 || parts[0] != addonNamespace) return false
-        return findTranslations(locale)?.get(parts[1], ConfigAdapter.STRING) != null
+        return findTranslations(locale).firstOrNull()?.get(parts[1], ConfigAdapter.STRING) != null
     }
 
     override fun translate(component: TranslatableComponent, locale: Locale): Component? {
@@ -146,31 +146,23 @@ class RebarTranslator private constructor(private val addon: RebarAddon) : Trans
             if (parts.size < 2) return null
             val (addon, key) = parts
             if (addon != addonNamespace) return null
-            val translation = findTranslations(locale)?.get(key, ConfigAdapter.STRING)
-                ?: findTranslations(this.addon.defaultLanguage)?.get(key, ConfigAdapter.STRING)
+            val translation = (findTranslations(locale) + findTranslations(this.addon.defaultLanguage))
+                .firstNotNullOfOrNull { it.get(key, ConfigAdapter.STRING) }
                 ?: return null
             customMiniMessage.deserialize(translation)
         }
     }
 
-    private fun findTranslations(locale: Locale): ConfigSection? {
-        val languageRange = languageRanges.getOrPut(locale) {
-            val lookupList = LocaleUtils.localeLookupList(locale)
-            lookupList.reversed()
-                .mapIndexed { index, value ->
-                    Locale.LanguageRange(value.toLanguageTag(), (index + 1.0) / lookupList.size)
-                }
-                .sortedByDescending { it.weight }
+    private fun findTranslations(locale: Locale): List<ConfigSection> =
+        LocaleUtils.localeLookupList(locale).mapNotNull {
+            Locale.lookup(listOf(Locale.LanguageRange(it.toLanguageTag())), languages)
+                ?.let(translations::get)
         }
-        return Locale.lookup(languageRange, this.translations.keys)?.let(translations::get)
-    }
 
     override fun name(): Key = addon.key
     override fun translate(key: String, locale: Locale): MessageFormat? = null
 
     companion object : Listener {
-        private val languageRanges = WeakHashMap<Locale, List<Locale.LanguageRange>>()
-
         private val translators = mutableMapOf<NamespacedKey, RebarTranslator>()
 
         private val originalNameKey = rebarKey("translation_original_name")
