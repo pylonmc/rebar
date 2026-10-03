@@ -17,6 +17,7 @@ import io.github.pylonmc.rebar.test.test.entity.EntityStorageUnregisteredEntityT
 import io.github.pylonmc.rebar.test.test.fluid.*;
 import io.github.pylonmc.rebar.test.test.i18n.TranslationFallbackTest;
 import io.github.pylonmc.rebar.test.test.item.RebarItemStackInterfaceTest;
+import io.github.pylonmc.rebar.test.test.item.BrewingStandFuelTest;
 import io.github.pylonmc.rebar.test.test.misc.GametestTest;
 import io.github.pylonmc.rebar.test.test.recipe.CraftingTest;
 import io.github.pylonmc.rebar.test.test.recipe.FurnaceTest;
@@ -59,6 +60,7 @@ public class RebarTest extends JavaPlugin implements RebarAddon {
         tests.add(new BlockEventErrorTest());
 
         tests.add(new RebarItemStackInterfaceTest());
+        tests.add(new BrewingStandFuelTest());
 
         tests.add(new GametestTest());
         tests.add(new TranslationFallbackTest());

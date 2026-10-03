@@ -3,6 +3,7 @@ package io.github.pylonmc.rebar.nms.inventory
 import net.minecraft.resources.Identifier
 import net.minecraft.world.inventory.AbstractContainerMenu
 import net.minecraft.world.inventory.ContainerListener
+import org.bukkit.craftbukkit.inventory.CraftItemStack
 import org.bukkit.inventory.InventoryView
 import org.bukkit.inventory.ItemStack
 import net.minecraft.world.item.ItemStack as NmsItemStack
@@ -18,7 +19,7 @@ class KeyedContainerListener(
 ) : ContainerListener {
 
     override fun slotChanged(container: AbstractContainerMenu, slot: Int, oldItemStack: NmsItemStack, newItemStack: NmsItemStack) {
-        listener(container.bukkitView, slot, oldItemStack.bukkitStack, newItemStack.bukkitStack)
+        listener(container.bukkitView, slot, CraftItemStack.asBukkitMirror(oldItemStack), CraftItemStack.asBukkitMirror(newItemStack))
     }
 
     override fun slotChanged(container: AbstractContainerMenu, slot: Int, itemStack: NmsItemStack) {}

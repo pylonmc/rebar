@@ -1,7 +1,6 @@
 package io.github.pylonmc.rebar.nms
 
 import com.destroystokyo.paper.event.player.PlayerRecipeBookClickEvent
-import com.google.common.collect.BiMap
 import com.mojang.brigadier.StringReader
 import com.mojang.brigadier.exceptions.CommandSyntaxException
 import io.github.pylonmc.rebar.Rebar
@@ -27,6 +26,8 @@ import kotlinx.coroutines.launch
 import net.kyori.adventure.text.Component
 import net.minecraft.commands.arguments.item.ItemParser
 import net.minecraft.core.BlockPos
+import net.minecraft.core.component.DataComponents
+import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.core.registries.Registries
 import net.minecraft.nbt.TextComponentTagVisitor
 import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket
@@ -35,15 +36,16 @@ import net.minecraft.network.protocol.game.ClientboundSetEquipmentPacket
 import net.minecraft.resources.Identifier
 import net.minecraft.resources.ResourceKey
 import net.minecraft.server.MinecraftServer
-import net.minecraft.util.context.ContextKeySet
 import net.minecraft.world.inventory.AbstractCraftingMenu
 import net.minecraft.world.inventory.RecipeBookMenu.PostPlaceAction
-import net.minecraft.world.item.Item
 import net.minecraft.world.item.crafting.RecipeManager
+import net.minecraft.world.item.crafting.RecipeType
 import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity
+import net.minecraft.world.level.block.entity.BlastFurnaceBlockEntity
+import net.minecraft.world.level.block.entity.FurnaceBlockEntity
+import net.minecraft.world.level.block.entity.SmokerBlockEntity
 import net.minecraft.world.level.block.state.properties.Property
 import net.minecraft.world.level.storage.loot.LootParams
-import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams
 import net.minecraft.world.phys.BlockHitResult
 import net.minecraft.world.phys.Vec3
@@ -94,8 +96,6 @@ import net.minecraft.core.component.DataComponentType as NmsDataComponentType
 @Suppress("unused")
 object NmsAccessorImpl : NmsAccessor {
 
-    private val CONTEXT_KEY_SET_REGISTRY: BiMap<Identifier, ContextKeySet>
-
     // We use both the field and the handle because the handle will have significantly better performance
     // getting the field value but cannot be used for setting so we still need the raw field.
     // (even if we used a VarHandle, because the field is normally final, setting will not work)
@@ -104,11 +104,6 @@ object NmsAccessorImpl : NmsAccessor {
 
     init {
         try {
-            val contextKeySetRegistryField = LootContextParamSets::class.java.getDeclaredField("REGISTRY")
-            contextKeySetRegistryField.isAccessible = true
-            @Suppress("UNCHECKED_CAST")
-            CONTEXT_KEY_SET_REGISTRY = contextKeySetRegistryField.get(null) as BiMap<Identifier, ContextKeySet>
-
             furnaceQuickCheckField = AbstractFurnaceBlockEntity::class.java.getDeclaredField("quickCheck")
             furnaceQuickCheckField.isAccessible = true
 
@@ -122,9 +117,12 @@ object NmsAccessorImpl : NmsAccessor {
 
     private val players = ConcurrentHashMap<UUID, PlayerPacketHandler>()
 
+    override fun isBrewingFuel(itemStack: ItemStack): Boolean =
+        CraftItemStack.unwrap(itemStack).has(DataComponents.BREWING_FUEL)
+
     override fun damageItem(itemStack: ItemStack, amount: Int, world: World, onBreak: (Material) -> Unit, force: Boolean) {
-        (itemStack as CraftItemStack).handle.hurtAndBreak(amount, (world as CraftWorld).handle, null, { item: Item ->
-            onBreak(CraftItemType.minecraftToBukkit(item))
+        (itemStack as CraftItemStack).handle.hurtAndBreak(amount, (world as CraftWorld).handle, null, { brokenStack: NmsItemStack ->
+            onBreak(CraftItemType.minecraftToBukkit(brokenStack.item))
         }, force)
     }
 
@@ -273,7 +271,12 @@ object NmsAccessorImpl : NmsAccessor {
             if (currentQuickCheck is AccessibleCachedCheck<*, *>) {
                 currentQuickCheck.lastRecipe = CraftNamespacedKey.toResourceKey(Registries.RECIPE, recipe)
             } else {
-                val newQuickCheck = AccessibleCachedCheck(blockEntity.recipeType)
+                val newQuickCheck = when (blockEntity) {
+                    is BlastFurnaceBlockEntity -> AccessibleCachedCheck(RecipeType.BLASTING)
+                    is SmokerBlockEntity -> AccessibleCachedCheck(RecipeType.SMOKING)
+                    is FurnaceBlockEntity -> AccessibleCachedCheck(RecipeType.SMELTING)
+                    else -> return
+                }
                 newQuickCheck.lastRecipe = CraftNamespacedKey.toResourceKey(Registries.RECIPE, recipe)
                 furnaceQuickCheckField.set(blockEntity, newQuickCheck)
             }
@@ -283,7 +286,7 @@ object NmsAccessorImpl : NmsAccessor {
         }
     }
 
-    override fun getWeaponItem(entity: Entity): ItemStack? = (entity as CraftEntity).handle.weaponItem?.asBukkitMirror()
+    override fun getWeaponItem(entity: Entity): ItemStack? = (entity as CraftEntity).handle.weaponItem?.let(CraftItemStack::asBukkitMirror)
 
     override fun createItemStack(input: String): ItemStack {
         var input = input
@@ -306,7 +309,7 @@ object NmsAccessorImpl : NmsAccessor {
                 val stack = type.createItemStack()
                 val nmsStack = (stack as CraftItemStack).handle
                 itemInput?.let { nmsStack.applyComponents(it.components) }
-                return nmsStack.asBukkitMirror()
+                return CraftItemStack.asBukkitMirror(nmsStack)
             }
         } catch (ex: CommandSyntaxException) {
             throw IllegalArgumentException("Could not parse ItemStack: $input", ex);
@@ -381,7 +384,7 @@ object NmsAccessorImpl : NmsAccessor {
             }
             return types
         }
-        return nmsStack.componentsPatch.entrySet().mapNotNull { getBukkitType(it.key) }
+        return nmsStack.componentsPatch.map.keys.mapNotNull(::getBukkitType)
     }
 
     fun <T: Any, NMS: Any> componentMatches(itemStack: NmsItemStack, type: PaperDataComponentType.ValuedImpl<T, NMS>, value: Any?): Boolean {
@@ -420,8 +423,8 @@ object NmsAccessorImpl : NmsAccessor {
                 }
             }
         } else {
-            for (component in nmsStack.componentsPatch.entrySet()) {
-                nmsComponents[component.key] = component.value.orElse(null)
+            for ((type, value) in nmsStack.componentsPatch.map) {
+                nmsComponents[type] = value
             }
         }
 
@@ -493,7 +496,7 @@ object NmsAccessorImpl : NmsAccessor {
     }
 
     override fun getRandomItems(world: World, contextSet: NamespacedKey, lootTable: LootTable, optionalRandomLootSeed: Long?, lootContext: LootTableResultBuilder): Collection<ItemStack> {
-        val contextParamSet = CONTEXT_KEY_SET_REGISTRY[CraftNamespacedKey.toMinecraft(contextSet)] ?: throw IllegalArgumentException("Invalid context set $contextSet")
+        val contextParamSet = BuiltInRegistries.CONTEXT_KEY_SET.getValue(CraftNamespacedKey.toMinecraft(contextSet)) ?: throw IllegalArgumentException("Invalid context set $contextSet")
         val nmsTable = (lootTable as CraftLootTable).handle
         val lootParams = LootParams.Builder((world as CraftWorld).handle)
             .withOptionalParameter(LootContextParams.THIS_ENTITY, lootContext.thisEntity?.let { (it as CraftEntity).handle })
@@ -513,6 +516,6 @@ object NmsAccessorImpl : NmsAccessor {
             nmsTable.getRandomItems(lootParams, optionalRandomLootSeed)
         } else {
             nmsTable.getRandomItems(lootParams)
-        }.map { it.asBukkitMirror() }
+        }.map(CraftItemStack::asBukkitMirror)
     }
 }
