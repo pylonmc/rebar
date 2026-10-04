@@ -26,7 +26,6 @@ import kotlinx.coroutines.launch
 import net.kyori.adventure.text.Component
 import net.minecraft.commands.arguments.item.ItemParser
 import net.minecraft.core.BlockPos
-import net.minecraft.core.component.DataComponents
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.core.registries.Registries
 import net.minecraft.nbt.TextComponentTagVisitor
@@ -116,9 +115,6 @@ object NmsAccessorImpl : NmsAccessor {
     }
 
     private val players = ConcurrentHashMap<UUID, PlayerPacketHandler>()
-
-    override fun isBrewingFuel(itemStack: ItemStack): Boolean =
-        CraftItemStack.unwrap(itemStack).has(DataComponents.BREWING_FUEL)
 
     override fun damageItem(itemStack: ItemStack, amount: Int, world: World, onBreak: (Material) -> Unit, force: Boolean) {
         (itemStack as CraftItemStack).handle.hurtAndBreak(amount, (world as CraftWorld).handle, null, { brokenStack: NmsItemStack ->

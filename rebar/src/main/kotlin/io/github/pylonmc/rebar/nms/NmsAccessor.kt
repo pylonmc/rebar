@@ -117,11 +117,6 @@ interface NmsAccessor {
     fun setChanged(inventory: Inventory)
 
     /**
-     * Whether the item has Minecraft's brewing fuel component.
-     */
-    fun isBrewingFuel(itemStack: ItemStack): Boolean
-
-    /**
      * Simulates a player interaction using the item specified, if [block] and [blockFace] are specified it simulates using the item on
      * that block.
      *
