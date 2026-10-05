@@ -8,12 +8,16 @@ on:
       - 'rebar/**'
       - 'test/**'
       - 'build.gradle.kts'
+      - 'nms/**'
+      - 'gradle.properties'
   pull_request:
     branches: [ "*" ]
     paths:
       - 'rebar/**'
       - 'test/**'
       - 'build.gradle.kts'
+      - 'nms/**'
+      - 'gradle.properties'
   workflow_call:
     inputs:
       version:
