@@ -40,9 +40,7 @@ import java.io.File
 import java.text.MessageFormat
 import java.util.*
 import java.util.jar.JarFile
-import kotlin.io.path.exists
-import kotlin.io.path.listDirectoryEntries
-import kotlin.io.path.nameWithoutExtension
+import kotlin.io.path.*
 
 /**
  * The [Translator] for a given [RebarAddon]. This translator handles the translation of
@@ -273,7 +271,28 @@ class RebarTranslator private constructor(private val addon: RebarAddon) : Trans
                         concatenatedArguments.addAll(line.arguments())
                     }
                     val translated = GlobalTranslator.render(line.withArguments(concatenatedArguments), locale)
-                    if (translated.plainText.isBlank()) return@flatMap emptyList()
+                    try {
+                        if (translated.plainText.isBlank()) return@flatMap emptyList()
+                    } catch (e: IllegalStateException) {
+                        val file = Rebar.dataPath.resolve("dump_${System.currentTimeMillis()}.txt")
+                        file.writeText("""
+                            this = $this
+                            arguments = $arguments
+                            player = $player
+                            locale = $locale
+                            lore = $lore
+                            originalLore = $originalLore
+                            rebarItemSchema = ${rebarItemSchema?.key}
+                            line = $line
+                            concatenatedArguments = $concatenatedArguments
+                            translated = $translated
+                        """.trimIndent())
+                        Rebar.logger.severe("Congratulations! You have found a bug that the Rebar developers have worked very hard to catch.")
+                        Rebar.logger.severe("So instead of working harder, they decided to test in production and get players to find it for them.")
+                        Rebar.logger.severe("Please attach the file found at ${file.absolutePathString()} to https://github.com/pylonmc/rebar/issues/922 (sending it in the Discord works too).")
+                        Rebar.logger.severe("And now back to our regularly scheduled stack trace.")
+                        throw e
+                    }
                     splitByNewlines(translated).flatMap {
                         wrapLine(it)
                     }
