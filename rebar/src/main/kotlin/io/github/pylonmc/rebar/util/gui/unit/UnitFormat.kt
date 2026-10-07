@@ -2,18 +2,25 @@
 
 package io.github.pylonmc.rebar.util.gui.unit
 
+import com.google.gson.JsonArray
+import com.google.gson.JsonElement
+import com.google.gson.JsonObject
+import com.google.gson.JsonPrimitive
 import com.ibm.icu.number.NumberFormatter
 import com.ibm.icu.text.PluralRules
 import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.addon.RebarAddon
-import io.github.pylonmc.rebar.i18n.LocaleDependentComponentRenderer
+import io.github.pylonmc.rebar.i18n.ContextualComponentRenderer
 import io.github.pylonmc.rebar.i18n.RebarTranslator
 import io.github.pylonmc.rebar.i18n.RebarTranslator.Companion.translator
+import io.github.pylonmc.rebar.registry.RebarRegistry
+import io.github.pylonmc.rebar.util.rebarKey
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.ComponentLike
 import net.kyori.adventure.text.TextReplacementConfig
 import net.kyori.adventure.text.format.Style
 import net.kyori.adventure.text.format.TextColor
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer
 import net.kyori.adventure.translation.GlobalTranslator
 import org.jetbrains.annotations.ApiStatus
 import java.math.BigDecimal
@@ -40,7 +47,7 @@ import java.util.*
  */
 
 class UnitFormat @JvmOverloads constructor(
-    val name: String,
+    val name: String, // TODO switch to NamespacedKey
     val forms: Map<PluralForm, Component>,
     val abbreviation: Component? = null,
     val format: String = "v u",
@@ -85,13 +92,6 @@ class UnitFormat @JvmOverloads constructor(
     init {
         namedUnits[name] = this
     }
-
-    /**
-     * Disables the use of this unit in the custom `<unit:[name]>` tag in [Rebar's custom MiniMessage parser][io.github.pylonmc.rebar.i18n.customMiniMessage]
-     *
-     * @return this [UnitFormat]
-     */
-    fun disallowUseInUnitTag() = apply { namedUnits.remove(name) }
 
     /**
      * Returns a **new** [UnitFormat] with the same parameters as this one but with a [name]
@@ -253,12 +253,64 @@ class UnitFormat @JvmOverloads constructor(
         /**
          * Builds a component representing the value and unit.
          */
-        fun build() = LocaleDependentComponentRenderer { lang ->
+        fun build(): Component {
+            val obj = JsonObject()
+            sigFigs?.let { obj["sigFigs"] = JsonPrimitive(it) }
+            decimalPlaces?.let { obj["decimalPlaces"] = JsonPrimitive(it) }
+            obj["forceDecimalPlaces"] = JsonPrimitive(forceDecimalPlaces)
+            obj["abbreviate"] = JsonPrimitive(abbreviate)
+            obj["unitStyle"] = GsonComponentSerializer.gson().serializeToTree(Component.empty().style(unitStyle))
+            obj["valueStyle"] = GsonComponentSerializer.gson().serializeToTree(Component.empty().style(valueStyle))
+            prefix?.let { obj["prefix"] = JsonPrimitive(it.name) }
+            obj["badPrefixes"] = JsonArray(badPrefixes.map { JsonPrimitive(it.name) })
+            obj["value"] = JsonPrimitive(
+                when (value) {
+                    is FormattedValue.Number -> value.value.toString()
+                    is FormattedValue.NaN -> "nan"
+                    is FormattedValue.Infinity -> "inf"
+                    is FormattedValue.NegativeInfinity -> "-inf"
+                }
+            )
+            obj["unit"] = JsonPrimitive(name)
+            return Renderer.createComponent(obj)
+        }
+
+        /**
+         * Alias for [build]
+         */
+        override fun asComponent() = build()
+    }
+
+    private object Renderer : ContextualComponentRenderer() {
+
+        init {
+            RebarRegistry.CONTEXTUAL_COMPONENT_RENDERERS.register(this)
+        }
+
+        override fun getKey() = rebarKey("unit")
+
+        override fun render(locale: Locale, data: JsonElement): ComponentLike {
+            val data = data.asJsonObject
+            val value = when (val value = data["value"].asString) {
+                "nan" -> FormattedValue.NaN
+                "inf" -> FormattedValue.Infinity
+                "-inf" -> FormattedValue.NegativeInfinity
+                else -> FormattedValue.Number(BigDecimal(value))
+            }
+            val unitFormat = namedUnits[data["unit"].asString]!!
             val number: Component
             val prefix: MetricPrefix
             val plural: PluralForm
             when (value) {
                 is FormattedValue.Number -> {
+                    val sigFigs = data["sigFigs"]?.asInt
+                    val decimalPlaces = data["decimalPlaces"]?.asInt
+                    val forceDecimalPlaces = data["forceDecimalPlaces"].asBoolean
+                    val selectedPrefix = data["prefix"]?.asString?.let(MetricPrefix::valueOf)
+                    val badPrefixes = data["badPrefixes"].asJsonArray.mapTo(EnumSet.noneOf(MetricPrefix::class.java)) {
+                        MetricPrefix.valueOf(it.asString)
+                    }
+
                     val value = value.value
                     var usedValue = value.round(MathContext(sigFigs ?: value.precision(), RoundingMode.HALF_UP))
                     usedValue = usedValue.setScale(decimalPlaces ?: value.scale(), RoundingMode.HALF_UP)
@@ -266,20 +318,20 @@ class UnitFormat @JvmOverloads constructor(
                         usedValue = usedValue.stripTrailingZeros()
                     }
 
-                    prefix = if (this.prefix == null) {
+                    prefix = if (selectedPrefix == null) {
                         val exponent = value.precision() - value.scale() - if (value.signum() == 0) 0 else 1
                         val prefix = MetricPrefix.entries.firstOrNull { it.scale <= exponent && it !in badPrefixes }
-                            ?: defaultPrefix
+                            ?: unitFormat.defaultPrefix
                         usedValue = usedValue.movePointLeft(prefix.scale)
                         prefix
                     } else {
-                        this.prefix!!
+                        selectedPrefix
                     }
 
-                    val formatted = NumberFormatter.withLocale(lang).format(usedValue)
+                    val formatted = NumberFormatter.withLocale(locale).format(usedValue)
                     number = Component.text(formatted.toString())
 
-                    val keyword = PluralRules.forLocale(lang).select(formatted)
+                    val keyword = PluralRules.forLocale(locale).select(formatted)
                     plural = PluralForm.entries.first { it.keyword == keyword }
                 }
 
@@ -302,14 +354,17 @@ class UnitFormat @JvmOverloads constructor(
                 }
             }
 
-            val unit = if (abbreviate && abbreviation != null) {
+            val abbreviate = data["abbreviate"].asBoolean
+            val unitStyle = GsonComponentSerializer.gson().deserializeFromTree(data["unitStyle"]).style()
+            val valueStyle = GsonComponentSerializer.gson().deserializeFromTree(data["valueStyle"]).style()
+            val unit = if (abbreviate && unitFormat.abbreviation != null) {
                 Component.empty().style(unitStyle)
                     .append(prefix.abbreviationKey)
-                    .append(abbreviation)
+                    .append(unitFormat.abbreviation)
             } else {
                 Component.empty().style(unitStyle)
                     .append(prefix.translationKey)
-                    .append(forms[plural] ?: error("Missing plural form ${plural.keyword} for $lang"))
+                    .append(unitFormat.forms[plural] ?: error("Missing plural form ${plural.keyword} for $locale"))
             }
 
             val configU = TextReplacementConfig.builder()
@@ -321,17 +376,12 @@ class UnitFormat @JvmOverloads constructor(
                 .replacement(number.style(valueStyle))
                 .build()
 
-            val final = Component.text(if (abbreviate && abbreviation != null) abbrFormat else format)
+            val final = Component.text(if (abbreviate && unitFormat.abbreviation != null) unitFormat.abbrFormat else unitFormat.format)
                 .replaceText(configU)
                 .replaceText(configV)
 
-            GlobalTranslator.render(final, lang)
-        }.asComponent()
-
-        /**
-         * Alias for [build]
-         */
-        override fun asComponent() = build()
+            return GlobalTranslator.render(final, locale)
+        }
     }
 
     /**
@@ -620,4 +670,14 @@ class UnitFormat @JvmOverloads constructor(
             return component.build()
         }
     }
+}
+
+private operator fun JsonObject.set(key: String, value: JsonElement) {
+    this.add(key, value)
+}
+
+fun JsonArray(elements: Iterable<JsonElement>): JsonArray {
+    val array = JsonArray()
+    elements.forEach { array.add(it) }
+    return array
 }
