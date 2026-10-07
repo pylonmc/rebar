@@ -11,7 +11,6 @@ import io.github.pylonmc.rebar.config.ConfigSection
 import io.github.pylonmc.rebar.config.ContributorConfig
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
-import io.github.pylonmc.rebar.i18n.LocaleDependentComponentRenderer
 import io.github.pylonmc.rebar.i18n.RebarArgument
 import io.github.pylonmc.rebar.i18n.customMiniMessage
 import io.github.pylonmc.rebar.item.ItemTypeWrapper
@@ -61,7 +60,6 @@ import xyz.xenondevs.invui.inventory.event.UpdateReason
 import java.lang.Math
 import java.lang.invoke.MethodHandle
 import java.lang.invoke.MethodHandles
-import java.util.*
 import java.util.function.Consumer
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.absoluteValue
@@ -95,8 +93,6 @@ fun Component?.inspect(): String {
             val renderer = renderer()
             if (renderer is RebarArgument) {
                 "RebarArgument(name=${renderer.name}, value=${renderer.value.asComponent().inspect()})"
-            } else if (renderer is LocaleDependentComponentRenderer) {
-                "LocaleDependentComponentRenderer(englishVersion=${renderer.apply(Locale.ENGLISH).asComponent().inspect()}, children=${children().map(Component::inspect)})"
             } else {
                 "VirtualComponent(contextType=${contextType()}, renderer=${renderer()}, children=${children().map(Component::inspect)})"
             }
