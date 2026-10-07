@@ -11,7 +11,6 @@ import io.github.pylonmc.rebar.config.ConfigSection
 import io.github.pylonmc.rebar.config.ContributorConfig
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
-import io.github.pylonmc.rebar.i18n.RebarArgument
 import io.github.pylonmc.rebar.i18n.customMiniMessage
 import io.github.pylonmc.rebar.item.ItemTypeWrapper
 import io.github.pylonmc.rebar.item.RebarItem
@@ -26,7 +25,9 @@ import io.papermc.paper.datacomponent.DataComponentTypes
 import io.papermc.paper.registry.keys.tags.BlockTypeTagKeys
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import net.kyori.adventure.text.*
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.TranslatableComponent
+import net.kyori.adventure.text.TranslationArgumentLike
 import net.kyori.adventure.text.format.Style
 import net.kyori.adventure.text.format.TextColor
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
@@ -75,32 +76,6 @@ import kotlin.reflect.KProperty
 @JvmName("isKeyFromAddon")
 fun NamespacedKey.isFromAddon(addon: RebarAddon): Boolean
     = namespace == addon.key.namespace
-
-/**
- * Debug thing that will be removed Soon™
- */
-fun Component?.inspect(): String {
-    return when (this) {
-        null -> "null"
-        is KeybindComponent -> "KeybindComponent(keybind=${keybind()}, children=${children().map(Component::inspect)})"
-        is BlockNBTComponent -> "BlockNBTComponent(pos=${pos()}, children=${children().map(Component::inspect)})"
-        is EntityNBTComponent -> "EntityNBTComponent(selector=${selector()}, children=${children().map(Component::inspect)})"
-        is StorageNBTComponent -> "StorageNBTComponent(storage=${storage()}, children=${children().map(Component::inspect)})"
-        is ObjectComponent -> "ObjectComponent(contents=${contents()}, fallback=${fallback().inspect()}, children=${children().map(Component::inspect)})"
-        is ScoreComponent -> "ScoreComponent(name=${name()}, objective=${objective()}, children=${children().map(Component::inspect)})"
-        is SelectorComponent -> "SelectorComponent(pattern=${pattern()}, separator=${separator().inspect()}, children=${children().map(Component::inspect)})"
-        is VirtualComponent -> {
-            val renderer = renderer()
-            if (renderer is RebarArgument) {
-                "RebarArgument(name=${renderer.name}, value=${renderer.value.asComponent().inspect()})"
-            } else {
-                "VirtualComponent(contextType=${contextType()}, renderer=${renderer()}, children=${children().map(Component::inspect)})"
-            }
-        }
-        is TextComponent -> "TextComponent(content='${content()}', children=${children().map(Component::inspect)})"
-        is TranslatableComponent -> "TranslatableComponent(key=${key()}, fallback=${fallback()}, arguments=${arguments().map { it.asComponent().inspect() }}"
-    }
-}
 
 /**
  * Converts an orthogonal vector to a [BlockFace]
