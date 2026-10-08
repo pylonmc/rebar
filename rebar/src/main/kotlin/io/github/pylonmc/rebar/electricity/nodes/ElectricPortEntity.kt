@@ -66,7 +66,11 @@ class ElectricPortEntity : RebarEntity<ItemDisplay>, RemoveRebarEntityHandler, L
     }
 
     val connectedWires: List<WireEntity>
-        get() = WireEntity.loadedWires.filter { wire -> wire.port.node == node || (wire.otherEnd as? Either.Right)?.value?.node == node }
+        get() = WireEntity.loadedWires.filter { wire ->
+            // nodeOrNull, not node: a loaded wire may point at a node that no longer exists, and
+            // reading `node` on such a wire throws, taking down the whole node removal.
+            wire.port.nodeOrNull == node || (wire.otherEnd as? Either.Right)?.value?.nodeOrNull == node
+        }
 
     private fun dropConnectedWires() {
         for (wire in connectedWires) {
@@ -104,7 +108,7 @@ class ElectricPortEntity : RebarEntity<ItemDisplay>, RemoveRebarEntityHandler, L
             val wire = WireEntity(WireEntity.ConnectedPort(node, entity.location), Either.Left(player), wireItem)
             wire.giveToPlayer(player, node)
             WireConnectionService.startConnectingWire(player, wire)
-        } else if (wire.port.node == node || wire.port.node.isConnectedTo(node)) {
+        } else if (wire.port.nodeOrNull?.let { it == node || it.isConnectedTo(node) } == true) {
             WireConnectionService.stopConnectingWire(player)
         } else {
             val otherPort = wire.port
