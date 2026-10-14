@@ -108,7 +108,7 @@ class ElectricPortEntity : RebarEntity<ItemDisplay>, RemoveRebarEntityHandler, L
             val wire = WireEntity(WireEntity.ConnectedPort(node, entity.location), Either.Left(player), wireItem)
             wire.giveToPlayer(player, node)
             WireConnectionService.startConnectingWire(player, wire)
-        } else if (wire.port.nodeOrNull?.let { it == node || it.isConnectedTo(node) } == true) {
+        } else if (wire.port.nodeOrNull?.let { it == node || it.isConnectedTo(node) } ?: false) {
             WireConnectionService.stopConnectingWire(player)
         } else {
             val otherPort = wire.port

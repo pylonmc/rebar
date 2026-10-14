@@ -252,7 +252,7 @@ class WireEntity : RebarEntity<ItemDisplay>, RemoveRebarEntityHandler {
          * A wire can end up pointing at a removed node: nothing cleans wires up when the block they
          * are attached to is broken, so they stay behind with a dangling port.
          */
-        val nodeOrNull: ElectricNode? get() = ElectricityManager.getNodeById(nodeId)
+        val nodeOrNull: ElectricNode? by lazy { ElectricityManager.getNodeById(nodeId) }
 
         val node by lazy { nodeOrNull!! }
     }
