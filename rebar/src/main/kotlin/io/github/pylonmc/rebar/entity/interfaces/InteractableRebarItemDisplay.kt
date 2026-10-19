@@ -26,6 +26,7 @@ import org.joml.Matrix4fc
 import org.joml.Vector3fc
 import java.lang.ref.WeakReference
 import java.util.*
+import java.util.concurrent.ThreadLocalRandom
 import kotlin.time.Duration.Companion.seconds
 
 /**
@@ -104,6 +105,7 @@ interface InteractableRebarItemDisplay : BinaryBvhTree.Element {
             // occasionally rebuild trees that have been modified a lot in order to improve performance
             val world = WeakReference(event.world)
             Rebar.scope.launch(Dispatchers.IO) {
+                delay(ThreadLocalRandom.current().nextInt(1, 10).seconds)
                 while (true) {
                     delay(10.seconds)
                     if (world.get() == null) break
