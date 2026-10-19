@@ -5,6 +5,7 @@ import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.entity.display.transform.TransformUtil.toMatrix
 import io.github.pylonmc.rebar.event.RebarEntityAddEvent
 import io.github.pylonmc.rebar.event.RebarEntityRemoveEvent
+import io.github.pylonmc.rebar.event.RebarEntityUnloadEvent
 import io.github.pylonmc.rebar.util.BinaryBvhTree
 import io.github.pylonmc.rebar.util.PlayerTarget
 import io.github.pylonmc.rebar.util.ReadWriteLockableReference
@@ -89,6 +90,16 @@ interface InteractableRebarItemDisplay : BinaryBvhTree.Element {
 
         @EventHandler
         private fun onRebarEntityRemove(event: RebarEntityRemoveEvent) {
+            val entity = event.rebarEntity as? InteractableRebarItemDisplay ?: return
+            val world = entity.entity.world
+            trees[world]!!.write { it.get().remove(entity) }
+            boxes.remove(entity)
+            worlds.remove(entity)
+            positions.remove(entity)
+        }
+
+        @EventHandler
+        private fun onRebarEntityUnload(event: RebarEntityUnloadEvent) {
             val entity = event.rebarEntity as? InteractableRebarItemDisplay ?: return
             val world = entity.entity.world
             trees[world]!!.write { it.get().remove(entity) }
