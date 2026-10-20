@@ -3,7 +3,7 @@ package io.github.pylonmc.rebar.util
 import java.lang.ref.ReferenceQueue
 import java.lang.ref.WeakReference
 
-class WeakIdentityHashMap<K : Any, V> : MutableMap<K, V> {
+class WeakIdentityHashMap<K : Any, V>() : MutableMap<K, V> {
 
     private val queue = ReferenceQueue<K>()
     private val delegateMap = mutableMapOf<IdentityWeakReference<K>, V>()
@@ -15,6 +15,10 @@ class WeakIdentityHashMap<K : Any, V> : MutableMap<K, V> {
         }
 
     private var modifications = 0
+
+    constructor(map: Map<K, V>) : this() {
+        putAll(map)
+    }
 
     override val keys: MutableSet<K>
         get() {
