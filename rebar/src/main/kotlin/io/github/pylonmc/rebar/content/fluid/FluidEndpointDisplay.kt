@@ -14,7 +14,6 @@ import io.github.pylonmc.rebar.util.rebarKey
 import io.github.pylonmc.rebar.util.setNullable
 import io.papermc.paper.datacomponent.DataComponentTypes
 import io.papermc.paper.datacomponent.item.CustomModelData
-import jdk.jfr.internal.StringPool.addString
 import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
 import org.bukkit.entity.ItemDisplay

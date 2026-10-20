@@ -12,7 +12,8 @@ import io.github.pylonmc.rebar.fluid.tags.FluidTemperature
 import io.github.pylonmc.rebar.i18n.RebarArgument
 import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.item.interfaces.InteractRebarItemHandler
-import io.github.pylonmc.rebar.util.getTargetEntityByLocation
+import io.github.pylonmc.rebar.util.PlayerTarget
+import io.github.pylonmc.rebar.util.getTargetIncludingInteractableDisplays
 import io.github.pylonmc.rebar.util.gui.unit.UnitFormat
 import io.github.pylonmc.rebar.util.position.BlockPosition
 import net.kyori.adventure.text.Component
@@ -93,7 +94,7 @@ open class FluidPipe(stack: ItemStack) : RebarItem(stack), InteractRebarItemHand
             }
         } else {
             // Player is not yet connecting a pipe; see if they have right clicked a endpoint display, then see if we can start a connection
-            val targetEntity = player.getTargetEntityByLocation(1.5F * FluidEndpointDisplay.distanceFromFluidPointCenterToCorner)
+            val targetEntity = (player.getTargetIncludingInteractableDisplays() as? PlayerTarget.InteractableItemDisplay)?.display?.entity
             if (targetEntity != null) {
                 if (tryStartConnection(player, targetEntity)) {
                     return

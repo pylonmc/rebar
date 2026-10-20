@@ -10,6 +10,7 @@ import io.github.pylonmc.rebar.entity.EntityStorage
 import io.github.pylonmc.rebar.entity.RebarEntity
 import io.github.pylonmc.rebar.entity.display.ItemDisplayBuilder
 import io.github.pylonmc.rebar.entity.display.transform.TransformBuilder
+import io.github.pylonmc.rebar.entity.interfaces.InteractableRebarItemDisplay
 import io.github.pylonmc.rebar.entity.interfaces.RemoveRebarEntityHandler
 import io.github.pylonmc.rebar.event.RebarElectricNodeRemoveEvent
 import io.github.pylonmc.rebar.i18n.RebarArgument
@@ -21,6 +22,7 @@ import io.github.pylonmc.rebar.util.rebarKey
 import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
 import org.bukkit.GameMode
+import org.bukkit.Location
 import org.bukkit.block.Block
 import org.bukkit.entity.ItemDisplay
 import org.bukkit.event.EventHandler
@@ -29,9 +31,10 @@ import org.bukkit.event.HandlerList
 import org.bukkit.event.Listener
 import org.bukkit.event.entity.EntityRemoveEvent
 import org.bukkit.event.player.PlayerInteractEvent
+import org.bukkit.inventory.EquipmentSlot
 import kotlin.math.PI
 
-class ElectricPortEntity : RebarEntity<ItemDisplay>, RemoveRebarEntityHandler, Listener {
+class ElectricPortEntity : RebarEntity<ItemDisplay>, RemoveRebarEntityHandler, Listener, InteractableRebarItemDisplay {
 
     val node: ElectricNode by lazy { ElectricityManager.getNodeById(entity.persistentDataContainer.get(nodeKey, RebarSerializers.UUID)!!)!! }
 
@@ -87,7 +90,8 @@ class ElectricPortEntity : RebarEntity<ItemDisplay>, RemoveRebarEntityHandler, L
         HandlerList.unregisterAll(this)
     }
 
-    fun onInteractedWith(event: PlayerInteractEvent) {
+    override fun onInteract(event: PlayerInteractEvent, interactionLocation: Location) {
+        if (event.hand != EquipmentSlot.HAND) return
         if (event.action.isRightClick) {
             handleWireConnection(event)
         } else if (RebarItem.isRebarItem<WireRebarItem>(event.player.inventory.itemInMainHand)) {
