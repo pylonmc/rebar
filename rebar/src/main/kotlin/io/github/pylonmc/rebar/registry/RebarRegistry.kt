@@ -8,6 +8,7 @@ import io.github.pylonmc.rebar.event.RebarRegisterEvent
 import io.github.pylonmc.rebar.event.RebarUnregisterEvent
 import io.github.pylonmc.rebar.fluid.RebarFluid
 import io.github.pylonmc.rebar.gametest.GameTestConfig
+import io.github.pylonmc.rebar.i18n.ContextualComponentRenderer
 import io.github.pylonmc.rebar.item.ItemTypeWrapper
 import io.github.pylonmc.rebar.item.RebarItemSchema
 import io.github.pylonmc.rebar.item.research.Research
@@ -131,5 +132,6 @@ class RebarRegistry<T : Keyed> : Iterable<T> {
         @JvmField val RESEARCHES = RebarRegistry<Research>()
         @JvmField val ITEM_TAGS = RebarRegistry<Tag<ItemTypeWrapper>>()
         @JvmField val BLOCK_TAGS = RebarRegistry<Tag<BlockTypeWrapper>>()
+        @JvmField val CONTEXTUAL_COMPONENT_RENDERERS = RebarRegistry<ContextualComponentRenderer>()
     }
 }

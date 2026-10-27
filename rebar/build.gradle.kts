@@ -50,11 +50,6 @@ dependencies {
     paperLibrary("com.ibm.icu:icu4j:78.3")
 
     dokkaPlugin(project(":dokka-plugin"))
-
-    testImplementation(kotlin("test"))
-    testImplementation("com.willowtreeapps.assertk:assertk:0.28.1")
-    testImplementation("net.kyori:adventure-api:4.20.0")
-    testImplementation("net.kyori:adventure-text-minimessage:4.20.0")
 }
 
 idea {
