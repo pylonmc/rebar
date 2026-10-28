@@ -1,12 +1,14 @@
 package io.github.pylonmc.rebar.recipe
 
+import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.recipe.vanilla.*
 import io.github.pylonmc.rebar.registry.RebarRegistry
+import io.github.pylonmc.rebar.util.delayTicks
+import kotlinx.coroutines.launch
 import org.bukkit.Bukkit
 import org.bukkit.Keyed
 import org.bukkit.NamespacedKey
 import org.bukkit.inventory.*
-import kotlin.collections.union
 
 /**
  * Serves as a registry and container for recipes of a specific type.
@@ -47,6 +49,16 @@ open class RecipeType<T : RebarRecipe>(private val key: NamespacedKey) : Keyed, 
     override fun getKey(): NamespacedKey = key
 
     companion object {
+        private val recipeRegisterQueue = mutableSetOf<Recipe>()
+        private val recipeUnregisterQueue = mutableSetOf<NamespacedKey>()
+
+        private val registerRecipeJob = Rebar.scope.launch {
+            while (true) {
+                processRecipeQueue()
+                delayTicks(1)
+            }
+        }
+
         /**
          * Key: `minecraft:blasting`
          * @see BlastingRebarRecipe
@@ -168,6 +180,46 @@ open class RecipeType<T : RebarRecipe>(private val key: NamespacedKey) : Keyed, 
                     is SmokingRecipe -> VANILLA_SMOKING.addNonRebarRecipe(SmokingRebarRecipe.fromVanilla(recipe))
                 }
                 // @formatter:on
+            }
+        }
+
+        /**
+         * Used to queue a recipe to be registered, the next time the queue is processed
+         * all recipes queued will be registered at once for performance. By default, the queue
+         * is processed once per tick, but it can be manually triggered.
+         */
+        @JvmStatic
+        fun queueRegisterRecipe(recipe: Recipe) {
+            recipeRegisterQueue.add(recipe)
+        }
+
+        /**
+         * Used to queue a recipe to be unregistered, the next time the queue is processed
+         * all recipes queued will be unregistered at once for performance. By default, the queue
+         * is processed once per tick, but it can be manually triggered.
+         */
+        @JvmStatic
+        fun queueUnregisterRecipe(recipeKey: NamespacedKey) {
+            recipeUnregisterQueue.add(recipeKey)
+        }
+
+        /**
+         * Immediately processes all recipes in the register & unregister queue
+         * @see queueRegisterRecipe
+         * @see queueUnregisterRecipe
+         */
+        @JvmStatic
+        fun processRecipeQueue() {
+            if (recipeUnregisterQueue.isNotEmpty()) {
+                val unregistering = recipeUnregisterQueue.toSet()
+                recipeUnregisterQueue.clear()
+                Bukkit.removeRecipes(unregistering)
+            }
+
+            if (recipeRegisterQueue.isNotEmpty()) {
+                val registering = recipeRegisterQueue.toSet()
+                recipeRegisterQueue.clear()
+                Bukkit.addRecipes(registering)
             }
         }
     }

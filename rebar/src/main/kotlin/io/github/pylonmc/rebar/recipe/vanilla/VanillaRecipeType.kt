@@ -2,13 +2,13 @@ package io.github.pylonmc.rebar.recipe.vanilla
 
 import io.github.pylonmc.rebar.config.ConfigSection
 import io.github.pylonmc.rebar.item.ItemTypeWrapper
-import io.github.pylonmc.rebar.nms.NmsAccessor
 import io.github.pylonmc.rebar.recipe.ConfigurableRecipeType
 import io.github.pylonmc.rebar.recipe.ingredient.ItemChoice
 import io.github.pylonmc.rebar.recipe.RebarRecipe
 import io.github.pylonmc.rebar.recipe.RecipeType
 import io.github.pylonmc.rebar.recipe.logic.RecipeMatchingService
 import io.github.pylonmc.rebar.recipe.logic.RebarRecipeListener
+import org.bukkit.Bukkit
 import org.bukkit.NamespacedKey
 import org.bukkit.inventory.BlastingRecipe
 import org.bukkit.inventory.CampfireRecipe
@@ -58,15 +58,15 @@ sealed interface DummyBukkitRebarRecipe : BukkitRebarRecipe {
 sealed class BukkitRecipeType<T: BukkitRebarRecipe>(key: NamespacedKey) : ConfigurableRecipeType<T>(key) {
     override fun addRecipe(recipe: T) {
         super.addRecipe(recipe)
-        if (NmsAccessor.instance.hasRecipe(recipe.key)) {
-            NmsAccessor.queueUnregisterRecipe(recipe.key)
+        if (Bukkit.hasRecipe(recipe.key)) {
+            queueUnregisterRecipe(recipe.key)
         }
-        NmsAccessor.queueRegisterRecipe(recipe.bukkitRecipe)
+        queueRegisterRecipe(recipe.bukkitRecipe)
     }
 
     override fun removeRecipe(recipe: NamespacedKey) {
         super.removeRecipe(recipe)
-        NmsAccessor.queueUnregisterRecipe(recipe)
+        queueUnregisterRecipe(recipe)
     }
 }
 

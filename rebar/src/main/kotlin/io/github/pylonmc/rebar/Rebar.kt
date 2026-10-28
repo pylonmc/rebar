@@ -39,7 +39,6 @@ import io.github.pylonmc.rebar.item.interfaces.*
 import io.github.pylonmc.rebar.item.research.Research
 import io.github.pylonmc.rebar.logistics.CargoRoutes
 import io.github.pylonmc.rebar.metrics.RebarMetrics
-import io.github.pylonmc.rebar.nms.NmsAccessor
 import io.github.pylonmc.rebar.recipe.ConfigurableRecipeType
 import io.github.pylonmc.rebar.recipe.RecipeType
 import io.github.pylonmc.rebar.recipe.logic.RebarRecipeListener
@@ -194,6 +193,7 @@ object Rebar : JavaPlugin(), RebarAddon {
         DispenserRebarBlockHandler.register(this)
         EnchantingTableRebarBlockHandler.register(this)
         EntityChangeRebarBlockHandler.register(this)
+        EntityConstructRebarBlockHandler.register(this)
         FireRebarBlockHandler.register(this)
         FlowerPotRebarBlockHandler.register(this)
         FurnaceRebarBlockHandler.register(this)
@@ -387,7 +387,7 @@ object Rebar : JavaPlugin(), RebarAddon {
             }
         }
 
-        NmsAccessor.processRecipeQueue()
+        RecipeType.processRecipeQueue()
         val end = System.currentTimeMillis()
         logger.info("Loaded recipes in ${(end - start) / 1000.0}s")
         RebarConfigurableRecipesLoadedEvent().callEvent()

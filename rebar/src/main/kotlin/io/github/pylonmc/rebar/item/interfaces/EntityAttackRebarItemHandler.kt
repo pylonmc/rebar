@@ -6,7 +6,6 @@ import io.github.pylonmc.rebar.event.api.annotation.UniversalHandler
 import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.item.RebarItemListener
 import io.github.pylonmc.rebar.item.research.Research.Companion.canUse
-import io.github.pylonmc.rebar.util.getWeaponItem
 import io.papermc.paper.event.player.PrePlayerAttackEntityEvent
 import org.bukkit.entity.Player
 import org.bukkit.event.EventPriority
@@ -36,7 +35,7 @@ interface EntityAttackRebarItemHandler {
         @UniversalHandler
         private fun onPreAttack(event: PrePlayerAttackEntityEvent, priority: EventPriority) {
             val player = event.player
-            val rebarItem = RebarItem.fromStack(player.getWeaponItem(), EntityAttackRebarItemHandler::class.java)
+            val rebarItem = RebarItem.fromStack(player.weapon, EntityAttackRebarItemHandler::class.java)
             if (rebarItem !is RebarItem) return
 
             if (!player.canUse(rebarItem, false)) {
@@ -56,7 +55,7 @@ interface EntityAttackRebarItemHandler {
             val damager = event.damageSource.causingEntity
             if (damager == null || event.damageSource.isIndirect) return
 
-            val rebarItem = RebarItem.fromStack(damager.getWeaponItem(), EntityAttackRebarItemHandler::class.java)
+            val rebarItem = RebarItem.fromStack(damager.weapon, EntityAttackRebarItemHandler::class.java)
             if (rebarItem !is RebarItem) return
 
             if (damager is Player && !damager.canUse(rebarItem, false)) {
@@ -76,7 +75,7 @@ interface EntityAttackRebarItemHandler {
             val killer = event.damageSource.causingEntity
             if (killer == null || event.damageSource.isIndirect) return
 
-            val rebarItem = RebarItem.fromStack(killer.getWeaponItem(), EntityAttackRebarItemHandler::class.java)
+            val rebarItem = RebarItem.fromStack(killer.weapon, EntityAttackRebarItemHandler::class.java)
             if (rebarItem !is RebarItem) return
 
             if (killer is Player && !killer.canUse(rebarItem, false)) {

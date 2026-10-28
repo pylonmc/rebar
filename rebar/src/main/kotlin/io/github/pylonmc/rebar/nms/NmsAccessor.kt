@@ -97,13 +97,6 @@ interface NmsAccessor {
     fun setFurnaceRecipeCache(block: Block, recipe: NamespacedKey)
 
     /**
-     * Returns the weapon item for the entity
-     *
-     * For ex: If a player is spinning with a riptide trident, returns the trident, otherwise it may return the sword in the main hand
-     */
-    fun getWeaponItem(entity: Entity): ItemStack?
-
-    /**
      * Identical to the [ItemFactory.createItemStack] method except it works with rebar ids
      */
     fun createItemStack(input: String): ItemStack
@@ -123,29 +116,6 @@ interface NmsAccessor {
      * Note: This calls all vanilla logic, PlayerInteractEvent, BlockPlace, etc, this will **actually** use the item/block
      */
     fun simulateInteract(player: Player, itemStack: ItemStack, hand: EquipmentSlot, block: Block?, blockFace: BlockFace?)
-
-    /**
-     * A quicker alternative to using [Bukkit.getRecipe] != null
-     *
-     * Note: This and related methods will be removed when [Paper PR#13945](https://github.com/PaperMC/Paper/pull/13945) is merged
-     */
-    fun hasRecipe(key: NamespacedKey): Boolean
-
-    /**
-     * A method to register multiple recipes all at once, avoiding the exponential
-     * performance cost when using [Bukkit.addRecipe] repeatedly
-     *
-     * Note: This and related methods will be removed when [Paper PR#13945](https://github.com/PaperMC/Paper/pull/13945) is merged
-     */
-    fun registerRecipes(recipes: Iterable<Recipe>, finalize: Boolean)
-
-    /**
-     * A method to unregister multiple recipes all at once, avoiding the exponential
-     * performance cost when using [Bukkit.removeRecipe] repeatedly
-     *
-     * Note: This and related methods will be removed when [Paper PR#13945](https://github.com/PaperMC/Paper/pull/13945) is merged
-     */
-    fun unregisterRecipes(recipes: Iterable<NamespacedKey>, finalize: Boolean)
 
     /**
      * Note: this exists purely for the performance of rebar's recipe system,
@@ -203,69 +173,5 @@ interface NmsAccessor {
         val instance = Class.forName("io.github.pylonmc.rebar.nms.NmsAccessorImpl")
             .getDeclaredField("INSTANCE")
             .get(null) as NmsAccessor
-
-        private val recipeRegisterQueue = mutableSetOf<Recipe>()
-        private val recipeUnregisterQueue = mutableSetOf<NamespacedKey>()
-
-        /**
-         * Note: This will be removed when [Paper PR#13945](https://github.com/PaperMC/Paper/pull/13945) is merged
-         */
-        private val registerRecipeJob = Rebar.scope.launch {
-            while (true) {
-                processRecipeQueue()
-                delayTicks(1)
-            }
-        }
-
-        /**
-         * Used to queue a recipe to be registered, the next time the queue is processed
-         * all recipes queued will be registered at once for performance. By default, the queue
-         * is processed once per tick, but it can be manually triggered.
-         *
-         * Note: This and related methods will be removed when [Paper PR#13945](https://github.com/PaperMC/Paper/pull/13945) is merged
-         *
-         * @see NmsAccessor.registerRecipes
-         */
-        @JvmStatic
-        fun queueRegisterRecipe(recipe: Recipe) {
-            recipeRegisterQueue.add(recipe)
-        }
-
-        /**
-         * Used to queue a recipe to be unregistered, the next time the queue is processed
-         * all recipes queued will be unregistered at once for performance. By default, the queue
-         * is processed once per tick, but it can be manually triggered.
-         *
-         * Note: This and related methods will be removed when [Paper PR#13945](https://github.com/PaperMC/Paper/pull/13945) is merged
-         *
-         * @see NmsAccessor.unregisterRecipes
-         */
-        @JvmStatic
-        fun queueUnregisterRecipe(recipeKey: NamespacedKey) {
-            recipeUnregisterQueue.add(recipeKey)
-        }
-
-        /**
-         * Immediately processes all recipes in the register & unregister queue
-         *
-         * Note: This and related methods will be removed when [Paper PR#13945](https://github.com/PaperMC/Paper/pull/13945) is merged
-         *
-         * @see queueRegisterRecipe
-         * @see queueUnregisterRecipe
-         */
-        @JvmStatic
-        fun processRecipeQueue() {
-            if (recipeUnregisterQueue.isNotEmpty()) {
-                val unregistering = recipeUnregisterQueue.toSet()
-                recipeUnregisterQueue.clear()
-                instance.unregisterRecipes(unregistering, false)
-            }
-
-            if (recipeRegisterQueue.isNotEmpty()) {
-                val registering = recipeRegisterQueue.toSet()
-                recipeRegisterQueue.clear()
-                instance.registerRecipes(registering, true)
-            }
-        }
     }
 }

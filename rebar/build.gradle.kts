@@ -1,7 +1,9 @@
 
 import net.minecrell.pluginyml.bukkit.BukkitPluginDescription
 import net.minecrell.pluginyml.paper.PaperPluginDescription
+import org.gradle.api.internal.artifacts.dsl.dependencies.DependenciesExtensionModule.module
 import org.jetbrains.kotlin.gradle.dsl.JvmDefaultMode
+import kotlin.math.sign
 
 plugins {
     kotlin("jvm")
@@ -26,7 +28,8 @@ repositories {
 }
 
 val minecraftVersion = providers.gradleProperty("minecraft.version").get()
-val invuiVersion = "2.5.1"
+val invuiVersion = providers.gradleProperty("invui.version").get()
+val placeholderapiVersion = providers.gradleProperty("placeholderapi.version").get()
 
 dependencies {
     fun paperLibraryApi(dependency: Any) {
@@ -44,7 +47,7 @@ dependencies {
 
     paperLibraryApi("xyz.xenondevs.invui:invui:$invuiVersion")
     paperLibraryApi("xyz.xenondevs.invui:invui-kotlin:$invuiVersion")
-    compileOnly("me.clip:placeholderapi:2.12.2")
+    compileOnly("me.clip:placeholderapi:$placeholderapiVersion")
     implementation("info.debatty:java-string-similarity:2.0.0")
     implementation("org.bstats:bstats-bukkit:2.2.1")
     paperLibrary("com.github.ben-manes.caffeine:caffeine:3.2.2")

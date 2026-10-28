@@ -755,10 +755,6 @@ fun Projectile.sourceItem(): ItemStack? {
     }
 }
 
-fun Entity.getWeaponItem(): ItemStack? {
-    return NmsAccessor.instance.getWeaponItem(this)
-}
-
 @JvmName("colorToTextColor")
 fun Color.toTextColor(): TextColor {
     return TextColor.color(this.red, this.green, this.blue);

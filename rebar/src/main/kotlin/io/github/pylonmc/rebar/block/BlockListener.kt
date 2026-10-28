@@ -5,6 +5,7 @@ import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.block.interfaces.TickingRebarBlock
 import io.github.pylonmc.rebar.block.context.BlockBreakContext
 import io.github.pylonmc.rebar.block.context.BlockCreateContext
+import io.github.pylonmc.rebar.block.interfaces.EntityConstructRebarBlockHandler
 import io.github.pylonmc.rebar.config.RebarConfig
 import io.github.pylonmc.rebar.event.api.MultiListener
 import io.github.pylonmc.rebar.event.api.annotation.MultiHandler
@@ -15,6 +16,7 @@ import io.github.pylonmc.rebar.util.position.BlockPosition
 import io.github.pylonmc.rebar.util.position.position
 import io.papermc.paper.event.block.BlockBreakBlockEvent
 import io.papermc.paper.event.block.BlockBreakProgressUpdateEvent
+import io.papermc.paper.event.entity.EntityConstructEvent
 import org.bukkit.ExplosionResult
 import org.bukkit.Material
 import org.bukkit.event.Event
@@ -34,7 +36,6 @@ import java.util.*
  * It also handles components of multiblocks being placed, removed, or moved (this
  * includes vanilla blocks)
  */
-@Suppress("UnstableApiUsage")
 internal object BlockListener : MultiListener {
     private val blockErrMap: MutableMap<RebarBlock, Int> = WeakHashMap()
 
@@ -254,6 +255,17 @@ internal object BlockListener : MultiListener {
         // The block at event.location is handled in StructureGrowRebarBlockHandler
         for (state in event.blocks) {
             if (event.location != state.location && BlockStorage.isRebarBlock(state.block)) {
+                event.isCancelled = true
+                return
+            }
+        }
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    private fun disallowEntityConstruct(event: EntityConstructEvent) {
+        for (block in event.blocks) {
+            val rebarBlock = BlockStorage.get(block)
+            if (rebarBlock != null && rebarBlock !is EntityConstructRebarBlockHandler) {
                 event.isCancelled = true
                 return
             }

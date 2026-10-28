@@ -16,7 +16,6 @@ import io.github.pylonmc.rebar.nms.inventory.KeyedContainerListener
 import io.github.pylonmc.rebar.nms.packet.PlayerPacketHandler
 import io.github.pylonmc.rebar.nms.recipe.AccessibleCachedCheck
 import io.github.pylonmc.rebar.nms.recipe.HandlerRecipeBookClick
-import io.github.pylonmc.rebar.nms.recipe.RecipeMapper
 import io.github.pylonmc.rebar.util.position.BlockPosition
 import io.papermc.paper.adventure.PaperAdventure
 import io.papermc.paper.datacomponent.DataComponentType
@@ -32,7 +31,6 @@ import net.minecraft.nbt.TextComponentTagVisitor
 import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket
 import net.minecraft.network.protocol.game.ClientboundPlaceGhostRecipePacket
 import net.minecraft.network.protocol.game.ClientboundSetEquipmentPacket
-import net.minecraft.resources.Identifier
 import net.minecraft.resources.ResourceKey
 import net.minecraft.server.MinecraftServer
 import net.minecraft.world.inventory.AbstractCraftingMenu
@@ -82,7 +80,6 @@ import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.math.max
 import kotlin.math.min
 import com.mojang.datafixers.util.Pair as NmsPair
-import net.minecraft.util.Unit as NmsUnit
 import net.minecraft.world.entity.EquipmentSlot as NmsEquipmentSlot
 import net.minecraft.world.item.ItemStack as NmsItemStack
 import net.minecraft.core.component.DataComponentType as NmsDataComponentType
@@ -282,8 +279,6 @@ object NmsAccessorImpl : NmsAccessor {
         }
     }
 
-    override fun getWeaponItem(entity: Entity): ItemStack? = (entity as CraftEntity).handle.weaponItem?.let(CraftItemStack::asBukkitMirror)
-
     override fun createItemStack(input: String): ItemStack {
         var input = input
         var idEnd = input.indexOf('[')
@@ -329,35 +324,6 @@ object NmsAccessorImpl : NmsAccessor {
             val nmsDirection = CraftBlock.blockFaceToNotch(blockFace) ?: throw IllegalArgumentException("Invalid block face $blockFace")
             val nmsLoc = Vec3.atCenterOf(nmsPos).add(nmsDirection.unitVec3.scale(0.5))
             nmsPlayer.gameMode.useItemOn(nmsPlayer, level, nmsStack, nmsHand, BlockHitResult(nmsLoc, nmsDirection, nmsPos, false))
-        }
-    }
-
-    override fun hasRecipe(key: NamespacedKey): Boolean {
-        return MinecraftServer.getServer().recipeManager.recipes.byKey(CraftNamespacedKey.toResourceKey(Registries.RECIPE, key)) != null
-    }
-
-    override fun registerRecipes(recipes: Iterable<Recipe>, finalize: Boolean) {
-        val nmsRecipes = recipes.map(RecipeMapper::convertBukkitRecipe)
-        val recipeManager = MinecraftServer.getServer().recipeManager
-        for (recipe in nmsRecipes) {
-            recipeManager.recipes.addRecipe(recipe)
-        }
-
-        if (finalize) {
-            recipeManager.finalizeRecipeLoading()
-        }
-    }
-
-    override fun unregisterRecipes(recipes: Iterable<NamespacedKey>, finalize: Boolean) {
-        val recipeManager = MinecraftServer.getServer().recipeManager
-        var anyRemoved = false
-        for (recipeKey in recipes) {
-            val id = CraftNamespacedKey.toResourceKey(Registries.RECIPE, recipeKey)
-            anyRemoved = recipeManager.recipes.removeRecipe(id) || anyRemoved
-        }
-
-        if (finalize && anyRemoved) {
-            recipeManager.finalizeRecipeLoading()
         }
     }
 
