@@ -49,8 +49,7 @@ internal object RebarRecipeListener : Listener {
         var recipe = e.recipe
         val holder = e.inventory.holder
         if (holder is Crafter && recipe == null) {
-            // I believe this is a paper bug that recipe is always null in the case of a Crafter, so for now we will manually fetch the recipe in that case
-            // If/when that is fixed, this can be removed
+            // Currently there is a paper bug (https://github.com/PaperMC/Paper/issues/14428) so we need to manually fetch the crafter recipe until its fixed
             recipe = Bukkit.getCraftingRecipe(e.inventory.matrix as Array<out ItemStack>, holder.world)
         }
 
