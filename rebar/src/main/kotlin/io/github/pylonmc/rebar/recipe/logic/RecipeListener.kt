@@ -16,6 +16,7 @@ import io.github.pylonmc.rebar.util.plainText
 import io.papermc.paper.datacomponent.DataComponentTypes
 import io.papermc.paper.event.player.CartographyItemEvent
 import net.kyori.adventure.text.Component
+import org.bukkit.Bukkit
 import org.bukkit.GameMode
 import org.bukkit.Keyed
 import org.bukkit.Material
@@ -45,7 +46,14 @@ internal object RebarRecipeListener : Listener {
 
     @EventHandler(priority = EventPriority.LOWEST)
     private fun onPreCraft(e: PrepareItemCraftEvent) {
-        val recipe = e.recipe
+        var recipe = e.recipe
+        val holder = e.inventory.holder
+        if (holder is Crafter && recipe == null) {
+            // I believe this is a paper bug that recipe is always null in the case of a Crafter, so for now we will manually fetch the recipe in that case
+            // If/when that is fixed, this can be removed
+            recipe = Bukkit.getCraftingRecipe(e.inventory.matrix as Array<out ItemStack>, holder.world)
+        }
+
         val inventory = e.inventory
 
         val hasRebarItems = inventory.any { it.isRebarAndIsNot<VanillaCraftingIngredientItem>() }
