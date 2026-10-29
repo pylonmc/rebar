@@ -1,6 +1,5 @@
 package io.github.pylonmc.rebar.test.test.recipe;
 
-import io.github.pylonmc.rebar.nms.NmsAccessor;
 import io.github.pylonmc.rebar.recipe.RecipeType;
 import io.github.pylonmc.rebar.recipe.vanilla.ShapedRebarRecipe;
 import io.github.pylonmc.rebar.recipe.vanilla.ShapelessRebarRecipe;
@@ -44,7 +43,7 @@ public class CraftingTest extends SyncTest {
                     normalStick, stickyStick, normalStick,
                     nothing, normalStick, nothing
             };
-            NmsAccessor.processRecipeQueue();
+            RecipeType.processRecipeQueue();
             assertThat(Bukkit.craftItem(crafting, RebarTest.testWorld))
                     .isEqualTo(diamond);
         }
@@ -60,7 +59,7 @@ public class CraftingTest extends SyncTest {
             Arrays.fill(crafting, nothing);
             crafting[0] = stickyStick;
             crafting[1] = diamond;
-            NmsAccessor.processRecipeQueue();
+            RecipeType.processRecipeQueue();
             assertThat(Bukkit.craftItem(crafting, RebarTest.testWorld))
                     .isEqualTo(normalStick);
         }
@@ -83,7 +82,7 @@ public class CraftingTest extends SyncTest {
                     normalStick, diamond, normalStick,
                     nothing, normalStick, nothing
             };
-            NmsAccessor.processRecipeQueue();
+            RecipeType.processRecipeQueue();
             assertThat(Bukkit.craftItem(crafting, RebarTest.testWorld))
                     .isEqualTo(stickyStick);
         }

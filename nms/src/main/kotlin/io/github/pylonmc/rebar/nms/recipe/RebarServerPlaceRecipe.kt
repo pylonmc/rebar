@@ -15,6 +15,7 @@ import net.minecraft.world.inventory.Slot
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.crafting.CraftingRecipe
 import net.minecraft.world.item.crafting.RecipeHolder
+import org.bukkit.craftbukkit.inventory.CraftItemStack
 import java.lang.invoke.MethodHandle
 import java.lang.invoke.MethodHandles
 import java.lang.invoke.MethodType
@@ -176,7 +177,7 @@ class RebarServerPlaceRecipe private constructor(
 
             if (item is ItemOrExact.Item) {
                 if (!Inventory.isUsableForCrafting(itemStack)) continue
-                if (RebarItem.isRebarItem(itemStack.bukkitStack)) continue // skip our Rebar items
+                if (RebarItem.isRebarItem(CraftItemStack.asBukkitMirror(itemStack))) continue // skip our Rebar items
             }
 
             if (stack.isEmpty || ItemStack.isSameItemSameComponents(stack, itemStack)) {

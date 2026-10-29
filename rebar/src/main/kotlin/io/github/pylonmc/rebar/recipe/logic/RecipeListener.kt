@@ -13,10 +13,10 @@ import io.github.pylonmc.rebar.recipe.vanilla.VanillaRecipeType
 import io.github.pylonmc.rebar.recipe.vanilla.rebarRecipeType
 import io.github.pylonmc.rebar.util.isRebarAndIsNot
 import io.github.pylonmc.rebar.util.plainText
-import io.github.pylonmc.rebar.util.rebarKey
 import io.papermc.paper.datacomponent.DataComponentTypes
 import io.papermc.paper.event.player.CartographyItemEvent
 import net.kyori.adventure.text.Component
+import org.bukkit.Bukkit
 import org.bukkit.GameMode
 import org.bukkit.Keyed
 import org.bukkit.Material
@@ -44,12 +44,15 @@ import kotlin.math.min
  */
 internal object RebarRecipeListener : Listener {
 
-    private val crafterResultCorrector = rebarKey("crafter_result_corrector")
-
-    @Suppress("UnstableApiUsage")
     @EventHandler(priority = EventPriority.LOWEST)
     private fun onPreCraft(e: PrepareItemCraftEvent) {
-        val recipe = e.recipe
+        var recipe = e.recipe
+        val holder = e.inventory.holder
+        if (holder is Crafter && recipe == null) {
+            // Currently there is a paper bug (https://github.com/PaperMC/Paper/issues/14428) so we need to manually fetch the crafter recipe until its fixed
+            recipe = Bukkit.getCraftingRecipe(e.inventory.matrix as Array<out ItemStack>, holder.world)
+        }
+
         val inventory = e.inventory
 
         val hasRebarItems = inventory.any { it.isRebarAndIsNot<VanillaCraftingIngredientItem>() }
@@ -141,47 +144,25 @@ internal object RebarRecipeListener : Listener {
         }
     }
 
-    private fun checkCrafterRecipe(block: Block, possibleRecipe: Recipe? = null): Pair<Boolean, CraftingRebarRecipe?>? {
-        val crafter = block.getState(false) as? Crafter ?: return null
-        val inventory = crafter.inventory
-
-        val hasRebarItems = inventory.any { it.isRebarAndIsNot<VanillaCraftingIngredientItem>() }
-        if (!hasRebarItems && possibleRecipe != null && !RecipeType.isDummyRecipe(possibleRecipe)) {
-            return true to null
-        }
-
-        val matchedRecipe = RecipeMatchingService.matchCraftingRecipe(CraftingInput.of(inventory), possibleRecipe)
-        return false to matchedRecipe
-    }
-
-    @EventHandler(priority = EventPriority.LOWEST)
-    private fun onOpenCrafter(e: InventoryOpenEvent) {
-        val slotListener: NmsAccessor.SlotListener = slotListener@ { inventoryView, _, _, _ ->
-            val crafterInventory = inventoryView.topInventory as? CrafterInventory ?: return@slotListener
-            val block = crafterInventory.location?.block ?: return@slotListener
-            // We do not have the original recipe so instead we pass a dummy recipe and check if
-            // that is what is returned, if so, whatever the result already is, is valid
-            // otherwise it should be corrected to the found recipe's result, or null
-            val result = checkCrafterRecipe(block)
-            if (result != null && result.first) return@slotListener
-            crafterInventory.setItem(9, result?.second?.result?.item?.clone())
-        }
-        slotListener(e.view, 0, null, null)
-        NmsAccessor.instance.addSlotChangedListener(crafterResultCorrector, e.view, slotListener)
-    }
-
     @EventHandler(priority = EventPriority.LOWEST)
     private fun onCrafterCraft(e: CrafterCraftEvent) {
-        val result = checkCrafterRecipe(e.block, e.recipe)
-        if (result != null && !result.first) {
-            val recipe = result.second
-            if (recipe != null) {
-                e.result = recipe.result.item
-            } else {
-                e.isCancelled = true
-                e.result = ItemStack.empty()
-            }
-        } else if (result == null) {
+        val crafter = e.block.getState(false) as? Crafter
+        if (crafter == null) {
+            e.isCancelled = true
+            e.result = ItemStack.empty()
+            return
+        }
+
+        val inventory = crafter.inventory
+        val hasRebarItems = inventory.any { it.isRebarAndIsNot<VanillaCraftingIngredientItem>() }
+        if (!hasRebarItems && !RecipeType.isDummyRecipe(e.recipe)) {
+            return
+        }
+
+        val recipe = RecipeMatchingService.matchCraftingRecipe(CraftingInput.of(inventory), e.recipe)
+        if (recipe != null) {
+            e.result = recipe.result.item
+        } else {
             e.isCancelled = true
             e.result = ItemStack.empty()
         }

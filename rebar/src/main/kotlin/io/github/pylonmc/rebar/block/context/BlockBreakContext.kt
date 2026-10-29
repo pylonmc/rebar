@@ -6,6 +6,8 @@ import io.github.pylonmc.rebar.content.debug.DebugWaxedWeatheredCutCopperStairs
 import io.papermc.paper.event.block.BlockBreakBlockEvent
 import org.bukkit.GameMode
 import org.bukkit.block.Block
+import org.bukkit.entity.Entity
+import org.bukkit.entity.IronGolem
 import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockBurnEvent
 import org.bukkit.event.block.BlockExplodeEvent
@@ -133,5 +135,17 @@ interface BlockBreakContext {
         override val normallyDrops: Boolean
     ) : BlockBreakContext {
         override val block = event.block
+    }
+
+    /**
+     * Called when an [Entity] (such as an [IronGolem]) is constructed using
+     * the [block]
+     */
+    data class EntityConstructed(
+        override val block: Block,
+        val entity: Entity
+    ) : BlockBreakContext {
+        override val normallyDrops = false
+        override val shouldSetToAir = false
     }
 }
