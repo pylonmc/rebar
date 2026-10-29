@@ -21,7 +21,6 @@ import net.kyori.adventure.key.Key
 import net.kyori.adventure.text.*
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.Style
-import net.kyori.adventure.text.format.TextDecoration
 import net.kyori.adventure.translation.GlobalTranslator
 import net.kyori.adventure.translation.Translator
 import org.apache.commons.lang3.LocaleUtils
@@ -41,7 +40,9 @@ import java.io.File
 import java.text.MessageFormat
 import java.util.*
 import java.util.jar.JarFile
-import kotlin.io.path.*
+import kotlin.io.path.exists
+import kotlin.io.path.listDirectoryEntries
+import kotlin.io.path.nameWithoutExtension
 
 /**
  * The [Translator] for a given [RebarAddon]. This translator handles the translation of
@@ -271,33 +272,7 @@ class RebarTranslator private constructor(private val addon: RebarAddon) : Trans
                         concatenatedArguments.addAll(line.arguments())
                     }
                     val translated = GlobalTranslator.render(line.withArguments(concatenatedArguments), locale)
-                    try {
-                        if (translated.plainText.isBlank()) return@flatMap emptyList()
-                    } catch (e: IllegalStateException) {
-                        val file = Rebar.dataPath.resolve("dump_${System.currentTimeMillis()}.txt")
-                        file.writeText("""
-                            this = $this
-                            arguments = ${arguments.map { "RebarArgument(name=${it.name}, value=${it.value.asComponent().inspect()})" }}
-                            player = $player
-                            locale = $locale
-                            lore = $lore
-                            originalLore = ${originalLore.map { it.inspect() }}
-                            rebarItemSchema = ${rebarItemSchema?.key}
-                            line = ${line.inspect()}
-                            concatenatedArguments = ${concatenatedArguments.map { it.asComponent().inspect() }}
-                            translated = ${translated.inspect()}
-                        """.trimIndent())
-                        Bukkit.broadcast(
-                            Component.text("EXTREMELY IMPORTANT PERSONAL MESSAGE FROM THE REBAR DEVELOPERS IN THE CONSOLE, READ IT NOW OR BE OBLITERATED")
-                                .color(NamedTextColor.RED)
-                                .decorate(TextDecoration.BOLD)
-                        )
-                        Rebar.logger.severe("Congratulations! You have found a bug that the Rebar developers have worked very hard to catch.")
-                        Rebar.logger.severe("So instead of working harder, they decided to test in production and get players to find it for them.")
-                        Rebar.logger.severe("Please attach the file found at ${file.absolutePathString()} to https://github.com/pylonmc/rebar/issues/922 (sending it in the Discord works too).")
-                        Rebar.logger.severe("And now back to our regularly scheduled error report.")
-                        throw e
-                    }
+                    if (translated.plainText.isBlank()) return@flatMap emptyList()
                     splitByNewlines(translated).flatMap {
                         wrapLine(it)
                     }
