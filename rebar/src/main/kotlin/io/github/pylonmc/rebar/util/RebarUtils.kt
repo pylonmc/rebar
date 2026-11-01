@@ -1011,6 +1011,17 @@ fun xyz.xenondevs.invui.inventory.Inventory.consume(slot: Int, amount: Int = 1, 
 }
 
 /**
+ * Consumes the item in the inventory and handles all the constant remainder operations.
+ *
+ * @see subtract
+ */
+@JvmName("consumeItem")
+@JvmOverloads
+fun ItemDisplay.consumeItem(amount: Int = 1, replaceUseRemainder: Boolean = true) {
+    setItemStack(itemStack.subtract(amount, replaceUseRemainder))
+}
+
+/**
  * Handles all the constant remainder operations.
  *
  * When replaceUseRemainder is set to true (and by default it is true) and successfully
