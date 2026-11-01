@@ -997,3 +997,36 @@ fun Player.addToInventoryOrDrop(vararg items: ItemStack) {
 const val FLUID_EPSILON = 1.0e-6
 
 fun Component.removeStyle(): Component = this.style(Style.empty()).children(this.children().map(Component::removeStyle))
+
+/**
+ * Consumes the item in the inventory and handles all the constant remainder operations.
+ *
+ * When replaceUseRemainder is set to true (and by default it is true) and successfully
+ * found its remainder, this function ignores the amount argument and replace the
+ * remainder directly at the slot.
+ *
+ * When replaceUseRemainder is set to false, it simply subtracts the amount of the item.
+ */
+@JvmName("consumeItem")
+fun xyz.xenondevs.invui.inventory.Inventory.consume(slot: Int, amount: Int = 1, replaceUseRemainder: Boolean = true) {
+    val item = getItem(slot) ?: return
+
+    if (replaceUseRemainder) {
+        // Some items like mushroom stew contain a use_remainder component
+        val ur = item.getData(DataComponentTypes.USE_REMAINDER)
+        if (ur != null) {
+            setItem(null, slot, ur.transformInto())
+            return
+        }
+
+        // But some items like lava bucket doesn't contain this component
+        val tp = item.type.asItemType()
+        if (tp != null && tp.craftingRemainingItem != null) {
+            setItem(null, slot, tp.craftingRemainingItem?.createItemStack())
+            return
+        }
+    }
+
+    item.amount -= amount
+    setItem(null, slot, item)
+}
