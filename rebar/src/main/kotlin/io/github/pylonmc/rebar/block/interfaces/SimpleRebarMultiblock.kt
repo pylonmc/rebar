@@ -1,6 +1,7 @@
 package io.github.pylonmc.rebar.block.interfaces
 
 import io.github.pylonmc.rebar.block.BlockStorage
+import io.github.pylonmc.rebar.block.BlockTypeWrapper
 import io.github.pylonmc.rebar.block.RebarBlock
 import io.github.pylonmc.rebar.block.context.BlockCreateContext
 import io.github.pylonmc.rebar.event.RebarBlockPlaceEvent
@@ -11,10 +12,7 @@ import io.github.pylonmc.rebar.util.position.position
 import io.github.pylonmc.rebar.util.rotateVectorToFace
 import io.github.pylonmc.rebar.waila.Waila
 import io.github.pylonmc.rebar.waila.WailaDisplay
-import org.bukkit.Color
-import org.bukkit.Material
-import org.bukkit.NamespacedKey
-import org.bukkit.Registry
+import org.bukkit.*
 import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
 import org.bukkit.block.data.BlockData
@@ -137,16 +135,25 @@ interface SimpleRebarMultiblock : RebarMultiblock, GhostBlockHolderRebarBlock, E
                 blockDatas.toList(), listOf()
             )
 
+            @JvmStatic
+            fun of(tag: Tag<BlockTypeWrapper>) = of(tag.values.mapTo(mutableSetOf()) { it.key })
+
             /**
              * Accepts vanilla keys (`minecraft:grass`) or Rebar keys (`pylon:copper_block`)
              */
             @JvmStatic
-            fun of(vararg keys: NamespacedKey): MultiblockComponent {
+            fun of(keys: Set<NamespacedKey>): MultiblockComponent {
                 val vanilla = keys.filter { it.namespace == "minecraft" }
                     .map { Registry.MATERIAL.getOrThrow(it).createBlockData() }
                 val rebar = keys.filter { it.namespace != "minecraft" }
                 return MultiblockComponent(vanilla, rebar)
             }
+
+            /**
+             * Accepts vanilla keys (`minecraft:grass`) or Rebar keys (`pylon:copper_block`)
+             */
+            @JvmStatic
+            fun of(vararg keys: NamespacedKey) = of(keys.toSet())
         }
     }
 

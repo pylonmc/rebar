@@ -12,8 +12,6 @@ import io.github.pylonmc.rebar.config.ContributorConfig
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.entity.interfaces.InteractableRebarItemDisplay
-import io.github.pylonmc.rebar.i18n.LocaleDependentComponentRenderer
-import io.github.pylonmc.rebar.i18n.RebarArgument
 import io.github.pylonmc.rebar.i18n.customMiniMessage
 import io.github.pylonmc.rebar.item.ItemTypeWrapper
 import io.github.pylonmc.rebar.item.RebarItem
