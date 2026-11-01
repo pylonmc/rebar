@@ -1001,33 +1001,44 @@ fun Component.removeStyle(): Component = this.style(Style.empty()).children(this
 /**
  * Consumes the item in the inventory and handles all the constant remainder operations.
  *
- * When replaceUseRemainder is set to true (and by default it is true) and successfully
- * found its remainder, this function ignores the amount argument and replace the
- * remainder directly at the slot.
- *
- * When replaceUseRemainder is set to false, it simply subtracts the amount of the item.
+ * @see subtract
  */
 @JvmName("consumeItem")
 @JvmOverloads
 fun xyz.xenondevs.invui.inventory.Inventory.consume(slot: Int, amount: Int = 1, replaceUseRemainder: Boolean = true) {
     val item = getItem(slot) ?: return
+    setItem(null, slot, item.subtract(amount, replaceUseRemainder))
+}
 
-    if (replaceUseRemainder) {
+/**
+ * Handles all the constant remainder operations.
+ *
+ * When replaceUseRemainder is set to true (and by default it is true) and successfully
+ * found its remainder, this function ignores the amount argument and replace the
+ * remainder directly at the slot.
+ *
+ * When replaceUseRemainder is set to false, it simply subtracts the amount at the item
+ * argument.
+ */
+@JvmName("subtractItem")
+@JvmOverloads
+fun ItemStack.subtract(amount: Int = 1, replaceUseRemainder: Boolean = true) : ItemStack {
+    if (replaceUseRemainder && !RebarItem.isRebarItem(this)) {
         // Some items like mushroom stew contain a use_remainder component
-        val ur = item.getData(DataComponentTypes.USE_REMAINDER)
+        val ur = getData(DataComponentTypes.USE_REMAINDER)
         if (ur != null) {
-            setItem(null, slot, ur.transformInto())
-            return
+            return ur.transformInto()
         }
 
         // But some items like lava bucket doesn't contain this component
-        val tp = item.type.asItemType()
-        if (tp != null && tp.craftingRemainingItem != null) {
-            setItem(null, slot, tp.craftingRemainingItem?.createItemStack())
-            return
+        val tp = type.asItemType()
+        if (tp != null) {
+            val cri = tp.craftingRemainingItem
+            if (cri != null) {
+                return cri.createItemStack()
+            }
         }
     }
 
-    item.amount -= amount
-    setItem(null, slot, item)
+    return subtract(amount)
 }
