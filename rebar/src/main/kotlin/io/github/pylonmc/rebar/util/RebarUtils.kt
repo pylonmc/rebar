@@ -1008,6 +1008,7 @@ fun Component.removeStyle(): Component = this.style(Style.empty()).children(this
  * When replaceUseRemainder is set to false, it simply subtracts the amount of the item.
  */
 @JvmName("consumeItem")
+@JvmOverloads
 fun xyz.xenondevs.invui.inventory.Inventory.consume(slot: Int, amount: Int = 1, replaceUseRemainder: Boolean = true) {
     val item = getItem(slot) ?: return
 
