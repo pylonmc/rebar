@@ -312,11 +312,7 @@ class UnitFormat @JvmOverloads constructor(
                     }
 
                     val value = value.value
-                    var usedValue = value.round(MathContext(sigFigs ?: value.precision(), RoundingMode.HALF_UP))
-                    usedValue = usedValue.setScale(decimalPlaces ?: value.scale(), RoundingMode.HALF_UP)
-                    if (!forceDecimalPlaces) {
-                        usedValue = usedValue.stripTrailingZeros()
-                    }
+                    var usedValue = value
 
                     prefix = if (selectedPrefix == null) {
                         val exponent = value.precision() - value.scale() - if (value.signum() == 0) 0 else 1
@@ -326,6 +322,12 @@ class UnitFormat @JvmOverloads constructor(
                         prefix
                     } else {
                         selectedPrefix
+                    }
+
+                    usedValue = usedValue.round(MathContext(sigFigs ?: value.precision(), RoundingMode.HALF_UP))
+                    usedValue = usedValue.setScale(decimalPlaces ?: value.scale(), RoundingMode.HALF_UP)
+                    if (!forceDecimalPlaces) {
+                        usedValue = usedValue.stripTrailingZeros()
                     }
 
                     val formatted = NumberFormatter.withLocale(locale).format(usedValue)
