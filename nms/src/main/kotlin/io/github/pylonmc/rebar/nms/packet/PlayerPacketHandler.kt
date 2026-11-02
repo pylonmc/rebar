@@ -325,7 +325,7 @@ class PlayerPacketHandler(private val player: ServerPlayer, val handler: PlayerT
     private fun translate(item: ItemStack): ItemStack {
         if (item.isEmpty) return item
         try {
-            handler.handleItem(CraftItemStack.asCraftMirror(item))
+            handler.handleItem(CraftItemStack.asBukkitMirror(item))
         } catch (e: Throwable) {
             // Log the error nicely instead of kicking the player off
             // and causing two days of headache. True story.
