@@ -23,6 +23,7 @@ import io.papermc.paper.datacomponent.PaperDataComponentType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import net.kyori.adventure.text.Component
+import net.minecraft.commands.arguments.EntityArgument
 import net.minecraft.commands.arguments.item.ItemParser
 import net.minecraft.core.BlockPos
 import net.minecraft.core.registries.BuiltInRegistries
@@ -51,6 +52,7 @@ import org.bukkit.NamespacedKey
 import org.bukkit.World
 import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
+import org.bukkit.command.CommandSender
 import org.bukkit.craftbukkit.CraftEquipmentSlot
 import org.bukkit.craftbukkit.CraftLootTable
 import org.bukkit.craftbukkit.CraftRegistry
@@ -58,6 +60,7 @@ import org.bukkit.craftbukkit.CraftWorld
 import org.bukkit.craftbukkit.block.CraftBlock
 import org.bukkit.craftbukkit.block.CraftBlockEntityState
 import org.bukkit.craftbukkit.block.data.CraftBlockData
+import org.bukkit.craftbukkit.command.VanillaCommandWrapper
 import org.bukkit.craftbukkit.damage.CraftDamageSource
 import org.bukkit.craftbukkit.entity.CraftEntity
 import org.bukkit.craftbukkit.entity.CraftLivingEntity
@@ -76,13 +79,14 @@ import java.lang.invoke.MethodHandles
 import java.lang.reflect.Field
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
+import java.util.function.Function
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.math.max
 import kotlin.math.min
 import com.mojang.datafixers.util.Pair as NmsPair
+import net.minecraft.core.component.DataComponentType as NmsDataComponentType
 import net.minecraft.world.entity.EquipmentSlot as NmsEquipmentSlot
 import net.minecraft.world.item.ItemStack as NmsItemStack
-import net.minecraft.core.component.DataComponentType as NmsDataComponentType
 
 /**
  * Documentation is in [NmsAccessor].
@@ -479,5 +483,16 @@ object NmsAccessorImpl : NmsAccessor {
         } else {
             nmsTable.getRandomItems(lootParams)
         }.map(CraftItemStack::asBukkitMirror)
+    }
+
+    override fun targetSelectorToFunction(selector: String): Function<CommandSender, List<Entity>> {
+        val reader = StringReader(selector)
+        val parsed = try {
+            EntityArgument.entities().parse(reader, true, true)
+        } catch (e: CommandSyntaxException) {
+            throw IllegalArgumentException("Could not parse selector: $selector", e)
+        }
+        require(!reader.canRead()) { "Spurious trailing data in selector: $selector" }
+        return { sender -> parsed.findEntities(VanillaCommandWrapper.getListener(sender)).map { it.bukkitEntity } }
     }
 }

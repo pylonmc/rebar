@@ -951,6 +951,12 @@ fun Player.addToInventoryOrDrop(vararg items: ItemStack) {
     }
 }
 
+/**
+ * Parses an [entity target selector](https://minecraft.wiki/w/Target_selectors) and returns a function that can be used to get entities by that selector.
+ * Prefer over [Bukkit.selectEntities] to avoid reparsing the selector every time.
+ */
+fun targetSelectorToFunction(selector: String) = NmsAccessor.instance.targetSelectorToFunction(selector)
+
 const val FLUID_EPSILON = 1.0e-6
 
 fun Component.removeStyle(): Component = this.style(Style.empty()).children(this.children().map(Component::removeStyle))
