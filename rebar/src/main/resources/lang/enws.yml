@@ -185,6 +185,9 @@ guide:
     fluid_usages: "Fluid usages"
     item_ingredients: "Ingredients"
 
+ok: "Bless"
+cancel: "Forsake"
+
 unit:
   prefix:
     quetta:

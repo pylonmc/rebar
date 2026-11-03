@@ -173,6 +173,7 @@ object Rebar : JavaPlugin(), RebarAddon {
         pm.registerEvents(FluidTankRebarBlock, this)
         pm.registerEvents(GhostBlockHolderRebarBlock, this)
         pm.registerEvents(GuiRebarBlock, this)
+        pm.registerEvents(ConfirmationDialogGuiRebarBlock, this)
         pm.registerEvents(LogisticRebarBlock, this)
         pm.registerEvents(ProcessorRebarBlock, this)
         pm.registerEvents(RecipeProcessorRebarBlock, this)

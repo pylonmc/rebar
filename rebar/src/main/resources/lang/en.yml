@@ -474,6 +474,9 @@ guide:
     info: "Info"
     machine_recipes: "Machine recipes"
 
+ok: "Ok"
+cancel: "Cancel"
+
 unit:
   prefix:
     quetta:
