@@ -11,6 +11,7 @@ import kotlinx.coroutines.Runnable
 import org.bukkit.Bukkit
 import org.bukkit.NamespacedKey
 import org.bukkit.Registry
+import io.github.pylonmc.rebar.item.ItemTypeWrapper
 import org.bukkit.inventory.ItemStack
 
 object UnlockOnItemCriteriaType : CriteriaType<UnlockOnItemCriterion> {
@@ -38,11 +39,7 @@ object UnlockOnItemCriteriaType : CriteriaType<UnlockOnItemCriterion> {
         override fun run() {
             for (advancement in RebarRegistry.ADVANCEMENTS) {
                 for (criteria in advancement.criteria.filterIsInstance<UnlockOnItemCriterion>()) {
-                    val item = RebarRegistry.ITEMS[criteria.itemKey]?.getItemStack() ?: ItemStack.of(
-                        Registry.MATERIAL.get(
-                            criteria.itemKey
-                        )!!
-                    )
+                    val item = ItemTypeWrapper(criteria.itemKey).createItemStack()
                     val itemIsVanilla = RebarItem.isRebarItem(item)
                     item.amount = criteria.itemCount
                     for (player in Bukkit.getOnlinePlayers()) {
