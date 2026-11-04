@@ -945,7 +945,7 @@ fun ItemStack.hasOneDurabilityLeft(): Boolean {
     return !hasData(DataComponentTypes.UNBREAKABLE) && damage == maxDamage - 1
 }
 
-fun Player.addToInventoryOrDrop(vararg items: ItemStack) {
+fun HumanEntity.addToInventoryOrDrop(vararg items: ItemStack) {
     for (item in inventory.addItem(*items).values) {
         location.world.dropItemNaturally(location, item)
     }
