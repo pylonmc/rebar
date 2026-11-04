@@ -5,12 +5,13 @@ import io.github.pylonmc.rebar.advancements.RebarAdvancement
 import io.papermc.paper.adventure.PaperAdventure
 import net.kyori.adventure.text.Component
 import net.minecraft.advancements.*
-import net.minecraft.advancements.criterion.ImpossibleTrigger
+import net.minecraft.advancements.triggers.ImpossibleTrigger
 import net.minecraft.core.ClientAsset
 import net.minecraft.core.registries.Registries
 import net.minecraft.resources.Identifier
 import net.minecraft.resources.ResourceKey
 import net.minecraft.server.MinecraftServer
+import net.minecraft.server.ServerAdvancementManager
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.item.ItemStackTemplate
 import org.bukkit.Bukkit
@@ -99,5 +100,28 @@ object AdvancementsAccessor {
             player.advancements.flushDirty(player, false)
         })
         return bukkitAdvancement
+    }
+
+    private fun addNmsAdvancementToServer(key: NamespacedKey, nmsAdvancement: Advancement) : org.bukkit.advancement.Advancement {
+        val advancementsManagerNms = MinecraftServer.getServer().advancements
+        val resourceKey = CraftNamespacedKey.toMinecraft(key)
+        val mapBuilder: ImmutableMap.Builder<Identifier, AdvancementHolder> =
+            ImmutableMap.builderWithExpectedSize(advancementsManagerNms.advancements.size + 1)
+        mapBuilder.putAll(advancementsManagerNms.advancements)
+        mapBuilder.put(resourceKey, nmsAdvancement)
+        advancementsManagerNms.advancements = mapBuilder.buildOrThrow()
+    // Should this be buildKeepingLast? Usually we don't want to overwrite default mc achievements, but the risk of unintentional collisions is small so maybe we should allow this in the case that it's clearly intended?
+        val tree = advancementsManagerNms.tree()
+        tree.addAll(mutableListOf(nmsAdvancement))
+        tree.repositionNodes()
+        resyncAllAdvancements()
+    }
+
+    private fun resyncAllAdvancements(){
+        val advancementsManagerNms = MinecraftServer.getServer().advancements
+        for (player in MinecraftServer.getServer().playerList.players){
+            player.advancements.reload(advancementsManagerNms)
+            player.advancements.flushDirty(player, false)
+        }
     }
 }

@@ -12,7 +12,7 @@ data class RebarAdvancement(
     val parent: NamespacedKey?,
     val displayInfo: RebarAdvancementDisplayInfo?,
     val rewards: RebarAdvancementRewards,
-    val criteria: List<Criterion>,
+    val criteria: List<RebarCriteria>,
     val requirements: List<List<NamespacedKey>>,
 ) : Keyed {
 
@@ -22,19 +22,6 @@ data class RebarAdvancement(
 
     fun register() {
         RebarRegistry.ADVANCEMENTS.register(this)
-        // TODO: way to get parent class from Criterion base class
-        criteria.forEach {
-            val criteriaType =
-                RebarRegistry.CRITERIA_TYPE.first { it.javaClass.typeParameters.first().javaClass.equals(criteria.javaClass) }
-            if(CriteriaType.CRITERIA_TYPES_TO_ADVANCEMENTS.contains(criteriaType)){
-                val currentList = CriteriaType.CRITERIA_TYPES_TO_ADVANCEMENTS[criteriaType]!!
-                if(!currentList.contains(this)){
-                    CriteriaType.CRITERIA_TYPES_TO_ADVANCEMENTS[criteriaType]!!.add(this)
-                }
-            } else {
-                CriteriaType.CRITERIA_TYPES_TO_ADVANCEMENTS[criteriaType] = arrayListOf(this)
-            }
-        }
     }
 
     fun vanilla(): Advancement = Bukkit.getAdvancement(key)!!
@@ -49,4 +36,7 @@ data class RebarAdvancement(
 
     fun isUnlocked(player: Player): Boolean
         = player.getAdvancementProgress(vanilla()).isDone
+
+    fun isCriteriaComplete(player: Player, criteria: String): Boolean = TODO()
+    fun isCriteriaComplete(player: Player, criteria: RebarCriteria): Boolean = TODO()
 }
