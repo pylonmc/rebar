@@ -166,6 +166,14 @@ interface SimpleRebarMultiblock : RebarMultiblock, GhostBlockHolderRebarBlock, E
     val components: Map<Vector3i, MultiblockComponent>
 
     /**
+     * Whether the multiblock will override its components' WAILAs with its own. True by default.
+     */
+    @Suppress("INAPPLICABLE_JVM_NAME")
+    @get:JvmName("overrideComponentWailas")
+    val overrideComponentWailas: Boolean
+        get() = true
+
+    /**
      * Automatically implemented by RebarBlock
      */
     fun getWaila(player: Player): WailaDisplay?
@@ -247,8 +255,10 @@ interface SimpleRebarMultiblock : RebarMultiblock, GhostBlockHolderRebarBlock, E
         for ((position, _) in components) {
             removeGhostBlock(getRotatedPosition(position))
         }
-        for (position in components.keys) {
-            Waila.addWailaOverride(getMultiblockBlock(position), this as RebarBlock)
+        if (overrideComponentWailas) {
+            for (position in components.keys) {
+                Waila.addWailaOverride(getMultiblockBlock(position), this as RebarBlock)
+            }
         }
     }
 
