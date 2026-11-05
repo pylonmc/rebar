@@ -73,7 +73,7 @@ object MultiHandlers {
                     && it.parameters[1].type == EventPriority::class.java
                     && it.name == info.handlerMethod
                     && !Modifier.isAbstract(it.modifiers)
-        } ?: throw NoSuchMethodException("Could not find method ${info.handlerMethod} in class ${clazz.name} with parameters (? extends ${info.eventClass.name}, EventPriority)")
+        } ?: throw NoSuchMethodException("Could not find method ${info.handlerMethod} in class ${clazz.name} with parameters (${info.eventClass.name}, EventPriority)")
     }
 
     private data class EventInfo(

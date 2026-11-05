@@ -237,7 +237,6 @@ object Rebar : JavaPlugin(), RebarAddon {
         EntityInteractRebarItemHandler.register(this)
         FurnaceBurnRebarItemHandler.register(this)
         InteractRebarItemHandler.register(this)
-        InventoryClickRebarItemHandler.register(this)
         JoinRebarItemHandler.register(this)
         LingeringPotionRebarItemHandler.register(this)
         PickupRebarItemHandler.register(this)
