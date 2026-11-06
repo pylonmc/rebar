@@ -45,7 +45,7 @@ class LogisticGroup(
 
             return when (val blockState = block.getState(false)) {
                 is Furnace -> mapOf(
-                    "input" to LogisticGroup(LogisticGroupType.INPUT, VanillaInventoryLogisticSlot(block, blockState.inventory, 0)),
+                    "input" to LogisticGroup(LogisticGroupType.BOTH, VanillaInventoryLogisticSlot(block, blockState.inventory, 0)),
                     "fuel" to LogisticGroup(LogisticGroupType.INPUT, FurnaceFuelLogisticSlot(block, blockState.inventory, 1)),
                     "output" to LogisticGroup(LogisticGroupType.OUTPUT, VanillaInventoryLogisticSlot(block, blockState.inventory, 2)),
                 )
