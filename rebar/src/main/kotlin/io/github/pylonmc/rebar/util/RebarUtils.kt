@@ -1011,7 +1011,7 @@ fun xyz.xenondevs.invui.inventory.Inventory.consume(slot: Int, amount: Int = 1, 
 }
 
 /**
- * Consumes the item in the inventory and handles all the constant remainder operations.
+ * Consumes the item in the display and handles all the constant remainder operations.
  *
  * @see subtract
  */
