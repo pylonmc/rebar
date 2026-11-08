@@ -20,8 +20,37 @@ data class RebarAdvancement(
     val displayInfo: RebarAdvancementDisplayInfo?,
     val rewards: List<RebarAdvancementRewardSpec>,
     val criteria: List<RebarCriteria>,
+    /**
+     * Which [criteria] must be completed, by name. The outer list is AND, each inner list is OR:
+     * `[[a, b], [c]]` means "(a or b) and c". Every criterion must appear in at least one group.
+     */
     val requirements: List<List<String>>,
 ) : Keyed {
+
+    init {
+        // Same rules vanilla enforces when loading datapack advancements. The NMS Advancement constructor
+        // skips them, and an advancement that breaks them silently becomes impossible to complete
+        // (AdvancementRequirements.test returns false when requirements are empty).
+        // To make an advancement that only code can unlock, give it a criterion with no triggers.
+        require(criteria.isNotEmpty()) {
+            "Advancement $key must have at least one criterion (use a criterion with no triggers if it is only unlocked through code)"
+        }
+        val criterionNames = criteria.map { it.key }
+        val duplicates = criterionNames.groupingBy { it }.eachCount().filterValues { it > 1 }.keys
+        require(duplicates.isEmpty()) { "Advancement $key has duplicate criterion names: $duplicates" }
+        require(requirements.isNotEmpty()) { "Advancement $key must have at least one requirements group" }
+        require(requirements.none { it.isEmpty() }) { "Advancement $key has an empty requirements group" }
+        val referenced = requirements.flatten().toSet()
+        val unknown = referenced - criterionNames.toSet()
+        require(unknown.isEmpty()) {
+            "Advancement $key requirements reference unknown criteria $unknown (criteria: $criterionNames)"
+        }
+        val unreferenced = criterionNames.toSet() - referenced
+        require(unreferenced.isEmpty()) {
+            "Advancement $key has criteria $unreferenced that are not in any requirements group"
+        }
+    }
+
     override fun getKey(): NamespacedKey {
         return key
     }

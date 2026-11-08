@@ -7,8 +7,8 @@ import java.lang.reflect.Type
  * Parses a whole advancement. The section's name is the advancement's key, so this must be read straight
  * from the top level of an advancements file (`config.getOrThrow("pylon:my_advancement", ADVANCEMENT)`).
  *
- * Optional keys may be left out, but any key that is present must be valid; nothing is silently ignored.
- * If `requirements` is left out, every criterion is required (the same default as vanilla).
+ * `criteria` is required. Optional keys may be left out, but any key that is present must be valid; nothing is
+ * silently ignored. If `requirements` is left out, every criterion is required (the same default as vanilla).
  */
 object AdvancementConfigAdapter : ConfigAdapter<RebarAdvancement> {
 
@@ -23,18 +23,11 @@ object AdvancementConfigAdapter : ConfigAdapter<RebarAdvancement> {
             "advancement"
         )
 
-        val criteria = section.getIfPresent("criteria", AdvancementCriteriaConfigAdapter(advancementKey)) ?: emptyList()
-        val criterionNames = criteria.map { it.key }.toSet()
+        val criteria = section.getOrThrow("criteria", AdvancementCriteriaConfigAdapter(advancementKey))
         val requirements = section.getIfPresent("requirements", REQUIREMENTS)
             ?: criteria.map { listOf(it.key) }
-        for (group in requirements) {
-            require(group.isNotEmpty()) { "Advancement $advancementKey has an empty requirements group" }
-            val unknown = group.filter { it !in criterionNames }
-            require(unknown.isEmpty()) {
-                "Advancement $advancementKey requirements reference unknown criteria $unknown (known criteria: $criterionNames)"
-            }
-        }
 
+        // RebarAdvancement validates that criteria and requirements are consistent
         return RebarAdvancement(
             advancementKey,
             section.getIfPresent("parent", ConfigAdapter.NAMESPACED_KEY),
