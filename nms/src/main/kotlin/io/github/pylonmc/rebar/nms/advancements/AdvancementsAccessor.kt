@@ -33,7 +33,7 @@ object AdvancementsAccessor {
     fun registerRebarAdvancements(advancements: Collection<RebarAdvancement>) {
         if (advancements.isEmpty()) return
         val holders = advancements.map {
-            AdvancementHolder(CraftNamespacedKey.toMinecraft(it.key), convertRebarAdvancementToNms(it, it.key))
+            AdvancementHolder(CraftNamespacedKey.toMinecraft(it.key), convertRebarAdvancementToNms(it))
         }
 
         val advancementsManagerNms = MinecraftServer.getServer().advancements
@@ -53,7 +53,7 @@ object AdvancementsAccessor {
         resyncAllAdvancements()
     }
 
-    private fun convertRebarAdvancementToNms(advancement: RebarAdvancement, key: NamespacedKey): Advancement = Advancement(
+    private fun convertRebarAdvancementToNms(advancement: RebarAdvancement): Advancement = Advancement(
         Optional.ofNullable(advancement.parent).map { parent -> CraftNamespacedKey.toMinecraft(parent) },
         Optional.ofNullable(advancement.displayInfo).map { info ->
             DisplayInfo(
@@ -80,7 +80,7 @@ object AdvancementsAccessor {
             listOf(),
             Optional.ofNullable(null)
         ),
-        advancement.criteria.map { it.key }.associateWith { key ->
+        advancement.criteria.map { it.key }.associateWith {
             ImpossibleTrigger().createCriterion(ImpossibleTrigger.TriggerInstance())
         },
         AdvancementRequirements(
