@@ -64,11 +64,75 @@ class RebarAdvancement(
                 "unregistered; see the warning in the log."
     )
 
+    // Progress editing
+    //
+    // Use these, not Bukkit's AdvancementProgress, to change a player's progress in a Rebar advancement. Rebar keeps
+    // its own copy of each player's progress (see AdvancementProgressBackup) and restores it on join and after
+    // resource reloads. Grants made through Bukkit or /advancement grant are mirrored into that copy, but revokes made
+    // through Bukkit or /advancement revoke can't be detected, so they are undone at the next restore.
+
+    /**
+     * Awards [player] every criterion of this advancement, completing it.
+     */
     fun grant(player: Player) {
-        val advancementProgress = player.getAdvancementProgress(vanilla())
-        advancementProgress.remainingCriteria.forEach {advancementProgress.awardCriteria(it)}
+        for (criterion in criteria) {
+            grantCriteria(player, criterion.key)
+        }
     }
 
+    /**
+     * Awards [player] the criterion [criteriaKey]. Rebar's saved progress is updated when the grant goes through
+     * (another plugin may cancel it).
+     *
+     * @return true if the criterion was newly awarded
+     * @throws IllegalArgumentException if this advancement has no criterion [criteriaKey]
+     */
+    fun grantCriteria(player: Player, criteriaKey: String): Boolean {
+        requireCriteria(criteriaKey)
+        return player.getAdvancementProgress(vanilla()).awardCriteria(criteriaKey)
+    }
+
+    /**
+     * Revokes the criterion [criteriaKey] from [player]. If this means the advancement is no longer completed, its
+     * rewards are granted again the next time [player] completes it.
+     *
+     * @return true if [player] had the criterion
+     * @throws IllegalArgumentException if this advancement has no criterion [criteriaKey]
+     */
+    fun revokeCriteria(player: Player, criteriaKey: String): Boolean {
+        requireCriteria(criteriaKey)
+        val progress = player.getAdvancementProgress(vanilla())
+        val revokedFromVanilla = progress.revokeCriteria(criteriaKey)
+        val saved = AdvancementProgressBackup.read(player, key) ?: return revokedFromVanilla
+        val revokedFromSaved = criteriaKey in saved.completedCriteria
+        AdvancementProgressBackup.write(
+            player,
+            saved.copy(
+                completedCriteria = saved.completedCriteria - criteriaKey,
+                // No longer earned, so earning it again grants the rewards again
+                completed = saved.completed && progress.isDone
+            )
+        )
+        return revokedFromVanilla || revokedFromSaved
+    }
+
+    /**
+     * Revokes every criterion of this advancement from [player]. Its rewards are granted again the next time
+     * [player] completes it.
+     */
+    fun revoke(player: Player) {
+        val progress = player.getAdvancementProgress(vanilla())
+        for (criterion in progress.awardedCriteria.toList()) {
+            progress.revokeCriteria(criterion)
+        }
+        // No criteria and not completed, which is the same as having no saved progress
+        AdvancementProgressBackup.remove(player, key)
+    }
+
+    /**
+     * Grants [player] this advancement's rewards, whether or not they have already received them. Rewards are
+     * granted automatically the first time the advancement is completed.
+     */
     fun grantRewards(player: Player){
         rewards.forEach { it.grantReward(player)}
     }
@@ -76,8 +140,14 @@ class RebarAdvancement(
     fun isUnlocked(player: Player): Boolean
         = player.getAdvancementProgress(vanilla()).isDone
 
-    fun isCriteriaComplete(player: Player, criteria: String): Boolean = player.getAdvancementProgress(vanilla()).awardedCriteria.contains(criteria)
+    fun isCriteriaComplete(player: Player, criteriaKey: String): Boolean = player.getAdvancementProgress(vanilla()).awardedCriteria.contains(criteriaKey)
     fun isCriteriaComplete(player: Player, criteria: RebarCriteria): Boolean = isCriteriaComplete(player, criteria.key)
+
+    private fun requireCriteria(criteriaKey: String) {
+        require(criteria.any { it.key == criteriaKey }) {
+            "Advancement $key has no criterion '$criteriaKey' (criteria: ${criteria.map { it.key }})"
+        }
+    }
 
     companion object {
         @JvmStatic

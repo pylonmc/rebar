@@ -1,7 +1,6 @@
 ﻿package io.github.pylonmc.rebar.advancements
 
 import com.destroystokyo.paper.event.player.PlayerAdvancementCriterionGrantEvent
-import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.papermc.paper.event.server.ServerResourcesReloadedEvent
 import org.bukkit.event.EventHandler
@@ -26,15 +25,19 @@ object AdvancementsListener : Listener {
         AdvancementProgressBackup.restore(event.player, RebarRegistry.ADVANCEMENTS)
     }
 
-    // MONITOR so that this only records criteria that were actually granted: the event is cancellable, and handlers
-    // run from LOWEST to HIGHEST, so at any earlier priority another plugin could still cancel it after we recorded it
+    // Records every granted criterion, whether it came from RebarAdvancement, a trigger, Bukkit's AdvancementProgress
+    // or /advancement grant. MONITOR so that this only records criteria that were actually granted: the event is
+    // cancellable, and handlers run from LOWEST to HIGHEST, so at any earlier priority another plugin could still
+    // cancel it after we recorded it
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     private fun handle(event: PlayerAdvancementCriterionGrantEvent){
         val advancement = RebarAdvancement.fromVanilla(event.advancement) ?: return
-        val currentPdcData = event.player.persistentDataContainer.get(advancement.key, RebarSerializers.ADVANCEMENT_PLAYER_PERSISTENT_DATA)
+        val currentPdcData = AdvancementProgressBackup.read(event.player, advancement.key)
             ?: AdvancementPlayerPersistentData(advancement.key, emptySet(), false)
-        val newPdcData = currentPdcData.copy(completedCriteria = currentPdcData.completedCriteria + event.criterion)
-        event.player.persistentDataContainer.set(advancement.key, RebarSerializers.ADVANCEMENT_PLAYER_PERSISTENT_DATA, newPdcData)
+        AdvancementProgressBackup.write(
+            event.player,
+            currentPdcData.copy(completedCriteria = currentPdcData.completedCriteria + event.criterion)
+        )
     }
 
     // Restoring lost progress re-completes advancements the player already had, so don't announce them again.
@@ -51,10 +54,12 @@ object AdvancementsListener : Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     private fun handle(event: PlayerAdvancementDoneEvent){
         val advancement = RebarAdvancement.fromVanilla(event.advancement) ?: return
-        val advancementPdcData = event.player.persistentDataContainer.get(advancement.key, RebarSerializers.ADVANCEMENT_PLAYER_PERSISTENT_DATA)
+        val advancementPdcData = AdvancementProgressBackup.read(event.player, advancement.key)
         if(advancementPdcData != null && advancementPdcData.completed) return
         advancement.grantRewards(event.player)
-        val newPdcData = AdvancementPlayerPersistentData(advancement.key, advancementPdcData?.completedCriteria ?: emptySet(), true)
-        event.player.persistentDataContainer.set(advancement.key, RebarSerializers.ADVANCEMENT_PLAYER_PERSISTENT_DATA, newPdcData)
+        AdvancementProgressBackup.write(
+            event.player,
+            AdvancementPlayerPersistentData(advancement.key, advancementPdcData?.completedCriteria ?: emptySet(), true)
+        )
     }
 }

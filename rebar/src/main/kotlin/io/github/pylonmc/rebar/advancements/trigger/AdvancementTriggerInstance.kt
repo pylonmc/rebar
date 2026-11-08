@@ -29,6 +29,5 @@ open class AdvancementTriggerInstance(
      *
      * @return true if the criterion was newly awarded, false if [player] already had it
      */
-    fun trigger(player: Player): Boolean =
-        player.getAdvancementProgress(getAdvancement().vanilla()).awardCriteria(criteriaKey)
+    fun trigger(player: Player): Boolean = getAdvancement().grantCriteria(player, criteriaKey)
 }

@@ -2,6 +2,7 @@ package io.github.pylonmc.rebar.advancements
 
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import org.bukkit.Bukkit
+import org.bukkit.NamespacedKey
 import org.bukkit.entity.Player
 import org.jetbrains.annotations.ApiStatus
 import java.util.UUID
@@ -23,7 +24,8 @@ object AdvancementProgressBackup {
     /**
      * Awards [player] every criterion of [advancements] that is in the PDC but missing from vanilla's progress.
      *
-     * Revokes don't update the PDC yet, so any revoked criterion that is still in the PDC is re-awarded.
+     * Revokes made through [RebarAdvancement.revokeCriteria] or [RebarAdvancement.revoke] update the PDC. Revokes
+     * made through Bukkit or `/advancement revoke` can't be detected, so those criteria are re-awarded here.
      *
      * To avoid toasts, call this before the player's next advancements packet is sent: on join, or between
      * `PlayerAdvancements.reload` and `flushDirty`, where the next packet resets the client's advancements.
@@ -51,10 +53,23 @@ object AdvancementProgressBackup {
 
     private val restoring = mutableSetOf<UUID>()
 
+    // The only code that touches the PDC backup; everything else goes through these
+
+    @JvmSynthetic
+    internal fun read(player: Player, advancementKey: NamespacedKey): AdvancementPlayerPersistentData? =
+        player.persistentDataContainer.get(advancementKey, RebarSerializers.ADVANCEMENT_PLAYER_PERSISTENT_DATA)
+
+    @JvmSynthetic
+    internal fun write(player: Player, data: AdvancementPlayerPersistentData) =
+        player.persistentDataContainer.set(data.key, RebarSerializers.ADVANCEMENT_PLAYER_PERSISTENT_DATA, data)
+
+    @JvmSynthetic
+    internal fun remove(player: Player, advancementKey: NamespacedKey) =
+        player.persistentDataContainer.remove(advancementKey)
+
     private fun restoreAll(player: Player, advancements: Iterable<RebarAdvancement>) {
-        val pdc = player.persistentDataContainer
         for (advancement in advancements) {
-            val backup = pdc.get(advancement.key, RebarSerializers.ADVANCEMENT_PLAYER_PERSISTENT_DATA) ?: continue
+            val backup = read(player, advancement.key) ?: continue
             val vanilla = Bukkit.getAdvancement(advancement.key) ?: continue
             val progress = player.getAdvancementProgress(vanilla)
             val awarded = progress.awardedCriteria
