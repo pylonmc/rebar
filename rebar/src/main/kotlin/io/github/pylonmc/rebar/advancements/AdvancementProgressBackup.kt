@@ -13,16 +13,17 @@ import java.util.UUID
  * writes back the progress it loaded. So if the server ever runs while a Rebar advancement isn't registered (Rebar
  * disabled, failed to start, or that advancement failed to load), the next save permanently deletes its progress
  * from the vanilla advancements file. The PDC backup survives that, and this puts it back.
+ *
+ * For Rebar advancements the PDC is the source of truth; vanilla's progress is only a copy of it. The PDC is updated
+ * whenever a criterion is granted or an advancement is completed, so it never needs vanilla's progress to be saved.
  */
 @ApiStatus.Internal
 object AdvancementProgressBackup {
 
     /**
-     * Re-awards [player] any backed-up criteria of [advancements] that vanilla has lost.
+     * Awards [player] every criterion of [advancements] that is in the PDC but missing from vanilla's progress.
      *
-     * An advancement is only restored if vanilla has no progress for it at all. Lost progress looks like that,
-     * because vanilla drops an unknown advancement's whole entry, and it means revoking individual criteria is not
-     * undone. Fully revoking an advancement is not tracked yet, so it will be restored.
+     * Revokes don't update the PDC yet, so any revoked criterion that is still in the PDC is re-awarded.
      *
      * To avoid toasts, call this before the player's next advancements packet is sent: on join, or between
      * `PlayerAdvancements.reload` and `flushDirty`, where the next packet resets the client's advancements.
@@ -56,12 +57,11 @@ object AdvancementProgressBackup {
             val backup = pdc.get(advancement.key, RebarSerializers.ADVANCEMENT_PLAYER_PERSISTENT_DATA) ?: continue
             val vanilla = Bukkit.getAdvancement(advancement.key) ?: continue
             val progress = player.getAdvancementProgress(vanilla)
-            if (progress.awardedCriteria.isNotEmpty()) continue
-
+            val awarded = progress.awardedCriteria
             val criterionNames = advancement.criteria.mapTo(HashSet()) { it.key }
             for (criterion in backup.completedCriteria) {
                 // Skip criteria that have since been removed from the advancement's config
-                if (criterion in criterionNames) {
+                if (criterion in criterionNames && criterion !in awarded) {
                     progress.awardCriteria(criterion)
                 }
             }
