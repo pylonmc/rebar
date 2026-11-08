@@ -14,7 +14,7 @@ import org.bukkit.inventory.ItemStack
 import org.jetbrains.annotations.Contract
 import kotlin.collections.contains
 
-data class RebarAdvancement(
+class RebarAdvancement(
     private val key: NamespacedKey,
     val parent: NamespacedKey?,
     val displayInfo: RebarAdvancementDisplayInfo?,

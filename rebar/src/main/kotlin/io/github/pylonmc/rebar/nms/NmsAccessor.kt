@@ -171,8 +171,12 @@ interface NmsAccessor {
     fun getRandomItems(world: World, contextSet: NamespacedKey, lootTable: LootTable, optionalRandomLootSeed: Long?, lootContext: LootTableResultBuilder): Collection<ItemStack>
 
     /**
-     * Registers [advancements] with the server in one batch, so that they may be in any order relative to
-     * their parents. Every parent must either be in [advancements] or already be registered.
+     * Adds [advancements] to the server in one batch, so that they may be in any order relative to their parents,
+     * then resyncs online players and restores their backed-up progress. Every parent must either be in
+     * [advancements] or already be on the server.
+     *
+     * This does not register them in [io.github.pylonmc.rebar.registry.RebarRegistry.ADVANCEMENTS], so it can be
+     * called again after server resources are reloaded.
      */
     fun registerAdvancements(advancements: Collection<RebarAdvancement>)
 

@@ -11,7 +11,7 @@ open class AdvancementTriggerInstance(
     /**
      * The name of the criterion (within the advancement [advancementKey]) that this trigger awards.
      */
-    val criterionKey: String
+    val criteriaKey: String
 ) {
     /**
      * @throws IllegalStateException if the advancement isn't registered: it was dropped as an orphan at startup, or
@@ -24,10 +24,11 @@ open class AdvancementTriggerInstance(
     )
 
     /**
-     * Awards [player] the criterion this trigger is part of.
+     * Awards [player] the criterion this trigger is part of. A criterion with several triggers is awarded by
+     * whichever fires first; later ones return false.
      *
      * @return true if the criterion was newly awarded, false if [player] already had it
      */
     fun trigger(player: Player): Boolean =
-        player.getAdvancementProgress(getAdvancement().vanilla()).awardCriteria(criterionKey)
+        player.getAdvancementProgress(getAdvancement().vanilla()).awardCriteria(criteriaKey)
 }

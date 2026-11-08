@@ -18,9 +18,10 @@ import java.lang.reflect.Type
  *         key: pylon:my-item
  * ```
  *
- * Each criterion is a name mapped to a list of triggers. A trigger is either a bare trigger type key,
- * or a trigger type key mapped to its options. The map form (`criteria1: ...` without the leading `-`)
- * is also accepted, for both criteria and triggers.
+ * Each criterion is a name mapped to a list of triggers, and is awarded when any one of its triggers fires (use
+ * `requirements` to require several criteria). A trigger is either a bare trigger type key, or a trigger type key
+ * mapped to its options. The map form (`criteria1: ...` without the leading `-`) is also accepted, for both criteria
+ * and triggers.
  *
  * A criterion with no triggers can only be awarded through code or `/advancement grant`, which is how an
  * advancement that is only unlocked by a plugin is written:

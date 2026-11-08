@@ -4,7 +4,7 @@ import io.github.pylonmc.rebar.advancements.reward.RebarAdvancementReward
 import io.github.pylonmc.rebar.config.ConfigSection
 import org.bukkit.entity.Player
 
-data class RebarAdvancementRewardSpec(
+class RebarAdvancementRewardSpec(
     val reward: RebarAdvancementReward,
     val options: ConfigSection
 ) {
