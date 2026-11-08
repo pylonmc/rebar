@@ -15,7 +15,9 @@ object AdvancementsListener : Listener {
         TODO() // Reregister advancements
     }
 
-    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    // MONITOR so that this only records criteria that were actually granted: the event is cancellable, and handlers
+    // run from LOWEST to HIGHEST, so at any earlier priority another plugin could still cancel it after we recorded it
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     private fun handle(event: PlayerAdvancementCriterionGrantEvent){
         val advancement = RebarAdvancement.fromVanilla(event.advancement) ?: return
         val currentPdcData = event.player.persistentDataContainer.get(advancement.key, RebarSerializers.ADVANCEMENT_PLAYER_PERSISTENT_DATA)
@@ -26,7 +28,8 @@ object AdvancementsListener : Listener {
         event.player.persistentDataContainer.set(advancement.key, RebarSerializers.ADVANCEMENT_PLAYER_PERSISTENT_DATA, newPdcData)
     }
 
-    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    // MONITOR so rewards are granted after every other plugin has handled the completion
+    @EventHandler(priority = EventPriority.MONITOR)
     private fun handle(event: PlayerAdvancementDoneEvent){
         val advancement = RebarAdvancement.fromVanilla(event.advancement) ?: return
         val advancementPdcData = event.player.persistentDataContainer.get(advancement.key, RebarSerializers.ADVANCEMENT_PLAYER_PERSISTENT_DATA)
