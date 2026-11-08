@@ -3,8 +3,9 @@
 package io.github.pylonmc.rebar
 
 import io.github.pylonmc.rebar.addon.RebarAddon
-import io.github.pylonmc.rebar.advancements.base.UnlockOnItemCriteriaType
-import io.github.pylonmc.rebar.advancements.base.UnlockOnJoinCriteriaType
+import io.github.pylonmc.rebar.advancements.AdvancementsListener
+import io.github.pylonmc.rebar.advancements.reward.RebarAdvancementRewards
+import io.github.pylonmc.rebar.advancements.trigger.RebarAdvancementTriggers
 import io.github.pylonmc.rebar.async.BukkitMainThreadDispatcher
 import io.github.pylonmc.rebar.async.ChunkScope
 import io.github.pylonmc.rebar.async.PlayerScope
@@ -139,6 +140,8 @@ object Rebar : JavaPlugin(), RebarAddon {
         // Anything that listens for addon registration must be above this line
         registerWithRebar()
 
+        pm.registerEvents(AdvancementsListener, this)
+
         pm.registerEvents(ChunkScope, this)
         pm.registerEvents(PlayerScope, this)
 
@@ -169,8 +172,7 @@ object Rebar : JavaPlugin(), RebarAddon {
         ConfettiCreeperListener.register(this)
 
         // Rebar Advancements
-        pm.registerEvents(UnlockOnJoinCriteriaType.JoinListener, this)
-        UnlockOnJoinCriteriaType.register()
+        // TODO register events for rebar advancement trigger listeners
 
         // Rebar Blocks
         pm.registerEvents(CargoRebarBlock, this)
@@ -288,7 +290,6 @@ object Rebar : JavaPlugin(), RebarAddon {
         ZombifiedPiglinRebarEntityHandler.register(this)
 
         Bukkit.getScheduler().runTaskTimer(this, RebarInventoryTicker(), 0, RebarConfig.INVENTORY_TICKER_BASE_RATE)
-        Bukkit.getScheduler().runTaskTimer(this, UnlockOnItemCriteriaType.Ticker, 0, RebarConfig.ADVANCEMENTS_ITEM_TICKER_BASE_RATE)
 
         if (RebarConfig.WailaConfig.ENABLED) {
             pm.registerEvents(Waila, this)
@@ -315,6 +316,10 @@ object Rebar : JavaPlugin(), RebarAddon {
             it.registrar().register(ROOT_COMMAND)
             it.registrar().register(ROOT_COMMAND_RE_ALIAS)
         }
+
+        // Rebar advancements triggers and rewards
+        RebarAdvancementRewards.init()
+        RebarAdvancementTriggers.init()
 
         RebarItem.register<DebugWaxedWeatheredCutCopperStairs>(DebugWaxedWeatheredCutCopperStairs.STACK)
         RebarGuide.hideItem(DebugWaxedWeatheredCutCopperStairs.KEY)
@@ -357,7 +362,7 @@ object Rebar : JavaPlugin(), RebarAddon {
             loadRecipes()
             loadResearches()
             loading = false
-            registerAdvancements()
+            loadAdvancements()
         }
 
         val end = System.currentTimeMillis()
@@ -432,18 +437,18 @@ object Rebar : JavaPlugin(), RebarAddon {
         logger.info("Loaded researches in ${(end - start) / 1000.0}s")
     }
 
-    private fun registerAdvancements() {
+    private fun loadAdvancements() {
         Rebar.logger.info("Beginning to load advancements")
         val start = System.currentTimeMillis()
         for (addon in RebarRegistry.ADDONS) {
             mergeResource(addon, Rebar, "advancements.yml", "advancements/${addon.key.namespace}.yml", false)
-            registerAdvancementsForAddon(addon)
+            loadAdvancementsForAddon(addon)
         }
         val end = System.currentTimeMillis()
         Rebar.logger.info("Finished loading advancements in ${(end - start) / 1000.0}s")
     }
 
-    private fun registerAdvancementsForAddon(addon: RebarAddon) {
+    private fun loadAdvancementsForAddon(addon: RebarAddon) {
         try {
             val config = ConfigSection.from(Path(Rebar.dataPath.toString(), "advancements/${addon.key.namespace}.yml")) ?: return
             config.keys.forEach { it ->

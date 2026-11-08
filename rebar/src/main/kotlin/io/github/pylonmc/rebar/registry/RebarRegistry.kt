@@ -2,7 +2,7 @@ package io.github.pylonmc.rebar.registry
 
 import io.github.pylonmc.rebar.addon.RebarAddon
 import io.github.pylonmc.rebar.advancements.RebarAdvancement
-import io.github.pylonmc.rebar.advancements.reward.AdvancementReward
+import io.github.pylonmc.rebar.advancements.reward.RebarAdvancementReward
 import io.github.pylonmc.rebar.advancements.trigger.AdvancementTrigger
 import io.github.pylonmc.rebar.block.BlockTypeWrapper
 import io.github.pylonmc.rebar.block.RebarBlockSchema
@@ -138,6 +138,6 @@ class RebarRegistry<T : Keyed> : Iterable<T> {
         @JvmField val CONTEXTUAL_COMPONENT_RENDERERS = RebarRegistry<ContextualComponentRenderer>()
         @JvmField val ADVANCEMENTS = RebarRegistry<RebarAdvancement>()
         @JvmField val ADVANCEMENT_TRIGGERS = RebarRegistry<AdvancementTrigger<*>>()
-        @JvmField val ADVANCEMENT_REWARDS = RebarRegistry<AdvancementReward>()
+        @JvmField val ADVANCEMENT_REWARDS = RebarRegistry<RebarAdvancementReward>()
     }
 }

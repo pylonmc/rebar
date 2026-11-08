@@ -6,7 +6,7 @@ import org.bukkit.Keyed
 import org.bukkit.NamespacedKey
 import org.bukkit.entity.Player
 
-abstract class AdvancementReward(val key: NamespacedKey) : Keyed {
+abstract class RebarAdvancementReward(private val key: NamespacedKey) : Keyed {
     abstract fun grantReward(player: Player, options: ConfigSection)
     override fun getKey(): NamespacedKey = key
 
