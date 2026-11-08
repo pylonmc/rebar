@@ -449,7 +449,12 @@ object Rebar : JavaPlugin(), RebarAddon {
             mergeResource(addon, Rebar, "advancements.yml", "advancements/${addon.key.namespace}.yml", false)
             loadAdvancementsForAddon(addon, advancements)
         }
-        val toRegister = withoutOrphans(advancements)
+        val (toRegister, orphans) = splitOrphans(advancements)
+        warnAboutOrphans(
+            orphans,
+            "${orphans.size} Rebar advancement(s) could not be registered because their parent does not exist:",
+            "They will not be registered until the problem is fixed and the server is restarted."
+        )
         // Into the Rebar registry first, so that they can be looked up while the server registration restores progress
         toRegister.forEach { it.register() }
         NmsAccessor.instance.registerAdvancements(toRegister)
@@ -463,8 +468,20 @@ object Rebar : JavaPlugin(), RebarAddon {
      */
     @JvmSynthetic
     internal fun reregisterAdvancements() {
-        // Orphans are checked again, since a datapack advancement used as a parent may have been removed
-        NmsAccessor.instance.registerAdvancements(withoutOrphans(RebarRegistry.ADVANCEMENTS.toList()))
+        // Orphans are checked again, since a datapack advancement used as a parent may have been removed. They are
+        // unregistered, so nothing can find them while they aren't on the server.
+        val (toRegister, orphans) = splitOrphans(RebarRegistry.ADVANCEMENTS.toList())
+        if (orphans.isNotEmpty()) {
+            RebarRegistry.ADVANCEMENTS.unregister(*orphans.map { it.key }.toTypedArray())
+        }
+        warnAboutOrphans(
+            orphans,
+            "After reloading server resources, ${orphans.size} Rebar advancement(s) no longer have a parent and have been unregistered:",
+            "They will stay unregistered until the server is restarted, even if their parent comes back. Anything that " +
+                    "uses them will no longer find them. Players keep their progress, which is restored once they are " +
+                    "registered again."
+        )
+        NmsAccessor.instance.registerAdvancements(toRegister)
     }
 
     private fun loadAdvancementsForAddon(addon: RebarAddon, into: MutableList<RebarAdvancement>) {
@@ -486,10 +503,11 @@ object Rebar : JavaPlugin(), RebarAddon {
     }
 
     /**
-     * Removes (and logs) every advancement whose parent doesn't exist, including advancements whose parent was
-     * itself removed. Vanilla would otherwise leave them out of the advancement tree with only a generic error.
+     * Splits [advancements] into those that can be registered and orphans: advancements whose parent doesn't exist,
+     * including advancements whose parent is itself an orphan. Vanilla would otherwise leave orphans out of the
+     * advancement tree with only a generic error.
      */
-    private fun withoutOrphans(advancements: List<RebarAdvancement>): List<RebarAdvancement> {
+    private fun splitOrphans(advancements: List<RebarAdvancement>): Pair<List<RebarAdvancement>, List<RebarAdvancement>> {
         val resolved = mutableListOf<RebarAdvancement>()
         val resolvedKeys = mutableSetOf<NamespacedKey>()
         var pending = advancements
@@ -503,12 +521,24 @@ object Rebar : JavaPlugin(), RebarAddon {
             resolvedKeys += ready.map { it.key }
             pending = blocked
         }
-        for (orphan in pending) {
-            Rebar.logger.severe(
-                "Not registering advancement ${orphan.key}: its parent ${orphan.parent} does not exist or could not be registered"
-            )
+        return resolved to pending
+    }
+
+    private fun warnAboutOrphans(orphans: List<RebarAdvancement>, header: String, footer: String) {
+        if (orphans.isEmpty()) return
+        val orphanKeys = orphans.mapTo(HashSet()) { it.key }
+        logger.severe("!!!!!!!!!!!!!!!!!!!! WARNING !!!!!!!!!!!!!!!!!!!!")
+        logger.severe(header)
+        for (orphan in orphans) {
+            val reason = if (orphan.parent in orphanKeys) {
+                "its parent ${orphan.parent} is itself in this list"
+            } else {
+                "its parent ${orphan.parent} does not exist (check for typos, or a removed datapack or addon)"
+            }
+            logger.severe("  - ${orphan.key}: $reason")
         }
-        return resolved
+        logger.severe(footer)
+        logger.severe("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
     }
 
     @JvmSynthetic

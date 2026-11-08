@@ -59,7 +59,10 @@ data class RebarAdvancement(
         RebarRegistry.ADVANCEMENTS.register(this)
     }
 
-    fun vanilla(): Advancement = Bukkit.getAdvancement(key)!!
+    fun vanilla(): Advancement = Bukkit.getAdvancement(key) ?: error(
+        "Advancement $key is not registered on the server. If its parent was removed by a resource reload, it was " +
+                "unregistered; see the warning in the log."
+    )
 
     fun grant(player: Player) {
         val advancementProgress = player.getAdvancementProgress(vanilla())
