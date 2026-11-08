@@ -12,7 +12,7 @@ import io.github.pylonmc.rebar.i18n.PlayerTranslationHandler
 import io.github.pylonmc.rebar.item.ItemTypeWrapper
 import io.github.pylonmc.rebar.item.RebarItemSchema
 import io.github.pylonmc.rebar.item.loot.LootTableResultBuilder
-import io.github.pylonmc.rebar.nms.advancements.AdvancementsAccessor.registerRebarAdvancement
+import io.github.pylonmc.rebar.nms.advancements.AdvancementsAccessor.registerRebarAdvancements
 import io.github.pylonmc.rebar.nms.entity.BlockTextureEntityImpl
 import io.github.pylonmc.rebar.nms.inventory.KeyedContainerListener
 import io.github.pylonmc.rebar.nms.packet.PlayerPacketHandler
@@ -233,8 +233,8 @@ object NmsAccessorImpl : NmsAccessor {
         }
     }
 
-    override fun registerAdvancement(advancement: RebarAdvancement, key: NamespacedKey)
-        = registerRebarAdvancement(advancement, key)
+    override fun registerAdvancements(advancements: Collection<RebarAdvancement>)
+        = registerRebarAdvancements(advancements)
 
     override fun hasTracker(entity: Entity): Boolean {
         val id = entity.entityId

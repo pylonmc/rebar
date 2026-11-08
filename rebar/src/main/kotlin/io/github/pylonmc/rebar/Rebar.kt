@@ -4,6 +4,7 @@ package io.github.pylonmc.rebar
 
 import io.github.pylonmc.rebar.addon.RebarAddon
 import io.github.pylonmc.rebar.advancements.AdvancementsListener
+import io.github.pylonmc.rebar.advancements.RebarAdvancement
 import io.github.pylonmc.rebar.advancements.reward.RebarAdvancementRewards
 import io.github.pylonmc.rebar.advancements.trigger.RebarAdvancementTriggers
 import io.github.pylonmc.rebar.async.BukkitMainThreadDispatcher
@@ -440,27 +441,54 @@ object Rebar : JavaPlugin(), RebarAddon {
     private fun loadAdvancements() {
         Rebar.logger.info("Beginning to load advancements")
         val start = System.currentTimeMillis()
+        // Parse every addon's advancements before registering any, so that an advancement's parent may be
+        // defined later in the file or by another addon
+        val advancements = mutableListOf<RebarAdvancement>()
         for (addon in RebarRegistry.ADDONS) {
             mergeResource(addon, Rebar, "advancements.yml", "advancements/${addon.key.namespace}.yml", false)
-            loadAdvancementsForAddon(addon)
+            loadAdvancementsForAddon(addon, advancements)
         }
+        NmsAccessor.instance.registerAdvancements(withoutOrphans(advancements))
         val end = System.currentTimeMillis()
         Rebar.logger.info("Finished loading advancements in ${(end - start) / 1000.0}s")
     }
 
-    private fun loadAdvancementsForAddon(addon: RebarAddon) {
+    private fun loadAdvancementsForAddon(addon: RebarAddon, into: MutableList<RebarAdvancement>) {
         try {
             val config = ConfigSection.from(Path(Rebar.dataPath.toString(), "advancements/${addon.key.namespace}.yml")) ?: return
             config.keys.forEach { it ->
-                NmsAccessor.instance.registerAdvancement(
-                    config.getOrThrow(it, ConfigAdapter.ADVANCEMENT)
-                    , ConfigAdapter.NAMESPACED_KEY.convert(it)
-                )
+                into.add(config.getOrThrow(it, ConfigAdapter.ADVANCEMENT))
             }
         } catch (e: Exception) {
             Rebar.logger.severe("Error while loading advancement at advancements/${addon.key.namespace}.yml: \n${e.message}")
             e.printStackTrace()
         }
+    }
+
+    /**
+     * Removes (and logs) every advancement whose parent doesn't exist, including advancements whose parent was
+     * itself removed. Vanilla would otherwise leave them out of the advancement tree with only a generic error.
+     */
+    private fun withoutOrphans(advancements: List<RebarAdvancement>): List<RebarAdvancement> {
+        val resolved = mutableListOf<RebarAdvancement>()
+        val resolvedKeys = mutableSetOf<NamespacedKey>()
+        var pending = advancements
+        while (pending.isNotEmpty()) {
+            val (ready, blocked) = pending.partition {
+                val parent = it.parent
+                parent == null || parent in resolvedKeys || Bukkit.getAdvancement(parent) != null
+            }
+            if (ready.isEmpty()) break
+            resolved += ready
+            resolvedKeys += ready.map { it.key }
+            pending = blocked
+        }
+        for (orphan in pending) {
+            Rebar.logger.severe(
+                "Not registering advancement ${orphan.key}: its parent ${orphan.parent} does not exist or could not be registered"
+            )
+        }
+        return resolved
     }
 
     @JvmSynthetic

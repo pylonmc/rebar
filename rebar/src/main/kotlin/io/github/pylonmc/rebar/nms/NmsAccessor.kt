@@ -16,7 +16,6 @@ import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
 import org.bukkit.World
-import org.bukkit.advancement.Advancement
 import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
 import org.bukkit.entity.Entity
@@ -171,7 +170,11 @@ interface NmsAccessor {
      */
     fun getRandomItems(world: World, contextSet: NamespacedKey, lootTable: LootTable, optionalRandomLootSeed: Long?, lootContext: LootTableResultBuilder): Collection<ItemStack>
 
-    fun registerAdvancement(advancement: RebarAdvancement, key: NamespacedKey): Advancement?
+    /**
+     * Registers [advancements] with the server in one batch, so that they may be in any order relative to
+     * their parents. Every parent must either be in [advancements] or already be registered.
+     */
+    fun registerAdvancements(advancements: Collection<RebarAdvancement>)
 
     companion object {
         val instance = Class.forName("io.github.pylonmc.rebar.nms.NmsAccessorImpl")

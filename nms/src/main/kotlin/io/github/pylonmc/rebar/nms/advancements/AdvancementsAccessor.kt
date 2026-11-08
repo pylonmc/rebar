@@ -26,15 +26,31 @@ import kotlin.collections.map
 
 object AdvancementsAccessor {
 
-    fun registerRebarAdvancement(
-        advancement: RebarAdvancement,
-        key: NamespacedKey
-    ): org.bukkit.advancement.Advancement {
-        val nmsAdvancement = convertRebarAdvancementToNms(advancement, key)
-        val bukkitAdvancement = addNmsAdvancementToServer(key, nmsAdvancement)
-        advancement.register()
+    /**
+     * Registers all of [advancements] with the server in one batch. They may be in any order: vanilla's
+     * [AdvancementTree.addAll] keeps retrying until every advancement whose parent exists has been inserted.
+     */
+    fun registerRebarAdvancements(advancements: Collection<RebarAdvancement>) {
+        if (advancements.isEmpty()) return
+        val holders = advancements.map {
+            AdvancementHolder(CraftNamespacedKey.toMinecraft(it.key), convertRebarAdvancementToNms(it, it.key))
+        }
+
+        val advancementsManagerNms = MinecraftServer.getServer().advancements
+        val mapBuilder: ImmutableMap.Builder<Identifier, AdvancementHolder> =
+            ImmutableMap.builderWithExpectedSize(advancementsManagerNms.advancements.size + holders.size)
+        mapBuilder.putAll(advancementsManagerNms.advancements)
+        for (holder in holders) {
+            mapBuilder.put(holder.id(), holder)
+        }
+        advancementsManagerNms.advancements = mapBuilder.buildKeepingLast()
+
+        val tree = advancementsManagerNms.tree()
+        tree.addAll(holders)
+        tree.repositionNodes()
+
+        advancements.forEach { it.register() }
         resyncAllAdvancements()
-        return bukkitAdvancement
     }
 
     private fun convertRebarAdvancementToNms(advancement: RebarAdvancement, key: NamespacedKey): Advancement = Advancement(
@@ -72,22 +88,6 @@ object AdvancementsAccessor {
         ),
         false // Not allowing this to be configured to avoid spamming Mojang's servers with junk data about fake advancements
     )
-
-    private fun addNmsAdvancementToServer(key: NamespacedKey, nmsAdvancement: Advancement) : org.bukkit.advancement.Advancement {
-        val advancementsManagerNms = MinecraftServer.getServer().advancements
-        val resourceKey = CraftNamespacedKey.toMinecraft(key)
-        val holder = AdvancementHolder(resourceKey, nmsAdvancement)
-        val mapBuilder: ImmutableMap.Builder<Identifier, AdvancementHolder> =
-            ImmutableMap.builderWithExpectedSize(advancementsManagerNms.advancements.size + 1)
-        mapBuilder.putAll(advancementsManagerNms.advancements)
-        mapBuilder.put(resourceKey, holder)
-        advancementsManagerNms.advancements = mapBuilder.buildKeepingLast()
-        val tree = advancementsManagerNms.tree()
-        tree.addAll(listOf(holder))
-        tree.repositionNodes()
-        resyncAllAdvancements()
-        return Bukkit.getAdvancement(key)!!
-    }
 
     private fun resyncAllAdvancements(){
         val advancementsManagerNms = MinecraftServer.getServer().advancements
