@@ -5,7 +5,7 @@ import io.papermc.paper.advancement.AdvancementDisplay
 import net.kyori.adventure.text.Component
 import org.bukkit.NamespacedKey
 
-data class RebarAdvancementDisplayInfo(val icon: RebarAdvancementIcon, var title: Component, val description: Component, val iconFrame: AdvancementDisplay.Frame, val iconBackground: NamespacedKey?, val showToast: Boolean, val announceToChat: Boolean, val hidden: Boolean) {
+data class RebarAdvancementDisplayInfo(val icon: RebarAdvancementIcon, val title: Component, val description: Component, val iconFrame: AdvancementDisplay.Frame, val iconBackground: NamespacedKey?, val showToast: Boolean, val announceToChat: Boolean, val hidden: Boolean) {
 
 }
 
