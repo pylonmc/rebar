@@ -2,8 +2,14 @@
 
 import org.bukkit.NamespacedKey
 
+/**
+ * A player's backed-up progress for one Rebar advancement. See [AdvancementProgressBackup].
+ *
+ * @property completedCriteria the names of the criteria the player has been granted
+ * @property completed whether the advancement's rewards have been granted
+ */
 data class AdvancementPlayerPersistentData(
     val key: NamespacedKey,
-    val completedCriteria: List<String>,
+    val completedCriteria: Set<String>,
     val completed: Boolean
 )

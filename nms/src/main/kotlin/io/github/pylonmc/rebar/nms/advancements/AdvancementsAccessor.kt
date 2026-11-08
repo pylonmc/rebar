@@ -1,6 +1,7 @@
 package io.github.pylonmc.rebar.nms.advancements
 
 import com.google.common.collect.ImmutableMap
+import io.github.pylonmc.rebar.advancements.AdvancementProgressBackup
 import io.github.pylonmc.rebar.advancements.RebarAdvancement
 import io.papermc.paper.adventure.PaperAdventure
 import net.kyori.adventure.text.Component
@@ -27,8 +28,12 @@ import kotlin.collections.map
 object AdvancementsAccessor {
 
     /**
-     * Registers all of [advancements] with the server in one batch. They may be in any order: vanilla's
-     * [AdvancementTree.addAll] keeps retrying until every advancement whose parent exists has been inserted.
+     * Adds all of [advancements] to the server in one batch, then resyncs online players and restores their
+     * backed-up progress. They may be in any order: vanilla's [AdvancementTree.addAll] keeps retrying until every
+     * advancement whose parent exists has been inserted.
+     *
+     * This does not register them in the Rebar registry, so it can be called again after server resources are
+     * reloaded.
      */
     fun registerRebarAdvancements(advancements: Collection<RebarAdvancement>) {
         if (advancements.isEmpty()) return
@@ -49,8 +54,7 @@ object AdvancementsAccessor {
         tree.addAll(holders)
         tree.repositionNodes()
 
-        advancements.forEach { it.register() }
-        resyncAllAdvancements()
+        resyncAllAdvancements(advancements)
     }
 
     private fun convertRebarAdvancementToNms(advancement: RebarAdvancement): Advancement = Advancement(
@@ -89,10 +93,13 @@ object AdvancementsAccessor {
         false // Not allowing this to be configured to avoid spamming Mojang's servers with junk data about fake advancements
     )
 
-    private fun resyncAllAdvancements(){
+    private fun resyncAllAdvancements(restoring: Collection<RebarAdvancement>){
         val advancementsManagerNms = MinecraftServer.getServer().advancements
         for (player in MinecraftServer.getServer().playerList.players){
             player.advancements.reload(advancementsManagerNms)
+            // Between reload and flushDirty: reload makes the next packet reset the client's advancements, so
+            // restored advancements don't show toasts
+            AdvancementProgressBackup.restore(player.bukkitEntity, restoring)
             player.advancements.flushDirty(player, false)
         }
     }

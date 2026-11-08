@@ -449,9 +449,22 @@ object Rebar : JavaPlugin(), RebarAddon {
             mergeResource(addon, Rebar, "advancements.yml", "advancements/${addon.key.namespace}.yml", false)
             loadAdvancementsForAddon(addon, advancements)
         }
-        NmsAccessor.instance.registerAdvancements(withoutOrphans(advancements))
+        val toRegister = withoutOrphans(advancements)
+        // Into the Rebar registry first, so that they can be looked up while the server registration restores progress
+        toRegister.forEach { it.register() }
+        NmsAccessor.instance.registerAdvancements(toRegister)
         val end = System.currentTimeMillis()
         Rebar.logger.info("Finished loading advancements in ${(end - start) / 1000.0}s")
+    }
+
+    /**
+     * Adds the already loaded Rebar advancements back to the server after server resources are reloaded, which
+     * replaces the server's advancements with only those from datapacks. Config files are not re-read.
+     */
+    @JvmSynthetic
+    internal fun reregisterAdvancements() {
+        // Orphans are checked again, since a datapack advancement used as a parent may have been removed
+        NmsAccessor.instance.registerAdvancements(withoutOrphans(RebarRegistry.ADVANCEMENTS.toList()))
     }
 
     private fun loadAdvancementsForAddon(addon: RebarAddon, into: MutableList<RebarAdvancement>) {
