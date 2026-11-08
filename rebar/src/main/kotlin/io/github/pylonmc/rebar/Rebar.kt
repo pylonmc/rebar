@@ -360,8 +360,8 @@ object Rebar : JavaPlugin(), RebarAddon {
             validateItems()
             loadRecipes()
             loadResearches()
-            loading = false
             AdvancementsManager.loadAdvancements()
+            loading = false
         }
 
         val end = System.currentTimeMillis()

@@ -17,6 +17,9 @@ import kotlin.io.path.Path
  */
 internal object AdvancementsManager {
 
+    /**
+     * Reads the configuration files of every plugin and loads their [RebarAdvancement]s from config and registers them with the server.
+     */
     @JvmSynthetic
     internal fun loadAdvancements() {
         Rebar.logger.info("Beginning to load advancements")
@@ -28,15 +31,16 @@ internal object AdvancementsManager {
             mergeResource(addon, Rebar, "advancements.yml", "advancements/${addon.key.namespace}.yml", false)
             loadAdvancementsForAddon(addon, advancements)
         }
-        val (toRegister, orphans) = splitOrphans(advancements)
+        val orphans = findOrphans(advancements)
         warnAboutOrphans(
             orphans,
-            "${orphans.size} Rebar advancement(s) could not be registered because their parent does not exist:",
-            "They will not be registered until the problem is fixed and the server is restarted."
+            "${orphans.size} Rebar advancement(s) will not be shown to players because their parent does not exist:",
+            "They can still be earned and grant their rewards, but won't appear on the advancements screen until " +
+                    "their parent exists."
         )
         // Into the Rebar registry first, so that they can be looked up while the server registration restores progress
-        toRegister.forEach { it.register() }
-        NmsAccessor.instance.registerAdvancements(toRegister)
+        advancements.forEach { it.register() }
+        NmsAccessor.instance.registerAdvancements(advancements)
         val end = System.currentTimeMillis()
         Rebar.logger.info("Finished loading advancements in ${(end - start) / 1000.0}s")
     }
@@ -47,22 +51,21 @@ internal object AdvancementsManager {
      */
     @JvmSynthetic
     internal fun reregisterAdvancements() {
-        // Orphans are checked again, since a datapack advancement used as a parent may have been removed. They are
-        // unregistered, so nothing can find them while they aren't on the server.
-        val (toRegister, orphans) = splitOrphans(RebarRegistry.ADVANCEMENTS.toList())
-        if (orphans.isNotEmpty()) {
-            RebarRegistry.ADVANCEMENTS.unregister(*orphans.map { it.key }.toTypedArray())
-        }
+        // Orphans are checked again, since a datapack advancement used as a parent may have been removed
+        val advancements = RebarRegistry.ADVANCEMENTS.toList()
+        val orphans = findOrphans(advancements)
         warnAboutOrphans(
             orphans,
-            "After reloading server resources, ${orphans.size} Rebar advancement(s) no longer have a parent and have been unregistered:",
-            "They will stay unregistered until the server is restarted, even if their parent comes back. Anything that " +
-                    "uses them will no longer find them. Players keep their progress, which is restored once they are " +
-                    "registered again."
+            "After reloading server resources, ${orphans.size} Rebar advancement(s) have no parent and will not be shown to players:",
+            "They can still be earned and grant their rewards, and will appear on the advancements screen again if " +
+                    "their parent comes back in a later reload."
         )
-        NmsAccessor.instance.registerAdvancements(toRegister)
+        NmsAccessor.instance.registerAdvancements(advancements)
     }
 
+    /**
+     * Loads all the [RebarAdvancement]s for an addon from the config file.
+     */
     private fun loadAdvancementsForAddon(addon: RebarAddon, into: MutableList<RebarAdvancement>) {
         val path = "advancements/${addon.key.namespace}.yml"
         val config = try {
@@ -82,12 +85,14 @@ internal object AdvancementsManager {
     }
 
     /**
-     * Splits [advancements] into those that can be registered and orphans: advancements whose parent doesn't exist,
-     * including advancements whose parent is itself an orphan. Vanilla would otherwise leave orphans out of the
-     * advancement tree with only a generic error.
+     * Finds the orphans in [advancements]: advancements whose parent doesn't exist, including advancements whose parent
+     * is itself an orphan. This is only used to warn about them. Orphans are registered like any other advancement:
+     * vanilla keeps them in its list of advancements, so they still work, but leaves them out of the advancement tree,
+     * so they aren't sent to clients.
+     *
+     * Must be called before [advancements] are added to the server, as [Bukkit.getAdvancement] also finds orphans.
      */
-    private fun splitOrphans(advancements: List<RebarAdvancement>): Pair<List<RebarAdvancement>, List<RebarAdvancement>> {
-        val resolved = mutableListOf<RebarAdvancement>()
+    private fun findOrphans(advancements: List<RebarAdvancement>): List<RebarAdvancement> {
         val resolvedKeys = mutableSetOf<NamespacedKey>()
         var pending = advancements
         while (pending.isNotEmpty()) {
@@ -96,13 +101,15 @@ internal object AdvancementsManager {
                 parent == null || parent in resolvedKeys || Bukkit.getAdvancement(parent) != null
             }
             if (ready.isEmpty()) break
-            resolved += ready
             resolvedKeys += ready.map { it.key }
             pending = blocked
         }
-        return resolved to pending
+        return pending
     }
 
+    /**
+     * Prints out a logging warning that the [orphans] advancements have no parent and so won't be shown to players.
+     */
     private fun warnAboutOrphans(orphans: List<RebarAdvancement>, header: String, footer: String) {
         if (orphans.isEmpty()) return
         val orphanKeys = orphans.mapTo(HashSet()) { it.key }

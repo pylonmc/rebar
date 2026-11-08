@@ -3,6 +3,7 @@ package io.github.pylonmc.rebar.config.adapter
 import io.github.pylonmc.rebar.advancements.RebarAdvancementRewardSpec
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import org.apache.commons.lang3.reflect.TypeUtils
+import org.bukkit.NamespacedKey
 import java.lang.reflect.Type
 
 /**
@@ -23,7 +24,8 @@ object AdvancementRewardsConfigAdapter : ConfigAdapter<List<RebarAdvancementRewa
 
     override fun convert(value: Any): List<RebarAdvancementRewardSpec> =
         keyedEntries(value).map { (rawRewardKey, options) ->
-            val rewardKey = parseNamespacedKey(rawRewardKey, "reward type")
+            val rewardKey = NamespacedKey.fromString(rawRewardKey)
+                ?: throw IllegalArgumentException("'$rawRewardKey' is not a valid reward type key")
             val reward = RebarRegistry.ADVANCEMENT_REWARDS[rewardKey]
                 ?: throw IllegalArgumentException("Unknown advancement reward type $rewardKey")
             RebarAdvancementRewardSpec(reward, entryOptions(rawRewardKey, options))

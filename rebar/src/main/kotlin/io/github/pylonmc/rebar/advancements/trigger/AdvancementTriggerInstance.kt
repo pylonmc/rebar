@@ -6,7 +6,13 @@ import org.bukkit.NamespacedKey
 import org.bukkit.entity.Player
 
 open class AdvancementTriggerInstance(
+    /**
+     * The key of the [AdvancementTrigger] that created this instance.
+     */
     val triggerKey: NamespacedKey,
+    /**
+     * The key of the [RebarAdvancement] this trigger instance is assigned to
+     */
     val advancementKey: NamespacedKey,
     /**
      * The name of the criterion (within the advancement [advancementKey]) that this trigger awards.
@@ -14,13 +20,11 @@ open class AdvancementTriggerInstance(
     val criteriaKey: String
 ) {
     /**
-     * @throws IllegalStateException if the advancement isn't registered: it was dropped as an orphan at startup, or
-     * unregistered because a resource reload removed its parent. Trigger instances should only be given events through
-     * registered advancements, so that this never happens.
+     * @throws IllegalStateException if the advancement isn't registered, generally only because it failed to load.
      */
     fun getAdvancement(): RebarAdvancement = RebarRegistry.ADVANCEMENTS[advancementKey] ?: error(
-        "Advancement $advancementKey is not registered, so its trigger $triggerKey cannot fire. It was probably " +
-                "unregistered because its parent is missing; see the warning in the log."
+        "Advancement $advancementKey is not registered, so its trigger $triggerKey cannot fire. It probably failed " +
+                "to load; see the errors in the log."
     )
 
     /**

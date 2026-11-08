@@ -1,24 +1,37 @@
 package io.github.pylonmc.rebar.advancements
 
-import io.github.pylonmc.rebar.advancements.reward.RebarAdvancementReward
-import io.github.pylonmc.rebar.config.ConfigSection
-import io.github.pylonmc.rebar.item.RebarItem
-import io.github.pylonmc.rebar.item.RebarItemSchema
+import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import org.bukkit.Bukkit
 import org.bukkit.Keyed
 import org.bukkit.NamespacedKey
 import org.bukkit.advancement.Advancement
 import org.bukkit.entity.Player
-import org.bukkit.inventory.ItemStack
 import org.jetbrains.annotations.Contract
-import kotlin.collections.contains
 
+/**
+ * All non player specific data about an advancement is stored within this class.
+ * @warning All editing of the advancement data should be done through the methods in this class to ensure parity between the vanilla advancement persistence data and our PDC advancement persistence data.
+ */
 class RebarAdvancement(
+    /**
+     * The key of this advancement.
+     */
     private val key: NamespacedKey,
+    /**
+     * The key of the parent of this advancement. May be null if this advancement is a root advancement, may point to a non-rebar advancement, and may not resolve at all.
+     */
     val parent: NamespacedKey?,
+    /**
+     * The information on how to display this advancement, eg icon, title, description .etc
+     */
     val displayInfo: RebarAdvancementDisplayInfo?,
+    /**
+     * The list of rewards that the player will receive upon completing this advancement, granted through a [io.github.pylonmc.rebar.advancements.reward.RebarAdvancementReward]
+     */
     val rewards: List<RebarAdvancementRewardSpec>,
+    /** The list of criteria and the [io.github.pylonmc.rebar.advancements.trigger.AdvancementTriggerInstance] that complete them (only one trigger needs to fire for the criteria to complete)
+     */
     val criteria: List<RebarCriteria>,
     /**
      * Which [criteria] must be completed, by name. The outer list is AND, each inner list is OR:
@@ -28,10 +41,7 @@ class RebarAdvancement(
 ) : Keyed {
 
     init {
-        // Same rules vanilla enforces when loading datapack advancements. The NMS Advancement constructor
-        // skips them, and an advancement that breaks them silently becomes impossible to complete
-        // (AdvancementRequirements.test returns false when requirements are empty).
-        // To make an advancement that only code can unlock, give it a criterion with no triggers.
+        // Same rules vanilla enforces when loading datapack advancements.
         require(criteria.isNotEmpty()) {
             "Advancement $key must have at least one criterion (use a criterion with no triggers if it is only unlocked through code)"
         }
@@ -60,16 +70,8 @@ class RebarAdvancement(
     }
 
     fun vanilla(): Advancement = Bukkit.getAdvancement(key) ?: error(
-        "Advancement $key is not registered on the server. If its parent was removed by a resource reload, it was " +
-                "unregistered; see the warning in the log."
+        "Advancement $key is not registered on the server."
     )
-
-    // Progress editing
-    //
-    // Use these, not Bukkit's AdvancementProgress, to change a player's progress in a Rebar advancement. Rebar keeps
-    // its own copy of each player's progress (see AdvancementProgressBackup) and restores it on join and after
-    // resource reloads. Grants made through Bukkit or /advancement grant are mirrored into that copy, but revokes made
-    // through Bukkit or /advancement revoke can't be detected, so they are undone at the next restore.
 
     /**
      * Awards [player] every criterion of this advancement, completing it.
@@ -103,15 +105,12 @@ class RebarAdvancement(
         requireCriteria(criteriaKey)
         val progress = player.getAdvancementProgress(vanilla())
         val revokedFromVanilla = progress.revokeCriteria(criteriaKey)
-        val saved = AdvancementProgressBackup.read(player, key) ?: return revokedFromVanilla
+        val saved = player.persistentDataContainer.get(key, RebarSerializers.ADVANCEMENT_PLAYER_PERSISTENT_DATA) ?: return revokedFromVanilla
         val revokedFromSaved = criteriaKey in saved.completedCriteria
-        AdvancementProgressBackup.write(
-            player,
-            saved.copy(
-                completedCriteria = saved.completedCriteria - criteriaKey,
-                // No longer earned, so earning it again grants the rewards again
-                completed = saved.completed && progress.isDone
-            )
+        player.persistentDataContainer.set(
+            key,
+            RebarSerializers.ADVANCEMENT_PLAYER_PERSISTENT_DATA,
+            saved.copy(completedCriteria = saved.completedCriteria - criteriaKey, completed = saved.completed && progress.isDone)
         )
         return revokedFromVanilla || revokedFromSaved
     }
@@ -126,7 +125,7 @@ class RebarAdvancement(
             progress.revokeCriteria(criterion)
         }
         // No criteria and not completed, which is the same as having no saved progress
-        AdvancementProgressBackup.remove(player, key)
+        player.persistentDataContainer.remove(key)
     }
 
     /**

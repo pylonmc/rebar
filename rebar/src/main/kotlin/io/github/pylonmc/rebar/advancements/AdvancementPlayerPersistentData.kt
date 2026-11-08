@@ -3,7 +3,7 @@
 import org.bukkit.NamespacedKey
 
 /**
- * A player's backed-up progress for one Rebar advancement. See [AdvancementProgressBackup].
+ * A player's backed-up progress for one Rebar advancement. See [AdvancementProgressManager].
  *
  * @property completedCriteria the names of the criteria the player has been granted
  * @property completed whether the advancement's rewards have been granted

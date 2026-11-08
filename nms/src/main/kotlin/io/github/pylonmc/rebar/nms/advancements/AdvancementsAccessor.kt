@@ -1,28 +1,19 @@
 package io.github.pylonmc.rebar.nms.advancements
 
 import com.google.common.collect.ImmutableMap
-import io.github.pylonmc.rebar.advancements.AdvancementProgressBackup
+import io.github.pylonmc.rebar.advancements.AdvancementProgressManager
 import io.github.pylonmc.rebar.advancements.RebarAdvancement
 import io.papermc.paper.adventure.PaperAdventure
-import net.kyori.adventure.text.Component
 import net.minecraft.advancements.*
 import net.minecraft.advancements.triggers.ImpossibleTrigger
 import net.minecraft.core.ClientAsset
 import net.minecraft.core.HolderSet
-import net.minecraft.core.registries.Registries
 import net.minecraft.resources.Identifier
-import net.minecraft.resources.ResourceKey
 import net.minecraft.server.MinecraftServer
-import net.minecraft.server.ServerAdvancementManager
-import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.item.ItemStackTemplate
-import org.bukkit.Bukkit
-import org.bukkit.Keyed
-import org.bukkit.NamespacedKey
 import org.bukkit.craftbukkit.inventory.CraftItemStack
 import org.bukkit.craftbukkit.util.CraftNamespacedKey
 import java.util.*
-import java.util.function.Consumer
 import kotlin.collections.map
 
 object AdvancementsAccessor {
@@ -30,7 +21,8 @@ object AdvancementsAccessor {
     /**
      * Adds all of [advancements] to the server in one batch, then resyncs online players and restores their
      * backed-up progress. They may be in any order: vanilla's [AdvancementTree.addAll] keeps retrying until every
-     * advancement whose parent exists has been inserted.
+     * advancement whose parent exists has been inserted. Those with a missing parent are left out of the tree, so
+     * they aren't sent to clients, but stay in the list of advancements, so they still work on the server.
      *
      * This does not register them in the Rebar registry, so it can be called again after server resources are
      * reloaded.
@@ -57,6 +49,9 @@ object AdvancementsAccessor {
         resyncAllAdvancements(advancements)
     }
 
+    /**
+     * Converts a RebarAdvancement to the NMS vanilla advancement for registration in the vanilla advancement tree.
+     */
     private fun convertRebarAdvancementToNms(advancement: RebarAdvancement): Advancement = Advancement(
         Optional.ofNullable(advancement.parent).map { parent -> CraftNamespacedKey.toMinecraft(parent) },
         Optional.ofNullable(advancement.displayInfo).map { info ->
@@ -70,7 +65,7 @@ object AdvancementsAccessor {
                 PaperAdventure.asVanilla(
                     info.description
                 ),
-                Optional.ofNullable(info.iconBackground)
+                Optional.ofNullable(info.background)
                     .map { background -> ClientAsset.ResourceTexture(CraftNamespacedKey.toMinecraft(background)) },
                 AdvancementType.valueOf(info.iconFrame.name),
                 info.showToast,
@@ -93,13 +88,16 @@ object AdvancementsAccessor {
         false // Not allowing this to be configured to avoid spamming Mojang's servers with junk data about fake advancements
     )
 
+    /**
+     * Resends the advancements tree to clients and restores the progress of those advancements from the player PDC data.
+     */
     private fun resyncAllAdvancements(restoring: Collection<RebarAdvancement>){
         val advancementsManagerNms = MinecraftServer.getServer().advancements
         for (player in MinecraftServer.getServer().playerList.players){
             player.advancements.reload(advancementsManagerNms)
             // Between reload and flushDirty: reload makes the next packet reset the client's advancements, so
             // restored advancements don't show toasts
-            AdvancementProgressBackup.restore(player.bukkitEntity, restoring)
+            AdvancementProgressManager.restore(player.bukkitEntity, restoring)
             player.advancements.flushDirty(player, false)
         }
     }

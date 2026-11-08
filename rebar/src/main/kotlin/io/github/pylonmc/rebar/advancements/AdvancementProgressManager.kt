@@ -8,28 +8,23 @@ import org.jetbrains.annotations.ApiStatus
 import java.util.UUID
 
 /**
- * Restores Rebar advancement progress from the backup that [AdvancementsListener] keeps in each player's PDC.
+ * Restores Rebar advancement progress from the source of truth that [AdvancementsListener] keeps in each player's PDC.
  *
  * Vanilla ignores progress for advancements that aren't registered when a player's advancements are loaded, and only
  * writes back the progress it loaded. So if the server ever runs while a Rebar advancement isn't registered (Rebar
  * disabled, failed to start, or that advancement failed to load), the next save permanently deletes its progress
- * from the vanilla advancements file. The PDC backup survives that, and this puts it back.
+ * from the vanilla advancements file. This class has the methods to restore that progress from the PDC.
  *
- * For Rebar advancements the PDC is the source of truth; vanilla's progress is only a copy of it. The PDC is updated
+ * For Rebar advancements, the PDC is the source of truth and vanilla progress is only a copy of it. The PDC is updated
  * whenever a criterion is granted or an advancement is completed, so it never needs vanilla's progress to be saved.
  */
 @ApiStatus.Internal
-object AdvancementProgressBackup {
+object AdvancementProgressManager {
 
     /**
      * Awards [player] every criterion of [advancements] that is in the PDC but missing from vanilla's progress.
-     *
-     * Revokes made through [RebarAdvancement.revokeCriteria] or [RebarAdvancement.revoke] update the PDC. Revokes
-     * made through Bukkit or `/advancement revoke` can't be detected, so those criteria are re-awarded here.
-     *
-     * To avoid toasts, call this before the player's next advancements packet is sent: on join, or between
-     * `PlayerAdvancements.reload` and `flushDirty`, where the next packet resets the client's advancements.
-     * Chat announcements are suppressed by [AdvancementsListener] while this runs (see [isRestoring]).
+     * To avoid toasts, this is called either on join or between `PlayerAdvancements.reload` and `flushDirty`, where the next packet resets the client's advancements
+     * and chat announcements are suppressed by [AdvancementsListener] via [isRestoring].
      */
     @JvmStatic
     fun restore(player: Player, advancements: Iterable<RebarAdvancement>) {
@@ -53,23 +48,9 @@ object AdvancementProgressBackup {
 
     private val restoring = mutableSetOf<UUID>()
 
-    // The only code that touches the PDC backup; everything else goes through these
-
-    @JvmSynthetic
-    internal fun read(player: Player, advancementKey: NamespacedKey): AdvancementPlayerPersistentData? =
-        player.persistentDataContainer.get(advancementKey, RebarSerializers.ADVANCEMENT_PLAYER_PERSISTENT_DATA)
-
-    @JvmSynthetic
-    internal fun write(player: Player, data: AdvancementPlayerPersistentData) =
-        player.persistentDataContainer.set(data.key, RebarSerializers.ADVANCEMENT_PLAYER_PERSISTENT_DATA, data)
-
-    @JvmSynthetic
-    internal fun remove(player: Player, advancementKey: NamespacedKey) =
-        player.persistentDataContainer.remove(advancementKey)
-
     private fun restoreAll(player: Player, advancements: Iterable<RebarAdvancement>) {
         for (advancement in advancements) {
-            val backup = read(player, advancement.key) ?: continue
+            val backup = player.persistentDataContainer.get(advancement.key, RebarSerializers.ADVANCEMENT_PLAYER_PERSISTENT_DATA) ?: continue
             val vanilla = Bukkit.getAdvancement(advancement.key) ?: continue
             val progress = player.getAdvancementProgress(vanilla)
             val awarded = progress.awardedCriteria

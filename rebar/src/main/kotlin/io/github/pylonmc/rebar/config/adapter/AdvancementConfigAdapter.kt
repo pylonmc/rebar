@@ -1,6 +1,7 @@
 package io.github.pylonmc.rebar.config.adapter
 
 import io.github.pylonmc.rebar.advancements.RebarAdvancement
+import org.bukkit.NamespacedKey
 import java.lang.reflect.Type
 
 /**
@@ -18,10 +19,9 @@ object AdvancementConfigAdapter : ConfigAdapter<RebarAdvancement> {
 
     override fun convert(value: Any): RebarAdvancement {
         val section = ConfigAdapter.CONFIG_SECTION.convert(value)
-        val advancementKey = parseNamespacedKey(
-            section.name ?: throw IllegalArgumentException("Advancement section has no name to use as its key"),
-            "advancement"
-        )
+        val rawKey = section.name ?: throw IllegalArgumentException("Advancement section has no name to use as its key")
+        val advancementKey = NamespacedKey.fromString(rawKey)
+            ?: throw IllegalArgumentException("'$rawKey' is not a valid advancement key")
 
         val criteria = section.getOrThrow("criteria", AdvancementCriteriaConfigAdapter(advancementKey))
         val requirements = section.getIfPresent("requirements", REQUIREMENTS)

@@ -172,8 +172,8 @@ interface NmsAccessor {
 
     /**
      * Adds [advancements] to the server in one batch, so that they may be in any order relative to their parents,
-     * then resyncs online players and restores their backed-up progress. Every parent must either be in
-     * [advancements] or already be on the server.
+     * then resyncs online players and restores their backed-up progress. An advancement whose parent is neither in
+     * [advancements] nor already on the server still works, but isn't shown to players.
      *
      * This does not register them in [io.github.pylonmc.rebar.registry.RebarRegistry.ADVANCEMENTS], so it can be
      * called again after server resources are reloaded.
