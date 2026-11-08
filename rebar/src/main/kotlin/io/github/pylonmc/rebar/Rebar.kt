@@ -73,6 +73,7 @@ import org.jetbrains.annotations.ApiStatus
 import xyz.xenondevs.invui.InvUI
 import xyz.xenondevs.invui.i18n.Languages
 import java.util.*
+import java.util.logging.Level
 import io.github.pylonmc.rebar.nms.NmsAccessor
 import kotlin.io.path.*
 
@@ -454,14 +455,20 @@ object Rebar : JavaPlugin(), RebarAddon {
     }
 
     private fun loadAdvancementsForAddon(addon: RebarAddon, into: MutableList<RebarAdvancement>) {
-        try {
-            val config = ConfigSection.from(Path(Rebar.dataPath.toString(), "advancements/${addon.key.namespace}.yml")) ?: return
-            config.keys.forEach { it ->
-                into.add(config.getOrThrow(it, ConfigAdapter.ADVANCEMENT))
-            }
+        val path = "advancements/${addon.key.namespace}.yml"
+        val config = try {
+            ConfigSection.from(Path(Rebar.dataPath.toString(), path)) ?: return
         } catch (e: Exception) {
-            Rebar.logger.severe("Error while loading advancement at advancements/${addon.key.namespace}.yml: \n${e.message}")
-            e.printStackTrace()
+            Rebar.logger.log(Level.SEVERE, "Error while reading $path; no advancements from it will be loaded", e)
+            return
+        }
+        // Each advancement is loaded separately so that one bad advancement doesn't prevent the rest from loading
+        for (key in config.keys) {
+            try {
+                into.add(config.getOrThrow(key, ConfigAdapter.ADVANCEMENT))
+            } catch (e: Exception) {
+                Rebar.logger.log(Level.SEVERE, "Error while loading advancement $key in $path; it will not be registered", e)
+            }
         }
     }
 
