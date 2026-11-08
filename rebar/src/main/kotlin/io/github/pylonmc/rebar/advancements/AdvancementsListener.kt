@@ -1,7 +1,6 @@
 ﻿package io.github.pylonmc.rebar.advancements
 
 import com.destroystokyo.paper.event.player.PlayerAdvancementCriterionGrantEvent
-import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.papermc.paper.event.server.ServerResourcesReloadedEvent
@@ -17,7 +16,7 @@ object AdvancementsListener : Listener {
     // Rebar's. This is called after the rebuild, so add them back. LOWEST so that other plugins' handlers see them.
     @EventHandler(priority = EventPriority.LOWEST)
     private fun handle(event: ServerResourcesReloadedEvent) {
-        Rebar.reregisterAdvancements()
+        AdvancementsManager.reregisterAdvancements()
     }
 
     // LOWEST so that other plugins' join handlers see the restored progress. This runs before the player's first
