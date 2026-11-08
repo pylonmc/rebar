@@ -8,9 +8,10 @@ import org.bukkit.NamespacedKey
 abstract class AdvancementTrigger<TriggerInstanceType: AdvancementTriggerInstance>(private val key: NamespacedKey) : Keyed {
     /**
      * Called while the advancement [advancementKey] is being parsed, so the [io.github.pylonmc.rebar.advancements.RebarAdvancement]
-     * does not exist yet. [options] is empty if the trigger was written as a bare key.
+     * does not exist yet. [criterionKey] is the criterion the instance awards when triggered; pass both keys on to
+     * the [AdvancementTriggerInstance] constructor. [options] is empty if the trigger was written as a bare key.
      */
-    abstract fun createTriggerInstance(advancementKey: NamespacedKey, options: ConfigSection): TriggerInstanceType
+    abstract fun createTriggerInstance(advancementKey: NamespacedKey, criterionKey: String, options: ConfigSection): TriggerInstanceType
 
     override fun getKey(): NamespacedKey = key
 

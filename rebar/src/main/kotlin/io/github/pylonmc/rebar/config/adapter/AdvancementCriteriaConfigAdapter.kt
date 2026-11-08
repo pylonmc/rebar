@@ -48,6 +48,6 @@ class AdvancementCriteriaConfigAdapter(private val advancementKey: NamespacedKey
             val trigger = RebarRegistry.ADVANCEMENT_TRIGGERS[triggerKey] ?: throw IllegalArgumentException(
                 "Criterion '$criterionName' uses unknown trigger type $triggerKey"
             )
-            trigger.createTriggerInstance(advancementKey, entryOptions(rawTriggerKey, options))
+            trigger.createTriggerInstance(advancementKey, criterionName, entryOptions(rawTriggerKey, options))
         }
 }
