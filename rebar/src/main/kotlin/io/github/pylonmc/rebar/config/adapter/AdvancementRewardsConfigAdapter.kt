@@ -23,11 +23,11 @@ object AdvancementRewardsConfigAdapter : ConfigAdapter<List<RebarAdvancementRewa
     override val type: Type = TypeUtils.parameterize(List::class.java, RebarAdvancementRewardSpec::class.java)
 
     override fun convert(value: Any): List<RebarAdvancementRewardSpec> =
-        keyedEntries(value).map { (rawRewardKey, options) ->
+        AdvancementCriteriaConfigAdapter.keyedEntries(value).map { (rawRewardKey, options) ->
             val rewardKey = NamespacedKey.fromString(rawRewardKey)
                 ?: throw IllegalArgumentException("'$rawRewardKey' is not a valid reward type key")
             val reward = RebarRegistry.ADVANCEMENT_REWARDS[rewardKey]
                 ?: throw IllegalArgumentException("Unknown advancement reward type $rewardKey")
-            RebarAdvancementRewardSpec(reward, entryOptions(rawRewardKey, options))
+            RebarAdvancementRewardSpec(reward, AdvancementCriteriaConfigAdapter.entryOptions(rawRewardKey, options))
         }
 }
