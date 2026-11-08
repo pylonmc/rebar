@@ -42,7 +42,7 @@ object AdvancementsAccessor {
         Optional.ofNullable(advancement.displayInfo).map { info ->
             DisplayInfo(
                 ItemStackTemplate.fromNonEmptyStack(
-                    (info.icon.itemType.createItemStack() as CraftItemStack).handle
+                    (info.icon.itemType.createItemStack(info.icon.count) as CraftItemStack).handle
                 ),
                 PaperAdventure.asVanilla(
                     info.title
