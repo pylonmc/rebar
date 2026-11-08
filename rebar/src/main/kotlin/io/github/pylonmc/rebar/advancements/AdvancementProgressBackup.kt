@@ -4,6 +4,7 @@ import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.jetbrains.annotations.ApiStatus
+import java.util.UUID
 
 /**
  * Restores Rebar advancement progress from the backup that [AdvancementsListener] keeps in each player's PDC.
@@ -25,9 +26,31 @@ object AdvancementProgressBackup {
      *
      * To avoid toasts, call this before the player's next advancements packet is sent: on join, or between
      * `PlayerAdvancements.reload` and `flushDirty`, where the next packet resets the client's advancements.
+     * Chat announcements are suppressed by [AdvancementsListener] while this runs (see [isRestoring]).
      */
     @JvmStatic
     fun restore(player: Player, advancements: Iterable<RebarAdvancement>) {
+        // Only add/remove if not already restoring, so a nested call can't end suppression early
+        val started = restoring.add(player.uniqueId)
+        try {
+            restoreAll(player, advancements)
+        } finally {
+            if (started) {
+                restoring.remove(player.uniqueId)
+            }
+        }
+    }
+
+    /**
+     * Whether [player]'s progress is currently being restored. Advancements are completed synchronously inside
+     * `awardCriteria`, so this is true during any `PlayerAdvancementDoneEvent` caused by a restore.
+     */
+    @JvmStatic
+    fun isRestoring(player: Player): Boolean = player.uniqueId in restoring
+
+    private val restoring = mutableSetOf<UUID>()
+
+    private fun restoreAll(player: Player, advancements: Iterable<RebarAdvancement>) {
         val pdc = player.persistentDataContainer
         for (advancement in advancements) {
             val backup = pdc.get(advancement.key, RebarSerializers.ADVANCEMENT_PLAYER_PERSISTENT_DATA) ?: continue

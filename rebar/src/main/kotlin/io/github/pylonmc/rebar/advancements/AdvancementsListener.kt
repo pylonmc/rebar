@@ -38,6 +38,16 @@ object AdvancementsListener : Listener {
         event.player.persistentDataContainer.set(advancement.key, RebarSerializers.ADVANCEMENT_PLAYER_PERSISTENT_DATA, newPdcData)
     }
 
+    // Restoring lost progress re-completes advancements the player already had, so don't announce them again.
+    // Paper only broadcasts the message if it is still non-null after this event. HIGHEST rather than MONITOR
+    // because this changes the event, and late so that other plugins can't set the message again afterwards.
+    @EventHandler(priority = EventPriority.HIGHEST)
+    private fun suppressRestoredAnnouncement(event: PlayerAdvancementDoneEvent) {
+        if (AdvancementProgressBackup.isRestoring(event.player)) {
+            event.message(null)
+        }
+    }
+
     // MONITOR so rewards are granted after every other plugin has handled the completion
     @EventHandler(priority = EventPriority.MONITOR)
     private fun handle(event: PlayerAdvancementDoneEvent){
