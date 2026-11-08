@@ -1,15 +1,14 @@
-﻿package io.github.pylonmc.rebar.advancements
+package io.github.pylonmc.rebar.advancements
 
+import io.github.pylonmc.rebar.advancements.reward.RebarAdvancementReward
 import io.github.pylonmc.rebar.config.ConfigSection
-import io.github.pylonmc.rebar.registry.RebarRegistry
-import org.bukkit.NamespacedKey
 import org.bukkit.entity.Player
 
 data class RebarAdvancementRewardSpec(
-    private val rewardTypeKey: NamespacedKey,
+    val reward: RebarAdvancementReward,
     val options: ConfigSection
-){
-    fun grantReward(player: Player){
-        RebarRegistry.ADVANCEMENT_REWARDS[rewardTypeKey]!!.grantReward(player, options)
+) {
+    fun grantReward(player: Player) {
+        reward.grantReward(player, options)
     }
 }

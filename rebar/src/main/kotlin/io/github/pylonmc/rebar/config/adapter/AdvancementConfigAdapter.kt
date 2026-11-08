@@ -1,35 +1,47 @@
 package io.github.pylonmc.rebar.config.adapter
 
-import io.github.pylonmc.rebar.advancements.*
-import io.github.pylonmc.rebar.advancements.reward.RebarAdvancementReward
-import io.github.pylonmc.rebar.config.ConfigSection
-import io.github.pylonmc.rebar.item.ItemTypeWrapper
-import io.github.pylonmc.rebar.registry.RebarRegistry
-import net.kyori.adventure.text.Component
-import org.bukkit.Bukkit
-import org.bukkit.NamespacedKey
-import org.bukkit.Registry
+import io.github.pylonmc.rebar.advancements.RebarAdvancement
 import java.lang.reflect.Type
-import java.util.Dictionary
 
+/**
+ * Parses a whole advancement. The section's name is the advancement's key, so this must be read straight
+ * from the top level of an advancements file (`config.getOrThrow("pylon:my_advancement", ADVANCEMENT)`).
+ *
+ * Optional keys may be left out, but any key that is present must be valid; nothing is silently ignored.
+ * If `requirements` is left out, every criterion is required (the same default as vanilla).
+ */
 object AdvancementConfigAdapter : ConfigAdapter<RebarAdvancement> {
-    private val DISPLAY_INFO_ADAPTER = AdvancementDisplayInfoConfigAdapter
-    private val REWARD_ADAPTER = AdvancementRewardConfigAdapter
-    private val CRITERIA_ADAPTER = AdvancementCriteriaConfigAdapter
 
-    override val type: Type
-        get() = RebarAdvancement::class.java
+    private val REQUIREMENTS = ConfigAdapter.LIST.from(ConfigAdapter.LIST.from(ConfigAdapter.STRING))
+
+    override val type: Type = RebarAdvancement::class.java
 
     override fun convert(value: Any): RebarAdvancement {
         val section = ConfigAdapter.CONFIG_SECTION.convert(value)
-        val advancementKey = section.name?.let { NamespacedKey.fromString(it) } ?: throw ExceptionInInitializerError("RebarAdvancement must have a key")
+        val advancementKey = parseNamespacedKey(
+            section.name ?: throw IllegalArgumentException("Advancement section has no name to use as its key"),
+            "advancement"
+        )
+
+        val criteria = section.getIfPresent("criteria", AdvancementCriteriaConfigAdapter(advancementKey)) ?: emptyList()
+        val criterionNames = criteria.map { it.key }.toSet()
+        val requirements = section.getIfPresent("requirements", REQUIREMENTS)
+            ?: criteria.map { listOf(it.key) }
+        for (group in requirements) {
+            require(group.isNotEmpty()) { "Advancement $advancementKey has an empty requirements group" }
+            val unknown = group.filter { it !in criterionNames }
+            require(unknown.isEmpty()) {
+                "Advancement $advancementKey requirements reference unknown criteria $unknown (known criteria: $criterionNames)"
+            }
+        }
+
         return RebarAdvancement(
             advancementKey,
-            section.get("parent", ConfigAdapter.NAMESPACED_KEY),
-            section.get("display-info", DISPLAY_INFO_ADAPTER),
-            section.get("rewards", ConfigAdapter.LIST.from(REWARD_ADAPTER)) ?: listOf(),
-            section.get("criteria", ConfigAdapter.LIST.from(CRITERIA_ADAPTER)) ?: listOf(),
-            section.get("requirements", ConfigAdapter.LIST.from(ConfigAdapter.LIST.from(ConfigAdapter.NAMESPACED_KEY))) ?: listOf()
+            section.getIfPresent("parent", ConfigAdapter.NAMESPACED_KEY),
+            section.getIfPresent("display-info", AdvancementDisplayInfoConfigAdapter(advancementKey)),
+            section.getIfPresent("rewards", AdvancementRewardsConfigAdapter) ?: emptyList(),
+            criteria,
+            requirements
         )
     }
 }

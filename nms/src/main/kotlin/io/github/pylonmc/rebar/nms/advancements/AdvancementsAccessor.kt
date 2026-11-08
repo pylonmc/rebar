@@ -52,7 +52,7 @@ object AdvancementsAccessor {
                 ),
                 Optional.ofNullable(info.iconBackground)
                     .map { background -> ClientAsset.ResourceTexture(CraftNamespacedKey.toMinecraft(background)) },
-                AdvancementType.valueOf(info.iconFrame.uppercase()),
+                AdvancementType.valueOf(info.iconFrame.name),
                 info.showToast,
                 info.announceToChat,
                 info.hidden
