@@ -37,16 +37,13 @@ object RebarConfig {
     val FLUID_TICK_INTERVAL = config.getOrThrow("fluid-tick-interval", ConfigAdapter.INTEGER)
 
     @JvmField
-    val BLOCK_DATA_AUTOSAVE_INTERVAL_SECONDS =
-        config.getOrThrow("block-data-autosave-interval-seconds", ConfigAdapter.LONG)
+    val BLOCK_DATA_AUTOSAVE_INTERVAL_SECONDS = config.getOrThrow("block-data-autosave-interval-seconds", ConfigAdapter.LONG)
 
     @JvmField
-    val ENTITY_DATA_AUTOSAVE_INTERVAL_SECONDS =
-        config.getOrThrow("entity-data-autosave-interval-seconds", ConfigAdapter.LONG)
+    val ENTITY_DATA_AUTOSAVE_INTERVAL_SECONDS = config.getOrThrow("entity-data-autosave-interval-seconds", ConfigAdapter.LONG)
 
     @JvmField
-    val WORLD_DATA_AUTOSAVE_INTERVAL_SECONDS =
-        config.getOrThrow("world-data-autosave-interval-seconds", ConfigAdapter.LONG)
+    val WORLD_DATA_AUTOSAVE_INTERVAL_SECONDS = config.getOrThrow("world-data-autosave-interval-seconds", ConfigAdapter.LONG)
 
     @JvmField
     val PIPE_PLACEMENT_TASK_INTERVAL_TICKS = config.getOrThrow("pipe-placement.tick-interval", ConfigAdapter.LONG)
@@ -76,10 +73,8 @@ object RebarConfig {
     val INVENTORY_TICKER_BASE_RATE = config.getOrThrow("inventory-ticker-base-rate", ConfigAdapter.LONG)
 
     @JvmField
-    val ADVANCEMENTS_INVENTORY_TICKER_BASE_RATE = config.getOrThrow(
-        "advancements-inventory-ticker-base-rate",
-        ConfigAdapter.LONG
-    )
+    val ADVANCEMENTS_INVENTORY_TICKER_BASE_RATE = config.getOrThrow("advancements-inventory-ticker-base-rate",
+        ConfigAdapter.LONG)
 
     @JvmField
     val CARGO_TICK_INTERVAL = config.getOrThrow("cargo-tick-interval", ConfigAdapter.INTEGER)
@@ -137,10 +132,7 @@ object RebarConfig {
         val MAX_CONFETTI_AMOUNT = config.get("research.confetti.max-amount", ConfigAdapter.INTEGER, 700)
 
         @JvmField
-        val SOUNDS = config.getOrThrow(
-            "research.sounds",
-            ConfigAdapter.MAP.from(ConfigAdapter.LONG, ConfigAdapter.RANDOMIZED_SOUND)
-        )
+        val SOUNDS = config.getOrThrow("research.sounds", ConfigAdapter.MAP.from(ConfigAdapter.LONG, ConfigAdapter.RANDOMIZED_SOUND))
 
     }
 
@@ -156,8 +148,7 @@ object RebarConfig {
         val TARGET_TICK_INTERVAL = config.getOrThrow("waila.target-tick-interval", ConfigAdapter.INTEGER)
 
         @JvmField
-        val STATIONARY_TARGET_TICK_INTERVAL_MULTIPLIER =
-            config.getOrThrow("waila.stationary-target-tick-interval-multiplier", ConfigAdapter.INTEGER)
+        val STATIONARY_TARGET_TICK_INTERVAL_MULTIPLIER = config.getOrThrow("waila.stationary-target-tick-interval-multiplier", ConfigAdapter.INTEGER)
 
         init {
             check(CONTENTS_TICK_INTERVAL > 0) { "waila.content-tick-interval must be greater than zero" }
@@ -166,30 +157,20 @@ object RebarConfig {
         }
 
         @JvmField
-        val ENABLED_TYPES = config.getOrThrow(
-            "waila.enabled-types",
-            ConfigAdapter.LIST.from(ConfigAdapter.ENUM.from(Waila.Type::class.java))
-        )
+        val ENABLED_TYPES = config.getOrThrow("waila.enabled-types", ConfigAdapter.LIST.from(ConfigAdapter.ENUM.from(Waila.Type::class.java)))
 
         @JvmField
-        val DEFAULT_TYPE =
-            config.getOrThrow("waila.default-type", ConfigAdapter.ENUM.from(Waila.Type::class.java)).apply {
-                if (!ENABLED_TYPES.contains(this)) {
-                    throw IllegalStateException("Default Waila type $this is not in the list of enabled types: $ENABLED_TYPES")
-                }
+        val DEFAULT_TYPE = config.getOrThrow("waila.default-type", ConfigAdapter.ENUM.from(Waila.Type::class.java)).apply {
+            if (!ENABLED_TYPES.contains(this)) {
+                throw IllegalStateException("Default Waila type $this is not in the list of enabled types: $ENABLED_TYPES")
             }
+        }
 
         @JvmField
-        val ALLOWED_BOSS_BAR_COLORS = config.getOrThrow(
-            "waila.bossbar.allowed-colors",
-            ConfigAdapter.SET.from(ConfigAdapter.ENUM.from(BossBar.Color::class.java))
-        )
+        val ALLOWED_BOSS_BAR_COLORS = config.getOrThrow("waila.bossbar.allowed-colors", ConfigAdapter.SET.from(ConfigAdapter.ENUM.from(BossBar.Color::class.java)))
 
         @JvmField
-        val ALLOWED_BOSS_BAR_OVERLAYS = config.getOrThrow(
-            "waila.bossbar.allowed-overlays",
-            ConfigAdapter.SET.from(ConfigAdapter.ENUM.from(BossBar.Overlay::class.java))
-        )
+        val ALLOWED_BOSS_BAR_OVERLAYS = config.getOrThrow("waila.bossbar.allowed-overlays", ConfigAdapter.SET.from(ConfigAdapter.ENUM.from(BossBar.Overlay::class.java)))
 
         @JvmField
         val DEFAULT_DISPLAY = config.getOrThrow("waila.default-display.bossbar", ConfigAdapter.WAILA_DISPLAY).apply {
@@ -230,51 +211,40 @@ object RebarConfig {
         val ENABLED = config.getOrThrow("block-culling-engine.enabled", ConfigAdapter.BOOLEAN)
 
         @JvmField
-        val OCCLUDING_CACHE_INVALIDATE_INTERVAL =
-            config.getOrThrow("block-culling-engine.occluding-cache-invalidate-interval", ConfigAdapter.INTEGER)
+        val OCCLUDING_CACHE_INVALIDATE_INTERVAL = config.getOrThrow("block-culling-engine.occluding-cache-invalidate-interval", ConfigAdapter.INTEGER)
 
         @JvmField
-        val OCCLUDING_CACHE_INVALIDATE_SHARE =
-            config.getOrThrow("block-culling-engine.occluding-cache-invalidate-share", ConfigAdapter.DOUBLE)
+        val OCCLUDING_CACHE_INVALIDATE_SHARE = config.getOrThrow("block-culling-engine.occluding-cache-invalidate-share", ConfigAdapter.DOUBLE)
 
         @JvmField
         val SYNC_APPLY_INTERVAL = config.getOrThrow("block-culling-engine.sync-apply-interval", ConfigAdapter.INTEGER)
-
+        
         @JvmField
         val PRESETS_ONLY = config.getOrThrow("block-culling-engine.presets-only", ConfigAdapter.BOOLEAN)
 
         @JvmField
-        val DISABLED_UPDATE_INTERVAL =
-            config.getOrThrow("block-culling-engine.disabled-update-interval", ConfigAdapter.INTEGER)
+        val DISABLED_UPDATE_INTERVAL = config.getOrThrow("block-culling-engine.disabled-update-interval", ConfigAdapter.INTEGER)
 
         @JvmField
-        val UPDATE_INTERVAL_LIMIT =
-            config.getOrThrow("block-culling-engine.limits.update-interval", ConfigAdapter.INT_RANGE)
+        val UPDATE_INTERVAL_LIMIT = config.getOrThrow("block-culling-engine.limits.update-interval", ConfigAdapter.INT_RANGE)
 
         @JvmField
-        val HIDDEN_INTERVAL_LIMIT =
-            config.getOrThrow("block-culling-engine.limits.hidden-interval", ConfigAdapter.INT_RANGE)
+        val HIDDEN_INTERVAL_LIMIT = config.getOrThrow("block-culling-engine.limits.hidden-interval", ConfigAdapter.INT_RANGE)
 
         @JvmField
-        val VISIBLE_INTERVAL_LIMIT =
-            config.getOrThrow("block-culling-engine.limits.visible-interval", ConfigAdapter.INT_RANGE)
+        val VISIBLE_INTERVAL_LIMIT = config.getOrThrow("block-culling-engine.limits.visible-interval", ConfigAdapter.INT_RANGE)
 
         @JvmField
-        val ALWAYS_SHOW_RADIUS_LIMIT =
-            config.getOrThrow("block-culling-engine.limits.always-show-radius", ConfigAdapter.INT_RANGE)
+        val ALWAYS_SHOW_RADIUS_LIMIT = config.getOrThrow("block-culling-engine.limits.always-show-radius", ConfigAdapter.INT_RANGE)
 
         @JvmField
         val CULL_RADIUS_LIMIT = config.getOrThrow("block-culling-engine.limits.cull-radius", ConfigAdapter.INT_RANGE)
 
         @JvmField
-        val MAX_OCCLUDING_COUNT_LIMIT =
-            config.getOrThrow("block-culling-engine.limits.max-occluding-count", ConfigAdapter.INT_RANGE)
+        val MAX_OCCLUDING_COUNT_LIMIT = config.getOrThrow("block-culling-engine.limits.max-occluding-count", ConfigAdapter.INT_RANGE)
 
         @JvmField
-        val CULLING_PRESETS = config.getOrThrow(
-            "block-culling-engine.presets",
-            ConfigAdapter.MAP.from(ConfigAdapter.STRING, ConfigAdapter.CULLING_PRESET)
-        ).apply {
+        val CULLING_PRESETS = config.getOrThrow("block-culling-engine.presets", ConfigAdapter.MAP.from(ConfigAdapter.STRING, ConfigAdapter.CULLING_PRESET)).apply {
             if (isEmpty()) {
                 throw IllegalStateException("At least one culling preset must be defined")
             }

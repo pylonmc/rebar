@@ -13,7 +13,7 @@ import java.io.File
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 import java.nio.file.Path
-import java.util.*
+import java.util.WeakHashMap
 
 /**
  * A wrapper around [ConfigurationSection] providing useful utilities for reading/writing.
@@ -208,7 +208,8 @@ open class ConfigSection private constructor(val name: String?, val internalSect
          * [name] is optional. It is used to identify the returned [ConfigSection] in errors.
          */
         @JvmStatic
-        fun from(name: String?, configSection: ConfigurationSection) = ConfigSection(name, configSection)
+        fun from(name: String?, configSection: ConfigurationSection)
+                = ConfigSection(name, configSection)
 
         /**
          * Returns null if the file does not exist
@@ -222,18 +223,19 @@ open class ConfigSection private constructor(val name: String?, val internalSect
         }
 
         @JvmStatic
-        fun fromOrThrow(file: File) =
-            from(file) ?: throw IllegalArgumentException("${file.absolutePath} does not exist")
+        fun fromOrThrow(file: File)
+                = from(file) ?: throw IllegalArgumentException("${file.absolutePath} does not exist")
 
         /**
          * Returns null if the file does not exist
          */
         @JvmStatic
-        fun from(path: Path) = from(path.toFile())
+        fun from(path: Path)
+                = from(path.toFile())
 
         @JvmStatic
-        fun fromOrThrow(path: Path) =
-            from(path) ?: throw IllegalArgumentException("${path.toFile().absolutePath} does not exist")
+        fun fromOrThrow(path: Path)
+                = from(path) ?: throw IllegalArgumentException("${path.toFile().absolutePath} does not exist")
 
         /**
          * Loads a config from [plugin]'s data folder, e.g. plugins/pylon/ for Pylon.
@@ -243,7 +245,8 @@ open class ConfigSection private constructor(val name: String?, val internalSect
          * Returns null if the file does not exist
          */
         @JvmStatic
-        fun fromDataFolder(plugin: Plugin, path: String) = from(File(plugin.dataFolder, path))
+        fun fromDataFolder(plugin: Plugin, path: String)
+                = from(File(plugin.dataFolder, path))
 
         /**
          * Loads a config from [plugin]'s data folder, e.g. plugins/pylon/ for Pylon.
@@ -251,15 +254,9 @@ open class ConfigSection private constructor(val name: String?, val internalSect
          * [path] is relative to the data folder.
          **/
         @JvmStatic
-        fun fromDataFolderOrThrow(plugin: Plugin, path: String) = fromDataFolder(plugin, path)
-            ?: throw IllegalArgumentException(
-                "Failed to load config from ${
-                    File(
-                        plugin.dataFolder,
-                        path
-                    ).absolutePath
-                } because it does not exist"
-            )
+        fun fromDataFolderOrThrow(plugin: Plugin, path: String)
+                = fromDataFolder(plugin, path)
+            ?: throw IllegalArgumentException("Failed to load config from ${File(plugin.dataFolder, path).absolutePath} because it does not exist")
 
         /**
          * Loads a config from the resource embedded in your plugin, meaning
@@ -285,8 +282,8 @@ open class ConfigSection private constructor(val name: String?, val internalSect
          * anything inside your `resources` folder.
          */
         @JvmStatic
-        fun fromResourceOrThrow(plugin: Plugin, path: String) = fromResource(plugin, path)
-            ?: throw IllegalArgumentException("Failed to load config from resources/$path because it does not exist")
+        fun fromResourceOrThrow(plugin: Plugin, path: String)
+                = fromResource(plugin, path) ?: throw IllegalArgumentException("Failed to load config from resources/$path because it does not exist")
 
         /**
          * Retrieves the settings for the given [key] from the Rebar settings folder.
@@ -296,8 +293,8 @@ open class ConfigSection private constructor(val name: String?, val internalSect
          * Rebar settings folder and returned. If not, an error will be thrown.
          */
         @JvmStatic
-        fun fromSettings(key: NamespacedKey) =
-            mergeResource(getAddon(key), Rebar, "settings/${key.key}.yml", "settings/${key.namespace}/${key.key}.yml")
+        fun fromSettings(key: NamespacedKey)
+            = mergeResource(getAddon(key), Rebar, "settings/${key.key}.yml", "settings/${key.namespace}/${key.key}.yml")
 
         /**
          * Copies a resource (i.e. a file) from your addon's `resources` folder to its data folder.
@@ -317,14 +314,7 @@ open class ConfigSection private constructor(val name: String?, val internalSect
                 mergeResource(addon, addon, path, path)
             } else {
                 val config = fromResource(addon.javaPlugin, path)
-                    ?: throw IllegalArgumentException(
-                        "Failed to load config from ${
-                            File(
-                                addon.javaPlugin.dataFolder,
-                                path
-                            ).absolutePath
-                        } because it does not exist"
-                    )
+                    ?: throw IllegalArgumentException("Failed to load config from ${File(addon.javaPlugin.dataFolder, path).absolutePath} because it does not exist")
                 config.save(target)
             }
             return fromDataFolder(addon.javaPlugin, path)!!
