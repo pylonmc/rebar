@@ -24,7 +24,7 @@ class UnlockOnAdvancementTrigger(key: NamespacedKey) : AdvancementTrigger<Unlock
         )
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     fun handleAdvancementUnlock(event: PlayerAdvancementDoneEvent) {
         for (instance in instances) {
             if (instance.unlockingAdvancementKey != event.advancement.key) continue;
