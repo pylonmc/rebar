@@ -54,7 +54,10 @@ interface ConfigAdapter<T> {
 
         @JvmField val CONFIG_SECTION = ConfigSectionConfigAdapter
         @JvmField val UUID = UUIDConfigAdapter
-        @JvmField val NAMESPACED_KEY = ConfigAdapter { NamespacedKey.fromString(STRING.convert(it))!! }
+        @JvmField val NAMESPACED_KEY = ConfigAdapter {
+            val string = STRING.convert(it)
+            NamespacedKey.fromString(string) ?: throw IllegalArgumentException("Not a valid namespaced key: $string")
+        }
         @JvmField val MATERIAL = KEYED.fromRegistry(Registry.MATERIAL)
         @JvmField val BLOCK_DATA = ConfigAdapter { Bukkit.createBlockData(STRING.convert(it)) }
         @JvmField val LOCALE = ConfigAdapter { Locale.of(STRING.convert(it)) }
