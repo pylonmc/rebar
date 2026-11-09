@@ -18,7 +18,7 @@ class UnlockOnJoinTrigger(key: NamespacedKey) : AdvancementTrigger<AdvancementTr
         return AdvancementTriggerInstance(key, advancementKey, criteriaKey)
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     fun onPlayerJoin(event: PlayerJoinEvent) {
         for (instance in instances) {
             instance.trigger(event.player)
