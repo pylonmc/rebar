@@ -24,7 +24,7 @@ class UnlockOnEnterWorldTrigger(key: NamespacedKey) : AdvancementTrigger<UnlockO
         )
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     fun onChangeWorld(event: PlayerChangedWorldEvent) {
         for (instance in instances) {
             if (event.player.world.key != instance.worldKey) continue
