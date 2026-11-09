@@ -48,6 +48,14 @@ object RebarAdvancementTriggers {
         ON_PLAYER_STATISTIC.register()
     }
 
+    @JvmField
+    val ON_ITEM_CONSUME = UnlockOnItemConsumeTrigger(rebarKey("unlock_on_item_consume"))
+
+    init {
+        Bukkit.getPluginManager().registerEvents(ON_ITEM_CONSUME, Rebar)
+        ON_ITEM_CONSUME.register()
+    }
+
     fun init() {
 
     }
