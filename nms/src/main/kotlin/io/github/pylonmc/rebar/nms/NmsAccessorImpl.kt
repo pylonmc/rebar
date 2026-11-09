@@ -82,9 +82,9 @@ import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.math.max
 import kotlin.math.min
 import com.mojang.datafixers.util.Pair as NmsPair
+import net.minecraft.core.component.DataComponentType as NmsDataComponentType
 import net.minecraft.world.entity.EquipmentSlot as NmsEquipmentSlot
 import net.minecraft.world.item.ItemStack as NmsItemStack
-import net.minecraft.core.component.DataComponentType as NmsDataComponentType
 
 /**
  * Documentation is in [NmsAccessor].
@@ -105,7 +105,8 @@ object NmsAccessorImpl : NmsAccessor {
             furnaceQuickCheckField = AbstractFurnaceBlockEntity::class.java.getDeclaredField("quickCheck")
             furnaceQuickCheckField.isAccessible = true
 
-            val methodHandles = MethodHandles.privateLookupIn(AbstractFurnaceBlockEntity::class.java, MethodHandles.lookup())
+            val methodHandles =
+                MethodHandles.privateLookupIn(AbstractFurnaceBlockEntity::class.java, MethodHandles.lookup())
             furnaceQuickCheckHandle = methodHandles.unreflectGetter(furnaceQuickCheckField)
         } catch (e: Throwable) {
             Rebar.logger.severe("Failed to access furnace quick check: ${e.message}")
@@ -115,14 +116,37 @@ object NmsAccessorImpl : NmsAccessor {
 
     private val players = ConcurrentHashMap<UUID, PlayerPacketHandler>()
 
-    override fun damageItem(itemStack: ItemStack, amount: Int, world: World, onBreak: (Material) -> Unit, force: Boolean) {
-        (itemStack as CraftItemStack).handle.hurtAndBreak(amount, (world as CraftWorld).handle, null, { brokenStack: NmsItemStack ->
-            onBreak(CraftItemType.minecraftToBukkit(brokenStack.item))
-        }, force)
+    override fun damageItem(
+        itemStack: ItemStack,
+        amount: Int,
+        world: World,
+        onBreak: (Material) -> Unit,
+        force: Boolean
+    ) {
+        (itemStack as CraftItemStack).handle.hurtAndBreak(
+            amount,
+            (world as CraftWorld).handle,
+            null,
+            { brokenStack: NmsItemStack ->
+                onBreak(CraftItemType.minecraftToBukkit(brokenStack.item))
+            },
+            force
+        )
     }
 
-    override fun damageItem(itemStack: ItemStack, amount: Int, entity: LivingEntity, slot: EquipmentSlot, force: Boolean) {
-        (itemStack as CraftItemStack).handle.hurtAndBreak(amount, (entity as CraftLivingEntity).handle, CraftEquipmentSlot.getNMS(slot), force)
+    override fun damageItem(
+        itemStack: ItemStack,
+        amount: Int,
+        entity: LivingEntity,
+        slot: EquipmentSlot,
+        force: Boolean
+    ) {
+        (itemStack as CraftItemStack).handle.hurtAndBreak(
+            amount,
+            (entity as CraftLivingEntity).handle,
+            CraftEquipmentSlot.getNMS(slot),
+            force
+        )
     }
 
     override fun registerTranslationHandler(player: Player, handler: PlayerTranslationHandler) {
@@ -150,12 +174,16 @@ object NmsAccessorImpl : NmsAccessor {
     override fun resendEquipment(player: Player, entity: LivingEntity) {
         val player = (player as CraftPlayer).handle
         val entity = (entity as CraftLivingEntity).handle
-        player.connection.send(ClientboundSetEquipmentPacket(entity.id, listOf(
-            NmsPair.of(NmsEquipmentSlot.HEAD, entity.getItemBySlot(NmsEquipmentSlot.HEAD)),
-            NmsPair.of(NmsEquipmentSlot.CHEST, entity.getItemBySlot(NmsEquipmentSlot.CHEST)),
-            NmsPair.of(NmsEquipmentSlot.LEGS, entity.getItemBySlot(NmsEquipmentSlot.LEGS)),
-            NmsPair.of(NmsEquipmentSlot.FEET, entity.getItemBySlot(NmsEquipmentSlot.FEET)),
-        )))
+        player.connection.send(
+            ClientboundSetEquipmentPacket(
+                entity.id, listOf(
+                    NmsPair.of(NmsEquipmentSlot.HEAD, entity.getItemBySlot(NmsEquipmentSlot.HEAD)),
+                    NmsPair.of(NmsEquipmentSlot.CHEST, entity.getItemBySlot(NmsEquipmentSlot.CHEST)),
+                    NmsPair.of(NmsEquipmentSlot.LEGS, entity.getItemBySlot(NmsEquipmentSlot.LEGS)),
+                    NmsPair.of(NmsEquipmentSlot.FEET, entity.getItemBySlot(NmsEquipmentSlot.FEET)),
+                )
+            )
+        )
     }
 
     override fun resendSlot(player: Player, slot: Int) {
@@ -175,8 +203,8 @@ object NmsAccessorImpl : NmsAccessor {
         player.recipeBook.sendInitialRecipeBook(player)
     }
 
-    override fun serializePdc(pdc: PersistentDataContainer): Component
-        = PaperAdventure.asAdventure(TextComponentTagVisitor("  ").visit((pdc as CraftPersistentDataContainer).toTagCompound()))
+    override fun serializePdc(pdc: PersistentDataContainer): Component =
+        PaperAdventure.asAdventure(TextComponentTagVisitor("  ").visit((pdc as CraftPersistentDataContainer).toTagCompound()))
 
     override fun getStateProperties(block: Block, custom: Map<String, Pair<String, Int>>): Map<String, String> {
         val state = (block as CraftBlock).blockState
@@ -203,9 +231,11 @@ object NmsAccessorImpl : NmsAccessor {
         val server = MinecraftServer.getServer()
         val recipeName = event.recipe
         val recipeHolder = server.recipeManager
-            .byKey(ResourceKey.create(
-                Registries.RECIPE, CraftNamespacedKey.toMinecraft(recipeName)
-            ))
+            .byKey(
+                ResourceKey.create(
+                    Registries.RECIPE, CraftNamespacedKey.toMinecraft(recipeName)
+                )
+            )
             .orElse(null) ?: return
 
         val postPlaceAction = HandlerRecipeBookClick(serverPlayer).handleRebarItemPlacement(
@@ -233,8 +263,8 @@ object NmsAccessorImpl : NmsAccessor {
         }
     }
 
-    override fun registerAdvancements(advancements: Collection<RebarAdvancement>)
-        = registerRebarAdvancements(advancements)
+    override fun registerAdvancements(advancements: Collection<RebarAdvancement>) =
+        registerRebarAdvancements(advancements)
 
     override fun hasTracker(entity: Entity): Boolean {
         val id = entity.entityId
@@ -243,7 +273,11 @@ object NmsAccessorImpl : NmsAccessor {
 
     override fun createBlockTextureEntity(block: RebarBlock): BlockTextureEntity = BlockTextureEntityImpl(block)
 
-    override fun addSlotChangedListener(key: NamespacedKey, inventoryView: InventoryView, listener: NmsAccessor.SlotListener) {
+    override fun addSlotChangedListener(
+        key: NamespacedKey,
+        inventoryView: InventoryView,
+        listener: NmsAccessor.SlotListener
+    ) {
         val inventoryView = inventoryView as? CraftInventoryView<*, *> ?: return
         inventoryView.handle.addSlotListener(KeyedContainerListener(CraftNamespacedKey.toMinecraft(key), listener))
     }
@@ -265,7 +299,8 @@ object NmsAccessorImpl : NmsAccessor {
         val block = block as CraftBlock
         val blockEntity = block.level.getBlockEntity(block.position) as? AbstractFurnaceBlockEntity ?: return
         try {
-            val currentQuickCheck = furnaceQuickCheckHandle.invoke(blockEntity) as? RecipeManager.CachedCheck<*, *> ?: return
+            val currentQuickCheck =
+                furnaceQuickCheckHandle.invoke(blockEntity) as? RecipeManager.CachedCheck<*, *> ?: return
             if (currentQuickCheck is AccessibleCachedCheck<*, *>) {
                 currentQuickCheck.lastRecipe = CraftNamespacedKey.toResourceKey(Registries.RECIPE, recipe)
             } else {
@@ -291,14 +326,17 @@ object NmsAccessorImpl : NmsAccessor {
 
         val typeString = input.substring(0, idEnd)
         val data = input.substring(idEnd)
-        val type = ItemTypeWrapper(NamespacedKey.fromString(typeString) ?: throw IllegalArgumentException("Could not find item $typeString"))
+        val type = ItemTypeWrapper(
+            NamespacedKey.fromString(typeString) ?: throw IllegalArgumentException("Could not find item $typeString")
+        )
         if (type is ItemTypeWrapper.Rebar) {
             input = "minecraft:air$data"
         }
 
         try {
             val reader = if (data.isBlank()) null else StringReader(input)
-            val itemInput = if (data.isBlank()) null else ItemParser(CraftRegistry.getMinecraftRegistry()).parse(reader!!);
+            val itemInput =
+                if (data.isBlank()) null else ItemParser(CraftRegistry.getMinecraftRegistry()).parse(reader!!);
             if (reader != null && reader.canRead()) {
                 throw IllegalArgumentException("Trailing input found when parsing ItemStack: " + reader.remaining);
             } else {
@@ -317,7 +355,13 @@ object NmsAccessorImpl : NmsAccessor {
         inventory.inventory.setChanged()
     }
 
-    override fun simulateInteract(player: Player, itemStack: ItemStack, hand: EquipmentSlot, block: Block?, blockFace: BlockFace?) {
+    override fun simulateInteract(
+        player: Player,
+        itemStack: ItemStack,
+        hand: EquipmentSlot,
+        block: Block?,
+        blockFace: BlockFace?
+    ) {
         val nmsPlayer = (player as CraftPlayer).handle
         val level = nmsPlayer.level()
         val nmsStack = (itemStack as CraftItemStack).handle
@@ -326,9 +370,16 @@ object NmsAccessorImpl : NmsAccessor {
             nmsPlayer.gameMode.useItem(nmsPlayer, level, nmsStack, nmsHand)
         } else {
             val nmsPos = (block as CraftBlock).position
-            val nmsDirection = CraftBlock.blockFaceToNotch(blockFace) ?: throw IllegalArgumentException("Invalid block face $blockFace")
+            val nmsDirection = CraftBlock.blockFaceToNotch(blockFace)
+                ?: throw IllegalArgumentException("Invalid block face $blockFace")
             val nmsLoc = Vec3.atCenterOf(nmsPos).add(nmsDirection.unitVec3.scale(0.5))
-            nmsPlayer.gameMode.useItemOn(nmsPlayer, level, nmsStack, nmsHand, BlockHitResult(nmsLoc, nmsDirection, nmsPos, false))
+            nmsPlayer.gameMode.useItemOn(
+                nmsPlayer,
+                level,
+                nmsStack,
+                nmsHand,
+                BlockHitResult(nmsLoc, nmsDirection, nmsPos, false)
+            )
         }
     }
 
@@ -354,7 +405,11 @@ object NmsAccessorImpl : NmsAccessor {
         return nmsStack.componentsPatch.map.keys.mapNotNull(::getBukkitType)
     }
 
-    fun <T: Any, NMS: Any> componentMatches(itemStack: NmsItemStack, type: PaperDataComponentType.ValuedImpl<T, NMS>, value: Any?): Boolean {
+    fun <T : Any, NMS : Any> componentMatches(
+        itemStack: NmsItemStack,
+        type: PaperDataComponentType.ValuedImpl<T, NMS>,
+        value: Any?
+    ): Boolean {
         val nmsType = PaperDataComponentType.bukkitToMinecraft<NMS>(type)
         val nmsValue = itemStack.get(nmsType)
         if (nmsValue == value) {
@@ -367,12 +422,16 @@ object NmsAccessorImpl : NmsAccessor {
         return adaptedValue == value
     }
 
-    fun componentMatches(itemStack: NmsItemStack, type: PaperDataComponentType.NonValuedImpl<*, *>, hasValue: Boolean): Boolean {
+    fun componentMatches(
+        itemStack: NmsItemStack,
+        type: PaperDataComponentType.NonValuedImpl<*, *>,
+        hasValue: Boolean
+    ): Boolean {
         val nmsType = PaperDataComponentType.bukkitToMinecraft<Unit>(type)
         return itemStack.has(nmsType) == hasValue
     }
 
-    fun <T: Any, NMS: Any> convertNmsValue(type: PaperDataComponentType<T, NMS>, nmsValue: Any): T {
+    fun <T : Any, NMS : Any> convertNmsValue(type: PaperDataComponentType<T, NMS>, nmsValue: Any): T {
         return type.adapter.fromVanilla(nmsValue as NMS)
     }
 
@@ -462,20 +521,45 @@ object NmsAccessorImpl : NmsAccessor {
         return componentsMatch(itemStack, components) && nmsStack.componentsPatch.size() == components.size
     }
 
-    override fun getRandomItems(world: World, contextSet: NamespacedKey, lootTable: LootTable, optionalRandomLootSeed: Long?, lootContext: LootTableResultBuilder): Collection<ItemStack> {
-        val contextParamSet = BuiltInRegistries.CONTEXT_KEY_SET.getValue(CraftNamespacedKey.toMinecraft(contextSet)) ?: throw IllegalArgumentException("Invalid context set $contextSet")
+    override fun getRandomItems(
+        world: World,
+        contextSet: NamespacedKey,
+        lootTable: LootTable,
+        optionalRandomLootSeed: Long?,
+        lootContext: LootTableResultBuilder
+    ): Collection<ItemStack> {
+        val contextParamSet = BuiltInRegistries.CONTEXT_KEY_SET.getValue(CraftNamespacedKey.toMinecraft(contextSet))
+            ?: throw IllegalArgumentException("Invalid context set $contextSet")
         val nmsTable = (lootTable as CraftLootTable).handle
         val lootParams = LootParams.Builder((world as CraftWorld).handle)
-            .withOptionalParameter(LootContextParams.THIS_ENTITY, lootContext.thisEntity?.let { (it as CraftEntity).handle })
-            .withOptionalParameter(LootContextParams.INTERACTING_ENTITY, lootContext.interactingEntity?.let { (it as CraftEntity).handle })
-            .withOptionalParameter(LootContextParams.TARGET_ENTITY, lootContext.targetEntity?.let { (it as CraftEntity).handle })
-            .withOptionalParameter(LootContextParams.LAST_DAMAGE_PLAYER, lootContext.lastDamagePlayer?.let { (it as CraftPlayer).handle })
-            .withOptionalParameter(LootContextParams.DAMAGE_SOURCE, lootContext.damageSource?.let { (it as CraftDamageSource).handle })
-            .withOptionalParameter(LootContextParams.ATTACKING_ENTITY, lootContext.attackingEntity?.let { (it as CraftEntity).handle })
-            .withOptionalParameter(LootContextParams.DIRECT_ATTACKING_ENTITY, lootContext.directAttackingEntity?.let { (it as CraftEntity).handle })
+            .withOptionalParameter(
+                LootContextParams.THIS_ENTITY,
+                lootContext.thisEntity?.let { (it as CraftEntity).handle })
+            .withOptionalParameter(
+                LootContextParams.INTERACTING_ENTITY,
+                lootContext.interactingEntity?.let { (it as CraftEntity).handle })
+            .withOptionalParameter(
+                LootContextParams.TARGET_ENTITY,
+                lootContext.targetEntity?.let { (it as CraftEntity).handle })
+            .withOptionalParameter(
+                LootContextParams.LAST_DAMAGE_PLAYER,
+                lootContext.lastDamagePlayer?.let { (it as CraftPlayer).handle })
+            .withOptionalParameter(
+                LootContextParams.DAMAGE_SOURCE,
+                lootContext.damageSource?.let { (it as CraftDamageSource).handle })
+            .withOptionalParameter(
+                LootContextParams.ATTACKING_ENTITY,
+                lootContext.attackingEntity?.let { (it as CraftEntity).handle })
+            .withOptionalParameter(
+                LootContextParams.DIRECT_ATTACKING_ENTITY,
+                lootContext.directAttackingEntity?.let { (it as CraftEntity).handle })
             .withOptionalParameter(LootContextParams.ORIGIN, lootContext.origin?.let { Vec3(it.x, it.y, it.z) })
-            .withOptionalParameter(LootContextParams.BLOCK_STATE, lootContext.blockData?.let { (it as CraftBlockData).state })
-            .withOptionalParameter(LootContextParams.BLOCK_ENTITY, lootContext.blockState?.let { (it as? CraftBlockEntityState<*>)?.blockEntity })
+            .withOptionalParameter(
+                LootContextParams.BLOCK_STATE,
+                lootContext.blockData?.let { (it as CraftBlockData).state })
+            .withOptionalParameter(
+                LootContextParams.BLOCK_ENTITY,
+                lootContext.blockState?.let { (it as? CraftBlockEntityState<*>)?.blockEntity })
             .withOptionalParameter(LootContextParams.TOOL, lootContext.tool?.let { (it as CraftItemStack).handle })
             .withOptionalParameter(LootContextParams.EXPLOSION_RADIUS, lootContext.explosionRadius)
             .create(contextParamSet)

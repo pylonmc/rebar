@@ -5,7 +5,8 @@ import io.github.pylonmc.rebar.registry.RebarRegistry
 import org.bukkit.Keyed
 import org.bukkit.NamespacedKey
 
-abstract class AdvancementTrigger<TriggerInstanceType: AdvancementTriggerInstance>(private val key: NamespacedKey) : Keyed {
+abstract class AdvancementTrigger<TriggerInstanceType : AdvancementTriggerInstance>(private val key: NamespacedKey) :
+    Keyed {
     private val mutableInstances = mutableListOf<TriggerInstanceType>()
 
     /**
@@ -20,7 +21,11 @@ abstract class AdvancementTrigger<TriggerInstanceType: AdvancementTriggerInstanc
      * does not exist yet. [criteriaKey] is the criterion the instance awards when triggered; pass both keys on to
      * the [AdvancementTriggerInstance] constructor. [options] is empty if the trigger was written as a bare key.
      */
-    abstract fun createTriggerInstance(advancementKey: NamespacedKey, criteriaKey: String, options: ConfigSection): TriggerInstanceType
+    abstract fun createTriggerInstance(
+        advancementKey: NamespacedKey,
+        criteriaKey: String,
+        options: ConfigSection
+    ): TriggerInstanceType
 
     /**
      * Called whenever [instances] changes, so that anything derived from it can be rebuilt.
@@ -42,7 +47,7 @@ abstract class AdvancementTrigger<TriggerInstanceType: AdvancementTriggerInstanc
 
     override fun getKey(): NamespacedKey = key
 
-    fun register(){
+    fun register() {
         RebarRegistry.ADVANCEMENT_TRIGGERS.register(this)
     }
 }

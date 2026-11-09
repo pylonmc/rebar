@@ -5,7 +5,8 @@ import io.github.pylonmc.rebar.registry.RebarRegistry
 import org.bukkit.Keyed
 import org.bukkit.NamespacedKey
 
-abstract class RebarAdvancementReward<RewardInstanceType : AdvancementRewardInstance>(private val key: NamespacedKey) : Keyed {
+abstract class RebarAdvancementReward<RewardInstanceType : AdvancementRewardInstance>(private val key: NamespacedKey) :
+    Keyed {
     /**
      * Called while the advancement [advancementKey] is being parsed, so the [io.github.pylonmc.rebar.advancements.RebarAdvancement]
      * does not exist yet. Read and validate [options] here, throwing if they are invalid, so that mistakes are reported
@@ -16,7 +17,7 @@ abstract class RebarAdvancementReward<RewardInstanceType : AdvancementRewardInst
 
     override fun getKey(): NamespacedKey = key
 
-    fun register(){
+    fun register() {
         RebarRegistry.ADVANCEMENT_REWARDS.register(this)
     }
 }

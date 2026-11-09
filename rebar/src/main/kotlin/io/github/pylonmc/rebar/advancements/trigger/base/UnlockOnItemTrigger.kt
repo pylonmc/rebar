@@ -22,7 +22,12 @@ class UnlockOnItemTrigger(key: NamespacedKey) : AdvancementTrigger<UnlockOnItemT
         criteriaKey: String,
         options: ConfigSection
     ): UnlockOnItemTriggerInstance {
-        return UnlockOnItemTriggerInstance(key, advancementKey, criteriaKey, options.getOrThrow("item", ConfigAdapter.ITEM_CHOICE))
+        return UnlockOnItemTriggerInstance(
+            key,
+            advancementKey,
+            criteriaKey,
+            options.getOrThrow("item", ConfigAdapter.ITEM_CHOICE)
+        )
     }
 
     override fun onInstancesChanged() {

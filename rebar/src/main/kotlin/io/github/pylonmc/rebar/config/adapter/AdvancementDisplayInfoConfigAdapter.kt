@@ -11,7 +11,8 @@ import java.lang.reflect.Type
  * Parses the `display-info` of the advancement [advancementKey]. The title and description are always the
  * translation keys `<namespace>.advancements.<key>.title` and `<namespace>.advancements.<key>.description`.
  */
-class AdvancementDisplayInfoConfigAdapter(private val advancementKey: NamespacedKey) : ConfigAdapter<RebarAdvancementDisplayInfo> {
+class AdvancementDisplayInfoConfigAdapter(private val advancementKey: NamespacedKey) :
+    ConfigAdapter<RebarAdvancementDisplayInfo> {
 
     override val type: Type = RebarAdvancementDisplayInfo::class.java
 

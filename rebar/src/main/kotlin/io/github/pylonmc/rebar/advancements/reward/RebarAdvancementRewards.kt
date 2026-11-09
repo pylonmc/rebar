@@ -6,11 +6,12 @@ import io.github.pylonmc.rebar.util.rebarKey
 object RebarAdvancementRewards {
     @JvmField
     val GRANT_EXPERIENCE = GrantExperienceReward(rebarKey("grant_experience"))
+
     init {
         GRANT_EXPERIENCE.register()
     }
 
-    fun init(){
+    fun init() {
 
     }
 }

@@ -129,12 +129,16 @@ class RebarAdvancement(
         requireCriteria(criteriaKey)
         val progress = player.getAdvancementProgress(vanilla())
         val revokedFromVanilla = progress.revokeCriteria(criteriaKey)
-        val saved = player.persistentDataContainer.get(key, RebarSerializers.ADVANCEMENT_PLAYER_PERSISTENT_DATA) ?: return revokedFromVanilla
+        val saved = player.persistentDataContainer.get(key, RebarSerializers.ADVANCEMENT_PLAYER_PERSISTENT_DATA)
+            ?: return revokedFromVanilla
         val revokedFromSaved = criteriaKey in saved.completedCriteria
         player.persistentDataContainer.set(
             key,
             RebarSerializers.ADVANCEMENT_PLAYER_PERSISTENT_DATA,
-            saved.copy(completedCriteria = saved.completedCriteria - criteriaKey, completed = saved.completed && progress.isDone)
+            saved.copy(
+                completedCriteria = saved.completedCriteria - criteriaKey,
+                completed = saved.completed && progress.isDone
+            )
         )
         return revokedFromVanilla || revokedFromSaved
     }
@@ -157,20 +161,25 @@ class RebarAdvancement(
      * granted automatically the first time the advancement is completed. A reward that throws is logged and not
      * retried, and the remaining rewards are still granted.
      */
-    fun grantRewards(player: Player){
+    fun grantRewards(player: Player) {
         for (reward in rewards) {
             try {
                 reward.grant(player)
             } catch (e: Exception) {
-                Rebar.logger.log(Level.SEVERE, "Error while granting reward ${reward.rewardKey} of advancement $key to ${player.name}", e)
+                Rebar.logger.log(
+                    Level.SEVERE,
+                    "Error while granting reward ${reward.rewardKey} of advancement $key to ${player.name}",
+                    e
+                )
             }
         }
     }
 
-    fun isUnlocked(player: Player): Boolean
-        = player.getAdvancementProgress(vanilla()).isDone
+    fun isUnlocked(player: Player): Boolean = player.getAdvancementProgress(vanilla()).isDone
 
-    fun isCriteriaComplete(player: Player, criteriaKey: String): Boolean = player.getAdvancementProgress(vanilla()).awardedCriteria.contains(criteriaKey)
+    fun isCriteriaComplete(player: Player, criteriaKey: String): Boolean =
+        player.getAdvancementProgress(vanilla()).awardedCriteria.contains(criteriaKey)
+
     fun isCriteriaComplete(player: Player, criteria: RebarCriteria): Boolean = isCriteriaComplete(player, criteria.key)
 
     private fun requireCriteria(criteriaKey: String) {
@@ -190,7 +199,7 @@ class RebarAdvancement(
         @JvmStatic
         @Contract("null -> null")
         fun fromKey(key: NamespacedKey?): RebarAdvancement? {
-            if(key == null) return null
+            if (key == null) return null
             return RebarRegistry.ADVANCEMENTS[key]
         }
     }

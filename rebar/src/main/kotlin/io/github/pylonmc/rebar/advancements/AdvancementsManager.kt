@@ -79,7 +79,11 @@ internal object AdvancementsManager {
             try {
                 into.add(config.getOrThrow(key, ConfigAdapter.ADVANCEMENT))
             } catch (e: Exception) {
-                Rebar.logger.log(Level.SEVERE, "Error while loading advancement $key in $path; it will not be registered", e)
+                Rebar.logger.log(
+                    Level.SEVERE,
+                    "Error while loading advancement $key in $path; it will not be registered",
+                    e
+                )
             }
         }
     }

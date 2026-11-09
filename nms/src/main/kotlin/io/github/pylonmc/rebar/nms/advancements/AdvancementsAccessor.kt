@@ -14,7 +14,6 @@ import net.minecraft.world.item.ItemStackTemplate
 import org.bukkit.craftbukkit.inventory.CraftItemStack
 import org.bukkit.craftbukkit.util.CraftNamespacedKey
 import java.util.*
-import kotlin.collections.map
 
 object AdvancementsAccessor {
 
@@ -91,9 +90,9 @@ object AdvancementsAccessor {
     /**
      * Resends the advancements tree to clients and restores the progress of those advancements from the player PDC data.
      */
-    private fun resyncAllAdvancements(restoring: Collection<RebarAdvancement>){
+    private fun resyncAllAdvancements(restoring: Collection<RebarAdvancement>) {
         val advancementsManagerNms = MinecraftServer.getServer().advancements
-        for (player in MinecraftServer.getServer().playerList.players){
+        for (player in MinecraftServer.getServer().playerList.players) {
             player.advancements.reload(advancementsManagerNms)
             // Between reload and flushDirty: reload makes the next packet reset the client's advancements, so
             // restored advancements don't show toasts

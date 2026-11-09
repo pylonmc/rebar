@@ -4,9 +4,9 @@ import io.github.pylonmc.rebar.advancements.trigger.AdvancementTriggerInstance
 import io.github.pylonmc.rebar.recipe.ingredient.ItemChoice
 import org.bukkit.NamespacedKey
 
-class UnlockOnItemTriggerInstance(triggerKey: NamespacedKey,
-                                  advancementKey: NamespacedKey,
-                                  criteriaKey: String,
+class UnlockOnItemTriggerInstance(
+    triggerKey: NamespacedKey,
+    advancementKey: NamespacedKey,
+    criteriaKey: String,
     val itemChoice: ItemChoice
-) : AdvancementTriggerInstance(triggerKey, advancementKey, criteriaKey) {
-}
+) : AdvancementTriggerInstance(triggerKey, advancementKey, criteriaKey)

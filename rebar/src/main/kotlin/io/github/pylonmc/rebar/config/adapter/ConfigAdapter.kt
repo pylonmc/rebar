@@ -159,7 +159,7 @@ interface ConfigAdapter<T> {
         ): ConfigAdapter<T> = ConfigAdapter { value ->
             if (value is String) return@ConfigAdapter value.toDouble().toType()
 
-            check (value is Number) { "Expected ${Number::class.java}, got ${value::class.java}" }
+            check(value is Number) { "Expected ${Number::class.java}, got ${value::class.java}" }
             if (value is Float || value is Double) {
                 check(min is Float || min is Double) { "Expected ${T::class.java.canonicalName}, got ${value::class.java.canonicalName}" }
             }

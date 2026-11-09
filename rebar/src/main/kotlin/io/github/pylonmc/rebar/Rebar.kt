@@ -102,7 +102,8 @@ object Rebar : JavaPlugin(), RebarAddon {
         val expectedVersion = pluginMeta.apiVersion
         val actualVersion = ServerBuildInfo.buildInfo().minecraftVersionId()
 
-        val expectedVersionParts = (expectedVersion ?: "").split(".").mapNotNull { it.toIntOrNull() }.dropLastWhile { it == 0 }
+        val expectedVersionParts =
+            (expectedVersion ?: "").split(".").mapNotNull { it.toIntOrNull() }.dropLastWhile { it == 0 }
         val actualVersionParts = actualVersion.split(".").mapNotNull { it.toIntOrNull() }.dropLastWhile { it == 0 }
 
         if (expectedVersionParts != actualVersionParts) {
@@ -117,7 +118,7 @@ object Rebar : JavaPlugin(), RebarAddon {
                     logger.severe("Rebar will refuse to start")
                     logger.severe("You can attempt to start anyway by setting bypass-version-check to true in the config")
                 }
-            } catch (e: Exception){
+            } catch (e: Exception) {
                 throw RuntimeException("Error while getting value of bypass-version-check", e)
             }
             logger.severe("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")

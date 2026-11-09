@@ -10,6 +10,7 @@ import org.bukkit.Bukkit
 object RebarAdvancementTriggers {
     @JvmField
     val ON_JOIN = UnlockOnJoinTrigger(rebarKey("unlock_on_join"))
+
     init {
         Bukkit.getPluginManager().registerEvents(ON_JOIN, Rebar)
         ON_JOIN.register()
@@ -17,12 +18,13 @@ object RebarAdvancementTriggers {
 
     @JvmField
     val ON_ITEM = UnlockOnItemTrigger(rebarKey("unlock_on_item"))
+
     init {
-        Bukkit.getScheduler().runTaskTimer(Rebar, ON_ITEM, 0L,RebarConfig.ADVANCEMENTS_INVENTORY_TICKER_BASE_RATE)
+        Bukkit.getScheduler().runTaskTimer(Rebar, ON_ITEM, 0L, RebarConfig.ADVANCEMENTS_INVENTORY_TICKER_BASE_RATE)
         ON_ITEM.register()
     }
 
-    fun init(){
+    fun init() {
 
     }
 }

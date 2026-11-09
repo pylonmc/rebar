@@ -2,10 +2,9 @@ package io.github.pylonmc.rebar.advancements
 
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import org.bukkit.Bukkit
-import org.bukkit.NamespacedKey
 import org.bukkit.entity.Player
 import org.jetbrains.annotations.ApiStatus
-import java.util.UUID
+import java.util.*
 
 /**
  * Restores Rebar advancement progress from the source of truth that [AdvancementsListener] keeps in each player's PDC.
@@ -50,7 +49,9 @@ object AdvancementProgressManager {
 
     private fun restoreAll(player: Player, advancements: Iterable<RebarAdvancement>) {
         for (advancement in advancements) {
-            val backup = player.persistentDataContainer.get(advancement.key, RebarSerializers.ADVANCEMENT_PLAYER_PERSISTENT_DATA) ?: continue
+            val backup =
+                player.persistentDataContainer.get(advancement.key, RebarSerializers.ADVANCEMENT_PLAYER_PERSISTENT_DATA)
+                    ?: continue
             val vanilla = Bukkit.getAdvancement(advancement.key) ?: continue
             val progress = player.getAdvancementProgress(vanilla)
             val awarded = progress.awardedCriteria

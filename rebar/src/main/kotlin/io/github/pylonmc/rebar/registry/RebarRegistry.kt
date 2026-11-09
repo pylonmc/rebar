@@ -125,19 +125,33 @@ class RebarRegistry<T : Keyed> : Iterable<T> {
     fun stream(): Stream<T> = values.values.stream()
 
     companion object {
-        @JvmField val ITEMS = RebarRegistry<RebarItemSchema>()
-        @JvmField val BLOCKS = RebarRegistry<RebarBlockSchema>()
-        @JvmField val ENTITIES = RebarRegistry<RebarEntitySchema>()
-        @JvmField val FLUIDS = RebarRegistry<RebarFluid>()
-        @JvmField val ADDONS = RebarRegistry<RebarAddon>()
-        @JvmField val GAMETESTS = RebarRegistry<GameTestConfig>()
-        @JvmField val RECIPE_TYPES = RebarRegistry<RecipeType<*>>()
-        @JvmField val RESEARCHES = RebarRegistry<Research>()
-        @JvmField val ITEM_TAGS = RebarRegistry<Tag<ItemTypeWrapper>>()
-        @JvmField val BLOCK_TAGS = RebarRegistry<Tag<BlockTypeWrapper>>()
-        @JvmField val CONTEXTUAL_COMPONENT_RENDERERS = RebarRegistry<ContextualComponentRenderer>()
-        @JvmField val ADVANCEMENTS = RebarRegistry<RebarAdvancement>()
-        @JvmField val ADVANCEMENT_TRIGGERS = RebarRegistry<AdvancementTrigger<*>>()
-        @JvmField val ADVANCEMENT_REWARDS = RebarRegistry<RebarAdvancementReward<*>>()
+        @JvmField
+        val ITEMS = RebarRegistry<RebarItemSchema>()
+        @JvmField
+        val BLOCKS = RebarRegistry<RebarBlockSchema>()
+        @JvmField
+        val ENTITIES = RebarRegistry<RebarEntitySchema>()
+        @JvmField
+        val FLUIDS = RebarRegistry<RebarFluid>()
+        @JvmField
+        val ADDONS = RebarRegistry<RebarAddon>()
+        @JvmField
+        val GAMETESTS = RebarRegistry<GameTestConfig>()
+        @JvmField
+        val RECIPE_TYPES = RebarRegistry<RecipeType<*>>()
+        @JvmField
+        val RESEARCHES = RebarRegistry<Research>()
+        @JvmField
+        val ITEM_TAGS = RebarRegistry<Tag<ItemTypeWrapper>>()
+        @JvmField
+        val BLOCK_TAGS = RebarRegistry<Tag<BlockTypeWrapper>>()
+        @JvmField
+        val CONTEXTUAL_COMPONENT_RENDERERS = RebarRegistry<ContextualComponentRenderer>()
+        @JvmField
+        val ADVANCEMENTS = RebarRegistry<RebarAdvancement>()
+        @JvmField
+        val ADVANCEMENT_TRIGGERS = RebarRegistry<AdvancementTrigger<*>>()
+        @JvmField
+        val ADVANCEMENT_REWARDS = RebarRegistry<RebarAdvancementReward<*>>()
     }
 }

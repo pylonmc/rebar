@@ -1,18 +1,14 @@
 package io.github.pylonmc.rebar.nms
 
 import com.destroystokyo.paper.event.player.PlayerRecipeBookClickEvent
-import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.advancements.RebarAdvancement
 import io.github.pylonmc.rebar.block.RebarBlock
 import io.github.pylonmc.rebar.entity.packet.BlockTextureEntity
 import io.github.pylonmc.rebar.i18n.PlayerTranslationHandler
 import io.github.pylonmc.rebar.item.loot.LootTableResultBuilder
-import io.github.pylonmc.rebar.util.delayTicks
 import io.github.pylonmc.rebar.util.position.BlockPosition
 import io.papermc.paper.datacomponent.DataComponentType
-import kotlinx.coroutines.launch
 import net.kyori.adventure.text.Component
-import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
 import org.bukkit.World
@@ -21,16 +17,11 @@ import org.bukkit.block.BlockFace
 import org.bukkit.entity.Entity
 import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Player
-import org.bukkit.inventory.EquipmentSlot
-import org.bukkit.inventory.Inventory
-import org.bukkit.inventory.InventoryView
-import org.bukkit.inventory.ItemFactory
-import org.bukkit.inventory.ItemStack
-import org.bukkit.inventory.Recipe
+import org.bukkit.inventory.*
 import org.bukkit.loot.LootTable
 import org.bukkit.persistence.PersistentDataContainer
 import org.jetbrains.annotations.ApiStatus
-import java.util.UUID
+import java.util.*
 
 /**
  * Internal, not for innocent eyes to see, move along now.
@@ -116,7 +107,13 @@ interface NmsAccessor {
      *
      * Note: This calls all vanilla logic, PlayerInteractEvent, BlockPlace, etc, this will **actually** use the item/block
      */
-    fun simulateInteract(player: Player, itemStack: ItemStack, hand: EquipmentSlot, block: Block?, blockFace: BlockFace?)
+    fun simulateInteract(
+        player: Player,
+        itemStack: ItemStack,
+        hand: EquipmentSlot,
+        block: Block?,
+        blockFace: BlockFace?
+    )
 
     /**
      * Note: this exists purely for the performance of rebar's recipe system,
@@ -138,7 +135,7 @@ interface NmsAccessor {
      * type using the [ItemStack.isDataOverridden] for vanilla items, or comparing the
      * results of [ItemStack.getData] for rebar items.
      */
-    fun hasDefaultComponents(itemStack: ItemStack, components: Set<DataComponentType>) : Boolean
+    fun hasDefaultComponents(itemStack: ItemStack, components: Set<DataComponentType>): Boolean
 
     /**
      * Note: this exists purely for the performance of rebar's recipe system,
@@ -168,7 +165,13 @@ interface NmsAccessor {
     /**
      * @see [LootTableResultBuilder.getRandomItems]
      */
-    fun getRandomItems(world: World, contextSet: NamespacedKey, lootTable: LootTable, optionalRandomLootSeed: Long?, lootContext: LootTableResultBuilder): Collection<ItemStack>
+    fun getRandomItems(
+        world: World,
+        contextSet: NamespacedKey,
+        lootTable: LootTable,
+        optionalRandomLootSeed: Long?,
+        lootContext: LootTableResultBuilder
+    ): Collection<ItemStack>
 
     /**
      * Adds [advancements] to the server in one batch, so that they may be in any order relative to their parents,

@@ -22,9 +22,12 @@ object AdvancementsListener : Listener {
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    private fun handle(event: PlayerAdvancementCriterionGrantEvent){
+    private fun handle(event: PlayerAdvancementCriterionGrantEvent) {
         val advancement = RebarAdvancement.fromVanilla(event.advancement) ?: return
-        val currentPdcData = event.player.persistentDataContainer.get(advancement.key, RebarSerializers.ADVANCEMENT_PLAYER_PERSISTENT_DATA)
+        val currentPdcData = event.player.persistentDataContainer.get(
+            advancement.key,
+            RebarSerializers.ADVANCEMENT_PLAYER_PERSISTENT_DATA
+        )
             ?: AdvancementPlayerPersistentData(advancement.key, emptySet(), false)
         event.player.persistentDataContainer.set(
             advancement.key,
@@ -44,10 +47,13 @@ object AdvancementsListener : Listener {
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
-    private fun handle(event: PlayerAdvancementDoneEvent){
+    private fun handle(event: PlayerAdvancementDoneEvent) {
         val advancement = RebarAdvancement.fromVanilla(event.advancement) ?: return
-        val advancementPdcData = event.player.persistentDataContainer.get(advancement.key, RebarSerializers.ADVANCEMENT_PLAYER_PERSISTENT_DATA)
-        if(advancementPdcData != null && advancementPdcData.completed) return
+        val advancementPdcData = event.player.persistentDataContainer.get(
+            advancement.key,
+            RebarSerializers.ADVANCEMENT_PLAYER_PERSISTENT_DATA
+        )
+        if (advancementPdcData != null && advancementPdcData.completed) return
         advancement.grantRewards(event.player)
         event.player.persistentDataContainer.set(
             advancement.key,
