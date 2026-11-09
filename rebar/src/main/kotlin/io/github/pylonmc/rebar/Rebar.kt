@@ -170,9 +170,6 @@ object Rebar : JavaPlugin(), RebarAddon {
 
         ConfettiCreeperListener.register(this)
 
-        // Rebar Advancements
-        // TODO register events for rebar advancement trigger listeners
-
         // Rebar Blocks
         pm.registerEvents(CargoRebarBlock, this)
         pm.registerEvents(DirectionalRebarBlock, this)
