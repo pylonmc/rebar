@@ -56,6 +56,14 @@ object RebarAdvancementTriggers {
         ON_ITEM_CONSUME.register()
     }
 
+    @JvmField
+    val ON_ARMOR_EQUIP = UnlockOnArmorEquipTrigger(rebarKey("unlock_on_armor_equip"))
+
+    init {
+        Bukkit.getPluginManager().registerEvents(ON_ARMOR_EQUIP, Rebar)
+        ON_ARMOR_EQUIP.register()
+    }
+
     fun init() {
 
     }
