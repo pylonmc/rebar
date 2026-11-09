@@ -2,8 +2,11 @@ package io.github.pylonmc.rebar.advancements
 
 import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.advancements.reward.AdvancementRewardInstance
+import io.github.pylonmc.rebar.advancements.trigger.AdvancementTrigger
+import io.github.pylonmc.rebar.advancements.trigger.AdvancementTriggerInstance
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.registry.RebarRegistry
+import io.github.pylonmc.rebar.registry.RegistryHandler
 import org.bukkit.Bukkit
 import org.bukkit.Keyed
 import org.bukkit.NamespacedKey
@@ -41,7 +44,7 @@ class RebarAdvancement(
      * `[[a, b], [c]]` means "(a or b) and c". Every criterion must appear in at least one group.
      */
     val requirements: List<List<String>>,
-) : Keyed {
+) : Keyed, RegistryHandler {
 
     init {
         // Same rules vanilla enforces when loading datapack advancements.
@@ -70,6 +73,24 @@ class RebarAdvancement(
 
     fun register() {
         RebarRegistry.ADVANCEMENTS.register(this)
+    }
+
+    override fun onRegister(registry: RebarRegistry<*>) {
+        forEachTriggerInstance { trigger, instance -> trigger.addInstance(instance) }
+    }
+
+    override fun onUnregister(registry: RebarRegistry<*>) {
+        forEachTriggerInstance { trigger, instance -> trigger.removeInstance(instance) }
+    }
+
+    private inline fun forEachTriggerInstance(action: (AdvancementTrigger<*>, AdvancementTriggerInstance) -> Unit) {
+        for (criterion in criteria) {
+            for (instance in criterion.triggers) {
+                val trigger = RebarRegistry.ADVANCEMENT_TRIGGERS[instance.triggerKey]
+                    ?: error("Advancement $key uses trigger ${instance.triggerKey}, which is not registered")
+                action(trigger, instance)
+            }
+        }
     }
 
     fun vanilla(): Advancement = Bukkit.getAdvancement(key) ?: error(

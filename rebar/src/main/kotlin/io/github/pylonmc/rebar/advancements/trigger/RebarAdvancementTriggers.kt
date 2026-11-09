@@ -18,7 +18,7 @@ object RebarAdvancementTriggers {
     @JvmField
     val ON_ITEM = UnlockOnItemTrigger(rebarKey("unlock_on_item"))
     init {
-        Bukkit.getScheduler().runTaskTimer(Rebar, UnlockOnItemTrigger.Ticker, 0L, RebarConfig.ADVANCEMENTS_INVENTORY_TICKER_BASE_RATE)
+        Bukkit.getScheduler().runTaskTimer(Rebar, ON_ITEM, 0L,RebarConfig.ADVANCEMENTS_INVENTORY_TICKER_BASE_RATE)
         ON_ITEM.register()
     }
 

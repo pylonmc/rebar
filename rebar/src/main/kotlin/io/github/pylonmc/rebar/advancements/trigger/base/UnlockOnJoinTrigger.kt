@@ -3,7 +3,6 @@
 import io.github.pylonmc.rebar.advancements.trigger.AdvancementTrigger
 import io.github.pylonmc.rebar.advancements.trigger.AdvancementTriggerInstance
 import io.github.pylonmc.rebar.config.ConfigSection
-import io.github.pylonmc.rebar.registry.RebarRegistry
 import org.bukkit.NamespacedKey
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
@@ -21,12 +20,8 @@ class UnlockOnJoinTrigger(key: NamespacedKey) : AdvancementTrigger<AdvancementTr
 
     @EventHandler(priority = EventPriority.MONITOR)
     fun onPlayerJoin(event: PlayerJoinEvent) {
-        RebarRegistry.ADVANCEMENTS.forEach { adv ->
-            adv.criteria.forEach {
-                crit -> crit.triggers.filter { it.triggerKey == key }
-                    .forEach { it.trigger(event.player)
-                    }
-            }
+        for (instance in instances) {
+            instance.trigger(event.player)
         }
     }
 }
