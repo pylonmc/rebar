@@ -138,6 +138,6 @@ class RebarRegistry<T : Keyed> : Iterable<T> {
         @JvmField val CONTEXTUAL_COMPONENT_RENDERERS = RebarRegistry<ContextualComponentRenderer>()
         @JvmField val ADVANCEMENTS = RebarRegistry<RebarAdvancement>()
         @JvmField val ADVANCEMENT_TRIGGERS = RebarRegistry<AdvancementTrigger<*>>()
-        @JvmField val ADVANCEMENT_REWARDS = RebarRegistry<RebarAdvancementReward>()
+        @JvmField val ADVANCEMENT_REWARDS = RebarRegistry<RebarAdvancementReward<*>>()
     }
 }

@@ -1,5 +1,7 @@
 package io.github.pylonmc.rebar.advancements
 
+import io.github.pylonmc.rebar.Rebar
+import io.github.pylonmc.rebar.advancements.reward.AdvancementRewardInstance
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import org.bukkit.Bukkit
@@ -8,6 +10,7 @@ import org.bukkit.NamespacedKey
 import org.bukkit.advancement.Advancement
 import org.bukkit.entity.Player
 import org.jetbrains.annotations.Contract
+import java.util.logging.Level
 
 /**
  * All non player specific data about an advancement is stored within this class.
@@ -27,9 +30,9 @@ class RebarAdvancement(
      */
     val displayInfo: RebarAdvancementDisplayInfo?,
     /**
-     * The list of rewards that the player will receive upon completing this advancement, granted through a [io.github.pylonmc.rebar.advancements.reward.RebarAdvancementReward]
+     * The list of rewards that the player will receive upon completing this advancement, created by a [io.github.pylonmc.rebar.advancements.reward.RebarAdvancementReward]
      */
-    val rewards: List<RebarAdvancementRewardSpec>,
+    val rewards: List<AdvancementRewardInstance>,
     /** The list of criteria and the [io.github.pylonmc.rebar.advancements.trigger.AdvancementTriggerInstance] that complete them (only one trigger needs to fire for the criteria to complete)
      */
     val criteria: List<RebarCriteria>,
@@ -130,10 +133,17 @@ class RebarAdvancement(
 
     /**
      * Grants [player] this advancement's rewards, whether or not they have already received them. Rewards are
-     * granted automatically the first time the advancement is completed.
+     * granted automatically the first time the advancement is completed. A reward that throws is logged and not
+     * retried, and the remaining rewards are still granted.
      */
     fun grantRewards(player: Player){
-        rewards.forEach { it.grantReward(player)}
+        for (reward in rewards) {
+            try {
+                reward.grant(player)
+            } catch (e: Exception) {
+                Rebar.logger.log(Level.SEVERE, "Error while granting reward ${reward.rewardKey} of advancement $key to ${player.name}", e)
+            }
+        }
     }
 
     fun isUnlocked(player: Player): Boolean

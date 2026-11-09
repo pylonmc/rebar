@@ -32,7 +32,7 @@ object AdvancementConfigAdapter : ConfigAdapter<RebarAdvancement> {
             advancementKey,
             section.getIfPresent("parent", ConfigAdapter.NAMESPACED_KEY),
             section.getIfPresent("display-info", AdvancementDisplayInfoConfigAdapter(advancementKey)),
-            section.getIfPresent("rewards", AdvancementRewardsConfigAdapter) ?: emptyList(),
+            section.getIfPresent("rewards", AdvancementRewardsConfigAdapter(advancementKey)) ?: emptyList(),
             criteria,
             requirements
         )

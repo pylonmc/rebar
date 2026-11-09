@@ -1,13 +1,13 @@
 package io.github.pylonmc.rebar.config.adapter
 
-import io.github.pylonmc.rebar.advancements.RebarAdvancementRewardSpec
+import io.github.pylonmc.rebar.advancements.reward.AdvancementRewardInstance
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import org.apache.commons.lang3.reflect.TypeUtils
 import org.bukkit.NamespacedKey
 import java.lang.reflect.Type
 
 /**
- * Parses the `rewards` of an advancement: reward type keys mapped to their options.
+ * Parses the `rewards` of the advancement [advancementKey]: reward type keys mapped to their options.
  *
  * ```yaml
  * rewards:
@@ -15,19 +15,18 @@ import java.lang.reflect.Type
  *     amount: 10
  * ```
  *
- * The list form (`- rebar:grant_experience: ...`) is also accepted. Reward types are resolved here, so an
- * unknown type fails when the advancement is loaded rather than when it is completed.
+ * The list form (`- rebar:grant_experience: ...`) is also accepted.
  */
-object AdvancementRewardsConfigAdapter : ConfigAdapter<List<RebarAdvancementRewardSpec>> {
+class AdvancementRewardsConfigAdapter(private val advancementKey: NamespacedKey) : ConfigAdapter<List<AdvancementRewardInstance>> {
 
-    override val type: Type = TypeUtils.parameterize(List::class.java, RebarAdvancementRewardSpec::class.java)
+    override val type: Type = TypeUtils.parameterize(List::class.java, AdvancementRewardInstance::class.java)
 
-    override fun convert(value: Any): List<RebarAdvancementRewardSpec> =
+    override fun convert(value: Any): List<AdvancementRewardInstance> =
         AdvancementCriteriaConfigAdapter.keyedEntries(value).map { (rawRewardKey, options) ->
             val rewardKey = NamespacedKey.fromString(rawRewardKey)
                 ?: throw IllegalArgumentException("'$rawRewardKey' is not a valid reward type key")
             val reward = RebarRegistry.ADVANCEMENT_REWARDS[rewardKey]
                 ?: throw IllegalArgumentException("Unknown advancement reward type $rewardKey")
-            RebarAdvancementRewardSpec(reward, AdvancementCriteriaConfigAdapter.entryOptions(rawRewardKey, options))
+            reward.createRewardInstance(advancementKey, AdvancementCriteriaConfigAdapter.entryOptions(rawRewardKey, options))
         }
 }
