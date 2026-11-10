@@ -150,6 +150,7 @@ interface ConfigAdapter<T> {
 
         @JvmField val BLOCK_TYPE_WRAPPER = KEYED.fromGetter { BlockTypeWrapper(it) }
         @JvmField val BLOCK_TAG = BlockTagConfigAdapter
+        @JvmField val MULTIBLOCK_COMPONENT = MultiblockComponentConfigAdapter
         // @formatter:on
 
         private inline fun <reified T : Number> numberAdapter(
