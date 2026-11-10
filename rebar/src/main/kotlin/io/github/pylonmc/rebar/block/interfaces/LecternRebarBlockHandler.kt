@@ -44,7 +44,7 @@ interface LecternRebarBlockHandler : VanillaInventoryRebarBlockHandler {
 
         @UniversalHandler
         private fun onLecternBookRemove(event: PlayerTakeLecternBookEvent, priority: EventPriority) {
-            val rebarBlock = BlockStorage.get(event.lectern.block)
+            val rebarBlock = BlockStorage.get(event.lectern?.block)
             if (rebarBlock is LecternRebarBlockHandler) {
                 try {
                     MultiHandlers.handleEvent(rebarBlock, "onLecternBookRemove", event, priority)
@@ -56,7 +56,7 @@ interface LecternRebarBlockHandler : VanillaInventoryRebarBlockHandler {
 
         @UniversalHandler
         private fun onLecternPageChange(event: PlayerLecternPageChangeEvent, priority: EventPriority) {
-            val rebarBlock = BlockStorage.get(event.lectern.block)
+            val rebarBlock = BlockStorage.get(event.lectern?.block)
             if (rebarBlock is LecternRebarBlockHandler) {
                 try {
                     MultiHandlers.handleEvent(rebarBlock, "onLecternPageChange", event, priority)
