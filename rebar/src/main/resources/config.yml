@@ -63,6 +63,9 @@ inventory-ticker-base-rate: 10
 # The tick interval for Rebar advancements to look for items to trigger advancements
 advancements-inventory-ticker-base-rate: 160
 
+# The tick interval for Rebar advancements to check player statistics to trigger advancements
+advancements-statistics-ticker-base-rate: 160
+
 # The number of ticks between ghost blocks with multiple states changing to the next state
 ghost-block-tick-interval: 20
 
