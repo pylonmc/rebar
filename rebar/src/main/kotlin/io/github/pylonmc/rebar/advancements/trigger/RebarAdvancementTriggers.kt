@@ -64,6 +64,13 @@ object RebarAdvancementTriggers {
         ON_ARMOR_EQUIP.register()
     }
 
+    @JvmField
+    val ON_ITEM_BREAK = UnlockOnItemBreakTrigger(rebarKey("unlock_on_item_break"))
+    init {
+        Bukkit.getPluginManager().registerEvents(ON_ITEM_BREAK, Rebar)
+        ON_ITEM_BREAK.register()
+    }
+
     fun init() {
 
     }
