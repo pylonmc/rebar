@@ -78,6 +78,13 @@ object RebarAdvancementTriggers {
         ON_ITEM_USE.register()
     }
 
+    @JvmField
+    val ON_ENTITY_KILL = UnlockOnEntityKillTrigger(rebarKey("unlock_on_entity_kill"))
+    init {
+        Bukkit.getPluginManager().registerEvents(ON_ENTITY_KILL, Rebar)
+        ON_ENTITY_KILL.register()
+    }
+
     fun init() {
 
     }
