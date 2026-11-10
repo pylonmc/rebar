@@ -24,7 +24,7 @@ class UnlockOnBlockBreakTrigger(key: NamespacedKey) : AdvancementTrigger<UnlockO
         )
     }
 
-    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     fun onBreakBlock(event: BlockBreakEvent) {
         instances.filter { it.block.matches(event.block) }
             .forEach { it.trigger(event.player) }
