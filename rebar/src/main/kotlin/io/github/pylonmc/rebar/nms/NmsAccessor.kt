@@ -2,6 +2,7 @@ package io.github.pylonmc.rebar.nms
 
 import com.destroystokyo.paper.event.player.PlayerRecipeBookClickEvent
 import io.github.pylonmc.rebar.Rebar
+import io.github.pylonmc.rebar.advancements.RebarAdvancement
 import io.github.pylonmc.rebar.block.RebarBlock
 import io.github.pylonmc.rebar.entity.packet.BlockTextureEntity
 import io.github.pylonmc.rebar.i18n.PlayerTranslationHandler
@@ -168,6 +169,16 @@ interface NmsAccessor {
      * @see [LootTableResultBuilder.getRandomItems]
      */
     fun getRandomItems(world: World, contextSet: NamespacedKey, lootTable: LootTable, optionalRandomLootSeed: Long?, lootContext: LootTableResultBuilder): Collection<ItemStack>
+
+    /**
+     * Adds [advancements] to the server in one batch, so that they may be in any order relative to their parents,
+     * then resyncs online players and restores their backed-up progress. An advancement whose parent is neither in
+     * [advancements] nor already on the server still works, but isn't shown to players.
+     *
+     * This does not register them in [io.github.pylonmc.rebar.registry.RebarRegistry.ADVANCEMENTS], so it can be
+     * called again after server resources are reloaded.
+     */
+    fun registerAdvancements(advancements: Collection<RebarAdvancement>)
 
     companion object {
         val instance = Class.forName("io.github.pylonmc.rebar.nms.NmsAccessorImpl")

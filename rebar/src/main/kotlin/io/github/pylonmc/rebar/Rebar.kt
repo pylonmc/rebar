@@ -3,6 +3,10 @@
 package io.github.pylonmc.rebar
 
 import io.github.pylonmc.rebar.addon.RebarAddon
+import io.github.pylonmc.rebar.advancements.AdvancementsListener
+import io.github.pylonmc.rebar.advancements.AdvancementsManager
+import io.github.pylonmc.rebar.advancements.reward.RebarAdvancementRewards
+import io.github.pylonmc.rebar.advancements.trigger.RebarAdvancementTriggers
 import io.github.pylonmc.rebar.async.BukkitMainThreadDispatcher
 import io.github.pylonmc.rebar.async.ChunkScope
 import io.github.pylonmc.rebar.async.PlayerScope
@@ -134,6 +138,8 @@ object Rebar : JavaPlugin(), RebarAddon {
 
         // Anything that listens for addon registration must be above this line
         registerWithRebar()
+
+        pm.registerEvents(AdvancementsListener, this)
 
         pm.registerEvents(ChunkScope, this)
         pm.registerEvents(PlayerScope, this)
@@ -307,6 +313,10 @@ object Rebar : JavaPlugin(), RebarAddon {
             it.registrar().register(ROOT_COMMAND_RE_ALIAS)
         }
 
+        // Rebar advancements triggers and rewards
+        RebarAdvancementRewards.init()
+        RebarAdvancementTriggers.init()
+
         RebarItem.register<DebugWaxedWeatheredCutCopperStairs>(DebugWaxedWeatheredCutCopperStairs.STACK)
         RebarGuide.hideItem(DebugWaxedWeatheredCutCopperStairs.KEY)
 
@@ -347,6 +357,7 @@ object Rebar : JavaPlugin(), RebarAddon {
             validateItems()
             loadRecipes()
             loadResearches()
+            AdvancementsManager.loadAdvancements()
             loading = false
         }
 
