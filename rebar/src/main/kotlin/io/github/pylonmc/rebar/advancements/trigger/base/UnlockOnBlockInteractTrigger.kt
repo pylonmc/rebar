@@ -27,7 +27,7 @@ class UnlockOnBlockInteractTrigger(key: NamespacedKey) : AdvancementTrigger<Unlo
         )
     }
 
-    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     fun onInteract(event: PlayerInteractEvent) {
         if(event.hand != EquipmentSlot.HAND) return
         if(!event.hasBlock()) return
