@@ -39,21 +39,21 @@ public class BinaryBvhTreeTest extends AsyncTest {
 //        BinaryBvhTree<TestElement> tree = new BinaryBvhTree<>();
 //        tree.insert(testElement);
 //
-//        for (int i = 0; i < 1_000; i++) {
+//        for (int i = 0; i < 10_000; i++) {
 //            tree.insert(element(ThreadLocalRandom.current().nextFloat(1_000), ThreadLocalRandom.current().nextFloat(1_000), ThreadLocalRandom.current().nextFloat(1_000)));
 //        }
 //        println("Inserted");
 //
 //        long time = System.nanoTime();
-//        assertThat(tree.getIntersections(new Vector3f(0, 0, 0), new Vector3f(0.5f, 0, 0))).size().isGreaterThan(0);
+//        assertThat(tree.getClosestIntersection(new Vector3f(0, 0, 0), new Vector3f(0.5f, 0, 0))).isNotNull();
 //        println(System.nanoTime() - time);
 //
 //        time = System.nanoTime();
-//        tree.rebuild();
+//        tree = BinaryBvhTree.buildFromElements(tree);
 //        println(System.nanoTime() - time);
 //
 //        time = System.nanoTime();
-//        assertThat(tree.getIntersections(new Vector3f(0, 0, 0), new Vector3f(0.5f, 0, 0))).size().isGreaterThan(0);
+//        assertThat(tree.getClosestIntersection(new Vector3f(0, 0, 0), new Vector3f(0.5f, 0, 0))).isNotNull();
 //        println(System.nanoTime() - time);
     }
 
