@@ -68,8 +68,7 @@ class PlayerTranslationHandler internal constructor(private val player: Player) 
         stack.editData(DataComponentTypes.CONTAINER) { container ->
             val translated = container.contents().map { item ->
                 handleItem(item)
-                @Suppress("USELESS_ELVIS") // For some reason paper *does* pass null here instead of empty
-                item ?: ItemStack.empty()
+                item
             }
             ItemContainerContents.containerContents(translated)
         }

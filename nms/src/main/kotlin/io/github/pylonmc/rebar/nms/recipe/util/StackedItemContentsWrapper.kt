@@ -6,6 +6,7 @@ import io.papermc.paper.inventory.recipe.ItemOrExact
 import net.minecraft.world.entity.player.StackedContents
 import net.minecraft.world.entity.player.StackedItemContents
 import net.minecraft.world.item.ItemStack
+import org.bukkit.craftbukkit.inventory.CraftItemStack
 import java.lang.invoke.MethodHandle
 import java.lang.invoke.MethodHandles
 import kotlin.math.min
@@ -39,7 +40,7 @@ fun StackedItemContents.accountStackRebar(stack: ItemStack, maxStackSize: Int = 
     if (stack.isEmpty) return
 
     // Determine if this is a Rebar item
-    if (RebarItem.isRebarItem(stack.bukkitStack)) {
+    if (RebarItem.isRebarItem(CraftItemStack.asBukkitMirror(stack))) {
         val min = min(maxStackSize, stack.count)
         val r = ItemOrExact.Exact(stack.copy())
         this.getRaw().account(r, min)
