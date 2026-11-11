@@ -2,7 +2,6 @@ package io.github.pylonmc.rebar.test.test.entity;
 
 import io.github.pylonmc.rebar.test.base.AsyncTest;
 import io.github.pylonmc.rebar.util.BinaryBvhTree;
-import java.util.ArrayList;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
@@ -14,17 +13,12 @@ import static org.assertj.core.api.Assertions.offset;
 public class BinaryBvhTreeTest extends AsyncTest {
     @Override
     protected void test() {
-        failedDuplicateInsertDoesNotChangeIntersections();
         farAwayElementsDoNotProduceFalsePositives();
         insertingEqualElementReturnsFalse();
         insertReturnsFalseForDuplicateElement();
         insertReturnsTrueForNewElement();
-        intersectionsAreSortedByDistanceFromOrigin();
-        manyElementsCanBeInsertedAndRemoved();
-        multipleElementsReturnAllIntersections();
         multipleInsertsUpdateSize();
         rayLengthIsRespected();
-        rayOnlyIntersectsSomeElements();
         rayParallelToFaceCanIntersect();
         rayStartingInsideElementReturnsOrigin();
         rayThatMissesElementReturnsNoIntersections();
@@ -35,7 +29,6 @@ public class BinaryBvhTreeTest extends AsyncTest {
         removeFindsElementWhenBoundingBoxesOverlap();
         removeOnlyElementLeavesTreeEmpty();
         removeFromEmptyTreeReturnsFalse();
-        removeFromMultipleElementTreePreservesOtherElements();
         rotatedBoundingBoxCanBeIntersected();
         scaledBoundingBoxIsIntersectedCorrectly();
         translatedElementIsIntersectedAtCorrectPosition();
@@ -104,10 +97,10 @@ public class BinaryBvhTreeTest extends AsyncTest {
         var tree = new BinaryBvhTree<TestElement>();
 
         assertThat(tree.getSize()).isZero();
-        assertThat(tree.getIntersections(
+        assertThat(tree.getClosestIntersection(
                 new Vector3f(0, 0, -5),
                 new Vector3f(0, 0, 10)
-        )).isEmpty();
+        )).isNull();
     }
 
     void insertReturnsTrueForNewElement() {
@@ -136,21 +129,6 @@ public class BinaryBvhTreeTest extends AsyncTest {
         assertThat(tree.getSize()).isOne();
     }
 
-    void failedDuplicateInsertDoesNotChangeIntersections() {
-        var tree = new BinaryBvhTree<TestElement>();
-        var element = element();
-
-        assertThat(tree.insert(element)).isTrue();
-        assertThat(tree.insert(element)).isFalse();
-
-        var intersections = tree.getIntersections(
-                new Vector3f(0, 0, -2),
-                new Vector3f(0, 0, 4)
-        );
-
-        assertThat(intersections).hasSize(1);
-    }
-
     void multipleInsertsUpdateSize() {
         var tree = new BinaryBvhTree<TestElement>();
 
@@ -165,17 +143,17 @@ public class BinaryBvhTreeTest extends AsyncTest {
         var tree = new BinaryBvhTree<TestElement>();
         tree.insert(element());
 
-        var intersections = tree.getIntersections(
+        var intersections = tree.getClosestIntersection(
                 new Vector3f(0, 0, -2),
                 new Vector3f(0, 0, 4)
         );
 
-        assertThat(intersections).hasSize(1);
-        assertThat(intersections.getFirst().getSecond().x())
+        assertThat(intersections).isNotNull();
+        assertThat(intersections.getSecond().x())
                 .isCloseTo(0f, offset(1e-6f));
-        assertThat(intersections.getFirst().getSecond().y())
+        assertThat(intersections.getSecond().y())
                 .isCloseTo(0f, offset(1e-6f));
-        assertThat(intersections.getFirst().getSecond().z())
+        assertThat(intersections.getSecond().z())
                 .isCloseTo(-0.5f, offset(1e-6f));
     }
 
@@ -183,37 +161,37 @@ public class BinaryBvhTreeTest extends AsyncTest {
         var tree = new BinaryBvhTree<TestElement>();
         tree.insert(element());
 
-        var intersections = tree.getIntersections(
+        var intersections = tree.getClosestIntersection(
                 new Vector3f(2, 0, -2),
                 new Vector3f(0, 0, 4)
         );
 
-        assertThat(intersections).isEmpty();
+        assertThat(intersections).isNull();
     }
 
     void rayTooShortToReachElementReturnsNoIntersections() {
         var tree = new BinaryBvhTree<TestElement>();
         tree.insert(element());
 
-        var intersections = tree.getIntersections(
+        var intersections = tree.getClosestIntersection(
                 new Vector3f(0, 0, -2),
                 new Vector3f(0, 0, 1)
         );
 
-        assertThat(intersections).isEmpty();
+        assertThat(intersections).isNull();
     }
 
     void rayLengthIsRespected() {
         var tree = new BinaryBvhTree<TestElement>();
         tree.insert(element());
 
-        var intersections = tree.getIntersections(
+        var intersections = tree.getClosestIntersection(
                 new Vector3f(0, 0, -2),
                 new Vector3f(0, 0, 2)
         );
 
-        assertThat(intersections).hasSize(1);
-        assertThat(intersections.getFirst().getSecond().z())
+        assertThat(intersections).isNotNull();
+        assertThat(intersections.getSecond().z())
                 .isCloseTo(-0.5f, offset(1e-6f));
     }
 
@@ -221,13 +199,13 @@ public class BinaryBvhTreeTest extends AsyncTest {
         var tree = new BinaryBvhTree<TestElement>();
         tree.insert(element(0, 0, 5));
 
-        var intersections = tree.getIntersections(
+        var intersections = tree.getClosestIntersection(
                 new Vector3f(0, 0, 0),
                 new Vector3f(0, 0, 10)
         );
 
-        assertThat(intersections).hasSize(1);
-        assertThat(intersections.getFirst().getSecond().z())
+        assertThat(intersections).isNotNull();
+        assertThat(intersections.getSecond().z())
                 .isCloseTo(4.5f, offset(1e-6f));
     }
 
@@ -239,75 +217,14 @@ public class BinaryBvhTreeTest extends AsyncTest {
 
         tree.insert(element(0, 0, 0, transform));
 
-        var intersections = tree.getIntersections(
+        var intersections = tree.getClosestIntersection(
                 new Vector3f(-3, 0, 0),
                 new Vector3f(5, 0, 0)
         );
 
-        assertThat(intersections).hasSize(1);
-        assertThat(intersections.getFirst().getSecond().x())
+        assertThat(intersections).isNotNull();
+        assertThat(intersections.getSecond().x())
                 .isCloseTo(-1f, offset(1e-6f));
-    }
-
-    void multipleElementsReturnAllIntersections() {
-        var tree = new BinaryBvhTree<TestElement>();
-
-        tree.insert(element(0, 0, 2));
-        tree.insert(element(0, 0, 5));
-        tree.insert(element(0, 0, 8));
-
-        var intersections = tree.getIntersections(
-                new Vector3f(0, 0, 0),
-                new Vector3f(0, 0, 10)
-        );
-
-        assertThat(intersections).hasSize(3);
-    }
-
-    void intersectionsAreSortedByDistanceFromOrigin() {
-        var tree = new BinaryBvhTree<TestElement>();
-
-        tree.insert(element(0, 0, 8));
-        tree.insert(element(0, 0, 2));
-        tree.insert(element(0, 0, 5));
-
-        var origin = new Vector3f(0, 0, 0);
-
-        var intersections = tree.getIntersections(
-                origin,
-                new Vector3f(0, 0, 10)
-        );
-
-        assertThat(intersections).hasSize(3);
-
-        assertThat(intersections.get(0).getSecond().distanceSquared(origin))
-                .isLessThanOrEqualTo(
-                        intersections.get(1).getSecond().distanceSquared(origin)
-                );
-
-        assertThat(intersections.get(1).getSecond().distanceSquared(origin))
-                .isLessThanOrEqualTo(
-                        intersections.get(2).getSecond().distanceSquared(origin)
-                );
-    }
-
-    void rayOnlyIntersectsSomeElements() {
-        var tree = new BinaryBvhTree<TestElement>();
-
-        tree.insert(element(0, 0, 2));
-        tree.insert(element(10, 0, 4));
-        tree.insert(element(0, 0, 6));
-
-        var intersections = tree.getIntersections(
-                new Vector3f(0, 0, 0),
-                new Vector3f(0, 0, 10)
-        );
-
-        assertThat(intersections).hasSize(2);
-        assertThat(intersections.get(0).getSecond().z())
-                .isCloseTo(1.5f, offset(1e-6f));
-        assertThat(intersections.get(1).getSecond().z())
-                .isCloseTo(5.5f, offset(1e-6f));
     }
 
     void removeExistingElementReturnsTrue() {
@@ -327,10 +244,10 @@ public class BinaryBvhTreeTest extends AsyncTest {
         tree.insert(element);
         tree.remove(element);
 
-        assertThat(tree.getIntersections(
+        assertThat(tree.getClosestIntersection(
                 new Vector3f(0, 0, 0),
                 new Vector3f(0, 0, 10)
-        )).isEmpty();
+        )).isNull();
     }
 
     void removeNonexistentElementReturnsFalse() {
@@ -349,32 +266,6 @@ public class BinaryBvhTreeTest extends AsyncTest {
         assertThat(tree.getSize()).isZero();
     }
 
-    void removeFromMultipleElementTreePreservesOtherElements() {
-        var tree = new BinaryBvhTree<TestElement>();
-
-        var first = element(0, 0, 2);
-        var second = element(0, 0, 5);
-        var third = element(0, 0, 8);
-
-        tree.insert(first);
-        tree.insert(second);
-        tree.insert(third);
-
-        assertThat(tree.remove(second)).isTrue();
-        assertThat(tree.getSize()).isEqualTo(2);
-
-        var intersections = tree.getIntersections(
-                new Vector3f(0, 0, 0),
-                new Vector3f(0, 0, 10)
-        );
-
-        assertThat(intersections).hasSize(2);
-        assertThat(intersections.get(0).getSecond().z())
-                .isCloseTo(1.5f, offset(1e-6f));
-        assertThat(intersections.get(1).getSecond().z())
-                .isCloseTo(7.5f, offset(1e-6f));
-    }
-
     void removeOnlyElementLeavesTreeEmpty() {
         var tree = new BinaryBvhTree<TestElement>();
         var element = element();
@@ -383,27 +274,27 @@ public class BinaryBvhTreeTest extends AsyncTest {
 
         assertThat(tree.remove(element)).isTrue();
         assertThat(tree.getSize()).isZero();
-        assertThat(tree.getIntersections(
+        assertThat(tree.getClosestIntersection(
                 new Vector3f(0, 0, -2),
                 new Vector3f(0, 0, 4)
-        )).isEmpty();
+        )).isNull();
     }
 
     void rayStartingInsideElementReturnsOrigin() {
         var tree = new BinaryBvhTree<TestElement>();
         tree.insert(element());
 
-        var intersections = tree.getIntersections(
+        var intersections = tree.getClosestIntersection(
                 new Vector3f(0, 0, 0),
                 new Vector3f(0, 0, 2)
         );
 
-        assertThat(intersections).hasSize(1);
-        assertThat(intersections.getFirst().getSecond().x())
+        assertThat(intersections).isNotNull();
+        assertThat(intersections.getSecond().x())
                 .isCloseTo(0f, offset(1e-6f));
-        assertThat(intersections.getFirst().getSecond().y())
+        assertThat(intersections.getSecond().y())
                 .isCloseTo(0f, offset(1e-6f));
-        assertThat(intersections.getFirst().getSecond().z())
+        assertThat(intersections.getSecond().z())
                 .isCloseTo(0f, offset(1e-6f));
     }
 
@@ -411,13 +302,13 @@ public class BinaryBvhTreeTest extends AsyncTest {
         var tree = new BinaryBvhTree<TestElement>();
         tree.insert(element());
 
-        var intersections = tree.getIntersections(
+        var intersections = tree.getClosestIntersection(
                 new Vector3f(-2, 0, 0),
                 new Vector3f(4, 0, 0)
         );
 
-        assertThat(intersections).hasSize(1);
-        assertThat(intersections.getFirst().getSecond().x())
+        assertThat(intersections).isNotNull();
+        assertThat(intersections.getSecond().x())
                 .isCloseTo(-0.5f, offset(1e-6f));
     }
 
@@ -429,12 +320,12 @@ public class BinaryBvhTreeTest extends AsyncTest {
 
         tree.insert(element(0, 0, 0, transform));
 
-        var intersections = tree.getIntersections(
+        var intersections = tree.getClosestIntersection(
                 new Vector3f(-2, 0, 0),
                 new Vector3f(4, 0, 0)
         );
 
-        assertThat(intersections).hasSize(1);
+        assertThat(intersections).isNotNull();
     }
 
     void farAwayElementsDoNotProduceFalsePositives() {
@@ -444,42 +335,12 @@ public class BinaryBvhTreeTest extends AsyncTest {
         tree.insert(element(200, 0, 20));
         tree.insert(element(300, 0, 30));
 
-        var intersections = tree.getIntersections(
+        var intersections = tree.getClosestIntersection(
                 new Vector3f(0, 0, 0),
                 new Vector3f(0, 0, 40)
         );
 
-        assertThat(intersections).isEmpty();
-    }
-
-    void manyElementsCanBeInsertedAndRemoved() {
-        var tree = new BinaryBvhTree<TestElement>();
-        var elements = new ArrayList<TestElement>();
-
-        for (int i = 0; i < 100; i++) {
-            var element = element(0, 0, i * 2f);
-
-            elements.add(element);
-            assertThat(tree.insert(element)).isTrue();
-        }
-
-        assertThat(tree.getSize()).isEqualTo(100);
-
-        assertThat(tree.getIntersections(
-                new Vector3f(0, 0, -1),
-                new Vector3f(0, 0, 201)
-        )).hasSize(100);
-
-        for (int i = 0; i < elements.size(); i += 2) {
-            assertThat(tree.remove(elements.get(i))).isTrue();
-        }
-
-        assertThat(tree.getSize()).isEqualTo(50);
-
-        assertThat(tree.getIntersections(
-                new Vector3f(0, 0, -1),
-                new Vector3f(0, 0, 201)
-        )).hasSize(50);
+        assertThat(intersections).isNull();
     }
 
     void removeFindsElementWhenBoundingBoxesOverlap() {
@@ -494,12 +355,12 @@ public class BinaryBvhTreeTest extends AsyncTest {
         assertThat(tree.remove(second)).isTrue();
         assertThat(tree.getSize()).isOne();
 
-        var intersections = tree.getIntersections(
+        var intersections = tree.getClosestIntersection(
                 new Vector3f(-2, 0, 0),
                 new Vector3f(4, 0, 0)
         );
 
-        assertThat(intersections).hasSize(1);
+        assertThat(intersections).isNotNull();
     }
 }
 

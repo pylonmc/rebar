@@ -53,15 +53,15 @@ interface InteractableRebarItemDisplay : BinaryBvhTree.Element {
         private val worlds = WeakIdentityHashMap<InteractableRebarItemDisplay, World>()
 
         /**
-         * Obtains the [InteractableRebarItemDisplay]s intersected by the ray starting from [origin] and going in [direction], with a maximum
+         * Obtains the closest [InteractableRebarItemDisplay] intersected by the ray starting from [origin] and going in [direction], with a maximum
          * length equal to [direction]
          */
         @JvmStatic
-        fun getIntersectedEntities(world: World, origin: Vector3fc, direction: Vector3fc): List<Pair<InteractableRebarItemDisplay, Vector3fc>> {
-            val tree = trees[world] ?: return emptyList()
+        fun getClosestIntersectedEntity(world: World, origin: Vector3fc, direction: Vector3fc):Pair<InteractableRebarItemDisplay, Vector3fc>? {
+            val tree = trees[world] ?: return null
             val elements = tree.read { it.toList() }
             elements.forEach { it.checkForUpdates() }
-            return tree.read { it.getIntersections(origin, direction) }
+            return tree.read { it.getClosestIntersection(origin, direction) }
         }
 
         @EventHandler
