@@ -134,16 +134,55 @@ class ProgressBar : ComponentLike {
          * Filled bars are colored according to the fluid.
          */
         @JvmStatic
-        fun fluidContentsWithName(fluid: RebarFluid?, capacity: Double, amount: Double) = ProgressBar()
-            .barColor(fluid?.color ?: NamedTextColor.BLACK)
-            .proportion(amount / capacity)
-            .suffix(Component.text(" ")
+        fun fluidContentsWithName(fluid: RebarFluid?, capacity: Double, amount: Double) : ProgressBar {
+            check(capacity != 0.0) { "Capacity cannot be zero" }
+            val suffix = Component.text(" ")
                 .append(Component.text(amount.roundToInt()))
                 .append(Component.text("/"))
                 .append(UnitFormat.MILLIBUCKETS.format(capacity))
                 .append(Component.text(" ("))
                 .append(fluid?.name ?: Component.translatable("rebar.fluid.none"))
                 .append(Component.text(")"))
-            )
+
+            return ProgressBar()
+                .barColor(fluid?.color ?: NamedTextColor.BLACK)
+                .proportion(amount / capacity)
+                .suffix(suffix)
+        }
+        /**
+         * Example: '||||||||||||||||---- 720mB / 3000mB (Water + 1)'
+         *
+         * (where | represents a filled bar and - an empty bar)
+         *
+         * Filled bars are colored according to the fluid; if [fluid] is null the bars are
+         * black and the name falls back to 'None'. [more] is appended inside the brackets
+         * after the fluid name, e.g. a component rendering " + 1" or " and more..."
+         * for extra fluid types.
+         */
+        @JvmStatic
+        @JvmOverloads
+        fun fluidContentsWithNameAndMore(
+            fluid: RebarFluid?,
+            capacity: Double,
+            amount: Double,
+            more: ComponentLike? = null,
+        ): ProgressBar {
+            check(capacity != 0.0) { "Capacity cannot be zero" }
+            val suffix = Component.text()
+                .append(Component.space())
+                .append(Component.text(amount.roundToInt()))
+                .append(Component.text(" / ").color(NamedTextColor.GRAY))
+                .append(UnitFormat.MILLIBUCKETS.format(capacity).decimalPlaces(0))
+                .append(Component.text(" (").color(NamedTextColor.GRAY))
+                .append(fluid?.name ?: Component.translatable("rebar.fluid.none"))
+                .append(more ?: Component.empty())
+                .append(Component.text(")").color(NamedTextColor.GRAY))
+                .build()
+
+            return ProgressBar()
+                .barColor(fluid?.color ?: NamedTextColor.BLACK)
+                .proportion(amount / capacity)
+                .suffix(suffix)
+        }
     }
 }
