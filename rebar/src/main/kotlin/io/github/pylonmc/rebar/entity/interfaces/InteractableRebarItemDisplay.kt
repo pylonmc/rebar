@@ -30,7 +30,8 @@ import kotlin.time.Duration.Companion.seconds
  * Implemented by item displays that wish to listen for player interactions. Normally, display entities cannot
  * listen for interactions as they have no hitbox. Rebar implements a custom interaction system specifically
  * for item displays to allow interactions to be detected.
- * **Important: this only works for item displays that are 1x1x1 cubes, such as acacia logs, sea lanterns, or crafting tables.**
+ * **Important: this only works for item displays that appear as 1x1x1 cubes when they don't any any transformations applied to them,
+ * such as acacia logs, sea lanterns, or crafting tables.**
  */
 interface InteractableRebarItemDisplay : BinaryBvhTree.Element {
 
@@ -89,7 +90,7 @@ interface InteractableRebarItemDisplay : BinaryBvhTree.Element {
         private fun onPlayerInteract(event: PlayerInteractEvent) {
             if (event.action == Action.PHYSICAL) return
 
-            val target = event.player.getTargetIncludingInteractableDisplays() as? PlayerTarget.InteractableItemDisplay ?: return
+            val target = event.player.getTargetIncludingInteractableDisplays() as? PlayerTarget.TargetInteractableItemDisplay ?: return
 
             event.setUseInteractedBlock(Event.Result.DENY)
             target.display.onInteract(event, target.location)

@@ -94,7 +94,7 @@ open class FluidPipe(stack: ItemStack) : RebarItem(stack), InteractRebarItemHand
             }
         } else {
             // Player is not yet connecting a pipe; see if they have right clicked a endpoint display, then see if we can start a connection
-            val targetEntity = (player.getTargetIncludingInteractableDisplays() as? PlayerTarget.InteractableItemDisplay)?.display?.entity
+            val targetEntity = (player.getTargetIncludingInteractableDisplays() as? PlayerTarget.TargetInteractableItemDisplay)?.display?.entity
             if (targetEntity != null) {
                 if (tryStartConnection(player, targetEntity)) {
                     return
