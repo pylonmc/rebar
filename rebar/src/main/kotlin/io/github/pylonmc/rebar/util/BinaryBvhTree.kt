@@ -37,32 +37,39 @@ class BinaryBvhTree<E : BinaryBvhTree.Element> : Collection<E> {
         }
 
     /**
-     * Returns the intersection points of the ray and elements in the tree. The list is sorted by distance from
-     * the origin.
+     * Returns the closest intersection point of the ray and element in the tree, or null if no intersections.
      *
      * @param origin the origin of the ray
      * @param direction the direction and distance of the ray
      */
-    fun getIntersections(origin: Vector3fc, direction: Vector3fc): List<Pair<E, Vector3fc>> {
-        val intersections = mutableListOf<Pair<E, Vector3fc>>()
+    fun getClosestIntersection(origin: Vector3fc, direction: Vector3fc): Pair<E, Vector3fc>? {
+        var closest: Pair<E, Vector3fc>? = null
 
-        fun test(node: TreeNode<E>?) {
+        infix fun Vector3fc.isCloserThan(other: Vector3fc) = origin.distanceSquared(this) < origin.distanceSquared(other)
+        fun closest(node: TreeNode<E>?) {
             when (node) {
                 null -> {}
 
-                is Branch -> if (node.boundingBox.rayIntersection(origin, direction) in 0f..1f) {
-                    test(node.left)
-                    test(node.right)
+                is Branch -> {
+                    val intersectionDist = node.boundingBox.rayIntersection(origin, direction)
+                    if (intersectionDist in 0f..1f && (closest == null || direction * intersectionDist isCloserThan closest!!.second)) {
+                        closest(node.left)
+                        closest(node.right)
+                    }
                 }
 
-                is Leaf -> node.getIntersection(origin, direction)?.let { intersections.add(node.element to it) }
+                is Leaf -> {
+                    val intersection = node.getIntersection(origin, direction)
+                    if (intersection != null && (closest == null || intersection isCloserThan closest!!.second)) {
+                        closest = node.element to intersection
+                    }
+                }
             }
         }
 
-        test(tree)
+        closest(tree)
 
-        intersections.sortBy { it.second.distanceSquared(origin) }
-        return intersections
+        return closest
     }
 
     /**

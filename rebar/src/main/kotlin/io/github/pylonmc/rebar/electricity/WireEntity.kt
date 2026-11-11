@@ -102,10 +102,12 @@ class WireEntity : RebarEntity<ItemDisplay>, RemoveRebarEntityHandler, Interacta
         entity.interpolationDelay = 0
         entity.interpolationDuration = 1
         if (entity.location != loc1) {
-            entity.teleportAsync(loc1) // in case port was flipped
+            entity.teleport(loc1) // in case port was flipped
         }
 
         length = loc1.distance(loc2)
+
+        notifyTransformUpdated()
     }
 
     /**

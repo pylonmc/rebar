@@ -615,9 +615,9 @@ sealed interface PlayerTarget {
 
     val location: Location
 
-    data class Block(val block: org.bukkit.block.Block, override val location: Location) : PlayerTarget
-    data class Entity(val entity: org.bukkit.entity.Entity, override val location: Location) : PlayerTarget
-    data class InteractableItemDisplay(val display: InteractableRebarItemDisplay, override val location: Location) : PlayerTarget
+    data class TargetBlock(val block: Block, override val location: Location) : PlayerTarget
+    data class TargetEntity(val entity: Entity, override val location: Location) : PlayerTarget
+    data class TargetInteractableItemDisplay(val display: InteractableRebarItemDisplay, override val location: Location) : PlayerTarget
 }
 
 /**
@@ -627,23 +627,23 @@ fun Player.getTargetIncludingInteractableDisplays(): PlayerTarget? {
     val targets = mutableListOf<PlayerTarget>()
 
     rayTraceBlocks(getAttribute(Attribute.BLOCK_INTERACTION_RANGE)!!.value)?.let {
-        targets.add(PlayerTarget.Block(it.hitBlock!!, it.hitPosition.toLocation(world)))
+        targets.add(PlayerTarget.TargetBlock(it.hitBlock!!, it.hitPosition.toLocation(world)))
     }
 
     val eyeLocation = eyeLocation
     val entityRange = getAttribute(Attribute.ENTITY_INTERACTION_RANGE)!!.value.toFloat()
     rayTraceEntities(ceil(entityRange).toInt())?.let {
         if (it.hitPosition.distanceSquared(eyeLocation.toVector()) <= entityRange * entityRange) {
-            targets.add(PlayerTarget.Entity(it.hitEntity!!, it.hitPosition.toLocation(world)))
+            targets.add(PlayerTarget.TargetEntity(it.hitEntity!!, it.hitPosition.toLocation(world)))
         }
     }
 
-    InteractableRebarItemDisplay.getIntersectedEntities(
+    InteractableRebarItemDisplay.getClosestIntersectedEntity(
         world,
         eyeLocation.toVector().toVector3f(),
         eyeLocation.direction.toVector3f() * entityRange
-    ).firstOrNull()?.let { (entity, loc) ->
-        targets.add(PlayerTarget.InteractableItemDisplay(entity, Vector.fromJOML(loc).toLocation(world)))
+    )?.let { (entity, loc) ->
+        targets.add(PlayerTarget.TargetInteractableItemDisplay(entity, Vector.fromJOML(loc).toLocation(world)))
     }
 
     return targets.minByOrNull { it.location.distanceSquared(eyeLocation) }

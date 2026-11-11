@@ -30,7 +30,8 @@ import kotlin.time.Duration.Companion.seconds
  * Implemented by item displays that wish to listen for player interactions. Normally, display entities cannot
  * listen for interactions as they have no hitbox. Rebar implements a custom interaction system specifically
  * for item displays to allow interactions to be detected.
- * **Important: this only works for item displays that are 1x1x1 cubes, such as acacia logs, sea lanterns, or crafting tables.**
+ * **Important: this only works for item displays that appear as 1x1x1 cubes when they don't any any transformations applied to them,
+ * such as acacia logs, sea lanterns, or crafting tables.**
  */
 interface InteractableRebarItemDisplay : BinaryBvhTree.Element {
 
@@ -43,6 +44,29 @@ interface InteractableRebarItemDisplay : BinaryBvhTree.Element {
     @get:ApiStatus.NonExtendable
     override val position: Vector3fc get() = positions[this]!!
 
+    /**
+     * Call when the transformation or location of the entity has changed, in order to notify the interaction system about it
+     */
+    @ApiStatus.NonExtendable
+    fun notifyTransformUpdated() {
+        val entityTransform = entity.transformation.toMatrix()
+        val transformChanged = entityTransform != boundingBoxTransform
+        val entityPosition = entity.location.toVector().toVector3f()
+        var world = worlds[this]!!
+        val positionChanged = entityPosition != position || entity.world != world
+
+        if (transformChanged || positionChanged) {
+            trees[world]!!.write { it.get().remove(this) }
+
+            boxes[this] = entityTransform
+            world = entity.world
+            worlds[this] = world
+            positions[this] = entityPosition
+
+            trees[world]!!.write { it.get().insert(this) }
+        }
+    }
+
     fun onInteract(event: PlayerInteractEvent, interactionLocation: Location) {}
 
     companion object : Listener {
@@ -53,22 +77,20 @@ interface InteractableRebarItemDisplay : BinaryBvhTree.Element {
         private val worlds = WeakIdentityHashMap<InteractableRebarItemDisplay, World>()
 
         /**
-         * Obtains the [InteractableRebarItemDisplay]s intersected by the ray starting from [origin] and going in [direction], with a maximum
+         * Obtains the closest [InteractableRebarItemDisplay] intersected by the ray starting from [origin] and going in [direction], with a maximum
          * length equal to [direction]
          */
         @JvmStatic
-        fun getIntersectedEntities(world: World, origin: Vector3fc, direction: Vector3fc): List<Pair<InteractableRebarItemDisplay, Vector3fc>> {
-            val tree = trees[world] ?: return emptyList()
-            val elements = tree.read { it.toList() }
-            elements.forEach { it.checkForUpdates() }
-            return tree.read { it.getIntersections(origin, direction) }
+        fun getClosestIntersectedEntity(world: World, origin: Vector3fc, direction: Vector3fc):Pair<InteractableRebarItemDisplay, Vector3fc>? {
+            val tree = trees[world] ?: return null
+            return tree.read { it.getClosestIntersection(origin, direction) }
         }
 
         @EventHandler
         private fun onPlayerInteract(event: PlayerInteractEvent) {
             if (event.action == Action.PHYSICAL) return
 
-            val target = event.player.getTargetIncludingInteractableDisplays() as? PlayerTarget.InteractableItemDisplay ?: return
+            val target = event.player.getTargetIncludingInteractableDisplays() as? PlayerTarget.TargetInteractableItemDisplay ?: return
 
             event.setUseInteractedBlock(Event.Result.DENY)
             target.display.onInteract(event, target.location)
@@ -127,25 +149,6 @@ interface InteractableRebarItemDisplay : BinaryBvhTree.Element {
                         tree.set(newTree)
                     }
                 }
-            }
-        }
-
-        private fun InteractableRebarItemDisplay.checkForUpdates() {
-            val entityTransform = entity.transformation.toMatrix()
-            val transformChanged = entityTransform != boundingBoxTransform
-            val entityPosition = entity.location.toVector().toVector3f()
-            var world = worlds[this]!!
-            val positionChanged = entityPosition != position || entity.world != world
-
-            if (transformChanged || positionChanged) {
-                trees[world]!!.write { it.get().remove(this) }
-
-                boxes[this] = entityTransform
-                world = entity.world
-                worlds[this] = world
-                positions[this] = entityPosition
-
-                trees[world]!!.write { it.get().insert(this) }
             }
         }
     }
