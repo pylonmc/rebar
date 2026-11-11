@@ -43,6 +43,29 @@ interface InteractableRebarItemDisplay : BinaryBvhTree.Element {
     @get:ApiStatus.NonExtendable
     override val position: Vector3fc get() = positions[this]!!
 
+    /**
+     * Call when the transformation or location of the entity has changed, in order to notify the interaction system about it
+     */
+    @ApiStatus.NonExtendable
+    fun notifyTransformUpdated() {
+        val entityTransform = entity.transformation.toMatrix()
+        val transformChanged = entityTransform != boundingBoxTransform
+        val entityPosition = entity.location.toVector().toVector3f()
+        var world = worlds[this]!!
+        val positionChanged = entityPosition != position || entity.world != world
+
+        if (transformChanged || positionChanged) {
+            trees[world]!!.write { it.get().remove(this) }
+
+            boxes[this] = entityTransform
+            world = entity.world
+            worlds[this] = world
+            positions[this] = entityPosition
+
+            trees[world]!!.write { it.get().insert(this) }
+        }
+    }
+
     fun onInteract(event: PlayerInteractEvent, interactionLocation: Location) {}
 
     companion object : Listener {
@@ -59,8 +82,6 @@ interface InteractableRebarItemDisplay : BinaryBvhTree.Element {
         @JvmStatic
         fun getClosestIntersectedEntity(world: World, origin: Vector3fc, direction: Vector3fc):Pair<InteractableRebarItemDisplay, Vector3fc>? {
             val tree = trees[world] ?: return null
-            val elements = tree.read { it.toList() }
-            elements.forEach { it.checkForUpdates() }
             return tree.read { it.getClosestIntersection(origin, direction) }
         }
 
@@ -127,25 +148,6 @@ interface InteractableRebarItemDisplay : BinaryBvhTree.Element {
                         tree.set(newTree)
                     }
                 }
-            }
-        }
-
-        private fun InteractableRebarItemDisplay.checkForUpdates() {
-            val entityTransform = entity.transformation.toMatrix()
-            val transformChanged = entityTransform != boundingBoxTransform
-            val entityPosition = entity.location.toVector().toVector3f()
-            var world = worlds[this]!!
-            val positionChanged = entityPosition != position || entity.world != world
-
-            if (transformChanged || positionChanged) {
-                trees[world]!!.write { it.get().remove(this) }
-
-                boxes[this] = entityTransform
-                world = entity.world
-                worlds[this] = world
-                positions[this] = entityPosition
-
-                trees[world]!!.write { it.get().insert(this) }
             }
         }
     }
