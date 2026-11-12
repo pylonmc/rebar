@@ -2,31 +2,26 @@ package io.github.pylonmc.rebar.electricity
 
 import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.config.RebarConfig
-import io.github.pylonmc.rebar.electricity.nodes.ElectricPortEntity
-import io.github.pylonmc.rebar.entity.EntityStorage
-import io.github.pylonmc.rebar.event.RebarPlayerInteractWireEvent
 import io.github.pylonmc.rebar.i18n.RebarArgument
 import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.item.interfaces.WireRebarItem
-import io.github.pylonmc.rebar.util.*
+import io.github.pylonmc.rebar.util.Either
+import io.github.pylonmc.rebar.util.delayTicks
 import io.papermc.paper.event.player.PlayerInventorySlotChangeEvent
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import org.bukkit.GameMode
-import org.bukkit.attribute.Attribute
 import org.bukkit.entity.Player
-import org.bukkit.event.Event
 import org.bukkit.event.EventHandler
-import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.block.BlockPlaceEvent
 import org.bukkit.event.entity.PlayerDeathEvent
-import org.bukkit.event.player.*
-import org.bukkit.inventory.EquipmentSlot
-import org.bukkit.util.Vector
-import org.joml.Vector3f
+import org.bukkit.event.player.PlayerChangedWorldEvent
+import org.bukkit.event.player.PlayerItemHeldEvent
+import org.bukkit.event.player.PlayerMoveEvent
+import org.bukkit.event.player.PlayerQuitEvent
 import java.util.*
 
 object WireConnectionService : Listener {
@@ -132,51 +127,5 @@ object WireConnectionService : Listener {
                 }
             }
         }
-    }
-
-    @EventHandler(priority = EventPriority.LOWEST)
-    private fun onPlayerInteract(event: PlayerInteractEvent) {
-        if (event.hand != EquipmentSlot.HAND) return
-
-        // prevent wires from blocking ports
-        val usedPort = run {
-            val target = event.player.getTargetEntityByLocation(ElectricPortEntity.SCALE.toFloat()) ?: return@run false
-            val port = EntityStorage.getAs<ElectricPortEntity>(target) ?: return@run false
-            port.onInteractedWith(event)
-            event.setUseInteractedBlock(Event.Result.DENY)
-            event.setUseItemInHand(Event.Result.DENY)
-            true
-        }
-        if (usedPort) return
-
-        val player = event.player
-        val eyePos = player.eyeLocation.toVector().toVector3f()
-        val eyeVec =
-            player.eyeLocation.direction.toVector3f() * player.getAttribute(Attribute.ENTITY_INTERACTION_RANGE)!!.value.toFloat()
-        val intersections = mutableListOf<Pair<WireEntity, Vector3f>>()
-        for (wire in WireEntity.loadedWires) {
-            if (wire.isHeldByPlayer) continue
-            val wirePos = wire.port.location.toVector().toVector3f()
-            val wireOtherEndPos = (wire.otherEnd as Either.Right).value.location.toVector().toVector3f()
-            val wireVec = wireOtherEndPos - wirePos
-            val intersection = intersectionOfLineAndCylinder(wirePos, wireVec, WireEntity.THICKNESS, eyePos, eyeVec)
-            if (intersection != null) {
-                intersections.add(wire to intersection)
-            }
-        }
-        val closestIntersection = intersections.minByOrNull { it.second.distanceSquared(eyePos) } ?: return
-        event.setUseInteractedBlock(Event.Result.DENY)
-        RebarPlayerInteractWireEvent(
-            closestIntersection.first,
-            event,
-            Vector.fromJOML(closestIntersection.second).toLocation(player.world)
-        ).callEvent()
-    }
-
-    @EventHandler
-    private fun onPlayerBreakWire(event: RebarPlayerInteractWireEvent) {
-        if (!event.interaction.action.isLeftClick || !RebarItem.isRebarItem<WireRebarItem>(event.player.inventory.itemInMainHand)) return
-        event.wire.dropItemsAt(event.interactionPoint)
-        event.wire.remove()
     }
 }

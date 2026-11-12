@@ -1,0 +1,162 @@
+package io.github.pylonmc.rebar.entity.interfaces
+
+import io.github.pylonmc.rebar.Rebar
+import io.github.pylonmc.rebar.entity.display.transform.TransformUtil.toMatrix
+import io.github.pylonmc.rebar.event.RebarEntityAddEvent
+import io.github.pylonmc.rebar.event.RebarEntityRemoveEvent
+import io.github.pylonmc.rebar.event.RebarEntityUnloadEvent
+import io.github.pylonmc.rebar.util.BinaryBvhTree
+import io.github.pylonmc.rebar.util.PlayerTarget
+import io.github.pylonmc.rebar.util.ReadWriteLockableReference
+import io.github.pylonmc.rebar.util.getTargetIncludingInteractableDisplays
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import org.bukkit.Location
+import org.bukkit.World
+import org.bukkit.entity.ItemDisplay
+import org.bukkit.event.Event
+import org.bukkit.event.EventHandler
+import org.bukkit.event.Listener
+import org.bukkit.event.block.Action
+import org.bukkit.event.player.PlayerInteractEvent
+import org.bukkit.event.world.WorldLoadEvent
+import org.jetbrains.annotations.ApiStatus
+import org.joml.Matrix4fc
+import org.joml.Vector3fc
+import java.lang.ref.WeakReference
+import java.util.*
+import java.util.concurrent.ThreadLocalRandom
+import kotlin.time.Duration.Companion.seconds
+
+/**
+ * Implemented by item displays that wish to listen for player interactions. Normally, display entities cannot
+ * listen for interactions as they have no hitbox. Rebar implements a custom interaction system specifically
+ * for item displays to allow interactions to be detected.
+ * **Important: this only works for item displays that appear as 1x1x1 cubes when they don't any any transformations applied to them,
+ * such as acacia logs, sea lanterns, or crafting tables.**
+ */
+interface InteractableRebarItemDisplay : BinaryBvhTree.Element {
+
+    // automatically implemented by RebarEntity
+    val entity: ItemDisplay
+
+    @get:ApiStatus.NonExtendable
+    override val boundingBoxTransform: Matrix4fc get() = boxes[entity.uniqueId]!!
+
+    @get:ApiStatus.NonExtendable
+    override val position: Vector3fc get() = positions[entity.uniqueId]!!
+
+    /**
+     * Call when the transformation or location of the entity has changed, in order to notify the interaction system about it
+     */
+    @ApiStatus.NonExtendable
+    fun notifyTransformUpdated() {
+        val id = entity.uniqueId
+        val entityTransform = entity.transformation.toMatrix()
+        val transformChanged = entityTransform != boundingBoxTransform
+        val entityPosition = entity.location.toVector().toVector3f()
+        var world = worlds[id]!!
+        val positionChanged = entityPosition != position || entity.world != world
+
+        if (transformChanged || positionChanged) {
+            trees[world]!!.write { it.get().remove(this) }
+
+            boxes[id] = entityTransform
+            world = entity.world
+            worlds[id] = world
+            positions[id] = entityPosition
+
+            trees[world]!!.write { it.get().insert(this) }
+        }
+    }
+
+    fun onInteract(event: PlayerInteractEvent, interactionLocation: Location) {}
+
+    companion object : Listener {
+        private val trees = WeakHashMap<World, ReadWriteLockableReference<BinaryBvhTree<InteractableRebarItemDisplay>>>()
+
+        private val boxes = mutableMapOf<UUID, Matrix4fc>()
+        private val positions = mutableMapOf<UUID, Vector3fc>()
+        private val worlds = mutableMapOf<UUID, World>()
+
+        /**
+         * Obtains the closest [InteractableRebarItemDisplay] intersected by the ray starting from [origin] and going in [direction], with a maximum
+         * length equal to [direction]
+         */
+        @JvmStatic
+        fun getClosestIntersectedEntity(world: World, origin: Vector3fc, direction: Vector3fc):Pair<InteractableRebarItemDisplay, Vector3fc>? {
+            val tree = trees[world] ?: return null
+            return tree.read { it.getClosestIntersection(origin, direction) }
+        }
+
+        @EventHandler
+        private fun onPlayerInteract(event: PlayerInteractEvent) {
+            if (event.action == Action.PHYSICAL) return
+
+            val target = event.player.getTargetIncludingInteractableDisplays() as? PlayerTarget.TargetInteractableItemDisplay ?: return
+
+            event.setUseInteractedBlock(Event.Result.DENY)
+            target.display.onInteract(event, target.location)
+        }
+
+        @EventHandler
+        private fun onRebarEntityAdd(event: RebarEntityAddEvent) {
+            val entity = event.rebarEntity as? InteractableRebarItemDisplay ?: return
+            val world = entity.entity.world
+            val id = entity.entity.uniqueId
+            boxes[id] = entity.entity.transformation.toMatrix()
+            worlds[id] = world
+            positions[id] = entity.entity.location.toVector().toVector3f()
+            trees[world]!!.write { it.get().insert(entity) }
+        }
+
+        @EventHandler
+        private fun onRebarEntityRemove(event: RebarEntityRemoveEvent) {
+            val entity = event.rebarEntity as? InteractableRebarItemDisplay ?: return
+            val world = entity.entity.world
+            trees[world]!!.write { it.get().remove(entity) }
+            val id = entity.entity.uniqueId
+            boxes.remove(id)
+            worlds.remove(id)
+            positions.remove(id)
+        }
+
+        @EventHandler
+        private fun onRebarEntityUnload(event: RebarEntityUnloadEvent) {
+            val entity = event.rebarEntity as? InteractableRebarItemDisplay ?: return
+            val world = entity.entity.world
+            trees[world]!!.write { it.get().remove(entity) }
+            val id = entity.entity.uniqueId
+            boxes.remove(id)
+            worlds.remove(id)
+            positions.remove(id)
+        }
+
+        @EventHandler
+        private fun onWorldLoad(event: WorldLoadEvent) {
+            val tree = ReadWriteLockableReference(BinaryBvhTree<InteractableRebarItemDisplay>())
+            trees[event.world] = tree
+
+            // occasionally rebuild trees that have been modified a lot in order to improve performance
+            val world = WeakReference(event.world)
+            Rebar.scope.launch(Dispatchers.IO) {
+                delay(ThreadLocalRandom.current().nextInt(1, 10).seconds)
+                while (true) {
+                    delay(10.seconds)
+                    if (world.get() == null) break
+                    val mutations = tree.read { it.mutationsSinceCreation }
+                    if (mutations < 64) continue
+
+                    val elements = tree.read { it.toList() }
+                    val newTree = BinaryBvhTree.buildFromElements(elements)
+
+                    tree.write {
+                        if (tree.get().mutationsSinceCreation != mutations) continue // tree has been modified while rebuilding, try again next loop
+                        tree.set(newTree)
+                    }
+                }
+            }
+        }
+    }
+}
