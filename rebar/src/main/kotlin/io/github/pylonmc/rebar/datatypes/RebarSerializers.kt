@@ -150,6 +150,9 @@ object RebarSerializers {
     @JvmField
     val PROCESSOR = ProcessorPersistentDataType
 
+    @JvmField
+    val REBAR_RECIPE = RebarRecipePersistentDataType
+
     @JvmSynthetic
     internal val CARGO_BLOCK_DATA = CargoBlockPersistentDataType
 

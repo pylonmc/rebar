@@ -15,6 +15,7 @@ import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.event.inventory.ClickType
 import xyz.xenondevs.invui.Click
+import xyz.xenondevs.invui.gui.IngredientMapper
 import xyz.xenondevs.invui.gui.PagedGui
 import xyz.xenondevs.invui.gui.ScrollGui
 import xyz.xenondevs.invui.gui.TabGui
@@ -139,6 +140,34 @@ object GuiItems {
      */
     @JvmStatic
     fun tab(item: ItemStackBuilder, tab: Int): Item = RebarTabItem(item, tab)
+
+    /**
+     * Fills sequential characters in the structure with the items provided.
+     *
+     * For example, in this code:
+     * ```
+     * Gui.builder()
+     * .setStructure(
+     *  "# # a b c # # # #",
+     *  "# # # d e f # # #"
+     *  )
+     * ```
+     * Passing in [firstChar] as `'a'` will fill the `a b c d e f` items in order with the items from the [items] iterable.
+     * The filling uses sequential codepoints, so possible sequences could be `a b c` or `1 2 3` or `α β γ` or even `串 丳 临`.
+     *
+     * @receiver the builder
+     * @param items the items to fill
+     * @param firstChar the first character that will be filled, from which will keep going sequentially by codepoint
+     * @return the same builder
+     */
+    @JvmStatic
+    fun <B : IngredientMapper<*>> B.fillItemsSequential(firstChar: Char, items: Iterable<Item>): B = apply {
+        var char = firstChar
+        for (item in items) {
+            addIngredient(char, item)
+            char += 1
+        }
+    }
 }
 
 private class RebarScrollItem(private val direction: Int, private val key: String) : AbstractScrollGuiBoundItem() {
