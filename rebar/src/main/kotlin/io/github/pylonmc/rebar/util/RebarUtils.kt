@@ -23,6 +23,7 @@ import io.github.pylonmc.rebar.util.position.BlockPosition
 import io.github.pylonmc.rebar.util.position.position
 import io.papermc.paper.datacomponent.DataComponentType
 import io.papermc.paper.datacomponent.DataComponentTypes
+import io.papermc.paper.persistence.PersistentDataKey
 import io.papermc.paper.registry.keys.tags.BlockTypeTagKeys
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -405,9 +406,22 @@ inline fun <T : Any> ItemStack.editDataOrSet(
  *
  * @param value The value to set. If this is null, the key will be removed from the container
  */
-fun <P, C : Any> PersistentDataContainer.setNullable(key: NamespacedKey, type: PersistentDataType<P, C>, value: C?) {
+fun <C : Any> PersistentDataContainer.setNullable(key: NamespacedKey, type: PersistentDataType<*, C>, value: C?) {
     if (value != null) {
         set(key, type, value)
+    } else {
+        remove(key)
+    }
+}
+
+/**
+ * Wrapper around [PersistentDataContainer.set] that allows nullable values to be passed
+ *
+ * @param value The value to set. If this is null, the key will be removed from the container
+ */
+fun <C : Any> PersistentDataContainer.setNullable(key: PersistentDataKey<C>, value: C?) {
+    if (value != null) {
+        set(key, value)
     } else {
         remove(key)
     }
