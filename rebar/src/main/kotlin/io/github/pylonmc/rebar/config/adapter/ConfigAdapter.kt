@@ -2,6 +2,7 @@ package io.github.pylonmc.rebar.config.adapter
 
 import io.github.pylonmc.rebar.block.BlockTypeWrapper
 import io.github.pylonmc.rebar.fluid.tags.FluidTemperature
+import io.github.pylonmc.rebar.i18n.customMiniMessage
 import io.github.pylonmc.rebar.item.ItemTypeWrapper
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.util.RandomizedSound
@@ -152,6 +153,8 @@ interface ConfigAdapter<T> {
 
         @JvmField val BLOCK_TYPE_WRAPPER = KEYED.fromGetter { BlockTypeWrapper(it) }
         @JvmField val BLOCK_TAG = BlockTagConfigAdapter
+
+        @JvmField val MINI_MESSAGE = ConfigAdapter { customMiniMessage.deserialize(STRING.convert(it))!! }
         // @formatter:on
 
         private inline fun <reified T : Number> numberAdapter(
