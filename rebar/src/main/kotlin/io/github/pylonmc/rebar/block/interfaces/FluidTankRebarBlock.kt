@@ -163,6 +163,15 @@ interface FluidTankRebarBlock : FluidRebarBlock {
     }
 
     /**
+     * Adds to the tank only if the new amount of fluid is greater
+     * than zero and fits in the tank. Also sets the fluid type to
+     * the specified type.
+     *
+     * @return true only if the tank was added to successfully
+     */
+    fun addFluid(fluidWithAmount: FluidWithAmount): Boolean = addFluid(fluidWithAmount.fluid, fluidWithAmount.amount)
+
+    /**
      * Removes from the tank only if the new amount of fluid is greater
      * than zero and fits in the tank.
      *
