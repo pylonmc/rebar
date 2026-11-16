@@ -167,6 +167,8 @@ interface NmsAccessor {
      */
     fun targetSelectorToFunction(selector: String): Function<CommandSender, List<Entity>>
 
+    fun isRainingAt(position: BlockPosition): Boolean
+
     companion object {
         val instance = Class.forName("io.github.pylonmc.rebar.nms.NmsAccessorImpl")
             .getDeclaredField("INSTANCE")

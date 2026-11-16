@@ -974,3 +974,5 @@ fun targetSelectorToFunction(selector: String) = NmsAccessor.instance.targetSele
 const val FLUID_EPSILON = 1.0e-6
 
 fun Component.removeStyle(): Component = this.style(Style.empty()).children(this.children().map(Component::removeStyle))
+
+fun isRainingAt(position: BlockPosition): Boolean = NmsAccessor.instance.isRainingAt(position)

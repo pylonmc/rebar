@@ -65,13 +65,19 @@ import org.bukkit.craftbukkit.damage.CraftDamageSource
 import org.bukkit.craftbukkit.entity.CraftEntity
 import org.bukkit.craftbukkit.entity.CraftLivingEntity
 import org.bukkit.craftbukkit.entity.CraftPlayer
-import org.bukkit.craftbukkit.inventory.*
+import org.bukkit.craftbukkit.inventory.CraftInventory
+import org.bukkit.craftbukkit.inventory.CraftInventoryView
+import org.bukkit.craftbukkit.inventory.CraftItemStack
+import org.bukkit.craftbukkit.inventory.CraftItemType
 import org.bukkit.craftbukkit.persistence.CraftPersistentDataContainer
 import org.bukkit.craftbukkit.util.CraftNamespacedKey
 import org.bukkit.entity.Entity
 import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Player
-import org.bukkit.inventory.*
+import org.bukkit.inventory.EquipmentSlot
+import org.bukkit.inventory.Inventory
+import org.bukkit.inventory.InventoryView
+import org.bukkit.inventory.ItemStack
 import org.bukkit.loot.LootTable
 import org.bukkit.persistence.PersistentDataContainer
 import java.lang.invoke.MethodHandle
@@ -494,5 +500,10 @@ object NmsAccessorImpl : NmsAccessor {
         }
         require(!reader.canRead()) { "Spurious trailing data in selector: $selector" }
         return { sender -> parsed.findEntities(VanillaCommandWrapper.getListener(sender)).map { it.bukkitEntity } }
+    }
+
+    override fun isRainingAt(position: BlockPosition): Boolean {
+        val nmsWorld = (position.world as CraftWorld).handle
+        return nmsWorld.isRainingAt(BlockPos(position.x, position.y, position.z))
     }
 }
