@@ -1,6 +1,8 @@
 package io.github.pylonmc.rebar.guide.button
 
 import io.github.pylonmc.rebar.config.RebarConfig
+import io.github.pylonmc.rebar.content.guide.RebarGuide.Companion.guideHints
+import io.github.pylonmc.rebar.content.guide.RebarGuide.Companion.playGuideSound
 import io.github.pylonmc.rebar.guide.pages.item.ItemRecipesPage
 import io.github.pylonmc.rebar.guide.pages.item.ItemUsagesPage
 import io.github.pylonmc.rebar.guide.pages.research.ResearchItemsPage
@@ -10,8 +12,6 @@ import io.github.pylonmc.rebar.item.RebarItemSchema
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
 import io.github.pylonmc.rebar.item.research.Research.Companion.canCraft
 import io.github.pylonmc.rebar.item.research.Research.Companion.canUse
-import io.github.pylonmc.rebar.content.guide.RebarGuide.Companion.guideHints
-import io.github.pylonmc.rebar.content.guide.RebarGuide.Companion.playGuideSound
 import io.github.pylonmc.rebar.item.research.Research.Companion.researchPoints
 import io.github.pylonmc.rebar.recipe.ingredient.FluidOrItem
 import io.github.pylonmc.rebar.recipe.ingredient.ItemChoice
@@ -257,7 +257,7 @@ class ItemButton private constructor(
         fun of(fluidOrItem: FluidOrItem.Item?, preDisplayDecorator: Decorator? = null) = of(fluidOrItem?.item, preDisplayDecorator)
 
         @JvmStatic @JvmOverloads
-        fun of(stacks: List<ItemStack?>?, preDisplayDecorator: Decorator? = null) = if (stacks == null || stacks.filterNotNull().isEmpty()) {
+        fun of(stacks: Collection<ItemStack?>?, preDisplayDecorator: Decorator? = null) = if (stacks == null || stacks.filterNotNull().isEmpty()) {
             EMPTY
         } else {
             ItemButton(stacks.filterNotNull(), preDisplayDecorator ?: noDecorator)
