@@ -64,32 +64,32 @@ interface ConfigAdapter<T> {
         @JvmField val LOCALE = ConfigAdapter { Locale.of(STRING.convert(it)) }
 
         @JvmField val VECTOR_2I = ConfigAdapter {
-            val list = (it as List<*>).filterIsInstance<Int>()
+            val list = LIST.from(INTEGER).convert(it)
             check(list.size == 2) { "List must be of size 2" }
             Vector2i(list[0], list[1])
         }
         @JvmField val VECTOR_2F = ConfigAdapter {
-            val list = (it as List<*>).filterIsInstance<Float>()
+            val list = LIST.from(FLOAT).convert(it)
             check(list.size == 2) { "List must be of size 2" }
             Vector2f(list[0], list[1])
         }
         @JvmField val VECTOR_2D = ConfigAdapter {
-            val list = (it as List<*>).filterIsInstance<Double>()
+            val list = LIST.from(DOUBLE).convert(it)
             check(list.size == 2) { "List must be of size 2" }
             Vector2d(list[0], list[1])
         }
         @JvmField val VECTOR_3I = ConfigAdapter {
-            val list = (it as List<*>).filterIsInstance<Int>()
+            val list = LIST.from(INTEGER).convert(it)
             check(list.size == 3) { "List must be of size 3" }
             Vector3i(list[0], list[1], list[2])
         }
         @JvmField val VECTOR_3F = ConfigAdapter {
-            val list = (it as List<*>).filterIsInstance<Float>()
+            val list = LIST.from(FLOAT).convert(it)
             check(list.size == 3) { "List must be of size 3" }
             Vector3f(list[0], list[1], list[2])
         }
         @JvmField val VECTOR_3D = ConfigAdapter {
-            val list = (it as List<*>).filterIsInstance<Double>()
+            val list = LIST.from(DOUBLE).convert(it)
             check(list.size == 3) { "List must be of size 3" }
             Vector3d(list[0], list[1], list[2])
         }
