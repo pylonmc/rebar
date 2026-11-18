@@ -959,8 +959,23 @@ fun ItemStack.hasOneDurabilityLeft(): Boolean {
     return !hasData(DataComponentTypes.UNBREAKABLE) && damage == maxDamage - 1
 }
 
-fun HumanEntity.addToInventoryOrDrop(vararg items: ItemStack) {
-    for (item in inventory.addItem(*items).values) {
+@JvmOverloads
+fun HumanEntity.addToInventoryOrDrop(prioritizeMainHand: Boolean = false, vararg items: ItemStack) {
+    val items = items.toMutableList()
+    if (prioritizeMainHand && items.isNotEmpty()) {
+        val mainHand = inventory.itemInMainHand
+        if (mainHand.isEmpty) {
+            inventory.setItemInMainHand(items.removeFirst())
+        } else {
+            val first = items.first()
+            if (mainHand.isSimilar(first) && mainHand.amount < mainHand.maxStackSize) {
+                val toAdd = min(mainHand.amount + first.amount, mainHand.maxStackSize)
+                mainHand.add(toAdd)
+                first.subtract(toAdd)
+            }
+        }
+    }
+    for (item in inventory.addItem(*items.toTypedArray()).values) {
         location.world.dropItemNaturally(location, item)
     }
 }
