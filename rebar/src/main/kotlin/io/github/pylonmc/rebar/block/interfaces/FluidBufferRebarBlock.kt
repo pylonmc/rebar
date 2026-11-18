@@ -164,8 +164,7 @@ interface FluidBufferRebarBlock : FluidRebarBlock {
             var output: Boolean,
         )
 
-        private val fluidBuffersKey = rebarKey("buffer_fluid_block_fluid_buffers")
-        private val fluidBuffersType = RebarSerializers.MAP.mapTypeFrom(RebarSerializers.REBAR_FLUID, RebarSerializers.FLUID_BUFFER_DATA)
+        private val fluidBuffersKey = rebarKey("buffer_fluid_block_fluid_buffers", RebarSerializers.MAP.mapTypeFrom(RebarSerializers.REBAR_FLUID, RebarSerializers.FLUID_BUFFER_DATA))
 
         private val bufferFluidBlocks = IdentityHashMap<FluidBufferRebarBlock, MutableMap<RebarFluid, FluidBufferData>>()
 
@@ -173,7 +172,7 @@ interface FluidBufferRebarBlock : FluidRebarBlock {
         private fun onDeserialize(event: RebarBlockDeserializeEvent) {
             val block = event.rebarBlock
             if (block is FluidBufferRebarBlock) {
-                event.pdc.get(fluidBuffersKey, fluidBuffersType)?.toMutableMap()?.let { bufferFluidBlocks[block] = it }
+                event.pdc.get(fluidBuffersKey)?.toMutableMap()?.let { bufferFluidBlocks[block] = it }
             }
         }
 
@@ -181,7 +180,7 @@ interface FluidBufferRebarBlock : FluidRebarBlock {
         private fun onSerialize(event: RebarBlockSerializeEvent) {
             val block = event.rebarBlock
             if (block is FluidBufferRebarBlock) {
-                event.pdc.set(fluidBuffersKey, fluidBuffersType, bufferFluidBlocks[block] ?: return)
+                event.pdc.set(fluidBuffersKey, bufferFluidBlocks[block] ?: return)
             }
         }
 

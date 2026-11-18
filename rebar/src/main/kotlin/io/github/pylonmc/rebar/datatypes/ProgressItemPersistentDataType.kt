@@ -8,10 +8,10 @@ import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.persistence.PersistentDataType
 
 object ProgressItemPersistentDataType : PersistentDataType<PersistentDataContainer, ProgressItem> {
-    val itemStackKey = rebarKey("item_stack")
-    val countDownKey = rebarKey("count_down")
-    val totalTimeKey = rebarKey("total_time")
-    val progressKey = rebarKey("progress")
+    val itemStackKey = rebarKey("item_stack", RebarSerializers.ITEM_STACK)
+    val countDownKey = rebarKey("count_down", RebarSerializers.BOOLEAN)
+    val totalTimeKey = rebarKey("total_time", RebarSerializers.DURATION)
+    val progressKey = rebarKey("progress", RebarSerializers.DOUBLE)
 
     override fun getPrimitiveType(): Class<PersistentDataContainer> = PersistentDataContainer::class.java
 
@@ -21,20 +21,20 @@ object ProgressItemPersistentDataType : PersistentDataType<PersistentDataContain
         primitive: PersistentDataContainer,
         context: PersistentDataAdapterContext
     ): ProgressItem {
-        val stack = primitive.get(itemStackKey, RebarSerializers.ITEM_STACK)!!
-        val countDown = primitive.get(countDownKey, RebarSerializers.BOOLEAN)!!
+        val stack = primitive.get(itemStackKey)!!
+        val countDown = primitive.get(countDownKey)!!
         val item = ProgressItem(stack, countDown)
-        item.totalTime = primitive.get(totalTimeKey, RebarSerializers.DURATION)
-        item.progress = primitive.get(progressKey, RebarSerializers.DOUBLE)!!
+        item.totalTime = primitive.get(totalTimeKey)
+        item.progress = primitive.get(progressKey)!!
         return item
     }
 
     override fun toPrimitive(complex: ProgressItem, context: PersistentDataAdapterContext): PersistentDataContainer {
         val pdc = context.newPersistentDataContainer()
-        pdc.set(itemStackKey, RebarSerializers.ITEM_STACK, complex.lastDisplayedItem)
-        pdc.set(countDownKey, RebarSerializers.BOOLEAN, complex.countDown)
-        pdc.setNullable(totalTimeKey, RebarSerializers.DURATION, complex.totalTime)
-        pdc.set(progressKey, RebarSerializers.DOUBLE, complex.progress)
+        pdc.set(itemStackKey, complex.lastDisplayedItem)
+        pdc.set(countDownKey, complex.countDown)
+        pdc.setNullable(totalTimeKey, complex.totalTime)
+        pdc.set(progressKey, complex.progress)
         return pdc
     }
 }

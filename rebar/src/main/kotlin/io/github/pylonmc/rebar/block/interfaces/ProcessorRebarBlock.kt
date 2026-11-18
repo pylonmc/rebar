@@ -111,7 +111,7 @@ interface ProcessorRebarBlock {
     @ApiStatus.Internal
     companion object : Listener {
 
-        private val processorKey = rebarKey("processor_data")
+        private val processorKey = rebarKey("processor_data", RebarSerializers.PROCESSOR_DATA)
 
         private val processorBlocks = IdentityHashMap<ProcessorRebarBlock, ProcessorData>()
 
@@ -122,7 +122,7 @@ interface ProcessorRebarBlock {
                 return
             }
 
-            event.pdc.get(processorKey, RebarSerializers.PROCESSOR_DATA)?.let { processorBlocks[block] = it }
+            event.pdc.get(processorKey)?.let { processorBlocks[block] = it }
 
         }
 
@@ -143,7 +143,7 @@ interface ProcessorRebarBlock {
         private fun onSerialize(event: RebarBlockSerializeEvent) {
             val block = event.rebarBlock
             if (block is ProcessorRebarBlock) {
-                event.pdc.set(processorKey, RebarSerializers.PROCESSOR_DATA, block.processorData)
+                event.pdc.set(processorKey, block.processorData)
             }
         }
 

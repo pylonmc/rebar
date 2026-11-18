@@ -50,17 +50,16 @@ interface VirtualInventoryRebarBlock : BlockBreakRebarBlockHandler {
     @ApiStatus.Internal
     companion object : Listener {
 
-        private val virtualInventoryItemsKey = rebarKey("virtual_inventory_items")
-        private val virtualInventoryItemsType = RebarSerializers.MAP.mapTypeFrom(
+        private val virtualInventoryItemsKey = rebarKey("virtual_inventory_items", RebarSerializers.MAP.mapTypeFrom(
             RebarSerializers.STRING,
             RebarSerializers.LIST.listTypeFrom(RebarSerializers.ITEM_STACK)
-        )
+        ))
 
         @EventHandler
         private fun onDeserialize(event: RebarBlockDeserializeEvent) {
             val block = event.rebarBlock
             if (block !is VirtualInventoryRebarBlock) return
-            val virtualInventoryItems = event.pdc.getOrDefault(virtualInventoryItemsKey, virtualInventoryItemsType, emptyMap())
+            val virtualInventoryItems = event.pdc.getOrDefault(virtualInventoryItemsKey, emptyMap())
             val inventories = block.getVirtualInventories()
 
             // Copy stored items to inventory - have to manually set each one
@@ -82,7 +81,6 @@ interface VirtualInventoryRebarBlock : BlockBreakRebarBlockHandler {
             if (block !is VirtualInventoryRebarBlock) return
             event.pdc.set(
                 virtualInventoryItemsKey,
-                virtualInventoryItemsType,
                 block.getVirtualInventories().mapValues { (_, inv) ->
                     inv.unsafeItems.map { it ?: ItemStack.empty() }
                 }

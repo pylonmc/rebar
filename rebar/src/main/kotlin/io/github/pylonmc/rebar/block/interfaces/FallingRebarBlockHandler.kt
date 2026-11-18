@@ -3,7 +3,6 @@ package io.github.pylonmc.rebar.block.interfaces
 import io.github.pylonmc.rebar.block.BlockStorage
 import io.github.pylonmc.rebar.block.RebarBlock
 import io.github.pylonmc.rebar.block.RebarBlockSchema
-import io.github.pylonmc.rebar.datatypes.NamespacedKeyPersistentDataType
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.entity.EntityStorage
 import io.github.pylonmc.rebar.entity.RebarEntity
@@ -76,20 +75,19 @@ interface FallingRebarBlockHandler {
         constructor(entity: FallingBlock) : super(entity) {
             val pdc = entity.persistentDataContainer
 
-            val fallingBlockType = pdc.get(fallingBlockTypeKey, NamespacedKeyPersistentDataType)!!
-            this.blockSchema = RebarRegistry.BLOCKS[fallingBlockType]!!
-            this.blockData = pdc.get(fallingBlockDataKey, RebarSerializers.TAG_CONTAINER)!!
-            this.fallStartPosition = pdc.get(fallingBlockStartPositionKey, RebarSerializers.BLOCK_POSITION)!!
+            this.blockSchema = pdc.get(fallingBlockTypeKey)!!
+            this.blockData = pdc.get(fallingBlockDataKey)!!
+            this.fallStartPosition = pdc.get(fallingBlockStartPositionKey)!!
         }
 
         override fun write(pdc: PersistentDataContainer) {
-            pdc.set(fallingBlockTypeKey, NamespacedKeyPersistentDataType, blockSchema.key)
-            pdc.set(fallingBlockDataKey, RebarSerializers.TAG_CONTAINER, blockData)
-            pdc.set(fallingBlockStartPositionKey, RebarSerializers.BLOCK_POSITION, fallStartPosition)
+            pdc.set(fallingBlockTypeKey, blockSchema)
+            pdc.set(fallingBlockDataKey, blockData)
+            pdc.set(fallingBlockStartPositionKey, fallStartPosition)
         }
 
         fun fallbackItem() : ItemStack? {
-            return this.entity.persistentDataContainer.get(fallingBlockFallbackItemKey, RebarSerializers.ITEM_STACK) ?: RebarRegistry.ITEMS[blockSchema.key]?.createNewItemStack()
+            return this.entity.persistentDataContainer.get(fallingBlockFallbackItemKey) ?: RebarRegistry.ITEMS[blockSchema.key]?.createNewItemStack()
         }
     }
 
@@ -97,13 +95,13 @@ interface FallingRebarBlockHandler {
         // TODO: decide case convention, all other entity keys are all caps like this but we do not consistently do screaming snake case VS camel case for companion object fields
         val KEY = rebarKey("falling_rebar_block")
 
-        val fallingBlockDataKey = rebarKey("falling_rebar_block_data")
+        val fallingBlockDataKey = rebarKey("falling_rebar_block_data", RebarSerializers.TAG_CONTAINER)
 
-        val fallingBlockTypeKey = rebarKey("falling_rebar_block_type")
+        val fallingBlockTypeKey = rebarKey("falling_rebar_block_type", RebarSerializers.KEYED.fromRegistry(RebarRegistry.BLOCKS))
 
-        val fallingBlockStartPositionKey = rebarKey("falling_rebar_block_start")
+        val fallingBlockStartPositionKey = rebarKey("falling_rebar_block_start", RebarSerializers.BLOCK_POSITION)
 
-        val fallingBlockFallbackItemKey = rebarKey("fallback_item")
+        val fallingBlockFallbackItemKey = rebarKey("fallback_item", RebarSerializers.ITEM_STACK)
 
         private val fallMap = HashMap<UUID, Pair<FallingRebarBlockHandler, RebarFallingBlockEntity>>()
 

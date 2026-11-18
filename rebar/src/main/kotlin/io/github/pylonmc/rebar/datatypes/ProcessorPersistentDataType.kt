@@ -9,8 +9,8 @@ import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.persistence.PersistentDataType
 
 object ProcessorPersistentDataType : PersistentDataType<PersistentDataContainer, RebarProcessor> {
-    val durationTicksKey = rebarKey("duration_ticks")
-    val remainingTicksKey = rebarKey("remaining_ticks")
+    val durationTicksKey = rebarKey("duration_ticks", RebarSerializers.INTEGER)
+    val remainingTicksKey = rebarKey("remaining_ticks", RebarSerializers.INTEGER)
 
     override fun getPrimitiveType(): Class<PersistentDataContainer> = PersistentDataContainer::class.java
 
@@ -20,8 +20,8 @@ object ProcessorPersistentDataType : PersistentDataType<PersistentDataContainer,
         primitive: PersistentDataContainer,
         context: PersistentDataAdapterContext
     ): RebarProcessor {
-        val durationTicks = primitive.get(durationTicksKey, RebarSerializers.INTEGER)
-        val remainingTicks = primitive.get(remainingTicksKey, RebarSerializers.INTEGER)
+        val durationTicks = primitive.get(durationTicksKey)
+        val remainingTicks = primitive.get(remainingTicksKey)
         val processor = RebarProcessor()
         if (durationTicks != null && remainingTicks != null) {
             processor.process = RebarProcessor.RebarProcess(durationTicks, remainingTicks)
@@ -31,8 +31,8 @@ object ProcessorPersistentDataType : PersistentDataType<PersistentDataContainer,
 
     override fun toPrimitive(complex: RebarProcessor, context: PersistentDataAdapterContext): PersistentDataContainer {
         val pdc = context.newPersistentDataContainer()
-        pdc.setNullable(durationTicksKey, RebarSerializers.INTEGER, complex.durationTicks)
-        pdc.setNullable(remainingTicksKey, RebarSerializers.INTEGER, complex.remainingTicks)
+        pdc.setNullable(durationTicksKey, complex.durationTicks)
+        pdc.setNullable(remainingTicksKey, complex.remainingTicks)
         return pdc
     }
 }

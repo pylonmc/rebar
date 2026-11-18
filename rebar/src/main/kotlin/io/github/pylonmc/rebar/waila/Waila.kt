@@ -17,6 +17,7 @@ import io.github.pylonmc.rebar.event.RebarEntityWailaEvent
 import io.github.pylonmc.rebar.i18n.RebarArgument
 import io.github.pylonmc.rebar.util.breakProgress
 import io.github.pylonmc.rebar.util.delayTicks
+import io.github.pylonmc.rebar.util.getOrSupply
 import io.github.pylonmc.rebar.util.position.BlockPosition
 import io.github.pylonmc.rebar.util.position.position
 import io.github.pylonmc.rebar.util.rebarKey
@@ -275,7 +276,7 @@ class Waila private constructor(
 
     companion object : Listener {
 
-        private val wailaKey = rebarKey("waila")
+        private val wailaKey = rebarKey("waila", RebarSerializers.PLAYER_WAILA_CONFIG)
         private val wailas = mutableMapOf<UUID, Waila>()
 
         private val blockOverrides = mutableMapOf<BlockPosition, WailaSupplier>()
@@ -334,7 +335,7 @@ class Waila private constructor(
 
         @JvmStatic
         var Player.wailaConfig: PlayerWailaConfig
-            get() = this.persistentDataContainer.getOrDefault(wailaKey, RebarSerializers.PLAYER_WAILA_CONFIG, PlayerWailaConfig()).apply {
+            get() = this.persistentDataContainer.getOrSupply(wailaKey) { PlayerWailaConfig() }.apply {
                 player = this@wailaConfig
                 if (!RebarConfig.WailaConfig.ENABLED_TYPES.contains(type)) {
                     sendMessage(Component.translatable("rebar.message.waila.type-disabled").arguments(
@@ -344,7 +345,7 @@ class Waila private constructor(
                 }
             }
             set(value) {
-                this.persistentDataContainer.set(wailaKey, RebarSerializers.PLAYER_WAILA_CONFIG, value)
+                this.persistentDataContainer.set(wailaKey, value)
                 if (value.enabled) {
                     if (!wailas.containsKey(uniqueId)) {
                         addPlayer(this, value)

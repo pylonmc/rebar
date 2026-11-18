@@ -7,9 +7,8 @@ import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.persistence.PersistentDataType
 
 internal object CargoBlockPersistentDataType : PersistentDataType<PersistentDataContainer, CargoRebarBlock.Companion.CargoBlockData> {
-    val groupsKey = rebarKey("groups")
-    val groupsType = RebarSerializers.MAP.mapTypeFrom(RebarSerializers.BLOCK_FACE, RebarSerializers.STRING)
-    val transferRateKey = rebarKey("transfer_rate")
+    val groupsKey = rebarKey("groups", RebarSerializers.MAP.mapTypeFrom(RebarSerializers.BLOCK_FACE, RebarSerializers.STRING))
+    val transferRateKey = rebarKey("transfer_rate", RebarSerializers.INTEGER)
 
     override fun getPrimitiveType(): Class<PersistentDataContainer> = PersistentDataContainer::class.java
 
@@ -19,8 +18,8 @@ internal object CargoBlockPersistentDataType : PersistentDataType<PersistentData
         primitive: PersistentDataContainer,
         context: PersistentDataAdapterContext
     ): CargoRebarBlock.Companion.CargoBlockData {
-        val groups = primitive.get(groupsKey, groupsType)!!.toMutableMap()
-        val transferRate = primitive.get(transferRateKey, RebarSerializers.INTEGER)!!
+        val groups = primitive.get(groupsKey)!!.toMutableMap()
+        val transferRate = primitive.get(transferRateKey)!!
         return CargoRebarBlock.Companion.CargoBlockData(groups, transferRate)
     }
 
@@ -29,8 +28,8 @@ internal object CargoBlockPersistentDataType : PersistentDataType<PersistentData
         context: PersistentDataAdapterContext
     ): PersistentDataContainer {
         val pdc = context.newPersistentDataContainer()
-        pdc.set(groupsKey, groupsType, complex.groups)
-        pdc.set(transferRateKey, RebarSerializers.INTEGER, complex.transferRate)
+        pdc.set(groupsKey, complex.groups)
+        pdc.set(transferRateKey, complex.transferRate)
         return pdc
     }
 }

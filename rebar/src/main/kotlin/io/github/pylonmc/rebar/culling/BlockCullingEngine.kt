@@ -13,6 +13,7 @@ import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.nms.NmsAccessor
 import io.github.pylonmc.rebar.util.Octree
 import io.github.pylonmc.rebar.util.delayTicks
+import io.github.pylonmc.rebar.util.getOrSupply
 import io.github.pylonmc.rebar.util.pdc
 import io.github.pylonmc.rebar.util.position.BlockPosition
 import io.github.pylonmc.rebar.util.rebarKey
@@ -51,8 +52,8 @@ import kotlin.math.ceil
 
 object BlockCullingEngine : Listener {
 
-    val cullingEnabledKey = rebarKey("block_culling_enabled")
-    val cullingConfigKey = rebarKey("block_culling_config")
+    val cullingEnabledKey = rebarKey("block_culling_enabled", RebarSerializers.BOOLEAN)
+    val cullingConfigKey = rebarKey("block_culling_config", RebarSerializers.PLAYER_CULLING_CONFIG)
 
     private val playerConfigCache = mutableMapOf<UUID, PlayerCullingConfig>()
 
@@ -155,10 +156,10 @@ object BlockCullingEngine : Listener {
 
     @JvmStatic
     var Player.hasBlockCulling: Boolean
-        get() = (this.pdc.getOrDefault(cullingEnabledKey, RebarSerializers.BOOLEAN, RebarConfig.CullingEngineConfig.DEFAULT) || RebarConfig.CullingEngineConfig.FORCED_CULLING_PRESET != null) && !RebarConfig.CullingEngineConfig.FORCE_DISABLED
+        get() = (this.pdc.getOrDefault(cullingEnabledKey, RebarConfig.CullingEngineConfig.DEFAULT) || RebarConfig.CullingEngineConfig.FORCED_CULLING_PRESET != null) && !RebarConfig.CullingEngineConfig.FORCE_DISABLED
         set(value) {
             val actualValue = (value || RebarConfig.CullingEngineConfig.FORCED_CULLING_PRESET != null) && !RebarConfig.CullingEngineConfig.FORCE_DISABLED
-            this.pdc.set(cullingEnabledKey, RebarSerializers.BOOLEAN, actualValue)
+            this.pdc.set(cullingEnabledKey, actualValue)
             if (!actualValue) {
                 getOctree(this.world, culledBlockOctrees).query(cullingBoundingBox).forEach { block ->
                     (block as? CulledRebarBlock)?.onVisible(this)
@@ -172,7 +173,7 @@ object BlockCullingEngine : Listener {
             if (RebarConfig.CullingEngineConfig.FORCED_CULLING_PRESET != null) {
                 RebarConfig.CullingEngineConfig.FORCED_CULLING_PRESET.toPlayerConfig()
             } else {
-                val config = pdc.getOrDefault(cullingConfigKey, RebarSerializers.PLAYER_CULLING_CONFIG, RebarConfig.CullingEngineConfig.DEFAULT_CULLING_PRESET.toPlayerConfig()).repairInvalid()
+                val config = pdc.getOrSupply(cullingConfigKey) { RebarConfig.CullingEngineConfig.DEFAULT_CULLING_PRESET.toPlayerConfig() }.repairInvalid()
                 if (RebarConfig.CullingEngineConfig.PRESETS_ONLY) {
                     val preset = RebarConfig.CullingEngineConfig.CULLING_PRESETS.values.firstOrNull { it.matches(config) }
                     if (preset == null) {
@@ -186,7 +187,7 @@ object BlockCullingEngine : Listener {
             }
         }
         set(value) {
-            this.pdc.set(cullingConfigKey, RebarSerializers.PLAYER_CULLING_CONFIG, value)
+            this.pdc.set(cullingConfigKey, value)
             playerConfigCache[this.uniqueId] = value
         }
 

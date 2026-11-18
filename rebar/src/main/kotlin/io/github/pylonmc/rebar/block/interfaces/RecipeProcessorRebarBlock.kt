@@ -145,7 +145,7 @@ interface RecipeProcessorRebarBlock<T: RebarRecipe> {
     @ApiStatus.Internal
     companion object : Listener {
 
-        private val recipeProcessorKey = rebarKey("recipe_processor_data")
+        private val recipeProcessorKey = rebarKey("recipe_processor_data", RebarSerializers.RECIPE_PROCESSOR_DATA)
 
         private val recipeProcessorBlocks = IdentityHashMap<RecipeProcessorRebarBlock<*>, RecipeProcessorData<*>>()
 
@@ -153,7 +153,7 @@ interface RecipeProcessorRebarBlock<T: RebarRecipe> {
         private fun onDeserialize(event: RebarBlockDeserializeEvent) {
             val block = event.rebarBlock
             if (block is RecipeProcessorRebarBlock<*>) {
-                val data = event.pdc.get(recipeProcessorKey, RebarSerializers.RECIPE_PROCESSOR_DATA)
+                val data = event.pdc.get(recipeProcessorKey)
                     ?: error("Recipe processor data not found for ${block.key}")
                 recipeProcessorBlocks[block] = data
             }
@@ -179,7 +179,7 @@ interface RecipeProcessorRebarBlock<T: RebarRecipe> {
                 val data = recipeProcessorBlocks[block] ?: error {
                     "No recipe processor data found for ${block.key}"
                 }
-                event.pdc.set(recipeProcessorKey, RebarSerializers.RECIPE_PROCESSOR_DATA, data)
+                event.pdc.set(recipeProcessorKey, data)
                 check(data.recipeType != null) { "No recipe type set for ${event.rebarBlock.key}; did you forget to call setRecipeType in your place constructor?" }
             }
         }

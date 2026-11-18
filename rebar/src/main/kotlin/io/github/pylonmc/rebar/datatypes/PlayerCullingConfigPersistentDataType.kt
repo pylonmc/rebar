@@ -8,14 +8,14 @@ import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.persistence.PersistentDataType
 
 object PlayerCullingConfigPersistentDataType : PersistentDataType<PersistentDataContainer, PlayerCullingConfig> {
-    val updateIntervalKey = rebarKey("update_interval")
-    val hiddenIntervalKey = rebarKey("hidden_interval")
-    val visibleIntervalKey = rebarKey("visible_interval")
+    val updateIntervalKey = rebarKey("update_interval", RebarSerializers.INTEGER)
+    val hiddenIntervalKey = rebarKey("hidden_interval", RebarSerializers.INTEGER)
+    val visibleIntervalKey = rebarKey("visible_interval", RebarSerializers.INTEGER)
 
-    val alwaysShowRadiusKey = rebarKey("always_show_radius")
-    val cullRadiusKey = rebarKey("cull_radius")
+    val alwaysShowRadiusKey = rebarKey("always_show_radius", RebarSerializers.INTEGER)
+    val cullRadiusKey = rebarKey("cull_radius", RebarSerializers.INTEGER)
 
-    val maxOccludingCountKey = rebarKey("max_occluding_count")
+    val maxOccludingCountKey = rebarKey("max_occluding_count", RebarSerializers.INTEGER)
 
     override fun getPrimitiveType(): Class<PersistentDataContainer> = PersistentDataContainer::class.java
 
@@ -26,12 +26,12 @@ object PlayerCullingConfigPersistentDataType : PersistentDataType<PersistentData
         context: PersistentDataAdapterContext
     ): PlayerCullingConfig {
         val defaultSettings = RebarConfig.CullingEngineConfig.DEFAULT_CULLING_PRESET
-        val updateInterval = primitive.getOrDefault(updateIntervalKey, RebarSerializers.INTEGER, defaultSettings.updateInterval)
-        val hiddenInterval = primitive.getOrDefault(hiddenIntervalKey, RebarSerializers.INTEGER, defaultSettings.hiddenInterval)
-        val visibleInterval = primitive.getOrDefault(visibleIntervalKey, RebarSerializers.INTEGER, defaultSettings.visibleInterval)
-        val alwaysShowRadius = primitive.getOrDefault(alwaysShowRadiusKey, RebarSerializers.INTEGER, defaultSettings.alwaysShowRadius)
-        val cullRadius = primitive.getOrDefault(cullRadiusKey, RebarSerializers.INTEGER, defaultSettings.cullRadius)
-        val maxOccludingCount = primitive.getOrDefault(maxOccludingCountKey, RebarSerializers.INTEGER, defaultSettings.maxOccludingCount)
+        val updateInterval = primitive.getOrDefault(updateIntervalKey, defaultSettings.updateInterval)
+        val hiddenInterval = primitive.getOrDefault(hiddenIntervalKey, defaultSettings.hiddenInterval)
+        val visibleInterval = primitive.getOrDefault(visibleIntervalKey, defaultSettings.visibleInterval)
+        val alwaysShowRadius = primitive.getOrDefault(alwaysShowRadiusKey, defaultSettings.alwaysShowRadius)
+        val cullRadius = primitive.getOrDefault(cullRadiusKey, defaultSettings.cullRadius)
+        val maxOccludingCount = primitive.getOrDefault(maxOccludingCountKey, defaultSettings.maxOccludingCount)
         return PlayerCullingConfig(
             updateInterval,
             hiddenInterval,
@@ -44,12 +44,12 @@ object PlayerCullingConfigPersistentDataType : PersistentDataType<PersistentData
 
     override fun toPrimitive(complex: PlayerCullingConfig, context: PersistentDataAdapterContext): PersistentDataContainer {
         val pdc = context.newPersistentDataContainer()
-        pdc.set(updateIntervalKey, RebarSerializers.INTEGER, complex.updateInterval)
-        pdc.set(hiddenIntervalKey, RebarSerializers.INTEGER, complex.hiddenInterval)
-        pdc.set(visibleIntervalKey, RebarSerializers.INTEGER, complex.visibleInterval)
-        pdc.set(alwaysShowRadiusKey, RebarSerializers.INTEGER, complex.alwaysShowRadius)
-        pdc.set(cullRadiusKey, RebarSerializers.INTEGER, complex.cullRadius)
-        pdc.set(maxOccludingCountKey, RebarSerializers.INTEGER, complex.maxOccludingCount)
+        pdc.set(updateIntervalKey, complex.updateInterval)
+        pdc.set(hiddenIntervalKey, complex.hiddenInterval)
+        pdc.set(visibleIntervalKey, complex.visibleInterval)
+        pdc.set(alwaysShowRadiusKey, complex.alwaysShowRadius)
+        pdc.set(cullRadiusKey, complex.cullRadius)
+        pdc.set(maxOccludingCountKey, complex.maxOccludingCount)
         return pdc
     }
 }

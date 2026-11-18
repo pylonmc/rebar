@@ -67,15 +67,14 @@ interface ElectricRebarBlock : EntityHolderRebarBlock {
 
         const val PORT_SCALE = 0.19f
 
-        private val NODES_KEY = rebarKey("nodes")
-        private val NODES_TYPE = RebarSerializers.LIST.listTypeFrom(ElectricNode.PDC_TYPE)
+        private val NODES_KEY = rebarKey("nodes", RebarSerializers.LIST.listTypeFrom(ElectricNode.PDC_TYPE))
 
         private val electricBlocks = IdentityHashMap<ElectricRebarBlock, MutableMap<String, ElectricNode>>()
 
         @EventHandler(priority = EventPriority.MONITOR)
         private fun onDeserialize(event: RebarBlockDeserializeEvent) {
             val block = event.rebarBlock as? ElectricRebarBlock ?: return
-            val nodes = event.pdc.get(NODES_KEY, NODES_TYPE)!!.toMutableList()
+            val nodes = event.pdc.get(NODES_KEY)!!.toMutableList()
             electricBlocks[block] = nodes.associateByTo(mutableMapOf()) { it.name }
 
             for (node in nodes) {
@@ -86,7 +85,7 @@ interface ElectricRebarBlock : EntityHolderRebarBlock {
         @EventHandler
         private fun onSerialize(event: RebarBlockSerializeEvent) {
             val block = event.rebarBlock as? ElectricRebarBlock ?: return
-            event.pdc.set(NODES_KEY, NODES_TYPE, electricBlocks[block].orEmpty().values.toList())
+            event.pdc.set(NODES_KEY, electricBlocks[block].orEmpty().values.toList())
         }
 
         @EventHandler

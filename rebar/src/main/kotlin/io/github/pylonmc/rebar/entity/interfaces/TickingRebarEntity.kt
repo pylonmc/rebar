@@ -2,10 +2,12 @@ package io.github.pylonmc.rebar.entity.interfaces
 
 import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.config.RebarConfig
+import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.entity.EntityListener
 import io.github.pylonmc.rebar.entity.RebarEntity
 import io.github.pylonmc.rebar.entity.RebarEntitySchema
 import io.github.pylonmc.rebar.event.RebarEntityAddEvent
+import io.github.pylonmc.rebar.event.RebarEntityDeserializeEvent
 import io.github.pylonmc.rebar.event.RebarEntityRemoveEvent
 import io.github.pylonmc.rebar.event.RebarEntitySerializeEvent
 import io.github.pylonmc.rebar.event.RebarEntityUnloadEvent
@@ -76,9 +78,25 @@ interface TickingRebarEntity {
             var job: Job?,
         )
 
-        private val tickingEntityKey = rebarKey("ticking_entity_data")
+        private val tickingEntityKey = rebarKey("ticking_entity_data", RebarSerializers.TICKING_ENTITY_DATA)
 
         private val tickingEntities = IdentityHashMap<TickingRebarEntity, TickingEntityData>()
+
+        @EventHandler
+        private fun onDeserialize(event: RebarEntityDeserializeEvent) {
+            val entity = event.rebarEntity
+            if (entity is TickingRebarEntity) {
+                event.pdc.get(tickingEntityKey)?.let { tickingEntities[entity] = it }
+            }
+        }
+
+        @EventHandler
+        private fun onSerialize(event: RebarEntitySerializeEvent) {
+            val entity = event.rebarEntity
+            if (entity is TickingRebarEntity) {
+                event.pdc.set(tickingEntityKey, tickingEntities[entity] ?: return)
+            }
+        }
 
         @EventHandler
         private fun onAdded(event: RebarEntityAddEvent) {

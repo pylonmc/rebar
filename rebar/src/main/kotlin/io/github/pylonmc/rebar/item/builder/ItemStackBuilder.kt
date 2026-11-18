@@ -113,7 +113,7 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
      * does unspeakable things to the item to get it to work. This method disables those
      * hacks, which may have unintended side effects.
      */
-    fun disableNameHacks() = editPdc { pdc -> pdc.set(disableNameHacksKey, RebarSerializers.BOOLEAN, true) }
+    fun disableNameHacks() = editPdc { pdc -> pdc.set(disableNameHacksKey, true) }
 
     fun lore(): ItemLore?
         = stack.getData(DataComponentTypes.LORE)
@@ -329,7 +329,7 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
         val baseAttackSpeed = NamespacedKey.minecraft("base_attack_speed")
         val baseAttackKnockback = NamespacedKey.minecraft("base_attack_knockback")
 
-        val disableNameHacksKey = rebarKey("disable_name_hacks")
+        val disableNameHacksKey = rebarKey("disable_name_hacks", RebarSerializers.BOOLEAN)
 
         private fun vanillaArmorType(slot: EquipmentSlotGroup) = when (slot) {
             EquipmentSlotGroup.HEAD -> "helmet"
@@ -449,7 +449,7 @@ open class ItemStackBuilder internal constructor(val stack: ItemStack) : ItemPro
         @JvmStatic
         fun rebar(stack: ItemStack, key: NamespacedKey): ItemStackBuilder {
             return ItemStackBuilder(stack)
-                .editPdc { it.set(RebarItemSchema.rebarItemKeyKey, RebarSerializers.NAMESPACED_KEY, key) }
+                .editPdc { it.set(RebarItemSchema.rebarItemKeyKey, key) }
                 .addCustomModelDataString(key.toString())
                 .defaultTranslatableName(key)
                 .defaultTranslatableLore(key)

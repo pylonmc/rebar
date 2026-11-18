@@ -65,8 +65,8 @@ class RebarGuide(stack: ItemStack) : RebarItem(stack), InteractRebarItemHandler 
 
     companion object : Listener {
 
-        private val guideHintsKey = rebarKey("guide_hints")
-        private val guideSoundsKey = rebarKey("guide_sounds")
+        private val guideHintsKey = rebarKey("guide_hints", RebarSerializers.BOOLEAN)
+        private val guideSoundsKey = rebarKey("guide_sounds", RebarSerializers.BOOLEAN)
 
         @JvmField
         val KEY = rebarKey("guide")
@@ -164,10 +164,10 @@ class RebarGuide(stack: ItemStack) : RebarItem(stack), InteractRebarItemHandler 
         val mainSettingsButton = PageButton(Material.COMPARATOR, mainSettingsPage)
 
         @JvmStatic
-        var Player.guideHints: Boolean by persistentData(guideHintsKey, RebarSerializers.BOOLEAN, true)
+        var Player.guideHints: Boolean by persistentData(guideHintsKey, true)
 
         @JvmStatic
-        var Player.guideSounds: Boolean by persistentData(guideSoundsKey, RebarSerializers.BOOLEAN, true)
+        var Player.guideSounds: Boolean by persistentData(guideSoundsKey, true)
 
         @JvmStatic
         @JvmOverloads

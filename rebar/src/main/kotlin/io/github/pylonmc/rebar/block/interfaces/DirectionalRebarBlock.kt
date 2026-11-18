@@ -34,7 +34,7 @@ interface DirectionalRebarBlock : Keyed {
 
     @ApiStatus.Internal
     companion object : Listener {
-        private val directionalBlockKey = rebarKey("directional_block")
+        private val directionalBlockKey = rebarKey("directional_block", RebarSerializers.BLOCK_FACE)
 
         private val directionalBlocks = IdentityHashMap<DirectionalRebarBlock, BlockFace>()
 
@@ -42,7 +42,7 @@ interface DirectionalRebarBlock : Keyed {
         private fun onDeserialize(event: RebarBlockDeserializeEvent) {
             val block = event.rebarBlock
             if (block is DirectionalRebarBlock) {
-                event.pdc.get(directionalBlockKey, RebarSerializers.BLOCK_FACE)?.let { directionalBlocks[block] = it }
+                event.pdc.get(directionalBlockKey)?.let { directionalBlocks[block] = it }
             }
         }
 
@@ -50,7 +50,7 @@ interface DirectionalRebarBlock : Keyed {
         private fun onSerialize(event: RebarBlockSerializeEvent) {
             val block = event.rebarBlock
             if (block is DirectionalRebarBlock) {
-                event.pdc.set(directionalBlockKey, RebarSerializers.BLOCK_FACE, directionalBlocks[block] ?: return)
+                event.pdc.set(directionalBlockKey, directionalBlocks[block] ?: return)
             }
         }
 

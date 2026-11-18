@@ -26,8 +26,7 @@ interface EntityConstructRebarBlockHandler {
 
     @ApiStatus.Internal
     companion object : MultiListener {
-        private val rebarBlocksKey = rebarKey("rebar_construct_blocks")
-        private val rebarBlocksType = RebarSerializers.LIST.listTypeFrom(RebarSerializers.BLOCK_POSITION)
+        private val rebarBlocksKey = rebarKey("rebar_construct_blocks", RebarSerializers.LIST.listTypeFrom(RebarSerializers.BLOCK_POSITION))
 
         @UniversalHandler
         private fun onEntityConstruct(event: EntityConstructEvent, priority: EventPriority) {
@@ -45,13 +44,13 @@ interface EntityConstructRebarBlockHandler {
             }
 
             if (positions.isNotEmpty()) {
-                event.entity.persistentDataContainer.set(rebarBlocksKey, rebarBlocksType, positions)
+                event.entity.persistentDataContainer.set(rebarBlocksKey, positions)
             }
         }
 
         @UniversalHandler
         private fun onEntitySpawn(event: EntitySpawnEvent, priority: EventPriority) {
-            val positions = event.entity.persistentDataContainer.get(rebarBlocksKey, rebarBlocksType) ?: return
+            val positions = event.entity.persistentDataContainer.get(rebarBlocksKey) ?: return
             if (positions.isEmpty()) return
             for (position in positions) {
                 val block = position.block

@@ -45,7 +45,7 @@ class CargoDuct : RebarBlock, BlockBreakRebarBlockHandler, EntityHolderRebarBloc
 
     @Suppress("unused")
     constructor(block: Block, pdc: PersistentDataContainer) : super(block, pdc) {
-        connectedFaces = pdc.get(connectedFacesKey, connectedFacesType)!!.toMutableList()
+        connectedFaces = pdc.get(connectedFacesKey)!!.toMutableList()
     }
 
     override fun postLoad() {
@@ -59,7 +59,7 @@ class CargoDuct : RebarBlock, BlockBreakRebarBlockHandler, EntityHolderRebarBloc
                 val cullingGroup = EntityGroupCulledRebarBlock.EntityCullingGroup(face.name)
                 cullingGroup.entityIds.add(display.uniqueId)
 
-                val blockPositions = display.persistentDataContainer.get(blocksKey, blocksType) ?: return@whenEntityLoads
+                val blockPositions = display.persistentDataContainer.get(blocksKey) ?: return@whenEntityLoads
                 for (blockPos in blockPositions) {
                     val block = BlockStorage.get(blockPos) as? CargoDuct ?: continue
                     block.faceGroups[face] = cullingGroup
@@ -70,7 +70,7 @@ class CargoDuct : RebarBlock, BlockBreakRebarBlockHandler, EntityHolderRebarBloc
     }
 
     override fun write(pdc: PersistentDataContainer) {
-        pdc.setNullable(connectedFacesKey, connectedFacesType, connectedFaces)
+        pdc.setNullable(connectedFacesKey, connectedFaces)
     }
 
     override fun onPostBlockBreak(context: BlockBreakContext) {
@@ -234,7 +234,7 @@ class CargoDuct : RebarBlock, BlockBreakRebarBlockHandler, EntityHolderRebarBloc
             BlockStorage.getAs<CargoDuct>(from)
         }
         fromDuct?.heldEntities?.keys?.forEach { name ->
-            fromDuct.getHeldEntity(name)?.persistentDataContainer?.get(thicknessKey, thicknessType).let { thickness ->
+            fromDuct.getHeldEntity(name)?.persistentDataContainer?.get(thicknessKey).let { thickness ->
                 availableThicknesses.remove(thickness)
             }
         }
@@ -244,7 +244,7 @@ class CargoDuct : RebarBlock, BlockBreakRebarBlockHandler, EntityHolderRebarBloc
             BlockStorage.getAs<CargoDuct>(to)
         }
         toDuct?.heldEntities?.keys?.forEach { name ->
-            toDuct.getHeldEntity(name)?.persistentDataContainer?.get(thicknessKey, thicknessType)?.let { thickness ->
+            toDuct.getHeldEntity(name)?.persistentDataContainer?.get(thicknessKey)?.let { thickness ->
                 availableThicknesses.remove(thickness)
             }
         }
@@ -267,7 +267,7 @@ class CargoDuct : RebarBlock, BlockBreakRebarBlockHandler, EntityHolderRebarBloc
             .itemStack(ItemStackBuilder.of(Material.GRAY_CONCRETE)
                 .addCustomModelDataString("$key:line"))
             .build(spawnLocation)
-        display.persistentDataContainer.set(thicknessKey, thicknessType, thickness)
+        display.persistentDataContainer.set(thicknessKey, thickness)
 
         // Add the display to every CargoDuct on the line
         val associatedBlocks = mutableListOf<BlockPosition>()
@@ -330,7 +330,7 @@ class CargoDuct : RebarBlock, BlockBreakRebarBlockHandler, EntityHolderRebarBloc
         associatedBlocks.add(to.position)
 
         // Also add the blocks to the display's PDC (see onEntityRemove in companion for explanation)
-        display.persistentDataContainer.set(blocksKey, blocksType, associatedBlocks)
+        display.persistentDataContainer.set(blocksKey, associatedBlocks)
     }
 
     private fun createNotConnectedDuctDisplay(center: Location) {
@@ -353,14 +353,9 @@ class CargoDuct : RebarBlock, BlockBreakRebarBlockHandler, EntityHolderRebarBloc
         // to cargo ducts will use thickness 0.35 hence why it isn't used here
         val thicknesses = mutableListOf(0.3495F, 0.3490F, 0.3485F)
 
-        val thicknessKey = rebarKey("thickness")
-        val thicknessType = RebarSerializers.FLOAT
-
-        val connectedFacesKey = rebarKey("connected_faces")
-        val connectedFacesType = RebarSerializers.LIST.listTypeFrom(RebarSerializers.BLOCK_FACE)
-
-        val blocksKey = rebarKey("blocks")
-        val blocksType = RebarSerializers.LIST.listTypeFrom(RebarSerializers.BLOCK_POSITION)
+        val thicknessKey = rebarKey("thickness", RebarSerializers.FLOAT)
+        val connectedFacesKey = rebarKey("connected_faces", RebarSerializers.LIST.listTypeFrom(RebarSerializers.BLOCK_FACE))
+        val blocksKey = rebarKey("blocks", RebarSerializers.LIST.listTypeFrom(RebarSerializers.BLOCK_POSITION))
 
         fun ductDisplayName(face: BlockFace) = "duct-item-display:${face.name}"
 
@@ -374,7 +369,7 @@ class CargoDuct : RebarBlock, BlockBreakRebarBlockHandler, EntityHolderRebarBloc
         @EventHandler
         private fun onEntityRemove(event: EntityRemoveEvent) {
             if (event.cause == EntityRemoveEvent.Cause.UNLOAD || event.cause == EntityRemoveEvent.Cause.PLAYER_QUIT) return
-            val blockPositions = event.entity.persistentDataContainer.get(blocksKey, blocksType) ?: return
+            val blockPositions = event.entity.persistentDataContainer.get(blocksKey) ?: return
             for (blockPos in blockPositions) {
                 val block = BlockStorage.get(blockPos) as? EntityHolderRebarBlock ?: continue
                 holders[block]?.entries?.removeIf { it.value == event.entity.uniqueId }
