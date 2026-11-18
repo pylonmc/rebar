@@ -112,7 +112,7 @@ open class RebarItem(val stack: ItemStack) : Keyed {
 
             var isNameValid = true
             if (name == null || name.key() != ItemStackBuilder.nameKey(schema.key)) {
-                Rebar.logger.warning("Item ${schema.key}'s name is not a translation key; check your item uses RebarItemStackBuilder.of(...)")
+                Rebar.logger.warning("Item ${schema.key}'s name is not the item's translation key; check your item uses ItemStackBuilder.rebar(...)")
                 isNameValid = false
             }
 
