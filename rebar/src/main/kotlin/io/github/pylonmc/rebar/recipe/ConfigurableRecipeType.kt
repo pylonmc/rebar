@@ -11,6 +11,11 @@ abstract class ConfigurableRecipeType<T : RebarRecipe>(key: NamespacedKey) : Rec
     @JvmSynthetic
     internal val filePath = "recipes/${key.namespace}/${key.key}.yml"
 
+    /**
+     * Higher priority means this recipe will load sooner
+     */
+    open val priority: Int = 0
+
     open fun loadFromConfig(config: ConfigSection) {
         for (key in config.keys) {
             val section = config.getSectionOrThrow(key)

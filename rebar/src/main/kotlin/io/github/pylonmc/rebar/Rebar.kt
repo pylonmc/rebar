@@ -68,7 +68,10 @@ import org.jetbrains.annotations.ApiStatus
 import xyz.xenondevs.invui.InvUI
 import xyz.xenondevs.invui.i18n.Languages
 import java.util.*
-import kotlin.io.path.*
+import kotlin.io.path.exists
+import kotlin.io.path.isRegularFile
+import kotlin.io.path.listDirectoryEntries
+import kotlin.io.path.nameWithoutExtension
 
 /**
  * The one and only Rebar plugin!
@@ -365,27 +368,17 @@ object Rebar : JavaPlugin(), RebarAddon {
 
     private fun loadRecipes() {
         val start = System.currentTimeMillis()
-
         logger.info("Loading recipes...")
-        for (type in RebarRegistry.RECIPE_TYPES) {
-            if (type !is ConfigurableRecipeType) continue
+
+        for (type in RebarRegistry.RECIPE_TYPES.filterIsInstance<ConfigurableRecipeType<*>>().sortedByDescending { it.priority }) {
             for (addon in RebarRegistry.ADDONS) {
                 val config = ConfigSection.fromResource(addon.javaPlugin, type.filePath) ?: continue
                 type.loadFromConfig(config)
             }
-        }
-
-        val recipesDir = dataPath.resolve("recipes")
-        if (recipesDir.exists()) {
-            for (recipeDir in recipesDir.listDirectoryEntries()) {
-                if (!recipeDir.isDirectory()) continue
-                val namespace = recipeDir.nameWithoutExtension
-                for (recipePath in recipeDir.listDirectoryEntries()) {
-                    if (!recipePath.isRegularFile() || recipePath.extension != "yml" || recipePath.extension != "yaml") continue
-                    val key = NamespacedKey(namespace, recipePath.nameWithoutExtension)
-                    val type = RebarRegistry.RECIPE_TYPES[key] as? ConfigurableRecipeType ?: continue
-                    type.loadFromConfig(ConfigSection.fromOrThrow(recipePath))
-                }
+            val externalFile = dataPath.resolve(type.filePath)
+            if (externalFile.exists()) {
+                val config = ConfigSection.fromOrThrow(externalFile)
+                type.loadFromConfig(config)
             }
         }
 
