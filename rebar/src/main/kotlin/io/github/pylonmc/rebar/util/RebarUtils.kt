@@ -10,7 +10,6 @@ import io.github.pylonmc.rebar.block.BlockListener
 import io.github.pylonmc.rebar.config.ConfigSection
 import io.github.pylonmc.rebar.config.ContributorConfig
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter
-import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.i18n.customMiniMessage
 import io.github.pylonmc.rebar.item.ItemTypeWrapper
 import io.github.pylonmc.rebar.item.RebarItem
@@ -48,7 +47,6 @@ import org.bukkit.persistence.PersistentDataHolder
 import org.bukkit.persistence.PersistentDataType
 import org.bukkit.util.BoundingBox
 import org.bukkit.util.Vector
-import org.checkerframework.checker.units.qual.C
 import org.joml.Intersectionf
 import org.joml.Matrix3f
 import org.joml.Quaternionf
@@ -431,21 +429,13 @@ fun <P, C : Any> PersistentDataContainer.setNullable(key: NamespacedKey, type: P
  *
  * @param value The value to set. If this is null, the key will be removed from the container
  */
-fun <C : Any> PersistentDataContainer.setNullable(key: PersistentDataKey<C>, value: C?) {
-    if (value != null) {
-        set(key, value)
-    } else {
-        remove(key)
-    }
-}
+fun <C : Any> PersistentDataContainer.setNullable(key: PersistentDataKey<C>, value: C?) = setNullable(key.key(), key.dataType(), value)
 
 fun <C : Any> PersistentDataContainer.getOrSupply(key: NamespacedKey, type: PersistentDataType<*, C>, default: () -> C): C {
     return get(key, type) ?: default()
 }
 
-fun <C : Any> PersistentDataContainerView.getOrSupply(key: PersistentDataKey<C>, default: () -> C): C {
-    return get(key) ?: default()
-}
+fun <C : Any> PersistentDataContainerView.getOrSupply(key: PersistentDataKey<C>, default: () -> C): C = get(key) ?: default()
 
 /**
  * Acts as a property delegate for stuff contained inside a [PersistentDataContainer]
@@ -495,20 +485,7 @@ fun <T> persistentData(
 inline fun <T> persistentData(
     key: PersistentDataKey<T & Any>,
     crossinline default: () -> T
-) = object : ReadWriteProperty<PersistentDataHolder, T> {
-
-    override fun getValue(thisRef: PersistentDataHolder, property: KProperty<*>): T {
-        return thisRef.persistentDataContainer.get(key) ?: default()
-    }
-
-    override fun setValue(thisRef: PersistentDataHolder, property: KProperty<*>, value: T) {
-        if (value == null) {
-            thisRef.persistentDataContainer.remove(key)
-        } else {
-            thisRef.persistentDataContainer.set(key, value)
-        }
-    }
-}
+) = persistentData(key.key(), key.dataType(), default)
 
 /**
  * Same as [persistentData] but with a default value that is constant
