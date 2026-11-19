@@ -104,6 +104,14 @@ object RebarAdvancementTriggers {
         ON_BLOCK_BREAK.register()
     }
 
+    @JvmField
+    val ON_BLOCK_INTERACT = UnlockOnBlockInteractTrigger(rebarKey("unlock_on_block_interact"))
+
+    init {
+        Bukkit.getPluginManager().registerEvents(ON_BLOCK_INTERACT, Rebar)
+        ON_BLOCK_INTERACT.register()
+    }
+
     fun init() {
 
     }
