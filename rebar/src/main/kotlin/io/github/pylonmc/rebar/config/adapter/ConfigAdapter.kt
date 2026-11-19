@@ -58,6 +58,7 @@ interface ConfigAdapter<T> {
         @JvmField val MATERIAL = KEYED.fromRegistry(Registry.MATERIAL)
         @JvmField val BLOCK_DATA = ConfigAdapter { Bukkit.createBlockData(STRING.convert(it)) }
         @JvmField val LOCALE = ConfigAdapter { Locale.of(STRING.convert(it)) }
+        @JvmField val ADVANCEMENT = AdvancementConfigAdapter
 
         @JvmField val VECTOR_2I = ConfigAdapter {
             val list = (it as List<*>).filterIsInstance<Int>()

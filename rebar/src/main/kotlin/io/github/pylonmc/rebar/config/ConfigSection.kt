@@ -101,6 +101,13 @@ open class ConfigSection private constructor(val name: String?, val internalSect
     }
 
     /**
+     * Returns null if the key does not exist. Unlike [get], throws an error if the value cannot be converted to the
+     * desired type, instead of silently discarding it.
+     */
+    fun <T> getIfPresent(key: String, adapter: ConfigAdapter<T>): T? =
+        if (has(key)) getOrThrow(key, adapter) else null
+
+    /**
      * Throws an error if the key does not exist or if the value cannot be converted to the desired type.
      */
     fun <T> getOrThrow(key: String, adapter: ConfigAdapter<T>): T {

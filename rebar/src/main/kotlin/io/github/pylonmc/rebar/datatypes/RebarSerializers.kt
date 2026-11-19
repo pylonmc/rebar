@@ -180,4 +180,6 @@ object RebarSerializers {
     @JvmSynthetic
     internal val TICKING_ENTITY_DATA = TickingEntityPersistentDataType
 
+    @JvmSynthetic
+    internal val ADVANCEMENT_PLAYER_PERSISTENT_DATA = AdvancementPlayerPersistentDataType
 }
