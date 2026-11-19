@@ -1,6 +1,6 @@
 plugins {
     kotlin("jvm")
-    id("io.papermc.paperweight.userdev") version "2.0.0-beta.21"
+    id("io.papermc.paperweight.userdev") version "2.0.0-beta.24"
 }
 
 group = "io.github.pylonmc"
