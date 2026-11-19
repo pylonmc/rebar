@@ -66,6 +66,7 @@ object RebarAdvancementTriggers {
 
     @JvmField
     val ON_ITEM_BREAK = UnlockOnItemBreakTrigger(rebarKey("unlock_on_item_break"))
+
     init {
         Bukkit.getPluginManager().registerEvents(ON_ITEM_BREAK, Rebar)
         ON_ITEM_BREAK.register()
@@ -73,6 +74,7 @@ object RebarAdvancementTriggers {
 
     @JvmField
     val ON_ITEM_USE = UnlockOnItemUseTrigger(rebarKey("unlock_on_item_use"))
+
     init {
         Bukkit.getPluginManager().registerEvents(ON_ITEM_USE, Rebar)
         ON_ITEM_USE.register()
@@ -80,6 +82,7 @@ object RebarAdvancementTriggers {
 
     @JvmField
     val ON_ENTITY_KILL = UnlockOnEntityKillTrigger(rebarKey("unlock_on_entity_kill"))
+
     init {
         Bukkit.getPluginManager().registerEvents(ON_ENTITY_KILL, Rebar)
         ON_ENTITY_KILL.register()
@@ -87,9 +90,18 @@ object RebarAdvancementTriggers {
 
     @JvmField
     val ON_BLOCK_PLACE = UnlockOnBlockPlaceTrigger(rebarKey("unlock_on_block_place"))
+
     init {
         Bukkit.getPluginManager().registerEvents(ON_BLOCK_PLACE, Rebar)
         ON_BLOCK_PLACE.register()
+    }
+
+    @JvmField
+    val ON_BLOCK_BREAK = UnlockOnBlockBreakTrigger(rebarKey("unlock_on_block_break"))
+
+    init {
+        Bukkit.getPluginManager().registerEvents(ON_BLOCK_BREAK, Rebar)
+        ON_BLOCK_BREAK.register()
     }
 
     fun init() {
