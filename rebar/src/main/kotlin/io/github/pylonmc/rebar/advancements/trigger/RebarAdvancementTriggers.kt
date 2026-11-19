@@ -71,6 +71,13 @@ object RebarAdvancementTriggers {
         ON_ITEM_BREAK.register()
     }
 
+    @JvmField
+    val ON_ITEM_USE = UnlockOnItemUseTrigger(rebarKey("unlock_on_item_use"))
+    init {
+        Bukkit.getPluginManager().registerEvents(ON_ITEM_USE, Rebar)
+        ON_ITEM_USE.register()
+    }
+
     fun init() {
 
     }
