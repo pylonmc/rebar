@@ -62,13 +62,19 @@ import org.bukkit.craftbukkit.damage.CraftDamageSource
 import org.bukkit.craftbukkit.entity.CraftEntity
 import org.bukkit.craftbukkit.entity.CraftLivingEntity
 import org.bukkit.craftbukkit.entity.CraftPlayer
-import org.bukkit.craftbukkit.inventory.*
+import org.bukkit.craftbukkit.inventory.CraftInventory
+import org.bukkit.craftbukkit.inventory.CraftInventoryView
+import org.bukkit.craftbukkit.inventory.CraftItemStack
+import org.bukkit.craftbukkit.inventory.CraftItemType
 import org.bukkit.craftbukkit.persistence.CraftPersistentDataContainer
 import org.bukkit.craftbukkit.util.CraftNamespacedKey
 import org.bukkit.entity.Entity
 import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Player
-import org.bukkit.inventory.*
+import org.bukkit.inventory.EquipmentSlot
+import org.bukkit.inventory.Inventory
+import org.bukkit.inventory.InventoryView
+import org.bukkit.inventory.ItemStack
 import org.bukkit.loot.LootTable
 import org.bukkit.persistence.PersistentDataContainer
 import java.lang.invoke.MethodHandle
@@ -80,9 +86,9 @@ import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.math.max
 import kotlin.math.min
 import com.mojang.datafixers.util.Pair as NmsPair
+import net.minecraft.core.component.DataComponentType as NmsDataComponentType
 import net.minecraft.world.entity.EquipmentSlot as NmsEquipmentSlot
 import net.minecraft.world.item.ItemStack as NmsItemStack
-import net.minecraft.core.component.DataComponentType as NmsDataComponentType
 
 /**
  * Documentation is in [NmsAccessor].
@@ -358,7 +364,7 @@ object NmsAccessorImpl : NmsAccessor {
             return false
         }
 
-        val adaptedValue = type.adapter.fromVanilla(nmsValue)
+        val adaptedValue = type.converter.fromVanilla(nmsValue)
         return adaptedValue == value
     }
 
@@ -368,7 +374,7 @@ object NmsAccessorImpl : NmsAccessor {
     }
 
     fun <T: Any, NMS: Any> convertNmsValue(type: PaperDataComponentType<T, NMS>, nmsValue: Any): T {
-        return type.adapter.fromVanilla(nmsValue as NMS)
+        return type.converter.fromVanilla(nmsValue as NMS)
     }
 
     override fun overriddenComponents(itemStack: ItemStack, exact: Boolean): Map<DataComponentType, Any?> {
