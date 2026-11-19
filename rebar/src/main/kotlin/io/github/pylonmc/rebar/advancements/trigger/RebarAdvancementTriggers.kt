@@ -2,6 +2,7 @@
 
 import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.advancements.trigger.base.UnlockOnAdvancementTrigger
+import io.github.pylonmc.rebar.advancements.trigger.base.UnlockOnEnterWorldTrigger
 import io.github.pylonmc.rebar.advancements.trigger.base.UnlockOnItemTrigger
 import io.github.pylonmc.rebar.advancements.trigger.base.UnlockOnJoinTrigger
 import io.github.pylonmc.rebar.config.RebarConfig
@@ -31,6 +32,14 @@ object RebarAdvancementTriggers {
     init {
         Bukkit.getPluginManager().registerEvents(ON_ADVANCEMENT, Rebar)
         ON_ADVANCEMENT.register()
+    }
+
+    @JvmField
+    val ON_ENTER_WORLD = UnlockOnEnterWorldTrigger(rebarKey("unlock_on_enter_world"))
+
+    init {
+        Bukkit.getPluginManager().registerEvents(ON_ENTER_WORLD, Rebar)
+        ON_ENTER_WORLD.register()
     }
 
     fun init() {
