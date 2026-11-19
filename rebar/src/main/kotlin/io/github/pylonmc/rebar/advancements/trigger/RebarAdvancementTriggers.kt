@@ -85,6 +85,13 @@ object RebarAdvancementTriggers {
         ON_ENTITY_KILL.register()
     }
 
+    @JvmField
+    val ON_BLOCK_PLACE = UnlockOnBlockPlaceTrigger(rebarKey("unlock_on_block_place"))
+    init {
+        Bukkit.getPluginManager().registerEvents(ON_BLOCK_PLACE, Rebar)
+        ON_BLOCK_PLACE.register()
+    }
+
     fun init() {
 
     }
