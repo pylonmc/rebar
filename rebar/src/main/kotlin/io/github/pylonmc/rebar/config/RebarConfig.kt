@@ -77,6 +77,12 @@ object RebarConfig {
         ConfigAdapter.LONG)
 
     @JvmField
+    val ADVANCEMENTS_STATISTICS_TICKER_BASE_RATE = config.getOrThrow(
+        "advancements-statistics-ticker-base-rate",
+        ConfigAdapter.LONG
+    )
+
+    @JvmField
     val CARGO_TICK_INTERVAL = config.getOrThrow("cargo-tick-interval", ConfigAdapter.INTEGER)
 
     @JvmField

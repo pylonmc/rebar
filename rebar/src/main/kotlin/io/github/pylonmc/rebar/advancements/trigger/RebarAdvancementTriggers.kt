@@ -1,10 +1,7 @@
 ﻿package io.github.pylonmc.rebar.advancements.trigger
 
 import io.github.pylonmc.rebar.Rebar
-import io.github.pylonmc.rebar.advancements.trigger.base.UnlockOnAdvancementTrigger
-import io.github.pylonmc.rebar.advancements.trigger.base.UnlockOnEnterWorldTrigger
-import io.github.pylonmc.rebar.advancements.trigger.base.UnlockOnItemTrigger
-import io.github.pylonmc.rebar.advancements.trigger.base.UnlockOnJoinTrigger
+import io.github.pylonmc.rebar.advancements.trigger.base.*
 import io.github.pylonmc.rebar.config.RebarConfig
 import io.github.pylonmc.rebar.util.rebarKey
 import org.bukkit.Bukkit
@@ -40,6 +37,15 @@ object RebarAdvancementTriggers {
     init {
         Bukkit.getPluginManager().registerEvents(ON_ENTER_WORLD, Rebar)
         ON_ENTER_WORLD.register()
+    }
+
+    @JvmField
+    val ON_PLAYER_STATISTIC = UnlockOnPlayerStatisticTrigger(rebarKey("unlock_on_player_statistic"))
+
+    init {
+        Bukkit.getScheduler()
+            .runTaskTimer(Rebar, ON_PLAYER_STATISTIC, 0L, RebarConfig.ADVANCEMENTS_STATISTICS_TICKER_BASE_RATE)
+        ON_PLAYER_STATISTIC.register()
     }
 
     fun init() {
