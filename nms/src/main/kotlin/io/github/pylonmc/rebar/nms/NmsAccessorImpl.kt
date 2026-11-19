@@ -368,7 +368,7 @@ object NmsAccessorImpl : NmsAccessor {
             return false
         }
 
-        val adaptedValue = type.adapter.fromVanilla(nmsValue)
+        val adaptedValue = type.converter.fromVanilla(nmsValue)
         return adaptedValue == value
     }
 
@@ -378,7 +378,7 @@ object NmsAccessorImpl : NmsAccessor {
     }
 
     fun <T: Any, NMS: Any> convertNmsValue(type: PaperDataComponentType<T, NMS>, nmsValue: Any): T {
-        return type.adapter.fromVanilla(nmsValue as NMS)
+        return type.converter.fromVanilla(nmsValue as NMS)
     }
 
     override fun overriddenComponents(itemStack: ItemStack, exact: Boolean): Map<DataComponentType, Any?> {
