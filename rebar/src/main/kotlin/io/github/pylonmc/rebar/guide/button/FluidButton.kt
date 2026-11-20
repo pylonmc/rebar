@@ -124,5 +124,10 @@ open class FluidButton private constructor(
         @JvmOverloads
         fun of(fluid: FluidWithAmount, preDisplayDecorator: Decorator =  { it })
             = of(listOf(fluid.fluid), fluid.amount, preDisplayDecorator)
+
+        @JvmStatic
+        @JvmOverloads
+        fun of(fluids: List<FluidWithAmount>, preDisplayDecorator: Decorator = { it })
+            = FluidButton(fluids.map { (fluid, amount) -> fluid to amount }, preDisplayDecorator)
     }
 }
