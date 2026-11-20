@@ -13,6 +13,7 @@ import io.github.pylonmc.rebar.util.isDefaultComponents
 import io.github.pylonmc.rebar.util.matchesComponents
 import io.github.pylonmc.rebar.util.overriddenComponents
 import io.github.pylonmc.rebar.util.overriddenDataTypes
+import io.papermc.paper.block.BlockPredicate.predicate
 import io.papermc.paper.datacomponent.DataComponentType
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.RecipeChoice
@@ -31,11 +32,12 @@ class ItemChoice internal constructor(
     val amount: Int,
 ) : FluidOrItemChoice {
 
-    val representativeItems: List<ItemStack> = internalChoices.map { it.wrapper.createItemStack(amount) }
+    val representativeItems: List<ItemStack> = internalChoices.map { it.representativeItem.apply { amount = this@ItemChoice.amount } }
 
     internal class InternalItemChoice(
         val wrapper: ItemTypeWrapper,
         val predicate: Predicate<ItemStack>? = null,
+        var representativeItem: ItemStack = wrapper.createItemStack()
     ) {
         fun matches(stack: ItemStack?): Boolean
                 = stack != null && wrapper.matches(stack) && predicate?.test(stack) ?: true
@@ -71,11 +73,17 @@ class ItemChoice internal constructor(
      */
     @JvmSynthetic
     internal fun toRepresentativeRecipeChoice(): RecipeChoice {
+        if (internalChoices.isEmpty()) {
+            return RecipeChoice.empty()
+        }
+
         val allUnmodifiedMaterials = internalChoices.all { it.wrapper is ItemTypeWrapper.Vanilla && it.predicate == null }
         if (allUnmodifiedMaterials) {
             return RecipeChoice.MaterialChoice(internalChoices.map { (it.wrapper as ItemTypeWrapper.Vanilla).material })
         }
-        return RecipeChoice.ExactChoice(representativeItems)
+
+        // TODO: see if we can PR to paper to allow multiple example stacks with predicateChoice, for now going to use exactChoice still
+        return RecipeChoice.exactChoice(representativeItems)
     }
 
     /**
@@ -122,6 +130,12 @@ class ItemChoice internal constructor(
             InternalItemChoice(type, predicate)
         )
 
+        private fun setLastRepresentativeItem(item: ItemStack) = apply {
+            if (internalChoices.isNotEmpty()) {
+                internalChoices.last().representativeItem = item.asOne()
+            }
+        }
+
         /**
          * Matches stacks of the given [type].
          *
@@ -164,6 +178,7 @@ class ItemChoice internal constructor(
         fun addFuzzy(stack: ItemStack) = apply {
             val components = stack.overriddenComponents(false)
             addFuzzy(ItemTypeWrapper.Companion(stack), components)
+            setLastRepresentativeItem(stack)
         }
 
         /**
@@ -204,6 +219,7 @@ class ItemChoice internal constructor(
                 add(ItemTypeWrapper.Companion(stack)) { stack ->
                     stack.componentsEqual(components)
                 }
+                setLastRepresentativeItem(stack)
             }
         }
 
