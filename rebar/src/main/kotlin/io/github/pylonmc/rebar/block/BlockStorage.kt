@@ -3,10 +3,9 @@ package io.github.pylonmc.rebar.block
 
 import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.addon.RebarAddon
-import io.github.pylonmc.rebar.block.BlockStorage.breakBlock
-import io.github.pylonmc.rebar.block.interfaces.BlockBreakRebarBlockHandler
 import io.github.pylonmc.rebar.block.context.BlockBreakContext
 import io.github.pylonmc.rebar.block.context.BlockCreateContext
+import io.github.pylonmc.rebar.block.interfaces.BlockBreakRebarBlockHandler
 import io.github.pylonmc.rebar.config.RebarConfig
 import io.github.pylonmc.rebar.culling.BlockCullingEngine
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
@@ -298,6 +297,32 @@ object BlockStorage : Listener {
     fun isRebarBlock(location: Location): Boolean =
         (location.isChunkLoaded) && get(location) != null
 
+    /**
+     * Returns whether the block at [blockPosition] is a Rebar block and is of type [key]
+     * @return false if the chunk at [blockPosition] is not loaded or is the incorrect type.
+     * @throws NoSuchElementException if the key is not a valid Rebar block
+     */
+    @JvmStatic
+    fun isRebarBlock(blockPosition: BlockPosition, key: NamespacedKey): Boolean =
+        !blockPosition.isChunkLoaded && get(blockPosition)?.key == key
+
+    /**
+     * Returns whether the block at [block] is a Rebar block and is of type [key]
+     * @return false if the chunk at [block] is not loaded or is the incorrect type.
+     * @throws NoSuchElementException if the key is not a valid Rebar block
+     */
+    @JvmStatic
+    fun isRebarBlock(block: Block, key: NamespacedKey): Boolean =
+        !block.isChunkLoaded && get(block)?.key == key
+
+    /**
+     * Returns whether the block at [location] is a Rebar block and is of type [key]
+     * @return false if the chunk at [location] is not loaded or is the incorrect type.
+     * @throws NoSuchElementException if the key is not a valid Rebar block
+     */
+    @JvmStatic
+    fun isRebarBlock(location: Location, key: NamespacedKey): Boolean =
+        !location.isChunkLoaded && get(location)?.key == key
 
     /**
      * Creates a new Rebar block. Only call on the main thread.
