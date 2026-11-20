@@ -99,7 +99,7 @@ import net.minecraft.world.item.ItemStack as NmsItemStack
  *
  * @see NmsAccessor
  */
-@Suppress("unused")
+@Suppress("unused", "UnstableApiUsage")
 object NmsAccessorImpl : NmsAccessor {
 
     // We use both the field and the handle because the handle will have significantly better performance
@@ -193,6 +193,7 @@ object NmsAccessorImpl : NmsAccessor {
         for (property in state.block.stateDefinition.properties) {
             @Suppress("UNCHECKED_CAST")
             property as Property<Comparable<Any>>
+            @Suppress("TYPE_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
             map[property.name] = state.getOptionalValue(property).map(property::getName).orElse("none")
             possibleValues[property.name] = property.possibleValues.size
         }
@@ -378,6 +379,7 @@ object NmsAccessorImpl : NmsAccessor {
     }
 
     fun <T: Any, NMS: Any> convertNmsValue(type: PaperDataComponentType<T, NMS>, nmsValue: Any): T {
+        @Suppress("UNCHECKED_CAST")
         return type.converter.fromVanilla(nmsValue as NMS)
     }
 
