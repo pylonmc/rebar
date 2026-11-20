@@ -38,7 +38,7 @@ open class RebarFluid(
 
     private val internalItem by lazy {
         val builder = ItemStackBuilder.of(material)
-            .editPdc { it.set(rebarFluidKeyKey, RebarSerializers.NAMESPACED_KEY, key) }
+            .editPdc { it.set(rebarFluidKeyKey, key) }
             .addCustomModelDataString(key.toString())
             .name(name)
 
@@ -107,7 +107,7 @@ open class RebarFluid(
 
     companion object {
         private val nameWarningsSuppressed: MutableSet<NamespacedKey> = mutableSetOf()
-        val rebarFluidKeyKey = rebarKey("rebar_fluid_key")
+        val rebarFluidKeyKey = rebarKey("rebar_fluid_key", RebarSerializers.NAMESPACED_KEY)
 
         /**
          * Get the fluid represented by the given item stack, or null if the stack is null, empty or does not represent a fluid.
@@ -115,7 +115,7 @@ open class RebarFluid(
          */
         fun fromStack(stack: ItemStack?): RebarFluid? {
             if (stack == null || stack.isEmpty) return null
-            val id = stack.persistentDataContainer.get(rebarFluidKeyKey, RebarSerializers.NAMESPACED_KEY) ?: return null
+            val id = stack.persistentDataContainer.get(rebarFluidKeyKey) ?: return null
             return RebarRegistry.FLUIDS[id]
         }
 

@@ -152,25 +152,23 @@ class Research(
     override fun hashCode(): Int = key.hashCode()
 
     companion object : Listener {
-        private val researchesKey = rebarKey("researches")
-        private val researchPointsKey = rebarKey("research_points")
-        private val researchConfettiKey = rebarKey("research_confetti")
-        private val researchSoundsKey = rebarKey("research_sounds")
-        private val researchesType =
-            RebarSerializers.LIST.listTypeFrom(RebarSerializers.NAMESPACED_KEY)
+        private val researchesKey = rebarKey("researches", RebarSerializers.LIST.listTypeFrom(RebarSerializers.NAMESPACED_KEY))
+        private val researchPointsKey = rebarKey("research_points", RebarSerializers.LONG)
+        private val researchConfettiKey = rebarKey("research_confetti", RebarSerializers.BOOLEAN)
+        private val researchSoundsKey = rebarKey("research_sounds", RebarSerializers.BOOLEAN)
 
         @JvmStatic
-        var Player.researchPoints: Long by persistentData(researchPointsKey, RebarSerializers.LONG, 0)
+        var Player.researchPoints: Long by persistentData(researchPointsKey, 0)
 
         @JvmStatic
-        var Player.researchConfetti: Boolean by persistentData(researchConfettiKey, RebarSerializers.BOOLEAN, true)
+        var Player.researchConfetti: Boolean by persistentData(researchConfettiKey, true)
 
         @JvmStatic
-        var Player.researchSounds: Boolean by persistentData(researchSoundsKey, RebarSerializers.BOOLEAN, true)
+        var Player.researchSounds: Boolean by persistentData(researchSoundsKey, true)
 
         @JvmStatic
         fun getResearches(player: OfflinePlayer): List<Research> {
-            val researches = player.persistentDataContainer.get(researchesKey, researchesType)
+            val researches = player.persistentDataContainer.get(researchesKey)
             if (researches == null && player is Player) {
                 setResearches(player, listOf())
                 return listOf()
@@ -180,7 +178,7 @@ class Research(
 
         @JvmStatic
         fun setResearches(player: Player, researches: List<Research>)
-            = player.persistentDataContainer.set(researchesKey, researchesType, researches.map { it.key })
+            = player.persistentDataContainer.set(researchesKey, researches.map { it.key })
 
         @JvmStatic
         fun addResearch(player: Player, research: Research)

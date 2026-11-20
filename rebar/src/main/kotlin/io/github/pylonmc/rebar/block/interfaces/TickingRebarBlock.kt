@@ -106,7 +106,7 @@ interface TickingRebarBlock {
             var job: Job?,
         )
 
-        private val tickingBlockKey = rebarKey("ticking_block_data")
+        private val tickingBlockKey = rebarKey("ticking_block_data", RebarSerializers.TICKING_BLOCK_DATA)
 
         private val tickingBlocks = IdentityHashMap<TickingRebarBlock, TickingBlockData>()
 
@@ -114,7 +114,7 @@ interface TickingRebarBlock {
         private fun onDeserialize(event: RebarBlockDeserializeEvent) {
             val block = event.rebarBlock
             if (block is TickingRebarBlock) {
-                event.pdc.get(tickingBlockKey, RebarSerializers.TICKING_BLOCK_DATA)?.let { tickingBlocks[block] = it }
+                event.pdc.get(tickingBlockKey)?.let { tickingBlocks[block] = it }
             }
         }
 
@@ -122,7 +122,7 @@ interface TickingRebarBlock {
         private fun onSerialize(event: RebarBlockSerializeEvent) {
             val block = event.rebarBlock
             if (block is TickingRebarBlock) {
-                event.pdc.set(tickingBlockKey, RebarSerializers.TICKING_BLOCK_DATA, tickingBlocks[block] ?: return)
+                event.pdc.set(tickingBlockKey, tickingBlocks[block] ?: return)
             }
         }
 

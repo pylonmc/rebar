@@ -165,16 +165,14 @@ class RebarTranslator private constructor(private val addon: RebarAddon) : Trans
     companion object : Listener {
         private val translators = mutableMapOf<NamespacedKey, RebarTranslator>()
 
-        private val originalNameKey = rebarKey("translation_original_name")
-        private val originalLoreKey = rebarKey("translation_original_lore")
-        private val originalTypeKey = rebarKey("translation_original_type")
+        private val originalNameKey = rebarKey("translation_original_name", RebarSerializers.COMPONENT)
+        private val originalLoreKey = rebarKey("translation_original_lore", RebarSerializers.LIST.listTypeFrom(RebarSerializers.COMPONENT))
+        private val originalTypeKey = rebarKey("translation_original_type", RebarSerializers.MATERIAL)
 
-        private val loreType = RebarSerializers.LIST.listTypeFrom(RebarSerializers.COMPONENT)
-
-        private val storyTextKey = rebarKey("story_text")
+        private val storyTextKey = rebarKey("story_text", RebarSerializers.BOOLEAN)
 
         @JvmStatic
-        var Player.storyText: Boolean by persistentData(storyTextKey, RebarSerializers.BOOLEAN, true)
+        var Player.storyText: Boolean by persistentData(storyTextKey, true)
 
         @JvmStatic
         @get:JvmName("getTranslatorForAddon")
@@ -205,14 +203,9 @@ class RebarTranslator private constructor(private val addon: RebarAddon) : Trans
             editData(DataComponentTypes.ITEM_NAME) {
                 if (!isRebarOrAddon(it)) return@editData it
 
-                editPersistentDataContainer { pdc -> pdc.set(originalNameKey, RebarSerializers.COMPONENT, it) }
+                editPersistentDataContainer { pdc -> pdc.set(originalNameKey, it) }
 
-                if (!persistentDataContainer.getOrDefault(
-                        ItemStackBuilder.disableNameHacksKey,
-                        RebarSerializers.BOOLEAN,
-                        false
-                    )
-                ) {
+                if (!persistentDataContainer.getOrDefault(ItemStackBuilder.disableNameHacksKey, false)) {
                     if (type == Material.PLAYER_HEAD) {
                         editData(DataComponentTypes.PROFILE) { profile ->
                             // Need to remove the name from the profile because it overrides item name
@@ -231,7 +224,7 @@ class RebarTranslator private constructor(private val addon: RebarAddon) : Trans
                         if (!oldStack.isDataOverridden(DataComponentTypes.ITEM_MODEL)) {
                             editData(DataComponentTypes.ITEM_MODEL) { oldStack.type.key }
                         }
-                        editPersistentDataContainer { pdc -> pdc.set(originalTypeKey, RebarSerializers.MATERIAL, oldStack.type) }
+                        editPersistentDataContainer { pdc -> pdc.set(originalTypeKey, oldStack.type) }
                     }
                 }
 
@@ -282,7 +275,7 @@ class RebarTranslator private constructor(private val addon: RebarAddon) : Trans
                     return
                 }
 
-                editPersistentDataContainer { pdc -> pdc.set(originalLoreKey, loreType, originalLore) }
+                editPersistentDataContainer { pdc -> pdc.set(originalLoreKey, originalLore) }
                 check(newLore.size <= 256) {
                     "Lore for item had too many lines ($locale) (256 lines max but had ${newLore.size}): ${newLore.map { it.plainText }}\\n"
                 }
@@ -297,9 +290,9 @@ class RebarTranslator private constructor(private val addon: RebarAddon) : Trans
         @JvmName("translateItem")
         @Suppress("UnstableApiUsage")
         fun ItemStack.untranslate() {
-            val originalName = persistentDataContainer.get(originalNameKey, RebarSerializers.COMPONENT)
-            val originalLore = persistentDataContainer.get(originalLoreKey, loreType)
-            val originalType = persistentDataContainer.get(originalTypeKey, RebarSerializers.MATERIAL)
+            val originalName = persistentDataContainer.get(originalNameKey)
+            val originalLore = persistentDataContainer.get(originalLoreKey)
+            val originalType = persistentDataContainer.get(originalTypeKey)
             if (originalName != null) {
                 setData(DataComponentTypes.ITEM_NAME, originalName)
                 editPersistentDataContainer { pdc -> pdc.remove(originalNameKey) }

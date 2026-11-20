@@ -10,7 +10,6 @@ import io.github.pylonmc.rebar.block.BlockListener
 import io.github.pylonmc.rebar.config.ConfigSection
 import io.github.pylonmc.rebar.config.ContributorConfig
 import io.github.pylonmc.rebar.config.adapter.ConfigAdapter
-import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.i18n.customMiniMessage
 import io.github.pylonmc.rebar.item.ItemTypeWrapper
 import io.github.pylonmc.rebar.item.RebarItem
@@ -22,6 +21,8 @@ import io.github.pylonmc.rebar.util.position.BlockPosition
 import io.github.pylonmc.rebar.util.position.position
 import io.papermc.paper.datacomponent.DataComponentType
 import io.papermc.paper.datacomponent.DataComponentTypes
+import io.papermc.paper.persistence.PersistentDataContainerView
+import io.papermc.paper.persistence.PersistentDataKey
 import io.papermc.paper.registry.keys.tags.BlockTypeTagKeys
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -297,6 +298,9 @@ fun perpendicularImmediateFaces(face: BlockFace): List<BlockFace> {
 internal fun rebarKey(key: String): NamespacedKey = NamespacedKey(Rebar, key)
 
 @JvmSynthetic
+internal fun <C : Any> rebarKey(key: String, type: PersistentDataType<*, C>): PersistentDataKey<C> = PersistentDataKey.of(rebarKey(key), type)
+
+@JvmSynthetic
 internal fun Class<*>.findConstructorMatching(vararg types: Class<*>): MethodHandle? {
     return declaredConstructors.firstOrNull {
         it.parameterTypes.size == types.size &&
@@ -421,6 +425,19 @@ fun <P, C : Any> PersistentDataContainer.setNullable(key: NamespacedKey, type: P
 }
 
 /**
+ * Wrapper around [PersistentDataContainer.set] that allows nullable values to be passed
+ *
+ * @param value The value to set. If this is null, the key will be removed from the container
+ */
+fun <C : Any> PersistentDataContainer.setNullable(key: PersistentDataKey<C>, value: C?) = setNullable(key.key(), key.dataType(), value)
+
+fun <C : Any> PersistentDataContainer.getOrSupply(key: NamespacedKey, type: PersistentDataType<*, C>, default: () -> C): C {
+    return get(key, type) ?: default()
+}
+
+fun <C : Any> PersistentDataContainerView.getOrSupply(key: PersistentDataKey<C>, default: () -> C): C = get(key) ?: default()
+
+/**
  * Acts as a property delegate for stuff contained inside a [PersistentDataContainer]
  * For example:
  * ```
@@ -456,6 +473,28 @@ fun <T> persistentData(
     type: PersistentDataType<*, T & Any>,
     default: T
 ) = persistentData(key, type) { default }
+
+/**
+ * Acts as a property delegate for stuff contained inside a [PersistentDataContainer]
+ * For example:
+ * ```
+ * val numberOfTimesJumped: Int by persistentData(NamespacedKey(yourPlugin, "jumped"), PersistentDataType.INTEGER) { 0 }
+ * ```
+ */
+@JvmSynthetic
+inline fun <T> persistentData(
+    key: PersistentDataKey<T & Any>,
+    crossinline default: () -> T
+) = persistentData(key.key(), key.dataType(), default)
+
+/**
+ * Same as [persistentData] but with a default value that is constant
+ */
+@JvmSynthetic
+fun <T> persistentData(
+    key: PersistentDataKey<T & Any>,
+    default: T
+) = persistentData(key) { default }
 
 @get:JvmSynthetic
 val Player.pdc: PersistentDataContainer
@@ -751,7 +790,7 @@ fun Projectile.sourceItem(): ItemStack? {
         is SizedFireball -> this.displayItem
         is AbstractArrow -> this.itemStack
         is Firework -> this.item
-        else -> persistentDataContainer.get(ProjectileRebarItemHandler.sourceItemKey, RebarSerializers.ITEM_STACK)
+        else -> persistentDataContainer.get(ProjectileRebarItemHandler.sourceItemKey)
     }
 }
 

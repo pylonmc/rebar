@@ -60,14 +60,14 @@ class ElectricProducerNode private constructor(
     }
 
     override fun serialize(pdc: PersistentDataContainer) {
-        pdc.set(POWER_KEY, RebarSerializers.DOUBLE, power)
-        pdc.set(PRIORITY_KEY, RebarSerializers.INTEGER, priority)
+        pdc.set(powerKey, power)
+        pdc.set(priorityKey, priority)
     }
 
     companion object {
 
-        private val POWER_KEY = rebarKey("power")
-        private val PRIORITY_KEY = rebarKey("priority")
+        private val powerKey = rebarKey("power", RebarSerializers.DOUBLE)
+        private val priorityKey = rebarKey("priority", RebarSerializers.INTEGER)
 
         @JvmSynthetic
         internal fun deserialize(
@@ -77,8 +77,8 @@ class ElectricProducerNode private constructor(
             internalConnections: MutableSet<UUID>,
             pdc: PersistentDataContainer
         ): ElectricProducerNode {
-            val power = pdc.get(POWER_KEY, RebarSerializers.DOUBLE)!!
-            val priority = pdc.get(PRIORITY_KEY, RebarSerializers.INTEGER)!!
+            val power = pdc.get(powerKey)!!
+            val priority = pdc.get(priorityKey)!!
             return ElectricProducerNode(id, name, block, internalConnections, power, priority)
         }
     }

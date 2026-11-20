@@ -34,7 +34,7 @@ import kotlin.contracts.contract
 open class RebarItem(val stack: ItemStack) : Keyed {
 
     private val key =
-        stack.persistentDataContainer.get(RebarItemSchema.rebarItemKeyKey, RebarSerializers.NAMESPACED_KEY)!!
+        stack.persistentDataContainer.get(RebarItemSchema.rebarItemKeyKey)!!
 
     /**
      * Additional data about the item's type.

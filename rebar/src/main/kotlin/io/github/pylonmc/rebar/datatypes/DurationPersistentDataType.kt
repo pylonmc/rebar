@@ -7,8 +7,8 @@ import org.bukkit.persistence.PersistentDataType
 import java.time.Duration
 
 object DurationPersistentDataType : PersistentDataType<PersistentDataContainer, Duration> {
-    val secondsKey = rebarKey("seconds")
-    val nanosKey = rebarKey("nanos")
+    val secondsKey = rebarKey("seconds", RebarSerializers.LONG)
+    val nanosKey = rebarKey("nanos", RebarSerializers.INTEGER)
 
     override fun getPrimitiveType(): Class<PersistentDataContainer> = PersistentDataContainer::class.java
 
@@ -18,15 +18,15 @@ object DurationPersistentDataType : PersistentDataType<PersistentDataContainer, 
         primitive: PersistentDataContainer,
         context: PersistentDataAdapterContext
     ): Duration {
-        val seconds = primitive.get(secondsKey, PersistentDataType.LONG)!!
-        val nanos = primitive.get(nanosKey, RebarSerializers.INTEGER)!!
+        val seconds = primitive.get(secondsKey)!!
+        val nanos = primitive.get(nanosKey)!!
         return Duration.ofSeconds(seconds, nanos.toLong())
     }
 
     override fun toPrimitive(complex: Duration, context: PersistentDataAdapterContext): PersistentDataContainer {
         val pdc = context.newPersistentDataContainer()
-        pdc.set(secondsKey, PersistentDataType.LONG, complex.seconds)
-        pdc.set(nanosKey, PersistentDataType.INTEGER, complex.nano)
+        pdc.set(secondsKey, complex.seconds)
+        pdc.set(nanosKey, complex.nano)
         return pdc
     }
 }

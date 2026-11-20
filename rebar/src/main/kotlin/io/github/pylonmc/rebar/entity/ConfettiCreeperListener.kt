@@ -12,7 +12,7 @@ import org.bukkit.event.EventPriority
 import org.bukkit.event.entity.ExplosionPrimeEvent
 
 object ConfettiCreeperListener : MultiListener {
-    val confettiCreeper = rebarKey("confetti_creeper")
+    val confettiCreeper = rebarKey("confetti_creeper", RebarSerializers.DOUBLE)
 
     @MultiHandler(priorities = [ EventPriority.LOWEST, EventPriority.MONITOR ], ignoreCancelled = true)
     fun onCreeperExplode(event: ExplosionPrimeEvent, priority: EventPriority) {
@@ -21,10 +21,10 @@ object ConfettiCreeperListener : MultiListener {
 
         val pdc = creeper.persistentDataContainer
         if (priority == EventPriority.LOWEST && Math.random() < RebarConfig.ConfettiCreeperConfig.CHANCE) {
-            pdc.set(confettiCreeper, RebarSerializers.DOUBLE, event.radius.toDouble())
+            pdc.set(confettiCreeper, event.radius.toDouble())
             event.radius = 0.0F
-        } else if (priority == EventPriority.MONITOR && pdc.has(confettiCreeper, RebarSerializers.DOUBLE)) {
-            val radius = pdc.getOrDefault(confettiCreeper, RebarSerializers.DOUBLE, 3.0)
+        } else if (priority == EventPriority.MONITOR && pdc.has(confettiCreeper)) {
+            val radius = pdc.getOrDefault(confettiCreeper, 3.0)
             ConfettiParticle.spawnMany(
                 creeper.location.add(0.0, creeper.height / 2, 0.0),
                 RebarConfig.ConfettiCreeperConfig.AMOUNT,
@@ -36,6 +36,6 @@ object ConfettiCreeperListener : MultiListener {
     }
 
     fun isConfettiCreeper(entity: Entity): Boolean {
-        return entity is Creeper && entity.persistentDataContainer.has(confettiCreeper, RebarSerializers.DOUBLE)
+        return entity is Creeper && entity.persistentDataContainer.has(confettiCreeper)
     }
 }

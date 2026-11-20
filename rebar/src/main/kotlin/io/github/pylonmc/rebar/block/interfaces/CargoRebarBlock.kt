@@ -238,7 +238,7 @@ interface CargoRebarBlock : LogisticRebarBlock, EntityHolderRebarBlock {
             var transferRate: Int,
         )
 
-        private val cargoBlockKey = rebarKey("cargo_block_data")
+        private val cargoBlockKey = rebarKey("cargo_block_data", RebarSerializers.CARGO_BLOCK_DATA)
 
         private val cargoBlocks = IdentityHashMap<CargoRebarBlock, CargoBlockData>()
         private val cargoTickers = IdentityHashMap<CargoRebarBlock, Job>()
@@ -309,7 +309,7 @@ interface CargoRebarBlock : LogisticRebarBlock, EntityHolderRebarBlock {
         private fun onDeserialize(event: RebarBlockDeserializeEvent) {
             val block = event.rebarBlock
             if (block is CargoRebarBlock) {
-                event.pdc.get(cargoBlockKey, RebarSerializers.CARGO_BLOCK_DATA)?.let { cargoBlocks[block] = it }
+                event.pdc.get(cargoBlockKey)?.let { cargoBlocks[block] = it }
             }
         }
 
@@ -317,7 +317,7 @@ interface CargoRebarBlock : LogisticRebarBlock, EntityHolderRebarBlock {
         private fun onSerialize(event: RebarBlockSerializeEvent) {
             val block = event.rebarBlock
             if (block is CargoRebarBlock) {
-                event.pdc.set(cargoBlockKey, RebarSerializers.CARGO_BLOCK_DATA, cargoBlocks[block] ?: return)
+                event.pdc.set(cargoBlockKey, cargoBlocks[block] ?: return)
             }
         }
 

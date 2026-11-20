@@ -7,35 +7,35 @@ import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.persistence.PersistentDataType
 
 object LocationPersistentDataType : PersistentDataType<PersistentDataContainer, Location> {
-    val xKey = rebarKey("x")
-    val yKey = rebarKey("y")
-    val zKey = rebarKey("z")
-    val yawKey = rebarKey("yaw")
-    val pitchKey = rebarKey("pitch")
-    val worldKey = rebarKey("world")
+    val xKey = rebarKey("x", RebarSerializers.DOUBLE)
+    val yKey = rebarKey("y", RebarSerializers.DOUBLE)
+    val zKey = rebarKey("z", RebarSerializers.DOUBLE)
+    val yawKey = rebarKey("yaw", RebarSerializers.FLOAT)
+    val pitchKey = rebarKey("pitch", RebarSerializers.FLOAT)
+    val worldKey = rebarKey("world", RebarSerializers.WORLD)
 
     override fun getPrimitiveType(): Class<PersistentDataContainer> = PersistentDataContainer::class.java
 
     override fun getComplexType(): Class<Location> = Location::class.java
 
     override fun fromPrimitive(primitive: PersistentDataContainer, context: PersistentDataAdapterContext): Location {
-        val x = primitive.get(xKey, PersistentDataType.DOUBLE)!!
-        val y = primitive.get(yKey, PersistentDataType.DOUBLE)!!
-        val z = primitive.get(zKey, PersistentDataType.DOUBLE)!!
-        val yaw = primitive.get(yawKey, PersistentDataType.FLOAT)!!
-        val pitch = primitive.get(pitchKey, PersistentDataType.FLOAT)!!
-        val world = primitive.get(worldKey, RebarSerializers.WORLD)
+        val world = primitive.get(worldKey)
+        val x = primitive.get(xKey)!!
+        val y = primitive.get(yKey)!!
+        val z = primitive.get(zKey)!!
+        val yaw = primitive.get(yawKey)!!
+        val pitch = primitive.get(pitchKey)!!
         return Location(world, x, y, z, yaw, pitch)
     }
 
     override fun toPrimitive(complex: Location, context: PersistentDataAdapterContext): PersistentDataContainer {
         val pdc = context.newPersistentDataContainer()
-        pdc.set(worldKey, RebarSerializers.WORLD, complex.world)
-        pdc.set(xKey, PersistentDataType.DOUBLE, complex.x)
-        pdc.set(yKey, PersistentDataType.DOUBLE, complex.y)
-        pdc.set(zKey, PersistentDataType.DOUBLE, complex.z)
-        pdc.set(yawKey, PersistentDataType.FLOAT, complex.yaw)
-        pdc.set(pitchKey, PersistentDataType.FLOAT, complex.pitch)
+        pdc.set(worldKey, complex.world)
+        pdc.set(xKey, complex.x)
+        pdc.set(yKey, complex.y)
+        pdc.set(zKey,  complex.z)
+        pdc.set(yawKey, complex.yaw)
+        pdc.set(pitchKey, complex.pitch)
         return pdc
     }
 }

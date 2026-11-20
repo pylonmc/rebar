@@ -40,14 +40,14 @@ class FluidPipeDisplay : RebarEntity<ItemDisplay> {
     constructor(entity: ItemDisplay) : super(entity) {
         val pdc = entity.persistentDataContainer
 
-        this.fromDisplay = pdc.get(FROM_DISPLAY_KEY, RebarSerializers.UUID)!!
-        this.toDisplay = pdc.get(TO_DISPLAY_KEY, RebarSerializers.UUID)!!
+        this.fromDisplay = pdc.get(fromDisplayKey)!!
+        this.toDisplay = pdc.get(toDisplayKey)!!
 
         // will fail to load if schema not found; no way around this
-        val pipeSchema = pdc.get(PIPE_KEY, PIPE_TYPE)!!
+        val pipeSchema = pdc.get(pipeKey)!!
         this.pipe = pipeSchema.createNewRebarItem() as FluidPipe
 
-        this.pipeAmount = pdc.get(PIPE_AMOUNT_KEY, RebarSerializers.INTEGER)!!
+        this.pipeAmount = pdc.get(pipeAmountKey)!!
 
         // When fluid points are loaded back, their segment's fluid per second and predicate won't be preserved, so
         // we wait for them to load and then set their segments' fluid per second and predicate
@@ -65,10 +65,10 @@ class FluidPipeDisplay : RebarEntity<ItemDisplay> {
     }
 
     override fun write(pdc: PersistentDataContainer) {
-        pdc.set(FROM_DISPLAY_KEY, RebarSerializers.UUID, fromDisplay)
-        pdc.set(TO_DISPLAY_KEY, RebarSerializers.UUID, toDisplay)
-        pdc.set(PIPE_KEY, PIPE_TYPE, pipe.schema)
-        pdc.set(PIPE_AMOUNT_KEY, RebarSerializers.INTEGER, pipeAmount)
+        pdc.set(fromDisplayKey, fromDisplay)
+        pdc.set(toDisplayKey, toDisplay)
+        pdc.set(pipeKey, pipe.schema)
+        pdc.set(pipeAmountKey, pipeAmount)
     }
 
     override fun writeDebugInfo(pdc: PersistentDataContainer) {
@@ -112,11 +112,10 @@ class FluidPipeDisplay : RebarEntity<ItemDisplay> {
         val KEY = rebarKey("fluid_pipe_display")
         const val SIZE = 0.1
 
-        private val PIPE_AMOUNT_KEY = rebarKey("pipe_amount")
-        private val PIPE_KEY = rebarKey("pipe")
-        private val PIPE_TYPE = RebarSerializers.KEYED.keyedTypeFrom { RebarRegistry.ITEMS.getOrThrow(it) }
-        private val FROM_DISPLAY_KEY = rebarKey("from_display")
-        private val TO_DISPLAY_KEY = rebarKey("to_display")
+        private val pipeAmountKey = rebarKey("pipe_amount", RebarSerializers.INTEGER)
+        private val pipeKey = rebarKey("pipe", RebarSerializers.KEYED.keyedTypeFrom { RebarRegistry.ITEMS.getOrThrow(it) })
+        private val fromDisplayKey = rebarKey("from_display", RebarSerializers.UUID)
+        private val toDisplayKey = rebarKey("to_display", RebarSerializers.UUID)
 
         private fun makeDisplay(pipe: FluidPipe, pipeAmount: Int, from: FluidPointDisplay, to: FluidPointDisplay): ItemDisplay {
             val height = from.entity.height

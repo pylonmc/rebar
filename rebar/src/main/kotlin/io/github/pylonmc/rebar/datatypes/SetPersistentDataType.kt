@@ -11,7 +11,7 @@ class SetPersistentDataType<P, C>(
     val elementType: PersistentDataType<P, C>
 ) : PersistentDataType<PersistentDataContainer, Set<C>> {
 
-    private val setValues = rebarKey("values")
+    private val setValues = rebarKey("values", PersistentDataType.LIST.listTypeFrom(elementType))
 
     override fun getPrimitiveType(): Class<PersistentDataContainer> = PersistentDataContainer::class.java
 
@@ -20,12 +20,12 @@ class SetPersistentDataType<P, C>(
 
     override fun toPrimitive(complex: Set<C>, context: PersistentDataAdapterContext): PersistentDataContainer {
         val pdc = context.newPersistentDataContainer()
-        pdc.set(setValues, PersistentDataType.LIST.listTypeFrom(elementType), ArrayList(complex))
+        pdc.set(setValues, ArrayList(complex))
         return pdc
     }
 
     override fun fromPrimitive(primitive: PersistentDataContainer, context: PersistentDataAdapterContext): Set<C> =
-        primitive.get(setValues, PersistentDataType.LIST.listTypeFrom(elementType))!!.toMutableSet()
+        primitive.get(setValues)!!.toMutableSet()
 
     companion object {
         fun <P, C> setTypeFrom(elementType: PersistentDataType<P, C>): PersistentDataType<PersistentDataContainer, Set<C>> =

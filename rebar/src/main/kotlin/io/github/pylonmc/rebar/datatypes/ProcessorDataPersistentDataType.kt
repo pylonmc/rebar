@@ -9,9 +9,9 @@ import org.bukkit.persistence.PersistentDataType
 
 internal object ProcessorDataPersistentDataType : PersistentDataType<PersistentDataContainer, ProcessorRebarBlock.ProcessorData> {
 
-    private val PROCESS_TIME_TICKS_KEY = rebarKey("total_process_ticks")
-    private val PROCESS_TICKS_REMAINING_KEY = rebarKey("process_ticks_remaining")
-    private val PROGRESS_ITEM_KEY = rebarKey("progress_item")
+    private val PROCESS_TIME_TICKS_KEY = rebarKey("total_process_ticks", RebarSerializers.INTEGER)
+    private val PROCESS_TICKS_REMAINING_KEY = rebarKey("process_ticks_remaining", RebarSerializers.INTEGER)
+    private val PROGRESS_ITEM_KEY = rebarKey("progress_item", RebarSerializers.PROGRESS_ITEM)
 
     override fun getPrimitiveType(): Class<PersistentDataContainer> = PersistentDataContainer::class.java
 
@@ -19,17 +19,17 @@ internal object ProcessorDataPersistentDataType : PersistentDataType<PersistentD
 
     override fun fromPrimitive(primitive: PersistentDataContainer, context: PersistentDataAdapterContext): ProcessorRebarBlock.ProcessorData {
         return ProcessorRebarBlock.ProcessorData(
-            primitive.get(PROCESS_TIME_TICKS_KEY, RebarSerializers.INTEGER),
-            primitive.get(PROCESS_TICKS_REMAINING_KEY, RebarSerializers.INTEGER),
-            primitive.get(PROGRESS_ITEM_KEY, RebarSerializers.PROGRESS_ITEM),
+            primitive.get(PROCESS_TIME_TICKS_KEY),
+            primitive.get(PROCESS_TICKS_REMAINING_KEY),
+            primitive.get(PROGRESS_ITEM_KEY),
         )
     }
 
     override fun toPrimitive(complex: ProcessorRebarBlock.ProcessorData, context: PersistentDataAdapterContext): PersistentDataContainer {
         val pdc = context.newPersistentDataContainer()
-        pdc.setNullable(PROCESS_TIME_TICKS_KEY, RebarSerializers.INTEGER, complex.processTimeTicks)
-        pdc.setNullable(PROCESS_TICKS_REMAINING_KEY, RebarSerializers.INTEGER, complex.processTicksRemaining)
-        pdc.setNullable(PROGRESS_ITEM_KEY, RebarSerializers.PROGRESS_ITEM, complex.progressItem)
+        pdc.setNullable(PROCESS_TIME_TICKS_KEY, complex.processTimeTicks)
+        pdc.setNullable(PROCESS_TICKS_REMAINING_KEY, complex.processTicksRemaining)
+        pdc.setNullable(PROGRESS_ITEM_KEY, complex.progressItem)
         return pdc
     }
 }
