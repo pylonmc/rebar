@@ -7,8 +7,8 @@ import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.persistence.PersistentDataType
 
 internal object TickingBlockPersistentDataType : PersistentDataType<PersistentDataContainer, TickingRebarBlock.Companion.TickingBlockData> {
-    val tickIntervalKey = rebarKey("tick_interval")
-    val isAsyncKey = rebarKey("is_async")
+    val tickIntervalKey = rebarKey("tick_interval", RebarSerializers.INTEGER)
+    val isAsyncKey = rebarKey("is_async", RebarSerializers.BOOLEAN)
 
     override fun getPrimitiveType(): Class<PersistentDataContainer> = PersistentDataContainer::class.java
 
@@ -18,8 +18,8 @@ internal object TickingBlockPersistentDataType : PersistentDataType<PersistentDa
         primitive: PersistentDataContainer,
         context: PersistentDataAdapterContext
     ): TickingRebarBlock.Companion.TickingBlockData {
-        val tickInterval = primitive.get(tickIntervalKey, PersistentDataType.INTEGER)!!
-        val isAsync = primitive.get(isAsyncKey, PersistentDataType.BOOLEAN)!!
+        val tickInterval = primitive.get(tickIntervalKey)!!
+        val isAsync = primitive.get(isAsyncKey)!!
         return TickingRebarBlock.Companion.TickingBlockData(tickInterval, isAsync, null)
     }
 
@@ -28,8 +28,8 @@ internal object TickingBlockPersistentDataType : PersistentDataType<PersistentDa
         context: PersistentDataAdapterContext
     ): PersistentDataContainer {
         val pdc = context.newPersistentDataContainer()
-        pdc.set(tickIntervalKey, PersistentDataType.INTEGER, complex.tickInterval)
-        pdc.set(isAsyncKey, PersistentDataType.BOOLEAN, complex.isAsync)
+        pdc.set(tickIntervalKey, complex.tickInterval)
+        pdc.set(isAsyncKey, complex.isAsync)
         return pdc
     }
 }

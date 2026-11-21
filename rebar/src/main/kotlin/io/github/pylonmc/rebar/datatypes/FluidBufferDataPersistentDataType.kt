@@ -7,10 +7,10 @@ import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.persistence.PersistentDataType
 
 internal object FluidBufferDataPersistentDataType : PersistentDataType<PersistentDataContainer, FluidBufferRebarBlock.Companion.FluidBufferData> {
-    val amountKey = rebarKey("amount")
-    val capacityKey = rebarKey("capacity")
-    val inputKey = rebarKey("input")
-    val outputKey = rebarKey("output")
+    val amountKey = rebarKey("amount", RebarSerializers.DOUBLE)
+    val capacityKey = rebarKey("capacity", RebarSerializers.DOUBLE)
+    val inputKey = rebarKey("input", RebarSerializers.BOOLEAN)
+    val outputKey = rebarKey("output", RebarSerializers.BOOLEAN)
 
     override fun getPrimitiveType(): Class<PersistentDataContainer> = PersistentDataContainer::class.java
 
@@ -20,10 +20,10 @@ internal object FluidBufferDataPersistentDataType : PersistentDataType<Persisten
         primitive: PersistentDataContainer,
         context: PersistentDataAdapterContext
     ): FluidBufferRebarBlock.Companion.FluidBufferData {
-        val amount = primitive.get(amountKey, PersistentDataType.DOUBLE)!!
-        val capacity = primitive.get(capacityKey, PersistentDataType.DOUBLE)!!
-        val input = primitive.get(inputKey, PersistentDataType.BOOLEAN)!!
-        val output = primitive.get(outputKey, PersistentDataType.BOOLEAN)!!
+        val amount = primitive.get(amountKey)!!
+        val capacity = primitive.get(capacityKey)!!
+        val input = primitive.get(inputKey)!!
+        val output = primitive.get(outputKey)!!
         return FluidBufferRebarBlock.Companion.FluidBufferData(amount, capacity, input, output)
     }
 
@@ -32,10 +32,10 @@ internal object FluidBufferDataPersistentDataType : PersistentDataType<Persisten
         context: PersistentDataAdapterContext
     ): PersistentDataContainer {
         val pdc = context.newPersistentDataContainer()
-        pdc.set(amountKey, PersistentDataType.DOUBLE, complex.amount)
-        pdc.set(capacityKey, PersistentDataType.DOUBLE, complex.capacity)
-        pdc.set(inputKey, PersistentDataType.BOOLEAN, complex.input)
-        pdc.set(outputKey, PersistentDataType.BOOLEAN, complex.output)
+        pdc.set(amountKey, complex.amount)
+        pdc.set(capacityKey, complex.capacity)
+        pdc.set(inputKey, complex.input)
+        pdc.set(outputKey, complex.output)
         return pdc
     }
 }

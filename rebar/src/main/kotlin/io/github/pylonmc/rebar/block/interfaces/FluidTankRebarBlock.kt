@@ -227,7 +227,7 @@ interface FluidTankRebarBlock : FluidRebarBlock {
             var output: Boolean,
         )
 
-        private val fluidTankKey = rebarKey("fluid_tank_data")
+        private val fluidTankKey = rebarKey("fluid_tank_data", RebarSerializers.FLUID_TANK_DATA)
 
         private val fluidTankBlocks = IdentityHashMap<FluidTankRebarBlock, FluidTankData>()
 
@@ -235,7 +235,7 @@ interface FluidTankRebarBlock : FluidRebarBlock {
         private fun onDeserialize(event: RebarBlockDeserializeEvent) {
             val block = event.rebarBlock
             if (block is FluidTankRebarBlock) {
-                event.pdc.get(fluidTankKey, RebarSerializers.FLUID_TANK_DATA)?.let { fluidTankBlocks[block] = it }
+                event.pdc.get(fluidTankKey)?.let { fluidTankBlocks[block] = it }
             }
         }
 
@@ -243,7 +243,7 @@ interface FluidTankRebarBlock : FluidRebarBlock {
         private fun onSerialize(event: RebarBlockSerializeEvent) {
             val block = event.rebarBlock
             if (block is FluidTankRebarBlock) {
-                event.pdc.set(fluidTankKey, RebarSerializers.FLUID_TANK_DATA, fluidTankBlocks[block] ?: return)
+                event.pdc.set(fluidTankKey, fluidTankBlocks[block] ?: return)
             }
         }
 

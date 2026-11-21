@@ -51,19 +51,19 @@ class FluidEndpointDisplay : RebarEntity<ItemDisplay>, RemoveRebarEntityHandler,
     constructor(entity: ItemDisplay) : super(entity) {
         val pdc = entity.persistentDataContainer
 
-        this.connectedPipeDisplay = pdc.get(CONNECTED_PIPE_DISPLAY_KEY, RebarSerializers.UUID)
-        this.point = pdc.get(CONNECTION_POINT_KEY, RebarSerializers.FLUID_CONNECTION_POINT)!!
-        this.face = pdc.get(FACE_KEY, RebarSerializers.BLOCK_FACE)!!
-        this.radius = pdc.get(RADIUS_KEY, RebarSerializers.FLOAT)!!
+        this.connectedPipeDisplay = pdc.get(connectedPipeDisplayKey)
+        this.point = pdc.get(connectionPointKey)!!
+        this.face = pdc.get(faceKey)!!
+        this.radius = pdc.get(radiusKey)!!
 
         FluidManager.add(point)
     }
 
     override fun write(pdc: PersistentDataContainer) {
-        pdc.setNullable(CONNECTED_PIPE_DISPLAY_KEY, RebarSerializers.UUID, connectedPipeDisplay)
-        pdc.set(CONNECTION_POINT_KEY, RebarSerializers.FLUID_CONNECTION_POINT, point)
-        pdc.set(FACE_KEY, RebarSerializers.BLOCK_FACE, face)
-        pdc.set(RADIUS_KEY, RebarSerializers.FLOAT, radius)
+        pdc.setNullable(connectedPipeDisplayKey, connectedPipeDisplay)
+        pdc.set(connectionPointKey, point)
+        pdc.set(faceKey, face)
+        pdc.set(radiusKey, radius)
     }
 
     override fun connectPipeDisplay(uuid: UUID) {
@@ -104,10 +104,10 @@ class FluidEndpointDisplay : RebarEntity<ItemDisplay>, RemoveRebarEntityHandler,
         @JvmField
         val KEY = rebarKey("fluid_pipe_endpoint_display")
 
-        private val CONNECTED_PIPE_DISPLAY_KEY = rebarKey("connected_pipe_display")
-        private val CONNECTION_POINT_KEY = rebarKey("connection_point")
-        private val FACE_KEY = rebarKey("face")
-        private val RADIUS_KEY = rebarKey("radius")
+        private val connectedPipeDisplayKey = rebarKey("connected_pipe_display", RebarSerializers.UUID)
+        private val connectionPointKey = rebarKey("connection_point", RebarSerializers.FLUID_CONNECTION_POINT)
+        private val faceKey = rebarKey("face", RebarSerializers.BLOCK_FACE)
+        private val radiusKey = rebarKey("radius", RebarSerializers.FLOAT)
 
         private fun makeEntity(block: Block, type: FluidPointType, face: BlockFace, radius: Float = 0.5F): ItemDisplay {
             return ItemDisplayBuilder()

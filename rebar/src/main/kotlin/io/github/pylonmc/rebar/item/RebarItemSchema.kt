@@ -33,7 +33,7 @@ class RebarItemSchema @JvmOverloads internal constructor(
     val rebarBlockKey: NamespacedKey? = null
 ) : Keyed, RegistryHandler {
 
-    private val key = template.persistentDataContainer.get(rebarItemKeyKey, RebarSerializers.NAMESPACED_KEY)
+    private val key = template.persistentDataContainer.get(rebarItemKeyKey)
         ?: throw IllegalArgumentException("Provided item stack is not a Rebar item; make sure you are using ItemStackBuilder.defaultBuilder to create the item stack")
 
     val addon = getAddon(key)
@@ -103,13 +103,13 @@ class RebarItemSchema @JvmOverloads internal constructor(
     override fun hashCode(): Int = key.hashCode()
 
     companion object {
-        val rebarItemKeyKey = rebarKey("rebar_item_key")
+        val rebarItemKeyKey = rebarKey("rebar_item_key", RebarSerializers.NAMESPACED_KEY)
 
         @JvmStatic
         @Contract("null -> null")
         fun fromStack(stack: ItemStack?) : RebarItemSchema? {
             if (stack == null || stack.isEmpty) return null
-            val id = stack.persistentDataContainer.get(rebarItemKeyKey, RebarSerializers.NAMESPACED_KEY)
+            val id = stack.persistentDataContainer.get(rebarItemKeyKey)
                 ?: return null
             return RebarRegistry.ITEMS[id]
         }

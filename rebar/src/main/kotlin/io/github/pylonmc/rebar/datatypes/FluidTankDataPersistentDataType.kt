@@ -8,11 +8,11 @@ import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.persistence.PersistentDataType
 
 internal object FluidTankDataPersistentDataType : PersistentDataType<PersistentDataContainer, FluidTankRebarBlock.Companion.FluidTankData> {
-    val fluidKey = rebarKey("fluid")
-    val amountKey = rebarKey("amount")
-    val capacityKey = rebarKey("capacity")
-    val inputKey = rebarKey("input")
-    val outputKey = rebarKey("output")
+    val fluidKey = rebarKey("fluid", RebarSerializers.REBAR_FLUID)
+    val amountKey = rebarKey("amount", RebarSerializers.DOUBLE)
+    val capacityKey = rebarKey("capacity", RebarSerializers.DOUBLE)
+    val inputKey = rebarKey("input", RebarSerializers.BOOLEAN)
+    val outputKey = rebarKey("output", RebarSerializers.BOOLEAN)
 
     override fun getPrimitiveType(): Class<PersistentDataContainer> = PersistentDataContainer::class.java
 
@@ -22,11 +22,11 @@ internal object FluidTankDataPersistentDataType : PersistentDataType<PersistentD
         primitive: PersistentDataContainer,
         context: PersistentDataAdapterContext
     ): FluidTankRebarBlock.Companion.FluidTankData {
-        val fluid = primitive.get(fluidKey, RebarSerializers.REBAR_FLUID)
-        val amount = primitive.get(amountKey, RebarSerializers.DOUBLE)!!
-        val capacity = primitive.get(capacityKey, RebarSerializers.DOUBLE)!!
-        val input = primitive.get(inputKey, RebarSerializers.BOOLEAN)!!
-        val output = primitive.get(outputKey, RebarSerializers.BOOLEAN)!!
+        val fluid = primitive.get(fluidKey)
+        val amount = primitive.get(amountKey)!!
+        val capacity = primitive.get(capacityKey)!!
+        val input = primitive.get(inputKey)!!
+        val output = primitive.get(outputKey)!!
         return FluidTankRebarBlock.Companion.FluidTankData(fluid, amount, capacity, input, output)
     }
 
@@ -35,11 +35,11 @@ internal object FluidTankDataPersistentDataType : PersistentDataType<PersistentD
         context: PersistentDataAdapterContext
     ): PersistentDataContainer {
         val pdc = context.newPersistentDataContainer()
-        pdc.setNullable(fluidKey, RebarSerializers.REBAR_FLUID, complex.fluid)
-        pdc.set(amountKey, RebarSerializers.DOUBLE, complex.amount)
-        pdc.set(capacityKey, RebarSerializers.DOUBLE, complex.capacity)
-        pdc.set(inputKey, RebarSerializers.BOOLEAN, complex.input)
-        pdc.set(outputKey, RebarSerializers.BOOLEAN, complex.output)
+        pdc.setNullable(fluidKey, complex.fluid)
+        pdc.set(amountKey, complex.amount)
+        pdc.set(capacityKey, complex.capacity)
+        pdc.set(inputKey, complex.input)
+        pdc.set(outputKey, complex.output)
         return pdc
     }
 }

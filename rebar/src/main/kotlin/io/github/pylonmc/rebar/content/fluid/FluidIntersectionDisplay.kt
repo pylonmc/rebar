@@ -40,19 +40,19 @@ class FluidIntersectionDisplay : RebarEntity<ItemDisplay>, RemoveRebarEntityHand
     constructor(entity: ItemDisplay) : super(entity) {
         val pdc = entity.persistentDataContainer
 
-        this.connectedPipeDisplays = pdc.get(CONNECTED_PIPE_DISPLAYS_KEY, CONNECTED_PIPE_DISPLAYS_TYPE)!!.toMutableSet()
-        this.point = pdc.get(CONNECTION_POINT_KEY, RebarSerializers.FLUID_CONNECTION_POINT)!!
+        this.connectedPipeDisplays = pdc.get(connectedPipeDisplaysKey)!!.toMutableSet()
+        this.point = pdc.get(connectionPointKey)!!
 
         FluidManager.add(point)
     }
 
     override fun write(pdc: PersistentDataContainer) {
-        pdc.set(CONNECTED_PIPE_DISPLAYS_KEY, CONNECTED_PIPE_DISPLAYS_TYPE, connectedPipeDisplays)
-        pdc.set(CONNECTION_POINT_KEY, RebarSerializers.FLUID_CONNECTION_POINT, point)
+        pdc.set(connectedPipeDisplaysKey, connectedPipeDisplays)
+        pdc.set(connectionPointKey, point)
     }
 
     override fun writeDebugInfo(pdc: PersistentDataContainer) {
-        pdc.set(CONNECTION_POINT_KEY, RebarSerializers.FLUID_CONNECTION_POINT, point)
+        pdc.set(connectionPointKey, point)
         val connectedPdc = pdc.adapterContext.newPersistentDataContainer()
         for (connectedPipeId in connectedPipeDisplays) {
             val connectedPipe = EntityStorage.getAs<FluidPipeDisplay>(connectedPipeId)
@@ -64,7 +64,7 @@ class FluidIntersectionDisplay : RebarEntity<ItemDisplay>, RemoveRebarEntityHand
             connectedPipe.writeDebugInfo(pipePdc)
             connectedPdc.set(rebarKey(connectedPipeId.toString()), RebarSerializers.TAG_CONTAINER, pipePdc)
         }
-        pdc.set(CONNECTED_PIPE_DISPLAYS_KEY, RebarSerializers.TAG_CONTAINER, connectedPdc)
+        pdc.set(debugConnectedPipeDisplaysKey, connectedPdc)
     }
 
     @Suppress("UnstableApiUsage")
@@ -115,9 +115,10 @@ class FluidIntersectionDisplay : RebarEntity<ItemDisplay>, RemoveRebarEntityHand
         @JvmStatic
         val KEY = rebarKey("fluid_pipe_intersection_display")
 
-        private val CONNECTED_PIPE_DISPLAYS_KEY = rebarKey("connected_pipe_displays")
-        private val CONNECTED_PIPE_DISPLAYS_TYPE = RebarSerializers.SET.setTypeFrom(RebarSerializers.UUID)
-        private val CONNECTION_POINT_KEY = rebarKey("connection_point")
+        private val connectedPipeDisplaysKey = rebarKey("connected_pipe_displays", RebarSerializers.SET.setTypeFrom(RebarSerializers.UUID))
+        private val connectionPointKey = rebarKey("connection_point", RebarSerializers.FLUID_CONNECTION_POINT)
+
+        private val debugConnectedPipeDisplaysKey = rebarKey("connected_pipe_displays", RebarSerializers.TAG_CONTAINER)
 
         @JvmSynthetic
         internal fun makeEntity(block: Block): ItemDisplay {

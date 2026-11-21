@@ -129,13 +129,11 @@ sealed class ElectricNode(
 
     companion object {
 
-        private val TYPE_KEY = rebarKey("type")
-        private val TYPE_TYPE = RebarSerializers.ENUM.enumTypeFrom<ElectricNodeType>()
-        private val ID_KEY = rebarKey("id")
-        private val NAME_KEY = rebarKey("name")
-        private val BLOCK_KEY = rebarKey("block")
-        private val CONNECTIONS_KEY = rebarKey("connections")
-        private val CONNECTIONS_TYPE = RebarSerializers.SET.setTypeFrom(RebarSerializers.UUID)
+        private val typeKey = rebarKey("type", RebarSerializers.ENUM.enumTypeFrom<ElectricNodeType>())
+        private val idKey = rebarKey("id", RebarSerializers.UUID)
+        private val nameKey = rebarKey("name", RebarSerializers.STRING)
+        private val blockKey = rebarKey("block", RebarSerializers.BLOCK_POSITION)
+        private val connectionsKey = rebarKey("connections",  RebarSerializers.SET.setTypeFrom(RebarSerializers.UUID))
 
         @get:JvmSynthetic
         internal val PDC_TYPE = object : PersistentDataType<PersistentDataContainer, ElectricNode> {
@@ -148,11 +146,11 @@ sealed class ElectricNode(
             ): PersistentDataContainer {
                 val pdc = context.newPersistentDataContainer()
 
-                pdc.set(TYPE_KEY, TYPE_TYPE, complex.type)
-                pdc.set(ID_KEY, RebarSerializers.UUID, complex.id)
-                pdc.set(NAME_KEY, RebarSerializers.STRING, complex.name)
-                pdc.set(BLOCK_KEY, RebarSerializers.BLOCK_POSITION, complex.block)
-                pdc.set(CONNECTIONS_KEY, CONNECTIONS_TYPE, complex.internalConnections)
+                pdc.set(typeKey, complex.type)
+                pdc.set(idKey, complex.id)
+                pdc.set(nameKey, complex.name)
+                pdc.set(blockKey, complex.block)
+                pdc.set(connectionsKey, complex.internalConnections)
 
                 complex.serialize(pdc)
 
@@ -163,12 +161,12 @@ sealed class ElectricNode(
                 primitive: PersistentDataContainer,
                 context: PersistentDataAdapterContext
             ): ElectricNode {
-                val id = primitive.get(ID_KEY, RebarSerializers.UUID)!!
-                val name = primitive.get(NAME_KEY, RebarSerializers.STRING)!!
-                val block = primitive.get(BLOCK_KEY, RebarSerializers.BLOCK_POSITION)!!
-                val connections = primitive.get(CONNECTIONS_KEY, CONNECTIONS_TYPE)!!.toMutableSet()
+                val id = primitive.get(idKey)!!
+                val name = primitive.get(nameKey)!!
+                val block = primitive.get(blockKey)!!
+                val connections = primitive.get(connectionsKey)!!.toMutableSet()
 
-                return when (primitive.get(TYPE_KEY, TYPE_TYPE)!!) {
+                return when (primitive.get(typeKey)!!) {
                     ElectricNodeType.PRODUCER -> ElectricProducerNode.deserialize(id, name, block, connections, primitive)
                     ElectricNodeType.CONSUMER -> ElectricConsumerNode.deserialize(id, name, block, connections, primitive)
                     ElectricNodeType.CONNECTOR -> ElectricConnectorNode.deserialize(id, name, block, connections)

@@ -46,13 +46,7 @@ internal object RebarRecipeListener : Listener {
 
     @EventHandler(priority = EventPriority.LOWEST)
     private fun onPreCraft(e: PrepareItemCraftEvent) {
-        var recipe = e.recipe
-        val holder = e.inventory.holder
-        if (holder is Crafter && recipe == null) {
-            // Currently there is a paper bug (https://github.com/PaperMC/Paper/issues/14428) so we need to manually fetch the crafter recipe until its fixed
-            recipe = Bukkit.getCraftingRecipe(e.inventory.matrix as Array<out ItemStack>, holder.world)
-        }
-
+        val recipe = e.recipe
         val inventory = e.inventory
 
         val hasRebarItems = inventory.any { it.isRebarAndIsNot<VanillaCraftingIngredientItem>() }

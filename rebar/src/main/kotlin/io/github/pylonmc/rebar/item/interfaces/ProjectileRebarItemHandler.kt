@@ -42,12 +42,12 @@ interface ProjectileRebarItemHandler {
 
     @ApiStatus.Internal
     companion object : MultiListener {
-        val sourceItemKey = rebarKey("projectile_source_item")
+        val sourceItemKey = rebarKey("projectile_source_item", RebarSerializers.ITEM_STACK)
 
         @EventHandler(priority = EventPriority.LOWEST)
         fun onPlayerLaunched(event: PlayerLaunchProjectileEvent) {
             if (event.projectile.sourceItem() == null) {
-                event.projectile.persistentDataContainer.set(sourceItemKey, RebarSerializers.ITEM_STACK, event.itemStack)
+                event.projectile.persistentDataContainer.set(sourceItemKey, event.itemStack)
             }
         }
 
@@ -56,7 +56,7 @@ interface ProjectileRebarItemHandler {
             val projectile = event.projectile as? Projectile ?: return
             val sourceItem = event.consumable ?: return
             if (projectile.sourceItem() == null) {
-                projectile.persistentDataContainer.set(sourceItemKey, RebarSerializers.ITEM_STACK, sourceItem)
+                projectile.persistentDataContainer.set(sourceItemKey, sourceItem)
             }
         }
 

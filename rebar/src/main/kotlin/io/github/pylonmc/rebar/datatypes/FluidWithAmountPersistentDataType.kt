@@ -8,8 +8,8 @@ import org.bukkit.persistence.PersistentDataType
 
 object FluidWithAmountPersistentDataType : PersistentDataType<PersistentDataContainer, FluidWithAmount> {
 
-    private val fluidKey = rebarKey("fluid")
-    private val amountKey = rebarKey("amount")
+    private val fluidKey = rebarKey("fluid", RebarSerializers.REBAR_FLUID)
+    private val amountKey = rebarKey("amount", RebarSerializers.DOUBLE)
 
     override fun getPrimitiveType() = PersistentDataContainer::class.java
     override fun getComplexType() = FluidWithAmount::class.java
@@ -19,8 +19,8 @@ object FluidWithAmountPersistentDataType : PersistentDataType<PersistentDataCont
         context: PersistentDataAdapterContext
     ): PersistentDataContainer {
         val pdc = context.newPersistentDataContainer()
-        pdc.set(fluidKey, RebarSerializers.REBAR_FLUID, complex.fluid)
-        pdc.set(amountKey, RebarSerializers.DOUBLE, complex.amount)
+        pdc.set(fluidKey, complex.fluid)
+        pdc.set(amountKey, complex.amount)
         return pdc
     }
 
@@ -28,8 +28,8 @@ object FluidWithAmountPersistentDataType : PersistentDataType<PersistentDataCont
         primitive: PersistentDataContainer,
         context: PersistentDataAdapterContext
     ): FluidWithAmount {
-        val fluid = primitive.get(fluidKey, RebarSerializers.REBAR_FLUID)!!
-        val amount = primitive.get(amountKey, RebarSerializers.DOUBLE)!!
+        val fluid = primitive.get(fluidKey)!!
+        val amount = primitive.get(amountKey)!!
         return FluidWithAmount(fluid, amount)
     }
 }

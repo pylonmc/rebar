@@ -349,19 +349,19 @@ class ElectricNetwork {
         private val world: World
             get() = from.block.world!!
 
-        private val powerLimitKey by lazy { rebarKey("edge_property_power_limit_${from.id}_${to.id}") }
+        private val powerLimitKey by lazy { rebarKey("edge_property_power_limit_${from.id}_${to.id}", RebarSerializers.DOUBLE) }
         var powerLimit: Double
-            get() = (world.storage[powerLimitKey, RebarSerializers.DOUBLE] ?: Double.MAX_VALUE)
+            get() = (world.storage[powerLimitKey] ?: Double.MAX_VALUE)
             set(value) {
-                world.storage[powerLimitKey, RebarSerializers.DOUBLE] = value
+                world.storage[powerLimitKey] = value
                 from.network.markDirty()
             }
 
-        private val unidirectionalKey by lazy { rebarKey("edge_property_unidirectional_${from.id}_${to.id}") }
+        private val unidirectionalKey by lazy { rebarKey("edge_property_unidirectional_${from.id}_${to.id}", RebarSerializers.BOOLEAN) }
         var unidirectional: Boolean
-            get() = (world.storage[unidirectionalKey, RebarSerializers.BOOLEAN] ?: false)
+            get() = (world.storage[unidirectionalKey] ?: false)
             set(value) {
-                world.storage[unidirectionalKey, RebarSerializers.BOOLEAN] = value
+                world.storage[unidirectionalKey] = value
                 from.network.markDirty()
             }
 

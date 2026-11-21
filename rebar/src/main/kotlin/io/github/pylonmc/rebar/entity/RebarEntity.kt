@@ -32,7 +32,7 @@ import org.bukkit.persistence.PersistentDataContainer
  */
 abstract class RebarEntity<out E: Entity>(val entity: E) : WailaSupplier, Keyed {
 
-    private val key = entity.persistentDataContainer.get(rebarEntityKeyKey, RebarSerializers.NAMESPACED_KEY)
+    private val key = entity.persistentDataContainer.get(rebarEntityKeyKey)
         ?: throw IllegalStateException("Entity did not have a Rebar key; did you mean to call RebarEntity(NamespacedKey, Entity) instead of RebarEntity(Entity)?")
     val schema = RebarRegistry.ENTITIES.getOrThrow(key)
     val uuid = entity.uniqueId
@@ -128,7 +128,7 @@ abstract class RebarEntity<out E: Entity>(val entity: E) : WailaSupplier, Keyed 
 
     companion object {
 
-        val rebarEntityKeyKey = rebarKey("rebar_entity_key")
+        val rebarEntityKeyKey = rebarKey("rebar_entity_key", RebarSerializers.NAMESPACED_KEY)
 
         @JvmOverloads
         @JvmStatic
@@ -148,7 +148,7 @@ abstract class RebarEntity<out E: Entity>(val entity: E) : WailaSupplier, Keyed 
 
         @JvmSynthetic
         internal fun <E: Entity> initialiseRebarEntity(key: NamespacedKey, entity: E): E {
-            entity.persistentDataContainer.set(rebarEntityKeyKey, RebarSerializers.NAMESPACED_KEY, key)
+            entity.persistentDataContainer.set(rebarEntityKeyKey, key)
             return entity
         }
 
@@ -164,7 +164,7 @@ abstract class RebarEntity<out E: Entity>(val entity: E) : WailaSupplier, Keyed 
             var key: NamespacedKey? = null
 
             try {
-                key = entity.persistentDataContainer.get(rebarEntityKeyKey, RebarSerializers.NAMESPACED_KEY)
+                key = entity.persistentDataContainer.get(rebarEntityKeyKey)
                     ?: return null
 
                 // We fail silently here because this may trigger if an addon is removed or fails to load.

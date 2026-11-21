@@ -351,10 +351,10 @@ open class RebarBlock private constructor(val block: Block) : WailaSupplier, Key
         val rebarBlockTextureEntityKey = rebarKey("rebar_block_texture_entity")
 
         @JvmStatic
-        val rebarBlockKeyKey = rebarKey("rebar_block_key")
+        val rebarBlockKeyKey = rebarKey("rebar_block_key", RebarSerializers.NAMESPACED_KEY)
 
         @JvmStatic
-        val rebarBlockPositionKey = rebarKey("position")
+        val rebarBlockPositionKey = rebarKey("position", RebarSerializers.LONG)
 
         @get:JvmStatic
         val Block.rebarBlock: RebarBlock?
@@ -395,8 +395,8 @@ open class RebarBlock private constructor(val block: Block) : WailaSupplier, Key
                 }
 
                 val pdc = context.newPersistentDataContainer()
-                pdc.set(rebarBlockKeyKey, RebarSerializers.NAMESPACED_KEY, block.schema.key)
-                pdc.set(rebarBlockPositionKey, RebarSerializers.LONG, block.block.position.asLong)
+                pdc.set(rebarBlockKeyKey, block.schema.key)
+                pdc.set(rebarBlockPositionKey, block.block.position.asLong)
 
                 block.write(pdc)
                 RebarBlockSerializeEvent(block.block, block, pdc, false).callEvent()
@@ -419,10 +419,9 @@ open class RebarBlock private constructor(val block: Block) : WailaSupplier, Key
             var position: BlockPosition? = null
 
             try {
-                key = pdc.get(rebarBlockKeyKey, RebarSerializers.NAMESPACED_KEY)
-                    ?: error("Block PDC does not contain ID")
+                key = pdc.get(rebarBlockKeyKey) ?: error("Block PDC does not contain ID")
 
-                position = pdc.get(rebarBlockPositionKey, RebarSerializers.LONG)?.let {
+                position = pdc.get(rebarBlockPositionKey)?.let {
                     BlockPosition(world, it)
                 } ?: error("Block PDC does not contain position")
 

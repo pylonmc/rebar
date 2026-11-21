@@ -32,7 +32,7 @@ class PlayerTranslationHandler internal constructor(private val player: Player) 
 
         stack.translate(player, placeholders)
 
-        if ((rebarItem != null || rebarFluid != null) && !stack.persistentDataContainer.has(FOOTER_APPENDED)) {
+        if ((rebarItem != null || rebarFluid != null) && !stack.persistentDataContainer.has(footerAppendedKey)) {
             stack.editData(DataComponentTypes.LORE) { lore ->
                 val newLore = lore.lines().toMutableList()
                 if (!stack.enchantments.isEmpty()) {
@@ -52,7 +52,7 @@ class PlayerTranslationHandler internal constructor(private val player: Player) 
             }
 
             stack.editPersistentDataContainer {
-                it.set(FOOTER_APPENDED, RebarSerializers.BOOLEAN, true)
+                it.set(footerAppendedKey, true)
             }
         }
 
@@ -82,7 +82,7 @@ class PlayerTranslationHandler internal constructor(private val player: Player) 
     }
 
     companion object {
-        val FOOTER_APPENDED = rebarKey("footer_appended")
+        val footerAppendedKey = rebarKey("footer_appended", RebarSerializers.BOOLEAN)
 
         fun resetItem(stack: ItemStack) {
             stack.untranslate()
@@ -109,7 +109,7 @@ class PlayerTranslationHandler internal constructor(private val player: Player) 
             }
 
             stack.editPersistentDataContainer {
-                it.remove(FOOTER_APPENDED)
+                it.remove(footerAppendedKey)
             }
         }
     }

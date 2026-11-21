@@ -20,9 +20,7 @@ import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.util.delayTicks
 import io.github.pylonmc.rebar.util.*
 import io.github.pylonmc.rebar.waila.WailaDisplay
-import io.papermc.paper.util.Tick
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.time.delay
 import net.kyori.adventure.text.Component
 import org.bukkit.Color
 import org.bukkit.GameMode
@@ -44,7 +42,6 @@ import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.util.Vector
 import org.jetbrains.annotations.MustBeInvokedByOverriders
 import org.joml.Vector3i
-import java.time.Duration
 import java.util.*
 
 /**
@@ -74,8 +71,8 @@ interface GhostBlockHolderRebarBlock : EntityHolderRebarBlock {
         var lastInteract: Long = 0
 
         constructor(entity: Interaction) : super(entity) {
-            this.rebarGhostBlockId = entity.persistentDataContainer.get(REBAR_GHOST_BLOCK_ID_KEY, RebarSerializers.UUID)
-            this.vanillaGhostBlockId = entity.persistentDataContainer.get(VANILLA_GHOST_BLOCK_ID_KEY, RebarSerializers.UUID)
+            this.rebarGhostBlockId = entity.persistentDataContainer.get(rebarGhostBlockIdKey)
+            this.vanillaGhostBlockId = entity.persistentDataContainer.get(vanillaGhostBlockIdKey)
         }
 
         constructor(rebarGhostBlock: RebarGhostBlock?, vanillaGhostBlock: VanillaGhostBlock?) : super(KEY,
@@ -85,8 +82,8 @@ interface GhostBlockHolderRebarBlock : EntityHolderRebarBlock {
         }
 
         override fun write(pdc: PersistentDataContainer) {
-            pdc.setNullable(REBAR_GHOST_BLOCK_ID_KEY, RebarSerializers.UUID, rebarGhostBlockId)
-            pdc.setNullable(VANILLA_GHOST_BLOCK_ID_KEY, RebarSerializers.UUID, vanillaGhostBlockId)
+            pdc.setNullable(rebarGhostBlockIdKey, rebarGhostBlockId)
+            pdc.setNullable(vanillaGhostBlockIdKey, vanillaGhostBlockId)
         }
 
         private fun handlePickItem(player: Player, giveItem: Boolean): Int? {
@@ -166,8 +163,8 @@ interface GhostBlockHolderRebarBlock : EntityHolderRebarBlock {
 
         companion object {
             val KEY = rebarKey("rebar_ghost_block_hitbox")
-            val REBAR_GHOST_BLOCK_ID_KEY = rebarKey("rebar_ghost_block_id")
-            val VANILLA_GHOST_BLOCK_ID_KEY = rebarKey("vanilla_ghost_block_id")
+            val rebarGhostBlockIdKey = rebarKey("rebar_ghost_block_id", RebarSerializers.UUID)
+            val vanillaGhostBlockIdKey = rebarKey("vanilla_ghost_block_id", RebarSerializers.UUID)
         }
     }
 
@@ -175,7 +172,7 @@ interface GhostBlockHolderRebarBlock : EntityHolderRebarBlock {
         val position: Vector3i
 
         constructor(entity: E) : super(entity) {
-            this.position = entity.persistentDataContainer.get(POSITION_KEY, RebarSerializers.VECTOR3I)!!
+            this.position = entity.persistentDataContainer.get(positionKey)!!
         }
 
         constructor(key: NamespacedKey, entity: E, position: Vector3i) : super(key, entity) {
@@ -184,11 +181,11 @@ interface GhostBlockHolderRebarBlock : EntityHolderRebarBlock {
 
         @MustBeInvokedByOverriders
         override fun write(pdc: PersistentDataContainer) {
-            pdc.set(POSITION_KEY, RebarSerializers.VECTOR3I, position)
+            pdc.set(positionKey, position)
         }
 
         companion object {
-            val POSITION_KEY = rebarKey("ghost_block_block_position")
+            val positionKey = rebarKey("ghost_block_block_position", RebarSerializers.VECTOR3I)
         }
     }
 
@@ -196,7 +193,7 @@ interface GhostBlockHolderRebarBlock : EntityHolderRebarBlock {
         val vanillaBlocks: MutableList<BlockData>
 
         constructor(entity: BlockDisplay) : super(entity) {
-            vanillaBlocks = entity.persistentDataContainer.get(VANILLA_BLOCKS_KEY, VANILLA_BLOCKS_TYPE)!!
+            vanillaBlocks = entity.persistentDataContainer.get(vanillaBlocksKey)!!
         }
 
         constructor(ghostBlockHolder: Block, position: Vector3i, blockDatas: MutableList<BlockData>) : super(
@@ -213,7 +210,7 @@ interface GhostBlockHolderRebarBlock : EntityHolderRebarBlock {
 
         override fun write(pdc: PersistentDataContainer) {
             super.write(pdc)
-            pdc.set(VANILLA_BLOCKS_KEY, VANILLA_BLOCKS_TYPE, vanillaBlocks)
+            pdc.set(vanillaBlocksKey, vanillaBlocks)
         }
 
         override fun getWaila(player: Player): WailaDisplay? {
@@ -254,8 +251,7 @@ interface GhostBlockHolderRebarBlock : EntityHolderRebarBlock {
 
         companion object {
             val KEY = rebarKey("vanilla_ghost_block")
-            val VANILLA_BLOCKS_KEY = rebarKey("vanilla_ghost_block_vanilla_blocks")
-            val VANILLA_BLOCKS_TYPE = RebarSerializers.LIST.listTypeFrom(RebarSerializers.BLOCK_DATA)
+            val vanillaBlocksKey = rebarKey("vanilla_ghost_block_vanilla_blocks", RebarSerializers.LIST.listTypeFrom(RebarSerializers.BLOCK_DATA))
         }
     }
 
@@ -263,7 +259,7 @@ interface GhostBlockHolderRebarBlock : EntityHolderRebarBlock {
         val rebarBlocks: MutableList<NamespacedKey>
 
         constructor(entity: ItemDisplay) : super(entity) {
-            rebarBlocks = entity.persistentDataContainer.get(REBAR_BLOCKS_KEY, VANILLA_BLOCKS_TYPE)!!
+            rebarBlocks = entity.persistentDataContainer.get(REBAR_BLOCKS_KEY)!!
         }
 
         constructor(ghostBlockHolder: Block, position: Vector3i, items: MutableList<NamespacedKey>) : super(
@@ -280,7 +276,7 @@ interface GhostBlockHolderRebarBlock : EntityHolderRebarBlock {
 
         override fun write(pdc: PersistentDataContainer) {
             super.write(pdc)
-            pdc.set(REBAR_BLOCKS_KEY, VANILLA_BLOCKS_TYPE, rebarBlocks)
+            pdc.set(REBAR_BLOCKS_KEY, rebarBlocks)
         }
 
         override fun getWaila(player: Player): WailaDisplay {
@@ -320,8 +316,7 @@ interface GhostBlockHolderRebarBlock : EntityHolderRebarBlock {
 
         companion object {
             val KEY = rebarKey("rebar_ghost_block")
-            val REBAR_BLOCKS_KEY = rebarKey("rebar_ghost_block_rebar_blocks")
-            val VANILLA_BLOCKS_TYPE = RebarSerializers.LIST.listTypeFrom(RebarSerializers.NAMESPACED_KEY)
+            val REBAR_BLOCKS_KEY = rebarKey("rebar_ghost_block_rebar_blocks", RebarSerializers.LIST.listTypeFrom(RebarSerializers.NAMESPACED_KEY))
         }
     }
 

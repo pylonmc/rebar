@@ -67,15 +67,15 @@ class WireEntity : RebarEntity<ItemDisplay>, RemoveRebarEntityHandler, Interacta
     constructor(entity: ItemDisplay) : super(entity) {
         val pdc = entity.persistentDataContainer
 
-        val node = pdc.get(portKey, RebarSerializers.UUID)!!
-        val loc1 = pdc.get(portLocKey, RebarSerializers.LOCATION)!!
+        val node = pdc.get(portKey)!!
+        val loc1 = pdc.get(portLocKey)!!
         port = ConnectedPort(node, loc1)
 
-        val node2 = pdc.get(otherEndKey, RebarSerializers.UUID)!!
-        val loc2 = pdc.get(otherEndLocKey, RebarSerializers.LOCATION)!!
+        val node2 = pdc.get(otherEndKey)!!
+        val loc2 = pdc.get(otherEndLocKey)!!
         otherEnd = Either.Right(ConnectedPort(node2, loc2))
 
-        wire = pdc.get(itemKey, itemType)!!
+        wire = pdc.get(itemKey)!!
 
         length = loc1.distance(loc2)
     }
@@ -172,13 +172,13 @@ class WireEntity : RebarEntity<ItemDisplay>, RemoveRebarEntityHandler, Interacta
 
         if (otherEnd != null) {
             val pdc = entity.persistentDataContainer
-            pdc.set(portKey, RebarSerializers.UUID, port.node.id)
-            pdc.set(portLocKey, RebarSerializers.LOCATION, port.location)
+            pdc.set(portKey, port.node.id)
+            pdc.set(portLocKey, port.location)
 
-            pdc.set(otherEndKey, RebarSerializers.UUID, otherEnd.node.id)
-            pdc.set(otherEndLocKey, RebarSerializers.LOCATION, otherEnd.location)
+            pdc.set(otherEndKey, otherEnd.node.id)
+            pdc.set(otherEndLocKey, otherEnd.location)
 
-            pdc.set(itemKey, itemType, wire)
+            pdc.set(itemKey, wire)
         } else {
             // probably server shutdown
             remove()
@@ -194,12 +194,11 @@ class WireEntity : RebarEntity<ItemDisplay>, RemoveRebarEntityHandler, Interacta
 
     companion object {
 
-        private val portKey = rebarKey("port")
-        private val portLocKey = rebarKey("port_loc")
-        private val otherEndKey = rebarKey("other_end")
-        private val otherEndLocKey = rebarKey("other_end_loc")
-        private val itemKey = rebarKey("item")
-        private val itemType = RebarSerializers.KEYED.fromRegistry(RebarRegistry.ITEMS)
+        private val portKey = rebarKey("port", RebarSerializers.UUID)
+        private val portLocKey = rebarKey("port_loc", RebarSerializers.LOCATION)
+        private val otherEndKey = rebarKey("other_end", RebarSerializers.UUID)
+        private val otherEndLocKey = rebarKey("other_end_loc", RebarSerializers.LOCATION)
+        private val itemKey = rebarKey("item", RebarSerializers.KEYED.fromRegistry(RebarRegistry.ITEMS))
 
         @JvmField
         val KEY = rebarKey("wire")

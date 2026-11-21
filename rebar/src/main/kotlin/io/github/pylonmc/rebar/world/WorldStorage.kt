@@ -2,6 +2,7 @@ package io.github.pylonmc.rebar.world
 
 import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.config.RebarConfig
+import io.papermc.paper.persistence.PersistentDataKey
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.bukkit.Bukkit
@@ -60,16 +61,28 @@ class WorldStorage private constructor(val worldId: UUID) {
         return value
     }
 
+    operator fun <T : Any> get(key: PersistentDataKey<T>): T? = get(key.key(), key.dataType())
+
+    fun <T : Any> getOrThrow(key: PersistentDataKey<T>): T = getOrThrow(key.key(), key.dataType())
+
+    fun <T : Any> getOrDefault(key: PersistentDataKey<T>, default: T): T = getOrDefault(key.key(), key.dataType(), default)
+
+    fun <T : Any> getOrPut(key: PersistentDataKey<T>, defaultValue: Supplier<T>): T = getOrPut(key.key(), key.dataType(), defaultValue)
+
     operator fun <T : Any> set(key: NamespacedKey, type: PersistentDataType<*, T>, value: T) {
         data[key] = value to type
         dirtyData.add(key)
     }
+
+    operator fun <T : Any> set(key: PersistentDataKey<T>, value: T) = set(key.key(), key.dataType(), value)
 
     fun remove(key: NamespacedKey) {
         if (data.remove(key) != null) {
             dirtyData.add(key)
         }
     }
+
+    fun remove(key: PersistentDataKey<*>) = remove(key.key())
 
     /**
      * Preloads a value from the world's persistent data container into memory. This can be used to reduce lag spikes when

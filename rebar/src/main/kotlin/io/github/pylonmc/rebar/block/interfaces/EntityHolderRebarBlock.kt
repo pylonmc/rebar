@@ -39,7 +39,7 @@ interface EntityHolderRebarBlock {
 
     fun <T : Entity> addEntity(name: String, entity: T): T {
         heldEntities[name] = entity.uniqueId
-        entity.persistentDataContainer.set(blockKey, RebarSerializers.BLOCK_POSITION, block.position)
+        entity.persistentDataContainer.set(blockKey, block.position)
         return entity
     }
 
@@ -130,13 +130,13 @@ interface EntityHolderRebarBlock {
     @ApiStatus.Internal
     companion object : Listener {
         @JvmStatic
-        val entityKey = rebarKey("entity_holder_entity_uuids")
+        val entityKey = rebarKey("entity_holder_entity_uuids", RebarSerializers.MAP.mapTypeFrom(RebarSerializers.STRING, RebarSerializers.UUID))
         @JvmStatic
-        val blockKey = rebarKey("entity_holder_block")
+        val debugUUIDKey = rebarKey("uuid", RebarSerializers.UUID)
         @JvmStatic
-        val entityType = RebarSerializers.MAP.mapTypeFrom(RebarSerializers.STRING, RebarSerializers.UUID)
+        val blockKey = rebarKey("entity_holder_block", RebarSerializers.BLOCK_POSITION)
         @JvmStatic
-        val debugEntityType = RebarSerializers.MAP.mapTypeFrom(RebarSerializers.STRING, RebarSerializers.TAG_CONTAINER)
+        val debugEntityKey = rebarKey("entity_holder_entity_uuids", RebarSerializers.MAP.mapTypeFrom(RebarSerializers.STRING, RebarSerializers.TAG_CONTAINER))
 
         @JvmSynthetic
         internal val holders = IdentityHashMap<EntityHolderRebarBlock, MutableMap<String, UUID>>()
@@ -145,7 +145,7 @@ interface EntityHolderRebarBlock {
         private fun onDeserialize(event: RebarBlockDeserializeEvent) {
             val block = event.rebarBlock
             if (block !is EntityHolderRebarBlock) return
-            holders[block] = event.pdc.get(entityKey, entityType)?.toMutableMap()
+            holders[block] = event.pdc.get(entityKey)?.toMutableMap()
                 ?: error("Held entities not found for ${block.key}")
         }
 
@@ -158,13 +158,13 @@ interface EntityHolderRebarBlock {
                 holders[block]?.forEach { (name, uuid) ->
                     val entityPdc = event.pdc.adapterContext.newPersistentDataContainer()
                     val rebarEntity = EntityStorage.get(uuid)
-                    entityPdc.set(rebarKey("uuid"), RebarSerializers.UUID, uuid)
+                    entityPdc.set(debugUUIDKey, uuid)
                     rebarEntity?.writeDebugInfo(entityPdc)
                     debugMap[name] = entityPdc
                 }
-                event.pdc.set(entityKey, debugEntityType, debugMap)
+                event.pdc.set(debugEntityKey, debugMap)
             } else {
-                holders[block]?.let { event.pdc.set(entityKey, entityType, it) }
+                holders[block]?.let { event.pdc.set(entityKey, it) }
             }
         }
 
@@ -183,7 +183,7 @@ interface EntityHolderRebarBlock {
                 block.tryRemoveAllEntities()
                 holders.remove(block)
             } else if (block is PhantomBlock) {
-                block.pdc.get(entityKey, entityType)?.values?.forEach {
+                block.pdc.get(entityKey)?.values?.forEach {
                     Bukkit.getEntity(it)?.let { if (it.isValid) it.remove() }
                 }
             }
@@ -193,7 +193,7 @@ interface EntityHolderRebarBlock {
         private fun onEntityRemove(event: EntityRemoveEvent) {
             if (event.cause == EntityRemoveEvent.Cause.UNLOAD && event.entity.isPersistent) return
             if (event.cause == EntityRemoveEvent.Cause.PLAYER_QUIT) return
-            val blockPos = event.entity.persistentDataContainer.get(blockKey, RebarSerializers.BLOCK_POSITION) ?: return
+            val blockPos = event.entity.persistentDataContainer.get(blockKey) ?: return
             val block = BlockStorage.get(blockPos) as? EntityHolderRebarBlock ?: return
             holders[block]?.entries?.removeIf { it.value == event.entity.uniqueId }
         }

@@ -36,7 +36,7 @@ import kotlin.math.PI
 
 class ElectricPortEntity : RebarEntity<ItemDisplay>, RemoveRebarEntityHandler, Listener, InteractableRebarItemDisplay {
 
-    val node: ElectricNode by lazy { ElectricityManager.getNodeById(entity.persistentDataContainer.get(nodeKey, RebarSerializers.UUID)!!)!! }
+    val node: ElectricNode by lazy { ElectricityManager.getNodeById(entity.persistentDataContainer.get(nodeKey)!!)!! }
 
     constructor(block: Block, port: ElectricPortSpec) : super(
         KEY,
@@ -56,7 +56,7 @@ class ElectricPortEntity : RebarEntity<ItemDisplay>, RemoveRebarEntityHandler, L
             )
             .build(block.location.toCenterLocation().add(port.face.direction.multiply(port.radius * 1.01)))
     ) {
-        entity.persistentDataContainer.set(nodeKey, RebarSerializers.UUID, port.node.id)
+        entity.persistentDataContainer.set(nodeKey, port.node.id)
 
         EntityStorage.add(this)
     }
@@ -148,7 +148,7 @@ class ElectricPortEntity : RebarEntity<ItemDisplay>, RemoveRebarEntityHandler, L
     }
 
     companion object {
-        private val nodeKey = rebarKey("node")
+        private val nodeKey = rebarKey("node", RebarSerializers.UUID)
 
         @JvmField
         val KEY = rebarKey("electric_port")

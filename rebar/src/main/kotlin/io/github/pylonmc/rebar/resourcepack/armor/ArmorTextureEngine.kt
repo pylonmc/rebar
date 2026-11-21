@@ -3,6 +3,7 @@
 package io.github.pylonmc.rebar.resourcepack.armor
 
 import io.github.pylonmc.rebar.config.RebarConfig
+import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.item.RebarItemSchema
 import io.github.pylonmc.rebar.item.interfaces.ArmorRebarItem
@@ -11,15 +12,14 @@ import io.papermc.paper.datacomponent.DataComponentTypes
 import io.papermc.paper.datacomponent.item.Equippable
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
-import org.bukkit.persistence.PersistentDataType
 
 object ArmorTextureEngine {
-    val customArmorTexturesKey = rebarKey("custom_armor_textures")
+    val customArmorTexturesKey = rebarKey("custom_armor_textures", RebarSerializers.BOOLEAN)
 
     @JvmStatic
     var Player.hasCustomArmorTextures: Boolean
-        get() = RebarConfig.ArmorTextureConfig.FORCED || this.persistentDataContainer.getOrDefault(customArmorTexturesKey, PersistentDataType.BOOLEAN, false)
-        set(value) = this.persistentDataContainer.set(customArmorTexturesKey, PersistentDataType.BOOLEAN, RebarConfig.ArmorTextureConfig.FORCED || value)
+        get() = RebarConfig.ArmorTextureConfig.FORCED || this.persistentDataContainer.getOrDefault(customArmorTexturesKey, false)
+        set(value) = this.persistentDataContainer.set(customArmorTexturesKey, RebarConfig.ArmorTextureConfig.FORCED || value)
 
     fun handleItem(player: Player, stack: ItemStack) {
         if (!RebarConfig.ArmorTextureConfig.ENABLED) return
@@ -54,7 +54,7 @@ object ArmorTextureEngine {
             .equipSound(component.equipSound())
             .shearSound(component.shearSound())
             .canBeSheared(component.canBeSheared()))
-        stack.editPersistentDataContainer { it.set(customArmorTexturesKey, PersistentDataType.BOOLEAN, true) }
+        stack.editPersistentDataContainer { it.set(customArmorTexturesKey, true) }
     }
 
     fun resetItem(item: ItemStack) {

@@ -55,12 +55,12 @@ class ElectricConsumerNode private constructor(
     }
 
     override fun serialize(pdc: PersistentDataContainer) {
-        pdc.set(REQUIRED_POWER_KEY, RebarSerializers.DOUBLE, requiredPower)
+        pdc.set(requiredPowerKey, requiredPower)
     }
 
     companion object {
 
-        private val REQUIRED_POWER_KEY = rebarKey("required_power")
+        private val requiredPowerKey = rebarKey("required_power", RebarSerializers.DOUBLE)
 
         @JvmSynthetic
         internal fun deserialize(
@@ -70,7 +70,7 @@ class ElectricConsumerNode private constructor(
             internalConnections: MutableSet<UUID>,
             pdc: PersistentDataContainer
         ): ElectricConsumerNode {
-            val requiredPower = pdc.get(REQUIRED_POWER_KEY, RebarSerializers.DOUBLE)!!
+            val requiredPower = pdc.get(requiredPowerKey)!!
             return ElectricConsumerNode(id, name, block, internalConnections, requiredPower)
         }
     }

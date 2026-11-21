@@ -7,9 +7,9 @@ import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.persistence.PersistentDataType
 
 object ChunkPositionPersistentDataType : PersistentDataType<PersistentDataContainer, ChunkPosition> {
-    val xKey = rebarKey("x")
-    val zKey = rebarKey("z")
-    val worldKey = rebarKey("world")
+    val xKey = rebarKey("x", RebarSerializers.INTEGER)
+    val zKey = rebarKey("z", RebarSerializers.INTEGER)
+    val worldKey = rebarKey("world", RebarSerializers.UUID)
 
     override fun getPrimitiveType(): Class<PersistentDataContainer> = PersistentDataContainer::class.java
 
@@ -19,17 +19,17 @@ object ChunkPositionPersistentDataType : PersistentDataType<PersistentDataContai
         primitive: PersistentDataContainer,
         context: PersistentDataAdapterContext
     ): ChunkPosition {
-        val x = primitive.get(xKey, PersistentDataType.INTEGER)!!
-        val z = primitive.get(zKey, PersistentDataType.INTEGER)!!
-        val worldId = primitive.get(worldKey, RebarSerializers.UUID)
+        val x = primitive.get(xKey)!!
+        val z = primitive.get(zKey)!!
+        val worldId = primitive.get(worldKey)
         return ChunkPosition(worldId, x, z)
     }
 
     override fun toPrimitive(complex: ChunkPosition, context: PersistentDataAdapterContext): PersistentDataContainer {
         val pdc = context.newPersistentDataContainer()
-        pdc.set(xKey, PersistentDataType.INTEGER, complex.x)
-        pdc.set(zKey, PersistentDataType.INTEGER, complex.z)
-        complex.worldId?.let { pdc.set(worldKey, RebarSerializers.UUID, it) }
+        pdc.set(xKey, complex.x)
+        pdc.set(zKey, complex.z)
+        complex.worldId?.let { pdc.set(worldKey, it) }
         return pdc
     }
 }
