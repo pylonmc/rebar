@@ -20,7 +20,9 @@ import io.github.pylonmc.rebar.util.Either
 import io.github.pylonmc.rebar.util.minus
 import io.github.pylonmc.rebar.util.rebarKey
 import net.kyori.adventure.text.Component
+import org.bukkit.Bukkit
 import org.bukkit.FluidCollisionMode
+import org.bukkit.GameMode
 import org.bukkit.Location
 import org.bukkit.entity.ItemDisplay
 import org.bukkit.entity.Player
@@ -53,6 +55,7 @@ class WireEntity : RebarEntity<ItemDisplay>, RemoveRebarEntityHandler, Interacta
         KEY,
         ItemDisplayBuilder()
             .transformation(getTransform(port.location, otherEnd.location))
+            .teleportDuration(1)
             .build(port.location)
     ) {
         this.port = port
@@ -163,7 +166,9 @@ class WireEntity : RebarEntity<ItemDisplay>, RemoveRebarEntityHandler, Interacta
     override fun onInteract(event: PlayerInteractEvent, interactionLocation: Location) {
         RebarPlayerInteractWireEvent(this, event, interactionLocation).callEvent()
         if (!event.action.isLeftClick || !RebarItem.isRebarItem<WireRebarItem>(event.player.inventory.itemInMainHand)) return
-        dropItemsAt(interactionLocation)
+        if (event.player.gameMode != GameMode.CREATIVE) {
+            dropItemsAt(interactionLocation)
+        }
         remove()
     }
 

@@ -5,7 +5,10 @@ import io.github.pylonmc.rebar.entity.display.transform.TransformUtil.toMatrix
 import io.github.pylonmc.rebar.event.RebarEntityAddEvent
 import io.github.pylonmc.rebar.event.RebarEntityRemoveEvent
 import io.github.pylonmc.rebar.event.RebarEntityUnloadEvent
-import io.github.pylonmc.rebar.util.*
+import io.github.pylonmc.rebar.util.BinaryBvhTree
+import io.github.pylonmc.rebar.util.PlayerTarget
+import io.github.pylonmc.rebar.util.ReadWriteLockableReference
+import io.github.pylonmc.rebar.util.getTargetIncludingInteractableDisplays
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -39,29 +42,30 @@ interface InteractableRebarItemDisplay : BinaryBvhTree.Element {
     val entity: ItemDisplay
 
     @get:ApiStatus.NonExtendable
-    override val boundingBoxTransform: Matrix4fc get() = boxes[this]!!
+    override val boundingBoxTransform: Matrix4fc get() = boxes[entity.uniqueId]!!
 
     @get:ApiStatus.NonExtendable
-    override val position: Vector3fc get() = positions[this]!!
+    override val position: Vector3fc get() = positions[entity.uniqueId]!!
 
     /**
      * Call when the transformation or location of the entity has changed, in order to notify the interaction system about it
      */
     @ApiStatus.NonExtendable
     fun notifyTransformUpdated() {
+        val id = entity.uniqueId
         val entityTransform = entity.transformation.toMatrix()
         val transformChanged = entityTransform != boundingBoxTransform
         val entityPosition = entity.location.toVector().toVector3f()
-        var world = worlds[this]!!
+        var world = worlds[id]!!
         val positionChanged = entityPosition != position || entity.world != world
 
         if (transformChanged || positionChanged) {
             trees[world]!!.write { it.get().remove(this) }
 
-            boxes[this] = entityTransform
+            boxes[id] = entityTransform
             world = entity.world
-            worlds[this] = world
-            positions[this] = entityPosition
+            worlds[id] = world
+            positions[id] = entityPosition
 
             trees[world]!!.write { it.get().insert(this) }
         }
@@ -72,9 +76,9 @@ interface InteractableRebarItemDisplay : BinaryBvhTree.Element {
     companion object : Listener {
         private val trees = WeakHashMap<World, ReadWriteLockableReference<BinaryBvhTree<InteractableRebarItemDisplay>>>()
 
-        private val boxes = WeakIdentityHashMap<InteractableRebarItemDisplay, Matrix4fc>()
-        private val positions = WeakIdentityHashMap<InteractableRebarItemDisplay, Vector3fc>()
-        private val worlds = WeakIdentityHashMap<InteractableRebarItemDisplay, World>()
+        private val boxes = mutableMapOf<UUID, Matrix4fc>()
+        private val positions = mutableMapOf<UUID, Vector3fc>()
+        private val worlds = mutableMapOf<UUID, World>()
 
         /**
          * Obtains the closest [InteractableRebarItemDisplay] intersected by the ray starting from [origin] and going in [direction], with a maximum
@@ -100,9 +104,10 @@ interface InteractableRebarItemDisplay : BinaryBvhTree.Element {
         private fun onRebarEntityAdd(event: RebarEntityAddEvent) {
             val entity = event.rebarEntity as? InteractableRebarItemDisplay ?: return
             val world = entity.entity.world
-            boxes[entity] = entity.entity.transformation.toMatrix()
-            worlds[entity] = world
-            positions[entity] = entity.entity.location.toVector().toVector3f()
+            val id = entity.entity.uniqueId
+            boxes[id] = entity.entity.transformation.toMatrix()
+            worlds[id] = world
+            positions[id] = entity.entity.location.toVector().toVector3f()
             trees[world]!!.write { it.get().insert(entity) }
         }
 
@@ -111,9 +116,10 @@ interface InteractableRebarItemDisplay : BinaryBvhTree.Element {
             val entity = event.rebarEntity as? InteractableRebarItemDisplay ?: return
             val world = entity.entity.world
             trees[world]!!.write { it.get().remove(entity) }
-            boxes.remove(entity)
-            worlds.remove(entity)
-            positions.remove(entity)
+            val id = entity.entity.uniqueId
+            boxes.remove(id)
+            worlds.remove(id)
+            positions.remove(id)
         }
 
         @EventHandler
@@ -121,9 +127,10 @@ interface InteractableRebarItemDisplay : BinaryBvhTree.Element {
             val entity = event.rebarEntity as? InteractableRebarItemDisplay ?: return
             val world = entity.entity.world
             trees[world]!!.write { it.get().remove(entity) }
-            boxes.remove(entity)
-            worlds.remove(entity)
-            positions.remove(entity)
+            val id = entity.entity.uniqueId
+            boxes.remove(id)
+            worlds.remove(id)
+            positions.remove(id)
         }
 
         @EventHandler
