@@ -374,14 +374,14 @@ open class RebarBlock private constructor(val block: Block) : WailaSupplier, Key
          * of this type in the world.
          */
         @JvmStatic
-        fun register(key: NamespacedKey, material: Material, blockClass: Class<out RebarBlock>) {
+        fun register(blockClass: Class<out RebarBlock>, material: Material, key: NamespacedKey) {
             val schema = RebarBlockSchema(key, material, blockClass)
             RebarRegistry.BLOCKS.register(schema)
         }
 
         @JvmSynthetic
-        inline fun <reified T : RebarBlock> register(key: NamespacedKey, material: Material) =
-            register(key, material, T::class.java)
+        inline fun <reified T : RebarBlock> register(material: Material, key: NamespacedKey) =
+            register(T::class.java, material, key)
 
         @JvmSynthetic
         internal fun serialize(

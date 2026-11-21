@@ -30,8 +30,11 @@ import kotlin.math.min
 class RebarItemSchema @JvmOverloads internal constructor(
     val itemClass: Class<out RebarItem>,
     private val template: ItemStack,
-    val rebarBlockKey: NamespacedKey? = null
+    rebarBlockKey: NamespacedKey? = null
 ) : Keyed, RegistryHandler {
+
+    var rebarBlockKey: NamespacedKey? = rebarBlockKey
+        internal set
 
     private val key = template.persistentDataContainer.get(rebarItemKeyKey, RebarSerializers.NAMESPACED_KEY)
         ?: throw IllegalArgumentException("Provided item stack is not a Rebar item; make sure you are using ItemStackBuilder.defaultBuilder to create the item stack")
@@ -72,7 +75,7 @@ class RebarItemSchema @JvmOverloads internal constructor(
         if (isType(VanillaBlockItem::class.java)) return true
         else if (rebarBlockKey == null) return false
 
-        val blockSchema = RebarRegistry.BLOCKS[rebarBlockKey]
+        val blockSchema = RebarRegistry.BLOCKS[rebarBlockKey!!]
         check(blockSchema != null) { "Block $rebarBlockKey not found" }
         check(template.type == blockSchema.material) {
             "Item $key places block $rebarBlockKey and so must have the same type - but the item is of type + ${template.type} while the block is of type ${blockSchema.material}"
@@ -91,7 +94,7 @@ class RebarItemSchema @JvmOverloads internal constructor(
     fun place(context: BlockCreateContext): RebarBlock? {
         if (isType(VanillaBlockItem::class.java)) return null
         check(rebarBlockKey != null) { "Item $key does not place a block" }
-        val blockSchema = RebarRegistry.BLOCKS[rebarBlockKey]
+        val blockSchema = RebarRegistry.BLOCKS[rebarBlockKey!!]
         check(blockSchema != null) { "Block $rebarBlockKey not found" }
         return BlockStorage.setBlock(context.block.position, blockSchema, context)
     }

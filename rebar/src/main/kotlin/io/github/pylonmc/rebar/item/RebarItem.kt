@@ -132,7 +132,7 @@ open class RebarItem(val stack: ItemStack) : Keyed {
             }
         }
 
-        private fun register(schema: RebarItemSchema) {
+        private fun register(schema: RebarItemSchema): RebarItemRegistrationContext {
             if (schema.key !in nameWarningsSuppressed) {
                 checkName(schema)
             }
@@ -142,15 +142,16 @@ open class RebarItem(val stack: ItemStack) : Keyed {
                 // pre-merge configs and check for constructor errors
                 schema.createNewRebarItem()
             }
+
+            return RebarItemRegistrationContext(schema)
         }
 
         @JvmStatic
-        @JvmOverloads
-        fun register(itemClass: Class<out RebarItem>, template: ItemStack, rebarBlockKey: NamespacedKey? = null) =
-            register(RebarItemSchema(itemClass, template, rebarBlockKey))
+        fun register(itemClass: Class<out RebarItem>, template: ItemStack) =
+            register(RebarItemSchema(itemClass, template))
 
-        inline fun <reified T: RebarItem>register(template: ItemStack, rebarBlockKey: NamespacedKey? = null) =
-            register(T::class.java, template, rebarBlockKey)
+        inline fun <reified T: RebarItem>register(template: ItemStack) =
+            register(T::class.java, template)
 
         /**
          * Gets a RebarItem from an [ItemStack] if the item is a Rebar item
