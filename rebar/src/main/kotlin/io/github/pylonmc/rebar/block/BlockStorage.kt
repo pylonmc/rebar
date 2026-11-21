@@ -295,7 +295,7 @@ object BlockStorage : Listener {
      */
     @JvmStatic
     fun isRebarBlock(location: Location): Boolean =
-        (location.isChunkLoaded) && get(location) != null
+        location.isChunkLoaded && get(location) != null
 
     /**
      * Returns whether the block at [blockPosition] is a Rebar block and is of type [key]
@@ -304,7 +304,7 @@ object BlockStorage : Listener {
      */
     @JvmStatic
     fun isRebarBlock(blockPosition: BlockPosition, key: NamespacedKey): Boolean =
-        !blockPosition.isChunkLoaded && get(blockPosition)?.key == key
+        blockPosition.isChunkLoaded && get(blockPosition)?.key == key
 
     /**
      * Returns whether the block at [block] is a Rebar block and is of type [key]
@@ -313,7 +313,7 @@ object BlockStorage : Listener {
      */
     @JvmStatic
     fun isRebarBlock(block: Block, key: NamespacedKey): Boolean =
-        !block.isChunkLoaded && get(block)?.key == key
+        block.isChunkLoaded && get(block)?.key == key
 
     /**
      * Returns whether the block at [location] is a Rebar block and is of type [key]
