@@ -7,7 +7,9 @@ import io.github.pylonmc.rebar.entity.EntityStorage
 import io.github.pylonmc.rebar.entity.RebarEntity
 import io.github.pylonmc.rebar.entity.display.ItemDisplayBuilder
 import io.github.pylonmc.rebar.entity.display.transform.LineBuilder
+import io.github.pylonmc.rebar.entity.interfaces.InteractableRebarItemDisplay
 import io.github.pylonmc.rebar.entity.interfaces.RemoveRebarEntityHandler
+import io.github.pylonmc.rebar.event.RebarPlayerInteractWireEvent
 import io.github.pylonmc.rebar.i18n.RebarArgument
 import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.item.RebarItemSchema
@@ -18,19 +20,22 @@ import io.github.pylonmc.rebar.util.Either
 import io.github.pylonmc.rebar.util.minus
 import io.github.pylonmc.rebar.util.rebarKey
 import net.kyori.adventure.text.Component
+import org.bukkit.Bukkit
 import org.bukkit.FluidCollisionMode
+import org.bukkit.GameMode
 import org.bukkit.Location
 import org.bukkit.entity.ItemDisplay
 import org.bukkit.entity.Player
 import org.bukkit.event.EventPriority
 import org.bukkit.event.entity.EntityRemoveEvent
+import org.bukkit.event.player.PlayerInteractEvent
 import org.joml.Matrix4f
 import java.util.*
 import java.util.concurrent.ThreadLocalRandom
 import kotlin.math.ceil
 import kotlin.math.min
 
-class WireEntity : RebarEntity<ItemDisplay>, RemoveRebarEntityHandler {
+class WireEntity : RebarEntity<ItemDisplay>, RemoveRebarEntityHandler, InteractableRebarItemDisplay {
 
     var port: ConnectedPort
         private set
@@ -50,6 +55,7 @@ class WireEntity : RebarEntity<ItemDisplay>, RemoveRebarEntityHandler {
         KEY,
         ItemDisplayBuilder()
             .transformation(getTransform(port.location, otherEnd.location))
+            .teleportDuration(1)
             .build(port.location)
     ) {
         this.port = port
@@ -99,10 +105,12 @@ class WireEntity : RebarEntity<ItemDisplay>, RemoveRebarEntityHandler {
         entity.interpolationDelay = 0
         entity.interpolationDuration = 1
         if (entity.location != loc1) {
-            entity.teleportAsync(loc1) // in case port was flipped
+            entity.teleport(loc1) // in case port was flipped
         }
 
         length = loc1.distance(loc2)
+
+        notifyTransformUpdated()
     }
 
     /**
@@ -153,6 +161,15 @@ class WireEntity : RebarEntity<ItemDisplay>, RemoveRebarEntityHandler {
                 item.asQuantity(toDrop)
             )
         }
+    }
+
+    override fun onInteract(event: PlayerInteractEvent, interactionLocation: Location) {
+        RebarPlayerInteractWireEvent(this, event, interactionLocation).callEvent()
+        if (!event.action.isLeftClick || !RebarItem.isRebarItem<WireRebarItem>(event.player.inventory.itemInMainHand)) return
+        if (event.player.gameMode != GameMode.CREATIVE) {
+            dropItemsAt(interactionLocation)
+        }
+        remove()
     }
 
     override fun onUnload() {

@@ -25,14 +25,14 @@ operator fun Double.div(vector: Vector) = this * Vector(1 / vector.x, 1 / vector
 operator fun Int.div(vector: Vector) = this.toDouble() / vector
 operator fun Long.div(vector: Vector) = this.toDouble() / vector
 
-operator fun Vector3fc.plus(other: Vector3fc): Vector3f = this.add(other, Vector3f())
+operator fun Vector3fc.plus(other: Vector3fc): Vector3fc = this.add(other, Vector3f())
 operator fun Vector3f.plusAssign(other: Vector3fc) { this.add(other) }
 
-operator fun Vector3fc.minus(other: Vector3fc): Vector3f = this.sub(other, Vector3f())
+operator fun Vector3fc.minus(other: Vector3fc): Vector3fc = this.sub(other, Vector3f())
 operator fun Vector3f.minusAssign(other: Vector3fc) { this.sub(other) }
 
-operator fun Vector3fc.times(scalar: Float): Vector3f = this.mul(scalar, Vector3f())
+operator fun Vector3fc.times(scalar: Float): Vector3fc = this.mul(scalar, Vector3f())
 operator fun Vector3f.timesAssign(scalar: Float) { this.mul(scalar) }
 
-operator fun Vector3fc.div(scalar: Float): Vector3f = this.div(scalar, Vector3f())
+operator fun Vector3fc.div(scalar: Float): Vector3fc = this.div(scalar, Vector3f())
 operator fun Vector3f.divAssign(scalar: Float) { this.div(scalar) }
