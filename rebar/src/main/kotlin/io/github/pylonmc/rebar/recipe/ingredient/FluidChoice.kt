@@ -19,6 +19,12 @@ class FluidChoice private constructor(val fluids: Set<RebarFluid>, val amount: D
     }
 
     @Contract("null -> false")
+    fun matches(fluidWithAmount: FluidWithAmount?): Boolean {
+        contract { returns() implies (fluidWithAmount != null) }
+        return fluidWithAmount != null && matches(fluidWithAmount.fluid, fluidWithAmount.amount)
+    }
+
+    @Contract("null -> false")
     fun matchesIgnoringAmount(fluid: RebarFluid?): Boolean {
         contract { returns(true) implies (fluid != null) }
         return fluid != null && fluid in fluids

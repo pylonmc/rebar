@@ -60,6 +60,12 @@ interface FluidTankRebarBlock : FluidRebarBlock {
             get() = fluidData.amount
 
     /**
+     * The fluid type and amount, as a [FluidWithAmount]
+     */
+    val fluidWithAmount: FluidWithAmount?
+        get() = fluidType?.let { FluidWithAmount(it, fluidAmount) }
+
+    /**
      * The amount of space remaining in the tank
      */
     val fluidSpaceRemaining: Double
