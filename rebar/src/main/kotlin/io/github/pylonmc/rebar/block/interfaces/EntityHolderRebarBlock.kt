@@ -168,7 +168,7 @@ interface EntityHolderRebarBlock {
             }
         }
 
-        @EventHandler
+        @EventHandler(priority = EventPriority.MONITOR)
         private fun onUnload(event: RebarBlockUnloadEvent) {
             val block = event.rebarBlock
             if (block !is EntityHolderRebarBlock) return

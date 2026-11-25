@@ -6,7 +6,7 @@ import org.bukkit.event.Event
 import org.bukkit.event.HandlerList
 
 /**
- * Unloaded after the [rebarBlock] and its chunk have been unloaded.
+ * Called after the [rebarBlock] has been unloaded.
  */
 class RebarBlockUnloadEvent(
     val block: Block,

@@ -125,7 +125,7 @@ interface GuiRebarBlock : NoVanillaInventoryRebarBlock, Keyed {
             }
         }
 
-        @EventHandler
+        @EventHandler(priority = EventPriority.MONITOR)
         private fun onUnload(event: RebarBlockUnloadEvent) {
             if (event.rebarBlock is GuiRebarBlock) {
                 guiBlocks.remove(event.rebarBlock)!!.closeForAllViewers()

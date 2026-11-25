@@ -15,6 +15,7 @@ import io.github.pylonmc.rebar.util.position.position
 import io.github.pylonmc.rebar.util.rebarKey
 import kotlinx.coroutines.*
 import org.bukkit.event.EventHandler
+import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.jetbrains.annotations.ApiStatus
 import java.util.*
@@ -126,7 +127,7 @@ interface TickingRebarBlock {
             }
         }
 
-        @EventHandler
+        @EventHandler(priority = EventPriority.MONITOR)
         private fun onUnload(event: RebarBlockUnloadEvent) {
             val block = event.rebarBlock
             if (block is TickingRebarBlock) {

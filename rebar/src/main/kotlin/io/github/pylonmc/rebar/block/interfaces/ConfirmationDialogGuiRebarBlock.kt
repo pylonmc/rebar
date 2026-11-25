@@ -147,7 +147,7 @@ interface ConfirmationDialogGuiRebarBlock : NoVanillaInventoryRebarBlock {
             }
         }
 
-        @EventHandler
+        @EventHandler(priority = EventPriority.MONITOR)
         private fun onUnload(event: RebarBlockUnloadEvent) {
             if (event.rebarBlock is ConfirmationDialogGuiRebarBlock) {
                 for (player in openDialogs.remove(event.rebarBlock)!!) {

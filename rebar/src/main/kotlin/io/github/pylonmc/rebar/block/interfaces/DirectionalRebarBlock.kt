@@ -9,9 +9,10 @@ import io.github.pylonmc.rebar.util.rebarKey
 import org.bukkit.Keyed
 import org.bukkit.block.BlockFace
 import org.bukkit.event.EventHandler
+import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.jetbrains.annotations.ApiStatus
-import java.util.IdentityHashMap
+import java.util.*
 
 /**
  * Represents a block that has a specific facing direction.
@@ -54,7 +55,7 @@ interface DirectionalRebarBlock : Keyed {
             }
         }
 
-        @EventHandler
+        @EventHandler(priority = EventPriority.MONITOR)
         private fun onUnload(event: RebarBlockUnloadEvent) {
             val block = event.rebarBlock
             if (block is DirectionalRebarBlock) {

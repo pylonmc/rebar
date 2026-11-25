@@ -3,19 +3,13 @@ package io.github.pylonmc.rebar.block.interfaces
 import io.github.pylonmc.rebar.Rebar
 import io.github.pylonmc.rebar.block.BlockStorage
 import io.github.pylonmc.rebar.block.RebarBlock
+import io.github.pylonmc.rebar.block.interfaces.CargoRebarBlock.Companion.cargoItemsTransferredPerSecond
 import io.github.pylonmc.rebar.config.RebarConfig
 import io.github.pylonmc.rebar.content.cargo.CargoDuct
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.entity.display.ItemDisplayBuilder
 import io.github.pylonmc.rebar.entity.display.transform.LineBuilder
-import io.github.pylonmc.rebar.event.RebarBlockBreakEvent
-import io.github.pylonmc.rebar.event.RebarBlockDeserializeEvent
-import io.github.pylonmc.rebar.event.RebarBlockLoadEvent
-import io.github.pylonmc.rebar.event.RebarBlockPlaceEvent
-import io.github.pylonmc.rebar.event.RebarBlockSerializeEvent
-import io.github.pylonmc.rebar.event.RebarBlockUnloadEvent
-import io.github.pylonmc.rebar.event.RebarCargoConnectEvent
-import io.github.pylonmc.rebar.event.RebarCargoDisconnectEvent
+import io.github.pylonmc.rebar.event.*
 import io.github.pylonmc.rebar.item.builder.ItemStackBuilder
 import io.github.pylonmc.rebar.logistics.CargoRoutes
 import io.github.pylonmc.rebar.logistics.LogisticGroup
@@ -32,9 +26,7 @@ import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.jetbrains.annotations.ApiStatus
 import org.joml.Vector3d
-import java.util.IdentityHashMap
-import kotlin.collections.getOrPut
-import kotlin.collections.iterator
+import java.util.*
 import kotlin.math.min
 
 /**
@@ -329,7 +321,7 @@ interface CargoRebarBlock : LogisticRebarBlock, EntityHolderRebarBlock {
             }
         }
 
-        @EventHandler
+        @EventHandler(priority = EventPriority.MONITOR)
         private fun onUnload(event: RebarBlockUnloadEvent) {
             val block = event.rebarBlock
             if (block is CargoRebarBlock) {

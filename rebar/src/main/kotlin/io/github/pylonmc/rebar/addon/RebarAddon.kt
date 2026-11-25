@@ -18,9 +18,7 @@ import org.bukkit.event.Listener
 import org.bukkit.event.server.PluginDisableEvent
 import org.bukkit.plugin.java.JavaPlugin
 import org.jetbrains.annotations.ApiStatus
-import java.io.File
-import java.util.Locale
-import java.util.jar.JarFile
+import java.util.*
 
 /**
  * Welcome to the place where it all begins: the Rebar addon!
@@ -102,6 +100,11 @@ interface RebarAddon : Keyed {
                 RebarRegistry.GAMETESTS.unregisterAllFromAddon(plugin)
                 RebarRegistry.ITEMS.unregisterAllFromAddon(plugin)
                 RebarRegistry.RECIPE_TYPES.unregisterAllFromAddon(plugin)
+                RebarRegistry.FLUIDS.unregisterAllFromAddon(plugin)
+                RebarRegistry.RESEARCHES.unregisterAllFromAddon(plugin)
+                RebarRegistry.ITEM_TAGS.unregisterAllFromAddon(plugin)
+                RebarRegistry.BLOCK_TAGS.unregisterAllFromAddon(plugin)
+                RebarRegistry.CONTEXTUAL_COMPONENT_RENDERERS.unregisterAllFromAddon(plugin)
                 RebarRegistry.ADDONS.unregister(plugin)
 
                 if (plugin is Rebar) {

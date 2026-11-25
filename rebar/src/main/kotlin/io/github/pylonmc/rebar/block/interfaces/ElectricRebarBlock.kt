@@ -88,7 +88,7 @@ interface ElectricRebarBlock : EntityHolderRebarBlock {
             event.pdc.set(NODES_KEY, electricBlocks[block].orEmpty().values.toList())
         }
 
-        @EventHandler
+        @EventHandler(priority = EventPriority.MONITOR)
         private fun onUnload(event: RebarBlockUnloadEvent) {
             if (event.rebarBlock !is ElectricRebarBlock) return
             for (node in electricBlocks.remove(event.rebarBlock).orEmpty().values) {

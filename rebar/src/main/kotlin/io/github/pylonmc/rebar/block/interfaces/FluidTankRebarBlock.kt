@@ -9,6 +9,7 @@ import io.github.pylonmc.rebar.recipe.ingredient.FluidWithAmount
 import io.github.pylonmc.rebar.util.FLUID_EPSILON
 import io.github.pylonmc.rebar.util.rebarKey
 import org.bukkit.event.EventHandler
+import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.jetbrains.annotations.ApiStatus
 import java.util.*
@@ -253,7 +254,7 @@ interface FluidTankRebarBlock : FluidRebarBlock {
             }
         }
 
-        @EventHandler
+        @EventHandler(priority = EventPriority.MONITOR)
         private fun onUnload(event: RebarBlockUnloadEvent) {
             val block = event.rebarBlock
             if (block is FluidTankRebarBlock) {

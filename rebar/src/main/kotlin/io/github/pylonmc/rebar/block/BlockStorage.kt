@@ -687,10 +687,10 @@ object BlockStorage : Listener {
             if (block is PhantomBlock) { // don't try to re-phantomise phantom blocks
                 null
             } else if (block.schema.key.isFromAddon(addon)) {
+                val pdc = RebarBlock.serialize(block, block.block.chunk.persistentDataContainer.adapterContext)
+                RebarBlockUnloadEvent(block.block, block).callEvent()
                 RebarBlockSchema.schemaCache[block.block.position] = PhantomBlock.schema
-                RebarBlock.serialize(block, block.block.chunk.persistentDataContainer.adapterContext)?.let { pdc ->
-                    PhantomBlock(pdc, block.schema.key, block.block, true)
-                }
+                pdc?.let { PhantomBlock(pdc, block.schema.key, block.block, true) }
             } else {
                 null
             }

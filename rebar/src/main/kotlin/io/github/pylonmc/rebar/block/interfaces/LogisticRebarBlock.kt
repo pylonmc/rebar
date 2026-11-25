@@ -9,12 +9,11 @@ import io.github.pylonmc.rebar.logistics.slot.LogisticSlot
 import io.github.pylonmc.rebar.logistics.slot.VirtualInventoryLogisticSlot
 import org.bukkit.block.Block
 import org.bukkit.event.EventHandler
+import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.jetbrains.annotations.ApiStatus
 import xyz.xenondevs.invui.inventory.VirtualInventory
-import java.util.IdentityHashMap
-import kotlin.collections.contains
-import kotlin.collections.getOrPut
+import java.util.*
 
 /**
  * A block which can have items removed or added via a logistics system.
@@ -82,7 +81,7 @@ interface LogisticRebarBlock {
             }
         }
 
-        @EventHandler
+        @EventHandler(priority = EventPriority.MONITOR)
         private fun onUnload(event: RebarBlockUnloadEvent) {
             val block = event.rebarBlock
             if (block is LogisticRebarBlock) {

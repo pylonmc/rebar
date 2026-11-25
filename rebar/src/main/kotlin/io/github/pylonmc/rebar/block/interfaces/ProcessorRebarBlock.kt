@@ -8,9 +8,10 @@ import io.github.pylonmc.rebar.event.RebarBlockUnloadEvent
 import io.github.pylonmc.rebar.util.gui.ProgressItem
 import io.github.pylonmc.rebar.util.rebarKey
 import org.bukkit.event.EventHandler
+import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.jetbrains.annotations.ApiStatus
-import java.util.IdentityHashMap
+import java.util.*
 import kotlin.math.roundToInt
 
 /**
@@ -147,7 +148,7 @@ interface ProcessorRebarBlock {
             }
         }
 
-        @EventHandler
+        @EventHandler(priority = EventPriority.MONITOR)
         private fun onUnload(event: RebarBlockUnloadEvent) {
             val block = event.rebarBlock
             if (block is ProcessorRebarBlock) {
