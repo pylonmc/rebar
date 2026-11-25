@@ -5,19 +5,18 @@ import io.github.pylonmc.rebar.config.RebarConfig
 import io.github.pylonmc.rebar.datatypes.RebarSerializers
 import io.github.pylonmc.rebar.entity.EntityStorage
 import io.github.pylonmc.rebar.entity.RebarEntity
-import io.github.pylonmc.rebar.entity.interfaces.DamageRebarEntityHandler
-import io.github.pylonmc.rebar.entity.interfaces.InteractRebarEntityHandler
 import io.github.pylonmc.rebar.entity.display.BlockDisplayBuilder
 import io.github.pylonmc.rebar.entity.display.InteractionBuilder
 import io.github.pylonmc.rebar.entity.display.ItemDisplayBuilder
 import io.github.pylonmc.rebar.entity.display.transform.TransformBuilder
+import io.github.pylonmc.rebar.entity.interfaces.DamageRebarEntityHandler
+import io.github.pylonmc.rebar.entity.interfaces.InteractRebarEntityHandler
 import io.github.pylonmc.rebar.event.RebarBlockLoadEvent
 import io.github.pylonmc.rebar.event.api.annotation.MultiHandler
 import io.github.pylonmc.rebar.item.ItemTypeWrapper
 import io.github.pylonmc.rebar.item.RebarItemSchema
 import io.github.pylonmc.rebar.nms.NmsAccessor
 import io.github.pylonmc.rebar.registry.RebarRegistry
-import io.github.pylonmc.rebar.util.delayTicks
 import io.github.pylonmc.rebar.util.*
 import io.github.pylonmc.rebar.waila.WailaDisplay
 import kotlinx.coroutines.launch
@@ -246,7 +245,11 @@ interface GhostBlockHolderRebarBlock : EntityHolderRebarBlock {
         }
 
         fun setIndex(i: Int) {
-            entity.block = vanillaBlocks[i]
+            val block = vanillaBlocks[i]
+            entity.block = when (block.material) {
+                Material.CAVE_AIR, Material.VOID_AIR -> Material.AIR.createBlockData() // cave air and void air have textures for some reason??
+                else -> block
+            }
         }
 
         companion object {
