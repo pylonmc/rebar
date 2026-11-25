@@ -138,6 +138,9 @@ interface SimpleRebarMultiblock : RebarMultiblock, GhostBlockHolderRebarBlock, E
             @JvmStatic
             fun of(tag: Tag<BlockTypeWrapper>) = of(tag.values.mapTo(mutableSetOf()) { it.key })
 
+            @JvmStatic
+            fun of(tag: Tag<Material>) = of(tag.values.mapTo(mutableSetOf()) { it.key })
+
             /**
              * Accepts vanilla keys (`minecraft:grass`) or Rebar keys (`pylon:copper_block`)
              */
