@@ -37,7 +37,7 @@ interface RebarMultiblock {
      *
      * You can assume that when this method is called, all components of the multiblock are loaded.
      */
-    @ApiStatus.Internal
+    @ApiStatus.OverrideOnly
     fun checkFormed(): Boolean
 
     /**
