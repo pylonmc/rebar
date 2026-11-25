@@ -157,6 +157,9 @@ interface SimpleRebarMultiblock : RebarMultiblock, GhostBlockHolderRebarBlock, E
              */
             @JvmStatic
             fun of(vararg keys: NamespacedKey) = of(keys.toSet())
+
+            @JvmField
+            val AIR = ofMaterialTag(Tag.AIR)
         }
     }
 
