@@ -8,7 +8,7 @@ import io.github.pylonmc.rebar.fluid.FluidManager
 import io.github.pylonmc.rebar.fluid.RebarFluid
 import io.github.pylonmc.rebar.fluid.placement.FluidPipePlacementPoint
 import io.github.pylonmc.rebar.fluid.placement.FluidPipePlacementService
-import io.github.pylonmc.rebar.fluid.tags.FluidTemperature
+import io.github.pylonmc.rebar.fluid.properties.FluidTemperature
 import io.github.pylonmc.rebar.i18n.RebarArgument
 import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.item.interfaces.InteractRebarItemHandler
@@ -59,7 +59,7 @@ open class FluidPipe(stack: ItemStack) : RebarItem(stack), InteractRebarItemHand
      * Returns whether the pipe is capable of moving the given fluid through it.
      */
     open fun canPass(fluid: RebarFluid) = allowedTemperatures == null
-            || fluid.hasTag<FluidTemperature>() && fluid.getTag<FluidTemperature>() in allowedTemperatures
+            || fluid.hasProperty<FluidTemperature>() && fluid.getProperty<FluidTemperature>() in allowedTemperatures
 
     @MultiHandler(priorities = [ EventPriority.HIGH, EventPriority.MONITOR ])
     override fun onInteract(event: PlayerInteractEvent, priority: EventPriority) {

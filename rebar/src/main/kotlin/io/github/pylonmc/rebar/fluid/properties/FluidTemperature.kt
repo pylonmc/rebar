@@ -1,13 +1,13 @@
-package io.github.pylonmc.rebar.fluid.tags
+package io.github.pylonmc.rebar.fluid.properties
 
-import io.github.pylonmc.rebar.fluid.RebarFluidTag
+import io.github.pylonmc.rebar.fluid.RebarFluidProperty
 import io.github.pylonmc.rebar.i18n.RebarArgument
 import net.kyori.adventure.text.Component
 
 /**
  * Most pipes require fluids to have a temperature to be able to transfer fluids.
  */
-enum class FluidTemperature : RebarFluidTag {
+enum class FluidTemperature : RebarFluidProperty {
     /**
      * Generally fluids that are considered cryogenic, like liquid nitrogen or liquid helium.
      */
