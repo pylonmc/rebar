@@ -413,6 +413,7 @@ guide:
           <guidearrow> In the rebar guide as an admin there are a few cheat controls
           <guidearrow> <guideinsn>Press</guideinsn> <guideinsn><key:key.drop></guideinsn> on a Rebar Item to cheat in one item
           <guidearrow> <guideinsn>Middle click</guideinsn> a Rebar Item to cheat in a stack
+          <guidearrow> <guideinsn>Shift left click</guideinsn> a Rebar Item to cheat in a stack directly into your inventory
       rebar:
         name: "<white>What is Rebar?"
         lore: |-
