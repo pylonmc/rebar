@@ -27,9 +27,9 @@ open class RebarFluid(
     val nameWithoutColor: Component,
     material: Material,
     /**
-     * @see RebarFluidTag
+     * @see RebarFluidProperty
      */
-    private val tags: MutableList<RebarFluidTag>,
+    private val properties: MutableList<RebarFluidProperty>,
 ) : Keyed {
 
     val addon = getAddon(key)
@@ -42,8 +42,8 @@ open class RebarFluid(
             .addCustomModelDataString(key.toString())
             .name(name)
 
-        for (tag in tags) {
-            builder.lore(tag.displayText)
+        for (property in properties) {
+            builder.lore(property.displayText)
         }
 
         builder.build()
@@ -52,12 +52,12 @@ open class RebarFluid(
     val item
         get() = internalItem.clone()
 
-    constructor(key: NamespacedKey, color: TextColor, material: Material, vararg tags: RebarFluidTag) : this(
+    constructor(key: NamespacedKey, color: TextColor, material: Material, vararg properties: RebarFluidProperty) : this(
         key,
         color,
         Component.translatable("${key.namespace}.fluid.${key.key}"),
         material,
-        tags.toMutableList()
+        properties.toMutableList()
     )
 
     init {
@@ -71,28 +71,28 @@ open class RebarFluid(
         }
     }
 
-    fun addTag(tag: RebarFluidTag) = apply {
-        check(!hasTag(tag.javaClass)) { "Fluid already has a tag of the same type" }
-        tags.add(tag)
+    fun addProperty(property: RebarFluidProperty) = apply {
+        check(!hasProperty(property.javaClass)) { "Fluid already has a property of the same type" }
+        properties.add(property)
     }
 
-    fun hasTag(type: Class<out RebarFluidTag>): Boolean
-        = tags.any { type.isInstance(it) }
+    fun hasProperty(type: Class<out RebarFluidProperty>): Boolean
+        = properties.any { type.isInstance(it) }
 
-    inline fun <reified T: RebarFluidTag> hasTag(): Boolean
-        = hasTag(T::class.java)
+    inline fun <reified T: RebarFluidProperty> hasProperty(): Boolean
+        = hasProperty(T::class.java)
 
     /**
-     * @throws IllegalArgumentException if the fluid does not have a tag of the given type
+     * @throws IllegalArgumentException if the fluid does not have a property of the given type
      */
-    fun <T: RebarFluidTag> getTag(type: Class<T>): T
-        = type.cast(tags.firstOrNull { type.isInstance(it) } ?: throw IllegalArgumentException("Fluid does not have a tag of type ${type.simpleName}"))
+    fun <T: RebarFluidProperty> getProperty(type: Class<T>): T
+        = type.cast(properties.firstOrNull { type.isInstance(it) } ?: throw IllegalArgumentException("Fluid does not have a property of type ${type.simpleName}"))
 
-    inline fun <reified T: RebarFluidTag> getTag(): T
-        = getTag(T::class.java)
+    inline fun <reified T: RebarFluidProperty> getProperty(): T
+        = getProperty(T::class.java)
 
-    fun removeTag(tag: RebarFluidTag) {
-        tags.remove(tag)
+    fun removeProperty(property: RebarFluidProperty) {
+        properties.remove(property)
     }
 
     fun register() {

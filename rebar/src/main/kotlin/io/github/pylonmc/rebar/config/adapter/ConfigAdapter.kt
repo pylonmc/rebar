@@ -1,7 +1,7 @@
 package io.github.pylonmc.rebar.config.adapter
 
 import io.github.pylonmc.rebar.block.BlockTypeWrapper
-import io.github.pylonmc.rebar.fluid.tags.FluidTemperature
+import io.github.pylonmc.rebar.fluid.properties.FluidTemperature
 import io.github.pylonmc.rebar.item.ItemTypeWrapper
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.util.RandomizedSound

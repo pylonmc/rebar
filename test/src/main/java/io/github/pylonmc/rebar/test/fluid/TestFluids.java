@@ -18,7 +18,7 @@ public class TestFluids {
             NamedTextColor.GOLD,
             Material.ORANGE_CONCRETE
     )
-            .addTag(new LavaTag());
+            .addProperty(new LavaProperty());
 
     public static void register() {
         WATER.register();
