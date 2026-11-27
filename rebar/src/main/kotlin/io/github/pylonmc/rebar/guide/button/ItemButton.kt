@@ -124,21 +124,27 @@ class ItemButton private constructor(
                 }
 
                 ClickType.SHIFT_LEFT -> {
-                    val itemSchema = RebarItemSchema.fromStack(currentStack)
-                    val research = itemSchema?.research
-                    if (itemSchema != null && research != null) {
-                        if (research.isResearchedBy(player) || research.cost == null || research.cost > player.researchPoints) {
-                            return
-                        }
-                        research.addTo(player, false)
-                        player.researchPoints -= research.cost
-                        for (slot in 0 until gui.size) {
-                            val item = gui[slot] as? SlotElement.Item ?: continue
-                            if (item.item is ItemButton) {
-                                item.item.notifyWindows()
-                            }
-                        }
+                    if (player.hasPermission("rebar.guide.cheat")) {
+                        val stack = getCheatItemStack(currentStack, click)
+                        player.give(stack)
                         player.playGuideSound(RebarConfig.GuideConfig.CLICK_BUTTON_SOUND)
+                    } else {
+                        val itemSchema = RebarItemSchema.fromStack(currentStack)
+                        val research = itemSchema?.research
+                        if (itemSchema != null && research != null) {
+                            if (research.isResearchedBy(player) || research.cost == null || research.cost > player.researchPoints) {
+                                return
+                            }
+                            research.addTo(player, false)
+                            player.researchPoints -= research.cost
+                            for (slot in 0 until gui.size) {
+                                val item = gui[slot] as? SlotElement.Item ?: continue
+                                if (item.item is ItemButton) {
+                                    item.item.notifyWindows()
+                                }
+                            }
+                            player.playGuideSound(RebarConfig.GuideConfig.CLICK_BUTTON_SOUND)
+                        }
                     }
                 }
 
