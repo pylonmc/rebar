@@ -79,13 +79,18 @@ object CargoRoutes : Listener {
             val currentBlock = BlockStorage.get(current.block)
 
             if (currentBlock is CargoDuct) {
-                // we can assume the size is either 1 or 2 given we must have come from one of the faces
+                val incomingFace = lastFaceUsed.oppositeFace
+                // Adjacency does not imply a connection; the duct may use both faces elsewhere
+                if (incomingFace !in currentBlock.connectedFaces) {
+                    break
+                }
+
                 if (currentBlock.connectedFaces.size == 1) {
                     break
                 }
 
                 val faces = currentBlock.connectedFaces.toMutableList()
-                faces.remove(lastFaceUsed.oppositeFace)
+                faces.remove(incomingFace)
                 check(faces.size == 1) { "Expected node to have one traversable face but had ${faces.size}" }
                 val nextFace = faces[0]
 
