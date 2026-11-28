@@ -2,6 +2,7 @@ package io.github.pylonmc.rebar.recipe.vanilla
 
 import io.github.pylonmc.rebar.config.ConfigSection
 import io.github.pylonmc.rebar.item.ItemTypeWrapper
+import io.github.pylonmc.rebar.item.RebarItemSchema
 import io.github.pylonmc.rebar.recipe.ConfigurableRecipeType
 import io.github.pylonmc.rebar.recipe.ingredient.ItemChoice
 import io.github.pylonmc.rebar.recipe.RebarRecipe
@@ -26,8 +27,9 @@ import org.bukkit.inventory.SmokingRecipe
  * @see CookingRebarRecipe
  * @see SmithingRebarRecipe
  */
-sealed interface BukkitRebarRecipe : RebarRecipe {
-    val bukkitRecipe: Recipe
+sealed class BukkitRebarRecipe : RebarRecipe {
+    abstract val bukkitRecipe: Recipe
+    val resultRebarItemSchema: RebarItemSchema? = RebarItemSchema.fromStack(bukkitRecipe.result)
 }
 
 /**
@@ -39,7 +41,7 @@ sealed interface BukkitRebarRecipe : RebarRecipe {
  * @see DummyCookingRebarRecipe
  * @see DummySmithingRebarRecipe
  */
-sealed interface DummyBukkitRebarRecipe : BukkitRebarRecipe {
+sealed class DummyBukkitRebarRecipe : BukkitRebarRecipe() {
     companion object {
         fun dummyKey(originalKey: NamespacedKey): NamespacedKey {
             return NamespacedKey(originalKey.namespace, "internal_dummy_" + originalKey.key)

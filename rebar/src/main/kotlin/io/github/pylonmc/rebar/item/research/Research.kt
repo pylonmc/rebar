@@ -9,8 +9,7 @@ import io.github.pylonmc.rebar.i18n.RebarArgument
 import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.item.RebarItemSchema
 import io.github.pylonmc.rebar.item.research.Research.Companion.canPickUp
-import io.github.pylonmc.rebar.recipe.ingredient.FluidOrItem
-import io.github.pylonmc.rebar.recipe.RecipeType
+import io.github.pylonmc.rebar.recipe.vanilla.BukkitRecipeType
 import io.github.pylonmc.rebar.recipe.vanilla.VanillaRecipeType
 import io.github.pylonmc.rebar.registry.RebarRegistry
 import io.github.pylonmc.rebar.util.ConfettiParticle
@@ -34,6 +33,7 @@ import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.inventory.ItemStack
 import kotlin.math.min
 
+// TODO: If we ever add a recipe cache for the guide, consult it here for (un)discovering recipes
 /**
  * A Rebar research as seem in the 'researches' guide section.
  *
@@ -85,16 +85,23 @@ class Research(
      * have unlocked the research
      */
     @JvmOverloads
-    fun addTo(player: Player, sendMessage: Boolean = true, effects: Boolean = true) {
-        if (this in getResearches(player)) return
+    fun addTo(player: Player, sendMessage: Boolean = true, effects: Boolean = true): Boolean {
+        val researches = getResearches(player)
+        if (this in researches) return false
 
-        addResearch(player, this)
-        for (recipe in RecipeType.vanillaCraftingRecipes()) {
-            val schema = RebarItemSchema.fromStack(recipe.result.item) ?: continue
-            if (schema.key in unlocks) {
-                player.discoverRecipe(recipe.key)
+        setResearches(player, researches + this)
+
+        val recipes = mutableListOf<NamespacedKey>()
+        for (type in RebarRegistry.RECIPE_TYPES) {
+            if (type !is BukkitRecipeType<*>) continue
+            for (recipe in type) {
+                val schema = recipe.resultRebarItemSchema ?: continue
+                if (schema.key in unlocks) {
+                    recipes.add(recipe.key)
+                }
             }
         }
+        player.discoverRecipes(recipes)
 
         if (sendMessage) {
             player.sendMessage(
@@ -121,21 +128,29 @@ class Research(
                 }
             }
         }
+        return true
     }
 
     /**
      * Removes a research from a player.
      */
-    fun removeFrom(player: Player) {
-        if (this !in getResearches(player)) return
+    fun removeFrom(player: Player): Boolean {
+        val researches = getResearches(player)
+        if (this !in researches) return false
 
-        removeResearch(player, this)
-        for (recipe in RecipeType.vanillaCraftingRecipes()) {
-            val schema = RebarItemSchema.fromStack(recipe.result.item) ?: continue
-            if (schema.key in unlocks) {
-                player.undiscoverRecipe(recipe.key)
+        setResearches(player, researches - this)
+        val recipes = mutableListOf<NamespacedKey>()
+        for (type in RebarRegistry.RECIPE_TYPES) {
+            if (type !is BukkitRecipeType<*>) continue
+            for (recipe in type) {
+                val schema = recipe.resultRebarItemSchema ?: continue
+                if (schema.key in unlocks) {
+                    recipes.add(recipe.key)
+                }
             }
         }
+        player.undiscoverRecipes(recipes)
+        return true
     }
 
     /**
@@ -168,25 +183,14 @@ class Research(
 
         @JvmStatic
         fun getResearches(player: OfflinePlayer): List<Research> {
-            val researches = player.persistentDataContainer.get(researchesKey)
-            if (researches == null && player is Player) {
-                setResearches(player, listOf())
-                return listOf()
-            }
-            return researches!!.mapNotNull { RebarRegistry.RESEARCHES[it] }
+            val researches = player.persistentDataContainer.get(researchesKey) ?: return listOf()
+            return researches.mapNotNull { RebarRegistry.RESEARCHES[it] }
         }
 
         @JvmStatic
-        fun setResearches(player: Player, researches: List<Research>)
-            = player.persistentDataContainer.set(researchesKey, researches.map { it.key })
-
-        @JvmStatic
-        fun addResearch(player: Player, research: Research)
-            = setResearches(player, getResearches(player) + research)
-
-        @JvmStatic
-        fun removeResearch(player: Player, research: Research)
-            = setResearches(player, getResearches(player) - research)
+        fun setResearches(player: Player, researches: List<Research>) {
+            player.persistentDataContainer.set(researchesKey, researches.map { it.key })
+        }
 
         @JvmStatic
         @JvmOverloads
@@ -350,10 +354,8 @@ class Research(
                 if (recipeType !is VanillaRecipeType<*, *>) continue
                 for (recipe in recipeType) {
                     if (recipe.key in VanillaRecipeType.nonRebarRecipes) continue
-                    val researches = recipe.results
-                        .filterIsInstance<FluidOrItem.Item>()
-                        .mapNotNull { RebarItemSchema.fromStack(it.item)?.research }
-                    if (researches.isNotEmpty()) continue
+                    val research = recipe.resultRebarItemSchema?.research
+                    if (research != null) continue
                     player.discoverRecipe(recipe.key)
                 }
             }
@@ -392,16 +394,13 @@ private fun Player.ejectUnknownItems() {
 }
 
 @JvmSynthetic
-fun Player.addResearch(research: Research, sendMessage: Boolean = false, confetti: Boolean = true) {
-    research.addTo(this, sendMessage, confetti)
-}
+fun Player.addResearch(research: Research, sendMessage: Boolean = false, confetti: Boolean = true): Boolean
+    = research.addTo(this, sendMessage, confetti)
 
 @JvmSynthetic
-fun Player.removeResearch(research: Research) {
-    research.removeFrom(this)
-}
+fun Player.removeResearch(research: Research): Boolean
+    = research.removeFrom(this)
 
 @JvmSynthetic
-fun Player.hasResearch(research: Research): Boolean {
-    return research.isResearchedBy(this)
-}
+fun Player.hasResearch(research: Research): Boolean
+    = research.isResearchedBy(this)

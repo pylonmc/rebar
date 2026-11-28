@@ -44,6 +44,7 @@ import org.joml.Matrix4f
 import org.joml.Quaternionf
 import org.joml.Vector3f
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.CopyOnWriteArraySet
 import kotlin.math.abs
@@ -59,7 +60,7 @@ class BlockTextureEntityImpl : BlockTextureEntity, SyncedDataHolder {
         get() = if (directLighting) emptyList() else neighborPositions
     override var id: Int
     override var uuid: UUID
-    override val viewers: MutableSet<UUID> = mutableSetOf()
+    override val viewers: MutableSet<UUID> = ConcurrentHashMap.newKeySet()
 
     var refreshesFrozen: Boolean = false
     var refreshesFrozenExpireTime: Long = 0

@@ -201,7 +201,7 @@ class Waila private constructor(
                 var display = entityOverrides[targetEntity]?.getWaila(player)
                     ?: entity.let(EntityStorage::get)?.getWaila(player)
 
-                if (display == null && player.wailaConfig.vanillaWailaEnabled) {
+                if (display == null && config.vanillaWailaEnabled) {
                     display = if (entity is Item) {
                         WailaDisplay.of(entity.itemStack.effectiveName())
                     } else {
@@ -238,7 +238,7 @@ class Waila private constructor(
                 var display = blockOverrides[targetBlock]?.getWaila(player)
                     ?: block.let(BlockStorage::get)?.getWaila(player)
 
-                if (!BlockStorage.isRebarBlock(block) && display == null && player.wailaConfig.vanillaWailaEnabled) {
+                if (!BlockStorage.isRebarBlock(block) && display == null && config.vanillaWailaEnabled) {
                     val name = Component.translatable(block.type.translationKey())
                     val prefix = WailaDisplay.getWailaBlockPrefix(block, player)
                     display = if (prefix != null) {

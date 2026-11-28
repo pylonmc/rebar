@@ -267,7 +267,7 @@ data class CraftingRecipeShape private constructor(
 class DummyCraftingRebarRecipe(
     val realRecipe: CraftingRebarRecipe,
     override val bukkitRecipe: CraftingRecipe
-) : DummyBukkitRebarRecipe {
+) : DummyBukkitRebarRecipe() {
     override val inputs = emptyList<FluidOrItemChoice>()
     override val results = emptyList<FluidOrItem>()
     override fun display() = null
@@ -285,7 +285,7 @@ sealed class CraftingRebarRecipe(
     val category: CraftingBookCategory,
     val group: String,
     @JvmField val key: NamespacedKey
-) : BukkitRebarRecipe {
+) : BukkitRebarRecipe() {
     abstract fun matches(input: CraftingInput): Boolean
     override fun getKey() = this.key
 }

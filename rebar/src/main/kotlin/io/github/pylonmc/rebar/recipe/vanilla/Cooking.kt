@@ -27,7 +27,7 @@ import xyz.xenondevs.invui.gui.Gui
 class DummyCookingRebarRecipe(
     val realRecipe: CookingRebarRecipe,
     override val bukkitRecipe: CookingRecipe<*>
-) : DummyBukkitRebarRecipe {
+) : DummyBukkitRebarRecipe() {
     override val inputs = emptyList<FluidOrItemChoice>()
     override val results = emptyList<FluidOrItem>()
     override fun display() = null
@@ -50,7 +50,7 @@ sealed class CookingRebarRecipe(
     val category: CookingBookCategory,
     val group: String,
     @JvmField val key: NamespacedKey
-) : BukkitRebarRecipe {
+) : BukkitRebarRecipe() {
     override val inputs = listOf(ingredient)
     override val results = listOf(result)
 

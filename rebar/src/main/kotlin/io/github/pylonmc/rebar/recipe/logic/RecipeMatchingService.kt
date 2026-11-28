@@ -90,9 +90,11 @@ object RecipeMatchingService {
             return lastRecipe
         }
 
-        for (recipe in RecipeType.vanillaCraftingRecipes()) {
-            if (recipe.matches(input)) {
-                return recipe
+        for (type in RecipeType.VANILLA_CRAFTING_TYPES) {
+            for (recipe in type) {
+                if (recipe.matches(input)) {
+                    return recipe
+                }
             }
         }
         return null
@@ -194,9 +196,11 @@ object RecipeMatchingService {
             return lastRecipe
         }
 
-        for (recipe in RecipeType.vanillaSmithingRecipes()) {
-            if (recipe.matches(template, base, addition)) {
-                return recipe
+        for (type in RecipeType.VANILLA_SMITHING_TYPES) {
+            for (recipe in type) {
+                if (recipe.matches(template, base, addition)) {
+                    return recipe
+                }
             }
         }
         return null

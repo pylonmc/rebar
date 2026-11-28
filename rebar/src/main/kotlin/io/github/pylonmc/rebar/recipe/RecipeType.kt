@@ -55,7 +55,7 @@ open class RecipeType<T : RebarRecipe>(private val key: NamespacedKey) : Keyed, 
         private val registerRecipeJob = Rebar.scope.launch {
             while (true) {
                 processRecipeQueue()
-                delayTicks(1)
+                delayTicks(20)
             }
         }
 
@@ -148,9 +148,15 @@ open class RecipeType<T : RebarRecipe>(private val key: NamespacedKey) : Keyed, 
             DUMMY_CRAFTING.register()
         }
 
+        @JvmField
+        val VANILLA_CRAFTING_TYPES = setOf(VANILLA_SHAPED, VANILLA_SHAPELESS)
+
         @JvmStatic
         fun vanillaCraftingRecipes() = VANILLA_SHAPED
             .union(VANILLA_SHAPELESS)
+
+        @JvmField
+        val VANILLA_SMITHING_TYPES = setOf(VANILLA_SMITHING_TRANSFORM, VANILLA_SMITHING_TRIM)
 
         @JvmStatic
         fun vanillaSmithingRecipes() = VANILLA_SMITHING_TRANSFORM.recipes
@@ -186,7 +192,7 @@ open class RecipeType<T : RebarRecipe>(private val key: NamespacedKey) : Keyed, 
         /**
          * Used to queue a recipe to be registered, the next time the queue is processed
          * all recipes queued will be registered at once for performance. By default, the queue
-         * is processed once per tick, but it can be manually triggered.
+         * is processed once per second, but it can be manually triggered.
          */
         @JvmStatic
         fun queueRegisterRecipe(recipe: Recipe) {
@@ -196,7 +202,7 @@ open class RecipeType<T : RebarRecipe>(private val key: NamespacedKey) : Keyed, 
         /**
          * Used to queue a recipe to be unregistered, the next time the queue is processed
          * all recipes queued will be unregistered at once for performance. By default, the queue
-         * is processed once per tick, but it can be manually triggered.
+         * is processed once per second, but it can be manually triggered.
          */
         @JvmStatic
         fun queueUnregisterRecipe(recipeKey: NamespacedKey) {

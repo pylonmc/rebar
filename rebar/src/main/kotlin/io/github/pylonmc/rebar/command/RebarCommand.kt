@@ -25,7 +25,6 @@ import io.github.pylonmc.rebar.item.RebarItem
 import io.github.pylonmc.rebar.item.research.Research
 import io.github.pylonmc.rebar.item.research.Research.Companion.researchPoints
 import io.github.pylonmc.rebar.item.research.addResearch
-import io.github.pylonmc.rebar.item.research.hasResearch
 import io.github.pylonmc.rebar.item.research.removeResearch
 import io.github.pylonmc.rebar.metrics.RebarMetrics
 import io.github.pylonmc.rebar.recipe.ConfigurableRecipeType
@@ -307,13 +306,15 @@ private val researchAdd = buildCommand("add") {
     argument("players", ArgumentTypes.players()) {
         fun addResearches(context: CommandContext<CommandSourceStack>, researches: List<Research>, confetti: Boolean = true) {
             for (player in context.getArgument<List<Player>>("players")) {
+                val researched = Research.getResearches(player)
                 for (res in researches) {
-                    player.addResearch(res, false, confetti)
-                    context.source.sender.sendFeedback(
-                        "research.added",
-                        RebarArgument.of("research", res.name),
-                        RebarArgument.of("player", player.name)
-                    )
+                    if (!researched.contains(res) && player.addResearch(res, false, confetti)) {
+                        context.source.sender.sendFeedback(
+                            "research.added",
+                            RebarArgument.of("research", res.name),
+                            RebarArgument.of("player", player.name)
+                        )
+                    }
                 }
             }
         }
@@ -369,8 +370,7 @@ private val researchRemove = buildCommand("remove") {
         fun removeResearches(context: CommandContext<CommandSourceStack>, researches: List<Research>) {
             for (player in context.getArgument<List<Player>>("players")) {
                 for (res in researches) {
-                    if (player.hasResearch(res)) {
-                        player.removeResearch(res)
+                    if (player.removeResearch(res)) {
                         context.source.sender.sendFeedback(
                             "research.removed",
                             RebarArgument.of("research", res.name),

@@ -55,20 +55,20 @@ object BlockCullingEngine : Listener {
     val cullingEnabledKey = rebarKey("block_culling_enabled", RebarSerializers.BOOLEAN)
     val cullingConfigKey = rebarKey("block_culling_config", RebarSerializers.PLAYER_CULLING_CONFIG)
 
-    private val playerConfigCache = mutableMapOf<UUID, PlayerCullingConfig>()
+    private val playerConfigCache = ConcurrentHashMap<UUID, PlayerCullingConfig>()
 
     private val invertedVisibility = Class.forName("org.bukkit.craftbukkit.entity.CraftPlayer").let {
         MethodHandles.privateLookupIn(it, MethodHandles.lookup()).unreflectVarHandle(it.getDeclaredField("invertedVisibilityEntities"))
     }
-    private val invertedVisibilityCache = mutableMapOf<UUID, MutableMap<UUID, *>>()
+    private val invertedVisibilityCache = ConcurrentHashMap<UUID, MutableMap<UUID, *>>()
 
-    internal val occludingCache = mutableMapOf<UUID, MutableMap<Long, ChunkData>>()
+    internal val occludingCache = ConcurrentHashMap<UUID, MutableMap<Long, ChunkData>>()
 
     @JvmSynthetic @ApiStatus.Internal
-    val blockTextureOctrees = mutableMapOf<UUID, Octree<RebarBlock>>()
-    internal val culledBlockOctrees = mutableMapOf<UUID, Octree<RebarBlock>>()
+    val blockTextureOctrees = ConcurrentHashMap<UUID, Octree<RebarBlock>>()
+    internal val culledBlockOctrees = ConcurrentHashMap<UUID, Octree<RebarBlock>>()
 
-    private val jobs = mutableMapOf<UUID, Pair<PlayerCullingJob, Job>>()
+    private val jobs = ConcurrentHashMap<UUID, Pair<PlayerCullingJob, Job>>()
     internal val syncJobTasks = ConcurrentHashMap<UUID, MutableMap<CulledRebarBlock, Boolean>>()
     internal val syncJobGroupTasks = ConcurrentHashMap<UUID, MutableMap<GroupCulledRebarBlock, MutableMap<GroupCulledRebarBlock.CullingGroup, Boolean>>>()
 

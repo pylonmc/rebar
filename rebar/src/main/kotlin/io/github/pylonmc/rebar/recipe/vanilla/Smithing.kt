@@ -28,7 +28,7 @@ import xyz.xenondevs.invui.gui.Gui
 class DummySmithingRebarRecipe(
     val realRecipe: SmithingRebarRecipe,
     override val bukkitRecipe: SmithingRecipe
-) : DummyBukkitRebarRecipe {
+) : DummyBukkitRebarRecipe() {
     override val inputs = emptyList<FluidOrItemChoice>()
     override val results = emptyList<FluidOrItem>()
     override fun display() = null
@@ -45,7 +45,7 @@ sealed class SmithingRebarRecipe(
     val result: FluidOrItem.Item,
     val copyDataComponents: Boolean,
     @JvmField val key: NamespacedKey,
-) : BukkitRebarRecipe {
+) : BukkitRebarRecipe() {
     abstract val template: ItemChoice?
     abstract val base: ItemChoice?
     abstract val addition: ItemChoice?
